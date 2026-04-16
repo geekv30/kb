@@ -1,0 +1,55 @@
+/* Hiver KB Design Tokens
+   Extracted from Figma file 251DTRmxl2L6jmXd3FWzHe
+   Pages: KB revamp (1952:10869), KB gaps (1958:32263), Analytics (1952:10867)
+*/
+
+:root {
+  /* ── Surfaces ───────────────────────────────── */
+  --color-canvas:         #f5f5f5;  /* page/canvas background */
+  --color-app-bg:         #fcfcfc;  /* app frame background */
+  --color-surface:        #ffffff;  /* panels, sidebar, cards */
+  --color-surface-subtle: #f8fafc;  /* secondary nav, breadcrumb pill, hover */
+  --color-surface-muted:  #f1f5f9;  /* secondary button bg, card stroke, tag bg */
+  --color-surface-tab:    #f1f2f4;  /* chrome tab bar */
+  --color-brand-bar:      #e6effd;  /* KB title header bar */
+  --color-nav-rail:       #e2e8f0;  /* icon rail background */
+
+  /* ── Text ───────────────────────────────────── */
+  --color-text-primary:   #0f172a;  /* headings, primary labels */
+  --color-text-secondary: #334155;  /* card titles, secondary labels */
+  --color-text-meta:      #475569;  /* meta info, sources badge */
+  --color-text-muted:     #64748b;  /* body copy, descriptions */
+
+  /* ── Semantic ───────────────────────────────── */
+  --color-success-text:   #086e3f;  /* addition badge text */
+  --color-btn-primary:    #000000;  /* primary action button */
+  --color-btn-danger-bg:  #feeeec;  /* dismiss/delete button background */
+  --color-border:         #f1f5f9;  /* card strokes, dividers */
+
+  /* ── Layout ─────────────────────────────────── */
+  --layout-canvas-width:  1280px;
+  --layout-rail-width:    54px;
+  --layout-tree-width:    288px;
+  --layout-content-width: 938px;
+  --layout-chrome-height: 85px;    /* tab bar 43px + nav bar 42px */
+
+  /* ── Spacing ────────────────────────────────── */
+  --card-padding-v:       24px;
+  --card-padding-h:       22px;
+  --card-gap:             20px;
+  --card-gap-inner:       8px;
+  --card-gap-text:        4px;
+  --card-radius:          12px;
+
+  --btn-padding-v:        6px;
+  --btn-padding-h:        12px;
+  --btn-radius:           6px;
+
+  --icon-btn-size:        28px;
+  --icon-btn-padding:     6px;
+
+  --nav-header-padding-v: 6px;
+  --nav-header-padding-h: 24px;
+  --content-padding-h:    24px;
+  --table-row-padding-v:  16px;
+}

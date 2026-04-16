@@ -1,0 +1,1 @@
+notion doc with initial problem statement - https://www.notion.so/scalable-kb-components-34475c3f388a8039b9b0fef9b8cd469d?source=copy_link
