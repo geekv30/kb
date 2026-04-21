@@ -1,6 +1,106 @@
 {
+  "skipWebFetchPreflight": true,
   "enabledPlugins": {
     "andrej-karpathy-skills@karpathy-skills": true,
     "claude-mem@thedotmack": true
+  },
+  "permissions": {
+    "defaultMode": "bypassPermissions",
+    "allow": [
+      "Bash(yarn:*)",
+      "Bash(yarn install)",
+      "Bash(yarn build)",
+      "Bash(yarn dev)",
+      "Bash(yarn lint:*)",
+      "Bash(yarn test:*)",
+      "Bash(yarn tokens)",
+      "Bash(yarn typecheck)",
+      "Bash(yarn clean)",
+      "Bash(yarn format:*)",
+      "Bash(yarn storybook)",
+      "Bash(yarn build-storybook)",
+      "Bash(npx turbo:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npx shadcn@latest:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git branch:*)",
+      "Bash(git show:*)",
+      "Bash(git config --get:*)",
+      "Bash(git checkout:*)",
+      "Bash(git checkout -b:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git push -u:*)",
+      "Bash(ls:*)",
+      "Bash(tree:*)",
+      "Bash(pwd)",
+      "Bash(which:*)",
+      "Bash(mkdir:*)",
+      "mcp__figma__*",
+      "Bash(gh:*)",
+      "Write(packages/react/**)",
+      "Edit(packages/react/**)",
+      "Write(try-claude/prototype/**)",
+      "Edit(try-claude/prototype/**)",
+      "Write(try-claude/portfolio/**)",
+      "Edit(try-claude/portfolio/**)",
+      "WebFetch(domain:*)"
+    ],
+    "deny": [
+      "Bash(git push --force:*)",
+      "Edit(**/package-lock.json)",
+      "Write(**/package-lock.json)",
+      "Edit(**/yarn.lock)",
+      "Write(**/yarn.lock)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'FILE=\"$CLAUDE_FILE_PATH\"; if [[ \"$FILE\" == *.ts || \"$FILE\" == *.tsx ]]; then cd \"$(git rev-parse --show-toplevel)/try-claude/prototype\" 2>/dev/null && npx prettier --write \"$FILE\" 2>/dev/null && npx eslint --fix \"$FILE\" 2>/dev/null; fi'"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"Claude needs permission\" with title \"Claude Code\"'"
+          }
+        ]
+      },
+      {
+        "matcher": "idle_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"Claude is waiting for input\" with title \"Claude Code\"'"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'if [[ \"$CLAUDE_TOOL_INPUT\" =~ (credentials|secret|password|api_key|apikey|token) ]]; then echo \"Blocked: command contains sensitive keyword\" >&2; exit 1; fi'"
+          }
+        ]
+      }
+    ]
   }
 }

@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 /* Hiver KB Design Tokens
    Extracted from Figma file 251DTRmxl2L6jmXd3FWzHe
    Pages: KB revamp (1952:10869), KB gaps (1958:32263), Analytics (1952:10867)
@@ -25,6 +27,10 @@
   --color-btn-primary:    #000000;  /* primary action button */
   --color-btn-danger-bg:  #feeeec;  /* dismiss/delete button background */
   --color-border:         #f1f5f9;  /* card strokes, dividers */
+  --color-border-input:   #e5e5e5;  /* input borders */
+  --color-text-disabled:  #94a3b8;  /* disabled text */
+  --color-text-faint:     #64748b;  /* faint/muted label text */
+  --color-highlight:      #e7f9ee;  /* inline highlight bg */
 
   /* ── Layout ─────────────────────────────────── */
   --layout-canvas-width:  1280px;
@@ -52,4 +58,45 @@
   --nav-header-padding-h: 24px;
   --content-padding-h:    24px;
   --table-row-padding-v:  16px;
+}
+
+/* ── Tailwind v4 @theme — wires design tokens to utility classes ── */
+@theme {
+  /* Colors */
+  --color-canvas:         #f5f5f5;
+  --color-surface:        #ffffff;
+  --color-surface-subtle: #f8fafc;
+  --color-surface-muted:  #f1f5f9;
+  --color-surface-tab:    #f1f2f4;
+  --color-brand-bar:      #e6effd;
+  --color-nav-rail:       #e2e8f0;
+
+  --color-text-primary:   #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-meta:      #475569;
+  --color-text-muted:     #64748b;
+  --color-text-disabled:  #94a3b8;
+  --color-text-faint:     #64748b;
+
+  --color-success-text:   #086e3f;
+  --color-btn-primary:    #000000;
+  --color-btn-danger-bg:  #feeeec;
+
+  --color-border:         #f1f5f9;
+  --color-border-input:   #e5e5e5;
+  --color-highlight:      #e7f9ee;
+
+  /* Border radius */
+  --radius-card:       12px;
+  --radius-btn:        6px;
+  --radius-input:      8px;
+  --radius-pill:       999px;
+  --radius-breadcrumb: 4px;
+
+  /* Shadows */
+  --shadow-md: 0px 4px 6px -1px rgba(0, 0, 0, 0.05), 0px 2px 4px -2px rgba(0, 0, 0, 0.10);
+  --shadow-lg: 0px 8px 12px -4px rgba(0, 0, 0, 0.05), 0px 4px 6px -2px rgba(0, 0, 0, 0.10);
+
+  /* Font family */
+  --font-sans: Inter, system-ui, sans-serif;
 }

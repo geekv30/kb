@@ -1,12 +1,11 @@
 ---
 name: ui-engineer
 description: UI Engineer who builds production-grade ShadCN prototypes AND self-reviews them against the PRD in a single pass. Combines build skills with design review eye. Use for building prototypes, UI components, and design-to-code work.
-tools: Read, Grep, Glob, Bash, Edit, Write, WebSearch, WebFetch
+tools: Read, Grep, Glob, Bash, Edit, Write, WebSearch, WebFetch, mcp__plugin_figma_figma__use_figma, mcp__plugin_figma_figma__get_design_context, mcp__plugin_figma_figma__get_screenshot, mcp__plugin_figma_figma__get_metadata, mcp__plugin_figma_figma__get_variable_defs, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_click, mcp__plugin_playwright_playwright__browser_evaluate, mcp__plugin_playwright_playwright__browser_resize, mcp__plugin_playwright_playwright__browser_console_messages, mcp__plugin_playwright_playwright__browser_close, mcp__plugin_playwright_playwright__browser_wait_for
 model: opus
 permissionMode: bypassPermissions
 memory: project
 skills:
-  - ui-prototype-guide
   - shadcn
   - figma:implement-design
   - figma:code-connect-components
