@@ -8,7 +8,10 @@ import {
 import { AppShell } from '../components/shell/AppShell';
 import { KBBreadcrumbBar } from '../components/shell/KBBreadcrumbBar';
 import { SideNavRail, type NavRailItem } from '../components/nav/SideNavRail';
-import { AnalyticsSideNav } from '../components/nav/AnalyticsSideNav';
+import {
+  FileExplorerNav,
+  type NavItem,
+} from '../components/nav/FileExplorerNav';
 import { Avatar } from '../components/primitives/Avatar';
 import { CompanyLogo } from '../components/brand/CompanyLogo';
 import { AiIcon } from '../components/brand/AiIcon';
@@ -39,7 +42,7 @@ import {
  *
  * Side-nav:
  *   - Rail (dark, 54): AI / Editor / Analytics (active) / Settings
- *   - Explorer: AnalyticsSideNav with `views` active
+ *   - Explorer: FileExplorerNav variant="flat" with `views` active
  *   - Breadcrumb: category variant with single item "Analytics"
  * ───────────────────────────────────────────────────────────── */
 
@@ -66,12 +69,12 @@ const railItems: NavRailItem[] = [
   { id: 'settings', icon: <RiSettings5Line size={16} />, label: 'Settings' },
 ];
 
-/* ── AnalyticsSideNav items (3 sections) ────────────────────── */
+/* ── Analytics explorer items (3 sections, flat list) ──────── */
 
-const analyticsNavItems = [
-  { id: 'views', label: 'Article Views and Engagement' },
-  { id: 'search', label: 'Search' },
-  { id: 'ai', label: 'AI Answer Performance' },
+const analyticsNavItems: NavItem[] = [
+  { id: 'views', type: 'article', title: 'Article Views and Engagement' },
+  { id: 'search', type: 'article', title: 'Search' },
+  { id: 'ai', type: 'article', title: 'AI Answer Performance' },
 ];
 
 /* ── Mock data ──────────────────────────────────────────────── */
@@ -149,7 +152,7 @@ function ArticlePerformancePage() {
     <AppShell
       rail={
         <SideNavRail
-          theme="dark"
+          theme="light"
           items={railItems}
           activeId="analytics"
           brandLogo={
@@ -161,7 +164,11 @@ function ArticlePerformancePage() {
         />
       }
       explorer={
-        <AnalyticsSideNav
+        <FileExplorerNav
+          variant="flat"
+          theme="light"
+          title="Analytics"
+          headerIcon={<RiBarChartBoxLine size={16} />}
           items={analyticsNavItems}
           activeId="views"
           onItemClick={() => {}}

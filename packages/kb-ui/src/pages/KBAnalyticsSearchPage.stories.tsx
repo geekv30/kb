@@ -8,7 +8,10 @@ import {
 import { AppShell } from '../components/shell/AppShell';
 import { KBBreadcrumbBar } from '../components/shell/KBBreadcrumbBar';
 import { SideNavRail, type NavRailItem } from '../components/nav/SideNavRail';
-import { AnalyticsSideNav } from '../components/nav/AnalyticsSideNav';
+import {
+  FileExplorerNav,
+  type NavItem,
+} from '../components/nav/FileExplorerNav';
 import { Avatar } from '../components/primitives/Avatar';
 import { CompanyLogo } from '../components/brand/CompanyLogo';
 import { AiIcon } from '../components/brand/AiIcon';
@@ -59,10 +62,10 @@ const railItems: NavRailItem[] = [
   { id: 'settings', icon: <RiSettings5Line size={16} />, label: 'Settings' },
 ];
 
-const analyticsNavItems = [
-  { id: 'views', label: 'Article Views and Engagement' },
-  { id: 'search', label: 'Search' },
-  { id: 'ai', label: 'AI Answer Performance' },
+const analyticsNavItems: NavItem[] = [
+  { id: 'views', type: 'article', title: 'Article Views and Engagement' },
+  { id: 'search', type: 'article', title: 'Search' },
+  { id: 'ai', type: 'article', title: 'AI Answer Performance' },
 ];
 
 /* ── Mock data ──────────────────────────────────────────────── */
@@ -120,7 +123,7 @@ function SearchAnalyticsPage() {
     <AppShell
       rail={
         <SideNavRail
-          theme="dark"
+          theme="light"
           items={railItems}
           activeId="analytics"
           brandLogo={
@@ -132,7 +135,11 @@ function SearchAnalyticsPage() {
         />
       }
       explorer={
-        <AnalyticsSideNav
+        <FileExplorerNav
+          variant="flat"
+          theme="light"
+          title="Analytics"
+          headerIcon={<RiBarChartBoxLine size={16} />}
           items={analyticsNavItems}
           activeId="search"
           onItemClick={() => {}}

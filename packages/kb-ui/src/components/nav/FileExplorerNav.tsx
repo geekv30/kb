@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { useState, useMemo, useEffect } from 'react';
 import {
   RiArrowRightSLine,
@@ -21,10 +22,36 @@ export type NavItem = {
 
 export type FileExplorerNavProps = {
   title?: string;
+  /**
+   * Header glyph rendered to the left of the title. Defaults to a quill-pen
+   * (RiQuillPenLine) for Editor. Other surfaces (e.g. Analytics) pass a
+   * different glyph (e.g. RiBarChartBoxLine).
+   */
+  headerIcon?: React.ReactNode;
   items: NavItem[];
   activeId?: string;
   onItemClick?: (id: string) => void;
   theme?: 'dark' | 'light';
+  /**
+   * Tree variant (default): renders chevron, folder/file icon, count/kebab —
+   * the canonical Editor explorer.
+   *
+   * Flat variant: renders title-only rows, no chevron, no file icon, no
+   * count/kebab. Used by Analytics where the explorer is a flat list of
+   * 3 sub-routes. Same chrome (288 panel, 54-tall header, inset divider at
+   * Y=54), same row geometry (36 tall, 12px top gap, 2px stride), but the
+   * active pill colour is `#f8fafc` (matches Figma `1974:53328`) instead
+   * of the tree-mode `rgba(230,230,230,0.44)`.
+   *
+   * Flat mode also disables the "search" affordance in the header — the
+   * Analytics surface has nothing to search there.
+   */
+  variant?: 'tree' | 'flat';
+  /**
+   * Whether to render the trailing search icon button in the header. Defaults
+   * to `true` in tree mode and `false` in flat mode (Analytics surface).
+   */
+  showSearch?: boolean;
   className?: string;
 };
 
@@ -60,6 +87,50 @@ function stateBg(state: RowState, isDark: boolean): string {
 
 function hoverBgClass(isDark: boolean): string {
   return isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-[rgba(230,230,230,0.32)]';
+}
+
+/* ---------------------------- flat row -------------------------------- */
+//
+// Flat mode (Analytics): full-width inset row, 36 tall, 12px horizontal pad,
+// no chevron / no file icon / no count / no kebab. Active pill is #f8fafc
+// (Figma `background/neutral/faint`) — matches `1974:53328`.
+
+type FlatRowProps = {
+  item: NavItem;
+  isActive: boolean;
+  isDark: boolean;
+  onClick: () => void;
+};
+
+function FlatRow({ item, isActive, isDark, onClick }: FlatRowProps) {
+  return (
+    <div
+      data-kb-part="flat-row"
+      data-kb-active={isActive ? 'true' : 'false'}
+      className="w-full px-[16px] py-0"
+    >
+      <button
+        type="button"
+        onClick={onClick}
+        aria-current={isActive ? 'page' : undefined}
+        className={cn(
+          'flex h-9 w-full items-center rounded-[6px] px-[12px]',
+          'text-left text-[14px] leading-[20px] transition-colors duration-150',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
+          isDark ? 'text-white/90' : 'text-[#0f172a]',
+          isActive
+            ? isDark
+              ? 'bg-white/[0.08] font-medium'
+              : 'bg-[#f8fafc] font-medium'
+            : isDark
+              ? 'font-normal hover:bg-white/[0.05]'
+              : 'font-normal hover:bg-[#f8fafc]',
+        )}
+      >
+        <span className="truncate">{item.title}</span>
+      </button>
+    </div>
+  );
 }
 
 /* ---------------------------- tree helpers ---------------------------- */
@@ -287,13 +358,31 @@ function ArticleRow({ item, depth, isActive, isDark, onClick }: ArticleRowProps)
 
 export function FileExplorerNav({
   title = 'Editor',
+  headerIcon,
   items,
   activeId,
   onItemClick,
   theme = 'light',
+  variant = 'tree',
+  showSearch,
   className,
 }: FileExplorerNavProps) {
   const isDark = theme === 'dark';
+  const isFlat = variant === 'flat';
+  // Search affordance defaults: ON for tree, OFF for flat. Caller can
+  // explicitly override either way.
+  const renderSearch = showSearch ?? !isFlat;
+  // Default header glyph: pen for Editor (tree), nothing-extra for flat
+  // unless the caller passes one. Coerce undefined → pen for tree mode so
+  // existing call sites (Editor) keep their glyph without breaking.
+  const resolvedHeaderIcon =
+    headerIcon ??
+    (isFlat ? null : (
+      <RiQuillPenLine
+        size={16}
+        className={isDark ? 'text-white/60' : 'text-[#64748b]'}
+      />
+    ));
 
   const ancestorIds = useMemo(() => {
     if (!activeId) return new Set<string>();
@@ -391,10 +480,19 @@ export function FileExplorerNav({
         className="flex h-[54px] items-center justify-between px-4 shrink-0"
       >
         <div className="flex items-center gap-2">
-          <RiQuillPenLine
-            size={16}
-            className={isDark ? 'text-white/60' : 'text-[#64748b]'}
-          />
+          {resolvedHeaderIcon ? (
+            // Wrap caller-provided icons so colour stays consistent with the
+            // theme (callers pass un-coloured glyphs).
+            <span
+              aria-hidden
+              className={cn(
+                'inline-flex items-center justify-center [&>svg]:w-4 [&>svg]:h-4',
+                isDark ? 'text-white/60' : 'text-[#0f172a]',
+              )}
+            >
+              {resolvedHeaderIcon}
+            </span>
+          ) : null}
           <span
             data-kb-part="explorer-title"
             className={cn(
@@ -405,18 +503,20 @@ export function FileExplorerNav({
             {title}
           </span>
         </div>
-        <button
-          type="button"
-          aria-label="Search"
-          className={cn(
-            'flex size-6 items-center justify-center rounded-[6px] cursor-pointer transition-colors duration-150',
-            isDark
-              ? 'text-white/60 hover:bg-white/[0.06] hover:text-white/90'
-              : 'text-[#64748b] hover:bg-[#f8fafc] hover:text-[#0f172a]',
-          )}
-        >
-          <RiSearchLine size={16} />
-        </button>
+        {renderSearch && (
+          <button
+            type="button"
+            aria-label="Search"
+            className={cn(
+              'flex size-6 items-center justify-center rounded-[6px] cursor-pointer transition-colors duration-150',
+              isDark
+                ? 'text-white/60 hover:bg-white/[0.06] hover:text-white/90'
+                : 'text-[#64748b] hover:bg-[#f8fafc] hover:text-[#0f172a]',
+            )}
+          >
+            <RiSearchLine size={16} />
+          </button>
+        )}
       </div>
 
       {/* Inset 1px divider at Y=54 — 16L / 16R inset (effective width 256) */}
@@ -428,12 +528,24 @@ export function FileExplorerNav({
         )}
       />
 
-      {/* Tree — 12px top gap per invariants, 2px stride between rows */}
+      {/* Body — 12px top gap per invariants, 2px stride between rows.
+          Flat variant renders a flat NavItem list (no children, no chevrons,
+          no file icons); tree variant uses recursive folder/article rows. */}
       <div
-        data-kb-part="explorer-tree"
+        data-kb-part={isFlat ? 'explorer-flat' : 'explorer-tree'}
         className="flex-1 overflow-y-auto pt-[12px] pb-[12px] flex flex-col gap-[2px]"
       >
-        {renderItems(items, 0)}
+        {isFlat
+          ? items.map((item) => (
+              <FlatRow
+                key={item.id}
+                item={item}
+                isActive={item.id === activeId}
+                isDark={isDark}
+                onClick={() => onItemClick?.(item.id)}
+              />
+            ))
+          : renderItems(items, 0)}
       </div>
     </aside>
   );

@@ -130,10 +130,15 @@ export function AISubNav({
               onClick={() => onItemClick?.(item.id)}
             />
             {item.kind === 'section' && !isLast && (
+              // Asymmetric vertical margins: 4px above the divider keeps a
+              // breath between the section row label and the rule, while
+              // 12px below the divider matches Figma `74:8871` — the gap
+              // from the divider to the next pill ("AI Optimise") is
+              // `scale/space/xl` = 12px.
               <div
                 aria-hidden
                 data-kb-part="sub-nav-divider"
-                className="h-px bg-nav-rail mx-[16px] my-[4px]"
+                className="h-px bg-nav-rail mx-[16px] mt-[4px] mb-[12px]"
               />
             )}
           </React.Fragment>
