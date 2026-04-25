@@ -54,13 +54,16 @@ const TYPE_META: Record<
   { label: string; color: string; Icon: React.ComponentType<{ className?: string }> }
 > = {
   // Hex values mirrored 1:1 in tokens.css (--color-ai-addition / -replace /
-  // -removal). Kept inline because Tailwind arbitrary classes for dynamic
-  // per-type color don't tree-shake via the inline `style={{ color }}` path
-  // used in TypeChip — leave as hex; the values won't drift since both live
-  // next to each other in spec docs.
-  addition: { label: 'Addition', color: '#22c55e', Icon: RiAddLine },
-  replace: { label: 'Replace', color: '#3b82f6', Icon: RiRefreshLine },
-  removal: { label: 'Removal', color: '#ef4444', Icon: RiCloseLine },
+  // -removal), sourced from Figma file 9aGp5t9fH1d0PXi4LMhOdb Frame 3 active
+  // addition (81:16926). Figma tokens: text/success/default (#086e3f),
+  // text/info/default (#065b89), text/danger/default (#d52c1f). Kept inline
+  // because Tailwind arbitrary classes for dynamic per-type color don't
+  // tree-shake via the inline `style={{ color }}` path used in TypeChip —
+  // these literals also feed inline SVG `fill` so they cannot be utility
+  // classes. Keep in lockstep with --color-ai-* tokens.
+  addition: { label: 'Addition', color: '#086e3f', Icon: RiAddLine },
+  replace: { label: 'Replace', color: '#065b89', Icon: RiRefreshLine },
+  removal: { label: 'Removal', color: '#d52c1f', Icon: RiCloseLine },
 };
 
 function TypeChip({ type }: { type: AISuggestionType }) {
@@ -144,7 +147,10 @@ function RejectButton({ onClick }: { onClick?: () => void }) {
       aria-label="Reject suggestion"
       className={cn(
         'inline-flex size-6 items-center justify-center rounded-full bg-[var(--color-btn-danger-bg)]',
-        'text-ai-removal transition-colors hover:bg-[#fbd6d2]',
+        // Hover bg derived from --color-ai-removal (#d52c1f) at ~12% over white
+        // — re-derived from the Figma text/danger/default token, replacing the
+        // earlier #fbd6d2 which was tied to the old red-500 (#ef4444) base.
+        'text-ai-removal transition-colors hover:bg-[#fad9d6]',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
       )}
     >

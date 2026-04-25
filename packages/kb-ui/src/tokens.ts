@@ -27,13 +27,13 @@ export const tokens = {
     borderInput: '#e5e5e5',
     highlight: '#e7f9ee',
 
-    // AI Gaps semantic
-    aiAddition: '#22c55e',
-    aiReplace: '#3b82f6',
-    aiRemoval: '#ef4444',
+    // AI Gaps semantic (Figma file 9aGp5t9fH1d0PXi4LMhOdb Frame 3 active addition 81:16926)
+    aiAddition: '#086e3f',  // Figma text/success/default + icon/success/subtle
+    aiReplace: '#065b89',   // Figma text/info/default + icon/info/strong
+    aiRemoval: '#d52c1f',   // Figma text/danger/default + icon/danger/default
     aiPink: '#d92fff',
-    aiAdditionWash: 'rgba(34, 197, 94, 0.12)',
-    aiRemovalWash: 'rgba(239, 68, 68, 0.10)',
+    aiAdditionWash: 'rgba(8, 110, 63, 0.10)',   // derived from #086e3f
+    aiRemovalWash: 'rgba(213, 44, 31, 0.10)',   // derived from #d52c1f
 
     // Card semantics
     cardBorder: '#e5e5e5',

@@ -33,14 +33,18 @@
   --color-highlight:      #e7f9ee;  /* inline highlight bg */
 
   /* ── AI Gaps semantic palette ──────────────── */
-  --color-ai-addition:        #22c55e;  /* green-500 — addition glyph + left bar */
-  --color-ai-replace:         #3b82f6;  /* blue-500 — replace glyph */
-  --color-ai-removal:         #ef4444;  /* red-500 — removal glyph + reject icon */
+  /* Verified from Figma file 9aGp5t9fH1d0PXi4LMhOdb Frame 3 active addition (81:16926).
+     Figma tokens: text/success/default + icon/success/subtle (#086e3f);
+     text/info/default + icon/info/strong (#065b89);
+     text/danger/default + icon/danger/default (#d52c1f). */
+  --color-ai-addition:        #086e3f;  /* Figma text/success/default — addition glyph + left bar */
+  --color-ai-replace:         #065b89;  /* Figma text/info/default — replace glyph */
+  --color-ai-removal:         #d52c1f;  /* Figma text/danger/default — removal glyph + reject icon */
   --color-ai-pink:            #d92fff;  /* AiIcon gradient start — single-pink across cards */
 
   /* ── AI Gaps wash backgrounds ──────────────── */
-  --color-ai-addition-wash:   rgba(34, 197, 94, 0.12);   /* addition block bg */
-  --color-ai-removal-wash:    rgba(239, 68, 68, 0.10);   /* removal block bg + replace-old half */
+  --color-ai-addition-wash:   rgba(8, 110, 63, 0.10);    /* addition block bg — derived from #086e3f, mirrors --color-chart-wash-up */
+  --color-ai-removal-wash:    rgba(213, 44, 31, 0.10);   /* removal block bg + replace-old half — derived from #d52c1f */
 
   /* ── Card semantics (distinct from input borders) ─ */
   --color-card-border:        #e5e5e5;  /* card outer stroke (replaces ad-hoc #e5e5e5/#e5e7eb/#e2e8f0 mixing) */
@@ -134,14 +138,15 @@
   --color-highlight:      #e7f9ee;
 
   /* ── AI Gaps semantic palette ──────────────── */
-  --color-ai-addition:        #22c55e;  /* green-500 — addition glyph + left bar */
-  --color-ai-replace:         #3b82f6;  /* blue-500 — replace glyph */
-  --color-ai-removal:         #ef4444;  /* red-500 — removal glyph + reject icon */
+  /* Verified from Figma file 9aGp5t9fH1d0PXi4LMhOdb Frame 3 active addition (81:16926). */
+  --color-ai-addition:        #086e3f;  /* Figma text/success/default — addition glyph + left bar */
+  --color-ai-replace:         #065b89;  /* Figma text/info/default — replace glyph */
+  --color-ai-removal:         #d52c1f;  /* Figma text/danger/default — removal glyph + reject icon */
   --color-ai-pink:            #d92fff;  /* AiIcon gradient start — single-pink across cards */
 
   /* ── AI Gaps wash backgrounds ──────────────── */
-  --color-ai-addition-wash:   rgba(34, 197, 94, 0.12);   /* addition block bg */
-  --color-ai-removal-wash:    rgba(239, 68, 68, 0.10);   /* removal block bg + replace-old half */
+  --color-ai-addition-wash:   rgba(8, 110, 63, 0.10);    /* derived from #086e3f */
+  --color-ai-removal-wash:    rgba(213, 44, 31, 0.10);   /* derived from #d52c1f */
 
   /* ── Card semantics (distinct from input borders) ─ */
   --color-card-border:        #e5e5e5;  /* card outer stroke (replaces ad-hoc #e5e5e5/#e5e7eb/#e2e8f0 mixing) */
