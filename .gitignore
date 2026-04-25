@@ -26,19 +26,9 @@ npm-debug.log*
 *.swp
 
 # Temp repo-root screenshots (one-off captures — canonical screenshots live in design/screenshots/)
-/avatar-default.png
-/avatars.png
-/badge-all.png
-/badges.png
-/before-alignment.png
-/breadcrumb.png
-/button-all-variants.png
-/buttons.png
-/fileexplorer.png
-/pageheader.png
-/settings-panel.png
-/sidenavrail.png
-/tables.png
-/textinput.png
-/verify-*.png
+/*.png
 /screenshots/
+
+# Per-user .claude state — installed skills and agent memory are per-developer, not project-shared
+.claude/skills/
+**/.claude/agent-memory/

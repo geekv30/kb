@@ -40,6 +40,15 @@ export type KBBreadcrumbBarProps = {
   onPublish?: () => void;
   /** Editor variant only. */
   onClose?: () => void;
+  /**
+   * Editor variant only. When `true`, the Publish button is rendered disabled
+   * (muted via `Button` primitive's `opacity-50 cursor-not-allowed`) and
+   * `onPublish` will not fire. Default `false` — matches existing behaviour.
+   *
+   * Used by the AI Gaps review flow where Publish stays disabled until the
+   * user has accepted at least one suggestion (see `KBAIGapsExperience`).
+   */
+  publishDisabled?: boolean;
   className?: string;
 };
 
@@ -57,6 +66,7 @@ export function KBBreadcrumbBar({
   onSaveAsDraft,
   onPublish,
   onClose,
+  publishDisabled = false,
   className,
 }: KBBreadcrumbBarProps) {
   const handleLeadingClick = onToggleSidebar ?? onCollapse;
@@ -135,10 +145,23 @@ export function KBBreadcrumbBar({
 
       {variant === 'editor' && (
         <div className="flex items-center gap-2 ml-auto pl-4 shrink-0">
+          {/*
+            "Save as draft" mutes whenever Publish is disabled — i.e. no
+            suggestions accepted yet, so there is nothing meaningful to
+            persist as a draft. Default ( publishDisabled === false ) keeps
+            the original Phase 5 editor styling and click behaviour.
+          */}
           <button
             type="button"
             onClick={onSaveAsDraft}
-            className="inline-flex items-center h-8 px-3 py-1.5 rounded-[6px] text-[14px] font-normal text-[#475569] hover:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]"
+            disabled={publishDisabled}
+            className={cn(
+              'inline-flex items-center h-8 px-3 py-1.5 rounded-[6px] text-[14px] font-normal',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
+              publishDisabled
+                ? 'text-[#94a3b8] cursor-not-allowed'
+                : 'text-[#475569] hover:bg-[#f8fafc]',
+            )}
           >
             Save as draft
           </button>
@@ -151,6 +174,7 @@ export function KBBreadcrumbBar({
           <Button
             variant="primary"
             onClick={onPublish}
+            disabled={publishDisabled}
             icon={<RiSendPlaneLine size={14} />}
           >
             Publish

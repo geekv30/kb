@@ -30,10 +30,47 @@ Do NOT flip this order. Ship the npm package first.
 | 3 | Shell + Nav (AppShell, KBBreadcrumbBar) | ✅ Done |
 | 4 | KB Content (CategoryHeader, SubCategoriesList, ArticlesTable) | ✅ Done |
 | 5 | Article Editor (ContentEditor, ArticleSettingsPanel, KBEditorPage) | ✅ Done 2026-04-21 |
-| 6 | KB Gaps (SuggestionCard × 9 variants, KBGapsPanel, Modal) | ⬜ |
+| 6 | AI Gaps / AI Optimise (AISubNav, SuggestionCard, AISuggestionsCard, AIGapSuggestionCard, SuggestionBlock, ArticleBody, SourcesSideSheet, KB AI Optimise Hub pattern, KB AI Gaps Experience pattern) | ✅ Done 2026-04-21 |
 | 7 | Analytics (StatCard, LineChart, ConversationLogsTable, Dashboard) | ⬜ |
 | 8 | Package + Ship (barrel export, Storybook stories, tsup build) | ⬜ |
 | 9 | MCP companion server | ⬜ |
+
+## Phase 6 Task List (Done)
+
+Canonical spec: `design/ai-gaps.md`. Narrative spec: `ai-suggestions-flow.md` (repo root).
+
+### New components (all via ui-engineer)
+
+| Component | File | Figma node |
+|---|---|---|
+| `AISubNav` | `packages/kb-ui/src/components/nav/AISubNav.tsx` | `74:8871` |
+| `SuggestionCard` | `packages/kb-ui/src/components/content/SuggestionCard.tsx` | `74:8927` |
+| `AISuggestionsCard` | `packages/kb-ui/src/components/content/AISuggestionsCard.tsx` | `74:9431` (leftmost) |
+| `AIGapSuggestionCard` | `packages/kb-ui/src/components/content/AIGapSuggestionCard.tsx` | `74:9431` (grid) |
+| `SuggestionBlock` | `packages/kb-ui/src/components/content/SuggestionBlock.tsx` | inline article markup in `74:10788` |
+| `ArticleBody` | `packages/kb-ui/src/components/content/ArticleBody.tsx` | `74:10788` (article region) |
+| `SourcesSideSheet` | `packages/kb-ui/src/components/overlays/SourcesSideSheet.tsx` | `76:12567` |
+
+### Shell changes
+
+- `KBBreadcrumbBar` gained optional `publishDisabled?: boolean` prop (default `false`, backward compatible).
+
+### New pattern stories
+
+| Story title | File | Figma frame |
+|---|---|---|
+| `Patterns/KB AI Optimise Hub` | `packages/kb-ui/src/pages/KBAIOptimiseHubPage.stories.tsx` | `74:8928` |
+| `Patterns/KB AI Gaps --frame-2-pre-review` | `KBAIGapsExperience.stories.tsx` | `81:17189` |
+| `Patterns/KB AI Gaps --frame-3-active-addition` | same | `81:16926` |
+| `Patterns/KB AI Gaps --frame-5-accepted-addition` | same | `81:16634` |
+| `Patterns/KB AI Gaps --frame-6-active-replace` | same | `81:16342` |
+| `Patterns/KB AI Gaps --frame-8-active-removal` | same | `81:15737` |
+| `Patterns/KB AI Gaps --frame-10-terminal` | same | `81:14752` |
+| `Patterns/KB AI Gaps --interactive` | same | full 10-frame flow (`74:10788`) |
+
+### Pattern-internal utilities (not exported from public API)
+
+- `packages/kb-ui/src/pages/useAIGapsReducer.ts` — reducer + hook for the interactive pattern.
 
 ## Phase 2b Task List (Done)
 

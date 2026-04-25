@@ -36,6 +36,13 @@ export type ArticleSettingsPanelProps = {
   value?: ArticleSettings;
   onChange?: (v: ArticleSettings) => void;
   defaultCollapsed?: boolean;
+  /**
+   * `compact` (default `false`) — renders at 380 px width with tighter outer
+   * padding/gap, suitable for narrow rails (e.g. AI Gaps review experience).
+   * Field heights and click targets are preserved so keyboard/touch UX is
+   * unchanged from the default 452 px variant.
+   */
+  compact?: boolean;
   className?: string;
 };
 
@@ -444,6 +451,7 @@ export function ArticleSettingsPanel({
   value,
   onChange,
   defaultCollapsed = false,
+  compact = false,
   className,
 }: ArticleSettingsPanelProps) {
   const [collapsed, setCollapsed] = React.useState(defaultCollapsed);
@@ -472,10 +480,13 @@ export function ArticleSettingsPanel({
   return (
     <section
       data-kb-part="article-settings-panel"
+      data-kb-variant={compact ? 'compact' : 'default'}
       className={cn(
-        'flex w-[452px] flex-col rounded-[12px] border border-[#e2e8f0] bg-white',
+        'flex flex-col rounded-[12px] border border-[#e2e8f0] bg-white',
         'shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05),0px_2px_4px_-2px_rgba(0,0,0,0.10)]',
-        'py-6 px-[22px]',
+        // Width + outer padding swap on the compact variant.
+        // Default 452 / py-6 px-[22px] (24/22)  ─  Compact 380 / px-4 py-4 (16/16).
+        compact ? 'w-[380px] px-4 py-4' : 'w-[452px] py-6 px-[22px]',
         className,
       )}
     >
@@ -501,11 +512,19 @@ export function ArticleSettingsPanel({
 
       {!collapsed && (
         <div id={panelId} className="flex flex-col">
-          {/* Divider directly below header */}
-          <div aria-hidden="true" className="mt-5 h-px w-full bg-[#e5e5e5]" />
+          {/* Divider directly below header. Compact tightens the divider's
+              top spacing to match the 12-px field gap. */}
+          <div
+            aria-hidden="true"
+            className={cn('h-px w-full bg-[#e5e5e5]', compact ? 'mt-3' : 'mt-5')}
+          />
 
-          {/* Field stack — 20px gap between every field */}
-          <div className="mt-5 flex flex-col gap-5">
+          {/* Field stack — default 20-px gap, compact 12-px gap. Field
+              heights (`min-h-[40px]`) are unchanged so click/touch
+              targets stay identical between variants. */}
+          <div
+            className={cn('flex flex-col', compact ? 'mt-3 gap-3' : 'mt-5 gap-5')}
+          >
             <AuthorField author={current.author} />
             <CategoryField category={current.category} />
             <SlugField

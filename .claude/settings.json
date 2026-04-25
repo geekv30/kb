@@ -1,11 +1,5 @@
 {
-  "skipWebFetchPreflight": true,
-  "enabledPlugins": {
-    "andrej-karpathy-skills@karpathy-skills": true,
-    "claude-mem@thedotmack": true
-  },
   "permissions": {
-    "defaultMode": "bypassPermissions",
     "allow": [
       "Bash(yarn:*)",
       "Bash(yarn install)",
@@ -57,7 +51,8 @@
       "Write(**/package-lock.json)",
       "Edit(**/yarn.lock)",
       "Write(**/yarn.lock)"
-    ]
+    ],
+    "defaultMode": "bypassPermissions"
   },
   "hooks": {
     "PostToolUse": [
@@ -102,5 +97,7 @@
         ]
       }
     ]
-  }
+  },
+  "enabledPlugins": {},
+  "skipWebFetchPreflight": true
 }

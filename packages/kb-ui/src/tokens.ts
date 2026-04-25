@@ -26,6 +26,18 @@ export const tokens = {
     border: '#f1f5f9',
     borderInput: '#e5e5e5',
     highlight: '#e7f9ee',
+
+    // AI Gaps semantic
+    aiAddition: '#22c55e',
+    aiReplace: '#3b82f6',
+    aiRemoval: '#ef4444',
+    aiPink: '#d92fff',
+    aiAdditionWash: 'rgba(34, 197, 94, 0.12)',
+    aiRemovalWash: 'rgba(239, 68, 68, 0.10)',
+
+    // Card semantics
+    cardBorder: '#e5e5e5',
+    cardDivider: '#e5e5e5',
   },
   radius: {
     card: '12px',

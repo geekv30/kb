@@ -2,9 +2,9 @@
 
 ## Current Status
 
-**Phase 5 complete. Ready for Phase 6 (KB Gaps) / Phase 8 (Package + Ship) / Phase 9 (MCP).**
+**Phase 6 complete. Ready for Phase 7 (Analytics) / Phase 8 (Package + Ship) / Phase 9 (MCP).**
 
-Phases 1–5 done, Storybook restructured (Getting Started / Foundations / Components / Patterns), cross-component shell-grid invariants documented in `design/_layout-invariants.md`, comprehensive audit + fix cycles (70 🔴 findings resolved), slash-command editor (Notion-style) + settings panel + editor page (collapsed shell variant) all live. Awaiting user direction on next phase.
+Phases 1–6 done. Phase 6 shipped the **AI Gaps / AI Optimise surface** — the most business-critical piece of the KB revamp per user. Built atomically through 3 parallel ui-engineer dispatches (hub atoms + right-rail cards + sources sheet) followed by 2 sequential dispatches (hub page pattern + static frames + interactive state machine). Canonical spec at `design/ai-gaps.md`. All 9 new stories pixel-verified against Figma `9aGp5t9fH1d0PXi4LMhOdb` nodes. Typecheck + tsup build clean.
 
 ## Progress Log
 
@@ -31,6 +31,14 @@ Phases 1–5 done, Storybook restructured (Getting Started / Foundations / Compo
 | 2026-04-21 | Phase 5 — ContentEditor | ✅ Done | Tiptap 3 + StarterKit + Link/Image/CodeBlockLowlight/Table/Highlight/Placeholder/Underline. 14-button floating toolbar via `BubbleMenu` on selection. Removed `FloatingMenu` in favor of slash command `/`. Notion-style slash menu (10 commands, auto-filter, floating-ui positioning at caret). All formatting: H1-3, lists, links, inline/block code, tables, blockquote, HR, AI highlight strips. |
 | 2026-04-21 | Phase 5 — ArticleSettingsPanel | ✅ Done | 452px collapsible panel with 8 fields (Author, Category, Slug, Tags, Publish date, SEO title, Visibility, Reviewers). Reuses Avatar primitive. Tag chip with `×`, reviewer avatar stack with `+ Add`. |
 | 2026-04-21 | Phase 5 — KBEditorPage | ✅ Done | `Patterns/KB Editor Page` composition matching Figma `53:8464` (collapsed shell variant). `AppShell.sidebarCollapsed` prop added — unmounts rail+explorer, content spans full viewport. Breadcrumb icon swaps side-panel→home. Editor flush-left, settings flush-right via `justify-between`. Publish button = primary black variant. Slug maxLength 32. |
+| 2026-04-21 | Phase 6 planning | ✅ Done | 7 Figma nodes fetched (74:8794 / 74:8871 / 74:8927 / 74:8928 / 74:9431 / 76:12567 / 74:10788). `ai-suggestions-flow.md` audited vs Figma — 3 gaps found and amended (rail vs sub-rail distinction in Frame 1, HR divider in hub cards, dismissed chip confirmed). Advisor-validated plan, split into 5 ui-engineer dispatches. Tasks P6.1–P6.7. |
+| 2026-04-21 | Phase 6 — hub atoms | ✅ Done | **P6.1 (parallel)** — `AISubNav` (288 px, `kind: section\|item`, section renders divider below, item renders pill on active) + `SuggestionCard` (hub card: icon + title / description / HR / meta row with kind chip · N conversations · IMPACT caption). Single pink `#D92FFF` across all glyphs. DOM-verified: 287.99 px / row 44 / active pill `#f1f5f9`. |
+| 2026-04-21 | Phase 6 — right-rail cards | ✅ Done | **P6.3 (parallel)** — `ai-suggestion-types.ts` shared types + `AISuggestionsCard` (pre-review + terminal modes) + `AIGapSuggestionCard` (active + accepted + dismissed states, chip collapsed form) + `SuggestionBlock` (addition green / replace red+green split / removal red wash — emits `id` for scrollIntoView). 10 new stories. |
+| 2026-04-21 | Phase 6 — sources sheet | ✅ Done | **P6.4 (parallel)** — `SourcesSideSheet` in new `overlays/` subfolder. Radix Dialog with Portal + Overlay + Content + Title (VisuallyHidden for a11y). 400 px width, fixed right, `bg-black/85` backdrop, header + count pill + close, body = conversation cards with mail icon / sender / timestamp / subject / snippet. Default + Interactive stories. |
+| 2026-04-21 | Phase 6 — hub page pattern | ✅ Done | **P6.2** — `Patterns/KB AI Optimise Hub` composing AppShell + dark SideNavRail (ai active) + AISubNav (ai-optimise active) + KBBreadcrumbBar category + page header + 3 SuggestionCards. List uses `mask-image: linear-gradient(..., calc(100% - 120px), transparent)` for scroll-fade. Invariants: rail=54, sub-nav=288, content-column left=342. |
+| 2026-04-21 | Phase 6 — static frame stories | ✅ Done | **P6.5a** — `ArticleBody` component (per-suggestion `decisions` prop → renders SuggestionBlock for inactive/active, applies or reverts content for accepted/dismissed per type) + 6 static frame stories (Frame 2 pre-review, 3 active-addition, 5 accepted-addition, 6 active-replace, 8 active-removal, 10 terminal). `KBBreadcrumbBar` gained optional `publishDisabled` prop (backward compatible, regression-verified). |
+| 2026-04-21 | Phase 6 — interactive pattern | ✅ Done | **P6.5b** — `useAIGapsReducer` hook (9 action types: review/accept/reject/undo/prev/next/setActive/openSources/closeSources/reset) + Interactive story. `scrollIntoView` targets `<main>` scroll container via `document.getElementById(id)`. Sources sheet wired. Keyboard J/K/Y/N/Esc behind `enableKeyboard` (default true). 15 Playwright screenshots covering every state transition, DOM assertions on publish toggle + scroll position + dismissed chip visibility. |
+| 2026-04-21 | Phase 6 — docs | ✅ Done | **P6.7** — `design/ai-gaps.md` created (canonical spec with node IDs / types / state machine / keyboard / stories / open items). `design.md` updated with Phase 6 pointer. `ai-suggestions-flow.md` amended with 3 Figma-verified gaps. |
 
 ## What's Done
 
@@ -81,17 +89,28 @@ All fixes should be dispatched via ui-engineer. The following were applied this 
 ## What's Next
 
 - [x] Phase 5: Article Editor — done 2026-04-21
-- [ ] Phase 6: KB Gaps (SuggestionCard × 9, KBGapsPanel, Modal)
-- [ ] Phase 7: Analytics (StatCard, LineChart, Dashboard)
+- [x] Phase 6: KB Gaps / AI Optimise — done 2026-04-21
+- [ ] Phase 7: Analytics (StatCard, LineChart, ConversationLogsTable, Dashboard)
 - [ ] Phase 8: npm package + Storybook ship (barrel audit, tsup build, publish)
 - [ ] Phase 9: MCP companion server
 
 ## Open items
 
+**Phase 5 carryover:**
 - `Save as draft` text color `#475569` (spec calls for `#94a3b8`).
 - `Last updated N months ago` subtitle on Editor Page renders as body text (Tiptap strips inline styles) — needs a dedicated subtitle slot in `ContentEditor` if styling is required.
 - AI icon in rail currently a faithful gradient sparkle from Figma; if the actual product ships a different glyph, swap `AiIcon.tsx`.
 - Phosphor icon set was rejected; `@remixicon/react` is canonical.
+
+**Phase 6 open product decisions** (all documented in `design/ai-gaps.md` §Open items):
+- Navigation onto decided suggestions — no "focused chip" visual yet.
+- Keyboard `y`/`n` on decided active overwrites decision — guard if product wants no-op.
+- Terminal mode shows all 3 chips below Suggestions card (flow-doc says undo must remain available; Figma frame 10 hides them).
+- `Avatar` primitive styled for light bg; reads low-contrast on dark rail — add `variant="dark"` in polish pass.
+- Hub card click logs to console — wire to real article navigation in production.
+
+**Phase 6 housekeeping:**
+- ~70 Playwright verification PNG screenshots from ui-engineer dispatches are sitting at repo root + packages/kb-ui/. Safe to delete or move to a scratch dir.
 
 ## Key docs
 
@@ -101,4 +120,6 @@ All fixes should be dispatched via ui-engineer. The following were applied this 
 - `design/_diff-report.md` — full audit + fix log (all sessions)
 - `design/editor.md` — ContentEditor decisions + slash menu UX
 - `design/article-settings-panel.md` — Settings panel spec
+- `design/ai-gaps.md` — **Phase 6 canonical spec** (AI Optimise hub + AI review pattern + sources sheet + state machine)
+- `ai-suggestions-flow.md` (repo root) — 10-frame narrative spec of the AI review loop
 - Per-component specs in `design/` (one file each)

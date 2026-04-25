@@ -27,7 +27,7 @@ File: `https://www.figma.com/design/251DTRmxl2L6jmXd3FWzHe/kb-gaps`
 
 **Rule:** Always `get_design_context` + `get_screenshot` on the relevant screen node before building any component from that screen.
 
-### Library-Check File (component isolation, Phase 2b source)
+### Library-Check File (component isolation, Phase 2b + Phase 6 source)
 
 File key: `9aGp5t9fH1d0PXi4LMhOdb` — **Note: `get_design_context` returns "nothing selected" for all nodes in this file. Use screenshots + specs below.**
 
@@ -40,6 +40,18 @@ File key: `9aGp5t9fH1d0PXi4LMhOdb` — **Note: `get_design_context` returns "not
 | Table | `1:5178` | light only |
 | Breadcrumb | `1:5389` | light only |
 | PageHeader + Button | `1:5452` | light only |
+
+**Phase 6 — AI Gaps surface** (canonical spec at `design/ai-gaps.md`):
+
+| Component / Pattern | Node ID | Notes |
+|---|---|---|
+| SideNavRail ai-active state | `74:8794` | Uses existing `SideNavRail` with `activeId="ai"` |
+| AISubNav | `74:8871` | NEW component — 288 px flat nav with section/item kinds |
+| SuggestionCard (hub) | `74:8927` | NEW — hub card with title / description / HR / meta row |
+| KB AI Optimise Hub page | `74:8928` | Pattern story composing rail + AISubNav + breadcrumb + cards |
+| AI gap cards (rail) | `74:9431` | 3×4 grid — pre-review + 3 active + 3 accepted + 3 dismissed |
+| Sources side-sheet | `76:12567` | Radix Dialog overlay |
+| AI Gaps Experience pattern | `74:10788` | 10-frame review loop — 6 static frame stories + 1 interactive |
 
 ---
 
@@ -66,7 +78,21 @@ File key: `9aGp5t9fH1d0PXi4LMhOdb` — **Note: `get_design_context` returns "not
 --color-btn-danger-bg:   #feeeec
 --color-border:          #f1f5f9
 --color-border-input:    #e5e5e5
+
+/* AI Gaps semantic palette */
+--color-ai-addition:       #22c55e
+--color-ai-replace:        #3b82f6
+--color-ai-removal:        #ef4444
+--color-ai-pink:           #d92fff
+--color-ai-addition-wash:  rgba(34,197,94,0.12)
+--color-ai-removal-wash:   rgba(239,68,68,0.10)
+
+/* Card semantics (distinct from input borders) */
+--color-card-border:       #e5e5e5
+--color-card-divider:      #e5e5e5
 ```
+
+**Why card-border vs border-input:** `border-input` is for form fields (inputs/dropdowns). `card-border` is for surface cards. Same hex, different semantic — keeps the two from drifting independently.
 
 ### Typography (all Inter)
 
@@ -277,6 +303,23 @@ type NavItem = { id, title, type: 'folder'|'article', status?, count?, children?
   - Author: avatar prefix + name + chevron suffix
   - Category: text + chevron suffix
   - Article Slug: text + chevron + char counter (12px, text-faint, right-aligned)
+
+---
+
+---
+
+## Phase 6 spec pointer
+
+See **`design/ai-gaps.md`** for the full AI Gaps / AI Optimise specification covering:
+- Figma node IDs for every surface
+- Component inventory + file paths
+- Shared TypeScript types (`AISuggestion`, `AISuggestionDecision`, etc.)
+- Color tokens for highlight blocks (addition / replace / removal)
+- State machine (`useAIGapsReducer`) contract
+- Scroll behavior (inside `<main>`, not window)
+- Keyboard shortcut matrix
+- Story inventory (9 new stories across Components + Patterns)
+- Open product decisions
 
 ---
 

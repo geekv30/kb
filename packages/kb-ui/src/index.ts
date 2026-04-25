@@ -10,3 +10,4 @@ export * from './components/nav';
 export * from './components/content';
 export * from './components/shell';
 export * from './components/brand';
+export * from './components/overlays';
