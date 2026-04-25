@@ -6,6 +6,8 @@ export { Breadcrumb } from './Breadcrumb';
 export type { BreadcrumbProps, BreadcrumbItem } from './Breadcrumb';
 export { Button } from './Button';
 export type { ButtonProps, ButtonVariant } from './Button';
+export { Card } from './Card';
+export type { CardProps, CardPadding } from './Card';
 export { Divider } from './Divider';
 export type { DividerProps } from './Divider';
 export { TextInput } from './TextInput';

@@ -90,9 +90,37 @@ File key: `9aGp5t9fH1d0PXi4LMhOdb` — **Note: `get_design_context` returns "not
 /* Card semantics (distinct from input borders) */
 --color-card-border:       #e5e5e5
 --color-card-divider:      #e5e5e5
+
+/* Analytics — trend indicators (Figma SupportPerformanceCard 1974:53911) */
+--color-trend-up:          #086e3f   /* Figma text/success/default + icon/success/subtle */
+--color-trend-down:        #d52c1f   /* Figma text/danger/default + icon/danger/default */
+--color-trend-neutral:     #64748b
+
+/* Analytics — chart series + washes (Figma Article-views-over-time 1974:53969) */
+--color-chart-views:       #f56565   /* Figma Red/r400 — "Total Views" */
+--color-chart-unique:      #4299e1   /* Figma Blue/b400 — "Unique Views" */
+--color-chart-positive:    #22c55e   /* search vol + AI deflection green — not tokenized in Figma yet */
+--color-chart-body:        #4b5468   /* Figma NeutralLight/nl700 (Body) — analytics body text + axis ticks */
+--color-chart-wash-up:     rgba(8,110,63,0.10)     /* derived from trend-up */
+--color-chart-wash-down:   rgba(213,44,31,0.10)    /* derived from trend-down */
+--color-chart-wash-info:   rgba(66,153,225,0.10)   /* derived from chart-unique */
+
+/* Analytics — chart annotations (Figma AI-deflection-rate 1974:53443) */
+--color-chart-goal-line:     #276cf0   /* Figma border/blue/default — goal-line stroke */
+--color-chart-goal-label-bg: #26292e   /* Figma NeutralLight/nl800 — goal-label pill BG */
+
+/* Analytics — donut/pie palette (Figma Views-by-Category 1974:53988, 6 segments) */
+--color-donut-1:           #4fd1c5   /* Figma Teal/t300 */
+--color-donut-2:           #b4bfcc   /* Figma NeutralLight/nl400 */
+--color-donut-3:           #6e7b91   /* Figma NeutralLight/nl600 */
+--color-donut-4:           #98a2b2   /* Figma NeutralLight/nl500 */
+--color-donut-5:           #dde3ee   /* Figma NeutralLight/nl300 */
+--color-donut-6:           #4b5468   /* Figma NeutralLight/nl700 */
 ```
 
 **Why card-border vs border-input:** `border-input` is for form fields (inputs/dropdowns). `card-border` is for surface cards. Same hex, different semantic — keeps the two from drifting independently.
+
+**Why trend tokens duplicate ai-* hexes:** AI gaps semantics (`addition`/`replace`/`removal`) are about diff direction in an article; analytics trend tokens are about a metric going up or down. Same hex, distinct semantic — don't conflate the two in component code.
 
 ### Typography (all Inter)
 

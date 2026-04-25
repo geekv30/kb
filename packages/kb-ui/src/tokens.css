@@ -46,6 +46,39 @@
   --color-card-border:        #e5e5e5;  /* card outer stroke (replaces ad-hoc #e5e5e5/#e5e7eb/#e2e8f0 mixing) */
   --color-card-divider:       #e5e5e5;  /* hairline INSIDE cards. Avoid #f1f5f9 — invisible on white */
 
+  /* ── Analytics — trend indicators ──────────── */
+  /* Verified from Figma file 251DTRmxl2L6jmXd3FWzHe SupportPerformanceCard 1974:53911.
+     Figma tokens: text/success/default + icon/success/subtle (#086e3f); text/danger/default + icon/danger/default (#d52c1f). */
+  --color-trend-up:           #086e3f;  /* Figma text/success/default + icon/success/subtle — both icon and text */
+  --color-trend-down:         #d52c1f;  /* Figma text/danger/default + icon/danger/default */
+  --color-trend-neutral:      #64748b;  /* slate-500 — neutral / no-change */
+
+  /* ── Analytics — chart series + washes ─────── */
+  /* Verified from Figma file 251DTRmxl2L6jmXd3FWzHe Article-views-over-time 1974:53969.
+     Figma tokens: Red/r400 (#f56565), Blue/b400 (#4299e1). */
+  --color-chart-views:        #f56565;  /* Figma Red/r400 — "Total Views" series */
+  --color-chart-unique:       #4299e1;  /* Figma Blue/b400 — "Unique Views" series */
+  --color-chart-positive:     #22c55e;  /* search vol + AI deflection green-positive series — not tokenized in Figma yet */
+  --color-chart-body:         #4b5468;  /* Figma NeutralLight/nl700 (Body) — analytics body text + axis ticks */
+  --color-chart-wash-up:      rgba(8, 110, 63, 0.10);     /* sparkline area fill — green derived from #086e3f trend-up */
+  --color-chart-wash-down:    rgba(213, 44, 31, 0.10);    /* sparkline area fill — red derived from #d52c1f trend-down */
+  --color-chart-wash-info:    rgba(66, 153, 225, 0.10);   /* sparkline area fill — blue derived from #4299e1 chart-unique */
+
+  /* ── Analytics — chart annotations ─────────── */
+  /* Verified from Figma file 251DTRmxl2L6jmXd3FWzHe AI-deflection-rate 1974:53443. */
+  --color-chart-goal-line:    #276cf0;  /* Figma border/blue/default — goal-line dashed stroke */
+  --color-chart-goal-label-bg: #26292e; /* Figma NeutralLight/nl800 — goal label pill BG */
+
+  /* ── Analytics — donut/pie chart palette ───── */
+  /* Verified from Figma file 251DTRmxl2L6jmXd3FWzHe Views-by-Category 1974:53988.
+     6 segments — chart is a full pie by default, donut opt-in via ringThickness. */
+  --color-donut-1:            #4fd1c5;  /* Figma Teal/t300 — primary teal "selected" category */
+  --color-donut-2:            #b4bfcc;  /* Figma NeutralLight/nl400 */
+  --color-donut-3:            #6e7b91;  /* Figma NeutralLight/nl600 */
+  --color-donut-4:            #98a2b2;  /* Figma NeutralLight/nl500 */
+  --color-donut-5:            #dde3ee;  /* Figma NeutralLight/nl300 */
+  --color-donut-6:            #4b5468;  /* Figma NeutralLight/nl700 — 6th pie segment */
+
   /* ── Layout ─────────────────────────────────── */
   --layout-canvas-width:  1280px;
   --layout-rail-width:    54px;
@@ -113,6 +146,37 @@
   /* ── Card semantics (distinct from input borders) ─ */
   --color-card-border:        #e5e5e5;  /* card outer stroke (replaces ad-hoc #e5e5e5/#e5e7eb/#e2e8f0 mixing) */
   --color-card-divider:       #e5e5e5;  /* hairline INSIDE cards. Avoid #f1f5f9 — invisible on white */
+
+  /* ── Analytics — trend indicators ──────────── */
+  /* Verified from Figma file 251DTRmxl2L6jmXd3FWzHe SupportPerformanceCard 1974:53911. */
+  --color-trend-up:           #086e3f;  /* Figma text/success/default + icon/success/subtle */
+  --color-trend-down:         #d52c1f;  /* Figma text/danger/default + icon/danger/default */
+  --color-trend-neutral:      #64748b;  /* slate-500 — neutral / no-change */
+
+  /* ── Analytics — chart series + washes ─────── */
+  /* Verified from Figma file 251DTRmxl2L6jmXd3FWzHe Article-views-over-time 1974:53969. */
+  --color-chart-views:        #f56565;  /* Figma Red/r400 — "Total Views" series */
+  --color-chart-unique:       #4299e1;  /* Figma Blue/b400 — "Unique Views" series */
+  --color-chart-positive:     #22c55e;  /* search vol + AI deflection green-positive series — not tokenized in Figma yet */
+  --color-chart-body:         #4b5468;  /* Figma NeutralLight/nl700 (Body) — analytics body text + axis ticks */
+  --color-chart-wash-up:      rgba(8, 110, 63, 0.10);     /* derived from #086e3f trend-up */
+  --color-chart-wash-down:    rgba(213, 44, 31, 0.10);    /* derived from #d52c1f trend-down */
+  --color-chart-wash-info:    rgba(66, 153, 225, 0.10);   /* derived from #4299e1 chart-unique */
+
+  /* ── Analytics — chart annotations ─────────── */
+  /* Verified from Figma file 251DTRmxl2L6jmXd3FWzHe AI-deflection-rate 1974:53443. */
+  --color-chart-goal-line:    #276cf0;  /* Figma border/blue/default — goal-line dashed stroke */
+  --color-chart-goal-label-bg: #26292e; /* Figma NeutralLight/nl800 — goal label pill BG */
+
+  /* ── Analytics — donut/pie chart palette ───── */
+  /* Verified from Figma file 251DTRmxl2L6jmXd3FWzHe Views-by-Category 1974:53988.
+     6 segments — chart is a full pie by default. */
+  --color-donut-1:            #4fd1c5;  /* Figma Teal/t300 */
+  --color-donut-2:            #b4bfcc;  /* Figma NeutralLight/nl400 */
+  --color-donut-3:            #6e7b91;  /* Figma NeutralLight/nl600 */
+  --color-donut-4:            #98a2b2;  /* Figma NeutralLight/nl500 */
+  --color-donut-5:            #dde3ee;  /* Figma NeutralLight/nl300 */
+  --color-donut-6:            #4b5468;  /* Figma NeutralLight/nl700 */
 
   /* Border radius */
   --radius-card:       12px;

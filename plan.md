@@ -31,7 +31,7 @@ Do NOT flip this order. Ship the npm package first.
 | 4 | KB Content (CategoryHeader, SubCategoriesList, ArticlesTable) | ✅ Done |
 | 5 | Article Editor (ContentEditor, ArticleSettingsPanel, KBEditorPage) | ✅ Done 2026-04-21 |
 | 6 | AI Gaps / AI Optimise (AISubNav, SuggestionCard, AISuggestionsCard, AIGapSuggestionCard, SuggestionBlock, ArticleBody, SourcesSideSheet, KB AI Optimise Hub pattern, KB AI Gaps Experience pattern) | ✅ Done 2026-04-21 |
-| 7 | Analytics (StatCard, LineChart, ConversationLogsTable, Dashboard) | ⬜ |
+| 7 | Analytics (StatCard/Grid, DateRangePill, AnalyticsAreaChart/DonutChart/ChartCard, AnalyticsSideNav, ArticlesNeedsAttentionTable, ArticlePerformanceTable, SearchKeywordsTable, ContentGapsTable, AIConversationLogsCard/Entry, MostCitedArticlesTable, HelpfulnessTag, Card primitive + 3 page patterns) | ✅ Done 2026-04-25 |
 | 8 | Package + Ship (barrel export, Storybook stories, tsup build) | ⬜ |
 | 9 | MCP companion server | ⬜ |
 

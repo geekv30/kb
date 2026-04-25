@@ -2,9 +2,9 @@
 
 ## Current Status
 
-**Phase 6 complete. Ready for Phase 7 (Analytics) / Phase 8 (Package + Ship) / Phase 9 (MCP).**
+**Phase 7 complete. Ready for Phase 8 (Package + Ship) / Phase 9 (MCP).**
 
-Phases 1–6 done. Phase 6 shipped the **AI Gaps / AI Optimise surface** — the most business-critical piece of the KB revamp per user. Built atomically through 3 parallel ui-engineer dispatches (hub atoms + right-rail cards + sources sheet) followed by 2 sequential dispatches (hub page pattern + static frames + interactive state machine). Canonical spec at `design/ai-gaps.md`. All 9 new stories pixel-verified against Figma `9aGp5t9fH1d0PXi4LMhOdb` nodes. Typecheck + tsup build clean.
+Phases 1–7 done. Phase 7 shipped the **Analytics surface** — the third CRUCIAL section per `design.md`. Built across 8 sequential `ui-engineer` dispatches under a strict 1:1 Figma fidelity rule (`feedback_one_to_one_figma_fidelity.md`), with `get_variable_defs` + `get_screenshot` precomputed for every step before dispatch. Components: 1 new primitive (`Card`), 13 content components (StatCard/Grid, DateRangePill, AnalyticsAreaChart, AnalyticsDonutChart, AnalyticsChartCard, HelpfulnessTag, ArticlesNeedsAttentionTable, ArticlePerformanceTable, SearchKeywordsTable, ContentGapsTable, AIConversationLogEntry, AIConversationLogsCard, MostCitedArticlesTable), 1 new nav (`AnalyticsSideNav`), 3 new pattern stories (`Patterns/KB Analytics — *`). New tokens: trend-up/down/neutral, chart-views/unique/positive/wash-up/down/info, donut-1..6, chart-goal-line, chart-goal-label-bg, chart-body, card-border, card-divider. New dependency: `@radix-ui/react-switch`. Phase plan + per-step Figma checkpoints saved at `design/phase-7-plan.md`. Typecheck + tsup build clean. Live re-audit folded into Step 7 — no follow-up R-pass needed.
 
 ## Progress Log
 

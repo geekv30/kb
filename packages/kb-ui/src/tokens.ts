@@ -38,6 +38,32 @@ export const tokens = {
     // Card semantics
     cardBorder: '#e5e5e5',
     cardDivider: '#e5e5e5',
+
+    // Analytics — trend indicators (Figma SupportPerformanceCard 1974:53911)
+    trendUp: '#086e3f',     // Figma text/success/default + icon/success/subtle
+    trendDown: '#d52c1f',   // Figma text/danger/default + icon/danger/default
+    trendNeutral: '#64748b',
+
+    // Analytics — chart series + washes (Figma Article-views-over-time 1974:53969)
+    chartViews: '#f56565',   // Figma Red/r400
+    chartUnique: '#4299e1',  // Figma Blue/b400
+    chartPositive: '#22c55e',
+    chartBody: '#4b5468',    // Figma NeutralLight/nl700 (Body) — analytics body text + axis ticks
+    chartWashUp: 'rgba(8, 110, 63, 0.10)',
+    chartWashDown: 'rgba(213, 44, 31, 0.10)',
+    chartWashInfo: 'rgba(66, 153, 225, 0.10)',
+
+    // Analytics — chart annotations (Figma AI-deflection-rate 1974:53443)
+    chartGoalLine: '#276cf0',     // Figma border/blue/default
+    chartGoalLabelBg: '#26292e',  // Figma NeutralLight/nl800
+
+    // Analytics — donut/pie palette (Figma Views-by-Category 1974:53988, 6 segments)
+    donut1: '#4fd1c5',
+    donut2: '#b4bfcc',
+    donut3: '#6e7b91',
+    donut4: '#98a2b2',
+    donut5: '#dde3ee',
+    donut6: '#4b5468',
   },
   radius: {
     card: '12px',
