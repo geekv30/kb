@@ -65,8 +65,7 @@ export const WithSection: Story = {
         Landmark section
       </h3>
       <div className="mt-1 text-[14px] text-text-muted">
-        `as="section"` renders a `<section>` element with landmark semantics — pair with
-        `aria-labelledby` (or `aria-label`) so assistive tech announces it.
+        {'`as="section"` renders a `<section>` element with landmark semantics — pair with `aria-labelledby` (or `aria-label`) so assistive tech announces it.'}
       </div>
     </Card>
   ),
