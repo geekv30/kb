@@ -33,15 +33,6 @@ const searchVolumeData = [
   { x: 'sun', searches: 6200 },
 ];
 
-const missedSearchData = [
-  { x: 'mon', missed: 5200 },
-  { x: 'tue', missed: 5600 },
-  { x: 'wed', missed: 4800 },
-  { x: 'fri', missed: 5300 },
-  { x: 'sat', missed: 3100 },
-  { x: 'sun', missed: 1800 },
-];
-
 export const TwoSeries: Story = {
   render: () => (
     <div style={{ width: 720 }} className="bg-white p-6">
@@ -78,12 +69,20 @@ export const WithGoalLine: Story = {
   render: () => (
     <div style={{ width: 360 }} className="bg-white p-6">
       <AnalyticsAreaChart
-        data={missedSearchData}
+        data={[
+          { x: 'mon', positive: 18 },
+          { x: 'tue', positive: 24 },
+          { x: 'wed', positive: 30 },
+          { x: 'fri', positive: 42 },
+          { x: 'sat', positive: 48 },
+          { x: 'sun', positive: 55 },
+        ]}
         xKey="x"
         series={[
-          { name: 'Missed Search Rate', dataKey: 'missed', variant: 'positive' },
+          { name: 'AI Deflection Rate', dataKey: 'positive', variant: 'positive' },
         ]}
-        yTicks={[0, 3000, 6000, 9000, 12000]}
+        yTicks={[0, 25, 50, 75, 100]}
+        yTickFormat={(v: number) => `${v}`}
         goalLine={{ y: 70, label: 'Goal : 70%' }}
         showLegend={false}
       />

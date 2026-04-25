@@ -43,7 +43,7 @@ type SortDropdownProps = {
 
 function SortDropdown({ options, value, onChange }: SortDropdownProps) {
   const selected = options.find((opt) => opt.id === value);
-  const triggerLabel = selected?.label ?? 'Sort by';
+  const currentLabel = selected?.label ?? 'None';
 
   return (
     <DropdownMenu.Root>
@@ -51,6 +51,7 @@ function SortDropdown({ options, value, onChange }: SortDropdownProps) {
         <button
           type="button"
           data-kb-part="ai-conversation-logs-sort"
+          aria-label={`Sort by, current: ${currentLabel}`}
           className={cn(
             'inline-flex items-center gap-2 rounded-[6px] bg-[#f1f5f9] px-3 py-1.5',
             'text-[14px] font-medium leading-5 text-[#0f172a]',
@@ -59,7 +60,7 @@ function SortDropdown({ options, value, onChange }: SortDropdownProps) {
             'data-[state=open]:bg-[#e2e8f0]',
           )}
         >
-          {triggerLabel}
+          Sort by
           <RiArrowDownSLine
             size={14}
             aria-hidden="true"

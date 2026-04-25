@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Cell, Pie, PieChart } from 'recharts';
+import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
 import { cn } from '../../utils/cn';
 
 /* ─────────────────────────────────────────────────────────────
@@ -56,33 +56,38 @@ export function AnalyticsDonutChart({
   className,
 }: AnalyticsDonutChartProps) {
   const outerRadius = size / 2;
-  const innerRadius = (size * (1 - ringThickness)) / 2;
+  // ringThickness: 0 → full pie (innerRadius = 0); e.g. 0.42 → donut with
+  // hole of `outerRadius * (1 - ringThickness)`. Special-case 0 so the
+  // pie isn't a zero-thickness (invisible) ring.
+  const innerRadius = ringThickness <= 0 ? 0 : outerRadius * (1 - ringThickness);
 
   return (
     <div
       data-kb-component="analytics-donut-chart"
       className={cn('flex items-center gap-8', className)}
     >
-      <div style={{ width: size, height: size, flexShrink: 0 }}>
-        <PieChart width={size} height={size}>
-          <Pie
-            data={data}
-            dataKey="value"
-            nameKey="label"
-            cx="50%"
-            cy="50%"
-            innerRadius={innerRadius}
-            outerRadius={outerRadius}
-            startAngle={90}
-            endAngle={-270}
-            stroke="none"
-            isAnimationActive={false}
-          >
-            {data.map((d, i) => (
-              <Cell key={`${d.label}-${i}`} fill={colorFor(d, i)} />
-            ))}
-          </Pie>
-        </PieChart>
+      <div className="shrink-0" style={{ width: size, height: size }}>
+        <ResponsiveContainer width={size} height={size}>
+          <PieChart>
+            <Pie
+              data={data}
+              dataKey="value"
+              nameKey="label"
+              cx="50%"
+              cy="50%"
+              innerRadius={innerRadius}
+              outerRadius={outerRadius}
+              startAngle={90}
+              endAngle={-270}
+              stroke="none"
+              isAnimationActive={false}
+            >
+              {data.map((d, i) => (
+                <Cell key={`${d.label}-${i}`} fill={colorFor(d, i)} />
+              ))}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
       </div>
 
       {showLegend && (

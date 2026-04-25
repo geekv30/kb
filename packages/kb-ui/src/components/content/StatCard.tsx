@@ -56,7 +56,7 @@ export function StatCard({
     >
       <div className="text-[14px] font-normal leading-5 text-[#475569]">{label}</div>
       <div className="flex items-center gap-2">
-        <span className="text-[24px] font-semibold leading-[32px] text-[#0f172a]">{value}</span>
+        <span className="text-[18px] font-medium leading-[28px] text-[#0f172a]">{value}</span>
         {showTrend && (
           <span
             className={cn(
