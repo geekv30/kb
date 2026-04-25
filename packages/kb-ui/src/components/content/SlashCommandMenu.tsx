@@ -215,7 +215,7 @@ export const SlashCommandMenu = React.forwardRef<HTMLDivElement, SlashCommandMen
         )}
       >
         {items.length === 0 ? (
-          <div className="px-3 py-2 text-[13px] leading-5 text-[#64748b]">No results</div>
+          <div className="px-3 py-2 text-[13px] leading-5 text-[#64758b]">No results</div>
         ) : (
           <div ref={listRef} className="max-h-[280px] overflow-y-auto">
             {items.map((cmd, i) => {
@@ -251,7 +251,7 @@ export const SlashCommandMenu = React.forwardRef<HTMLDivElement, SlashCommandMen
                     <span className="text-[14px] font-medium leading-5 text-[#0f172a]">
                       {cmd.title}
                     </span>
-                    <span className="text-[12px] font-normal leading-[18px] text-[#64748b]">
+                    <span className="text-[12px] font-normal leading-[18px] text-[#64758b]">
                       {cmd.subtitle}
                     </span>
                   </span>

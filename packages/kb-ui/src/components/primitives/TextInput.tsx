@@ -45,7 +45,7 @@ export function TextInput({
         className="min-w-0 flex-1 border-0 bg-transparent p-0 text-[14px] font-normal leading-5 text-[#0f172a] outline-none placeholder:text-[#94a3b8] disabled:cursor-not-allowed"
       />
       {charCount && (
-        <span className="shrink-0 text-[12px] font-normal leading-[18px] text-[#64748b] tabular-nums">
+        <span className="shrink-0 text-[12px] font-normal leading-[18px] text-[#64758b] tabular-nums">
           {charCount.current}/{charCount.max}
         </span>
       )}

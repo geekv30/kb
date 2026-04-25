@@ -101,7 +101,7 @@ function NavArrow({
       aria-label={direction === 'up' ? 'Previous suggestion' : 'Next suggestion'}
       className={cn(
         'inline-flex size-6 items-center justify-center rounded-[4px]',
-        'text-[#64748b] transition-colors',
+        'text-[#64758b] transition-colors',
         'hover:bg-[#f1f5f9] hover:text-[#0f172a]',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
       )}
@@ -214,7 +214,7 @@ function DecisionChip({
         aria-label={`Undo ${decision} for ${suggestion.title}`}
         className={cn(
           'ml-auto inline-flex size-6 items-center justify-center rounded-[4px]',
-          'text-[#64748b] transition-colors',
+          'text-[#64758b] transition-colors',
           'hover:bg-[#f1f5f9] hover:text-[#0f172a]',
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
         )}

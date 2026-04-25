@@ -51,12 +51,12 @@ function ConversationCard({ source, onClick }: ConversationCardProps) {
       <div className="flex items-center gap-2">
         <RiMailLine
           aria-hidden="true"
-          className="h-4 w-4 shrink-0 text-[#64748b]"
+          className="h-4 w-4 shrink-0 text-[#64758b]"
         />
         <span className="flex-1 truncate text-[14px] font-semibold leading-[20px] text-[#0f172a]">
           {source.senderName}
         </span>
-        <span className="shrink-0 text-[12px] font-normal leading-[18px] text-[#64748b]">
+        <span className="shrink-0 text-[12px] font-normal leading-[18px] text-[#64758b]">
           {source.timestamp}
         </span>
       </div>
@@ -67,7 +67,7 @@ function ConversationCard({ source, onClick }: ConversationCardProps) {
       </div>
 
       {/* Row 3: preview snippet (single-line, ellipsized) */}
-      <div className="mt-1 truncate text-[14px] font-normal leading-[20px] text-[#64748b]">
+      <div className="mt-1 truncate text-[14px] font-normal leading-[20px] text-[#64758b]">
         {source.snippet}
       </div>
     </>
@@ -182,7 +182,7 @@ export function SourcesSideSheet({
                 aria-label="Close sources"
                 className={cn(
                   'inline-flex h-8 w-8 items-center justify-center rounded-[6px]',
-                  'text-[#64748b] transition-colors hover:bg-[#f1f5f9] hover:text-[#0f172a]',
+                  'text-[#64758b] transition-colors hover:bg-[#f1f5f9] hover:text-[#0f172a]',
                   'focus:outline-none focus:ring-2 focus:ring-black/10',
                 )}
               >

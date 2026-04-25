@@ -108,7 +108,7 @@ export const CategoryView: Story = {
         />
       }
     >
-      <div className="text-sm text-[#64748b]">Content area</div>
+      <div className="text-sm text-[#64758b]">Content area</div>
     </AppShell>
   ),
 };
@@ -144,7 +144,7 @@ export const EditorView: Story = {
         />
       }
     >
-      <div className="text-sm text-[#64748b]">Editor content area</div>
+      <div className="text-sm text-[#64758b]">Editor content area</div>
     </AppShell>
   ),
 };

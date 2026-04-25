@@ -69,7 +69,7 @@ function H1({ children }: { children: React.ReactNode }) {
 
 function Subtitle({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mb-6 text-[14px] font-normal leading-[20px] text-[#64748b]">
+    <p className="mb-6 text-[14px] font-normal leading-[20px] text-[#64758b]">
       {children}
     </p>
   );

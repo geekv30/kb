@@ -35,7 +35,7 @@ const card = (idx: number, title: string, body: React.ReactNode): React.ReactNod
       <span style={{ color: '#6634ef', fontWeight: 700, fontSize: 14 }}>{idx}</span>
     </div>
     <h3 style={{ fontSize: 15, fontWeight: 600, margin: '0 0 6px' }}>{title}</h3>
-    <p style={{ fontSize: 13, lineHeight: 1.5, color: '#64748b', margin: 0 }}>{body}</p>
+    <p style={{ fontSize: 13, lineHeight: 1.5, color: '#64758b', margin: 0 }}>{body}</p>
   </div>
 );
 

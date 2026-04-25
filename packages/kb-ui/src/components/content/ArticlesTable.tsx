@@ -107,7 +107,7 @@ export function ArticlesTable({
                         e.stopPropagation();
                         onArticleClick?.(article.id);
                       }}
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#64748b] hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]"
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#64758b] hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]"
                     >
                       <RiFile3Line size={16} aria-hidden="true" />
                     </button>
@@ -140,7 +140,7 @@ export function ArticlesTable({
                     <Avatar initials={article.authorInitials ?? '—'} />
                   </div>
                 </td>
-                <td className="px-4 py-[6px] align-middle text-[14px] font-normal leading-[20px] text-[#64748b]">
+                <td className="px-4 py-[6px] align-middle text-[14px] font-normal leading-[20px] text-[#64758b]">
                   {article.lastUpdated ?? ''}
                 </td>
               </tr>

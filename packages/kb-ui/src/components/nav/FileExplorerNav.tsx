@@ -215,7 +215,7 @@ function FolderRow({
           <span
             className={cn(
               'flex size-6 items-center justify-center rounded-[6px] shrink-0',
-              isDark ? 'text-white/60' : 'text-[#64748b]',
+              isDark ? 'text-white/60' : 'text-[#64758b]',
             )}
           >
             <ChevronIcon size={16} />
@@ -223,7 +223,7 @@ function FolderRow({
           <span
             className={cn(
               'flex size-6 items-center justify-center rounded-[6px] shrink-0',
-              isDark ? 'text-white/60' : 'text-[#64748b]',
+              isDark ? 'text-white/60' : 'text-[#64758b]',
             )}
           >
             <RiFolderLine size={16} />
@@ -314,7 +314,7 @@ function ArticleRow({ item, depth, isActive, isDark, onClick }: ArticleRowProps)
           <span
             className={cn(
               'flex size-6 items-center justify-center rounded-[6px] shrink-0',
-              isDark ? 'text-white/60' : 'text-[#64748b]',
+              isDark ? 'text-white/60' : 'text-[#64758b]',
             )}
           >
             <RiFile3Line size={16} />
@@ -380,7 +380,7 @@ export function FileExplorerNav({
     (isFlat ? null : (
       <RiQuillPenLine
         size={16}
-        className={isDark ? 'text-white/60' : 'text-[#64748b]'}
+        className={isDark ? 'text-white/60' : 'text-[#64758b]'}
       />
     ));
 
@@ -511,7 +511,7 @@ export function FileExplorerNav({
               'flex size-6 items-center justify-center rounded-[6px] cursor-pointer transition-colors duration-150',
               isDark
                 ? 'text-white/60 hover:bg-white/[0.06] hover:text-white/90'
-                : 'text-[#64748b] hover:bg-[#f8fafc] hover:text-[#0f172a]',
+                : 'text-[#64758b] hover:bg-[#f8fafc] hover:text-[#0f172a]',
             )}
           >
             <RiSearchLine size={16} />

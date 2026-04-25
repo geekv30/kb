@@ -125,7 +125,7 @@ export function MostCitedArticlesTable({
                   <span className="inline-flex items-center gap-2">
                     <RiFile3Line
                       size={16}
-                      className="shrink-0 text-[#64748b]"
+                      className="shrink-0 text-[#64758b]"
                       aria-hidden="true"
                     />
                     <span>{row.title}</span>

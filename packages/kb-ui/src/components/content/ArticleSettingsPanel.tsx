@@ -144,7 +144,7 @@ function TagChip({ label, onRemove }: TagChipProps) {
           aria-label={`Remove ${label}`}
           className={cn(
             'inline-flex h-[16px] w-[16px] items-center justify-center rounded-full',
-            'text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#0f172a]',
+            'text-[#64758b] hover:bg-[#e2e8f0] hover:text-[#0f172a]',
             'focus:outline-none focus:ring-2 focus:ring-black/10',
           )}
         >
@@ -323,7 +323,7 @@ function PublishDateField({
     <div className="flex flex-col gap-1.5">
       <FieldLabel>Publish date</FieldLabel>
       <FieldBox onClick={onOpen} ariaLabel="Change publish date">
-        <RiCalendar2Line aria-hidden="true" className="h-4 w-4 shrink-0 text-[#64748b]" />
+        <RiCalendar2Line aria-hidden="true" className="h-4 w-4 shrink-0 text-[#64758b]" />
         {date ? <span className="truncate">{date}</span> : <Placeholder>Pick a date</Placeholder>}
       </FieldBox>
     </div>
@@ -431,7 +431,7 @@ function ReviewersField({
           aria-label="Add reviewer"
           className={cn(
             'inline-flex size-6 items-center justify-center rounded-full border border-dashed border-[#cbd5e1]',
-            'bg-white text-[#64748b] ring-2 ring-white',
+            'bg-white text-[#64758b] ring-2 ring-white',
             reviewers.length > 0 && '-ml-2',
             'hover:bg-[#f8fafc] focus:outline-none focus:ring-2 focus:ring-black/10',
           )}

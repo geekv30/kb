@@ -15,9 +15,9 @@ export const tokens = {
     textPrimary: '#0f172a',
     textSecondary: '#334155',
     textMeta: '#475569',
-    textMuted: '#64748b',
+    textMuted: '#64758b',   // Figma text/neutral/faint
     textDisabled: '#94a3b8',
-    textFaint: '#64748b',
+    textFaint: '#64758b',   // Figma text/neutral/faint
 
     successText: '#086e3f',
     btnPrimary: '#000000',

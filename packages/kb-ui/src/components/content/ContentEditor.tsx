@@ -665,7 +665,7 @@ function ContentEditorStyles() {
       [data-kb-part="content-editor"] .kb-editor-prose pre .hljs-attr { color: #86efac; }
       [data-kb-part="content-editor"] .kb-editor-prose pre .hljs-number,
       [data-kb-part="content-editor"] .kb-editor-prose pre .hljs-built_in { color: #fbbf24; }
-      [data-kb-part="content-editor"] .kb-editor-prose pre .hljs-comment { color: #64748b; font-style: italic; }
+      [data-kb-part="content-editor"] .kb-editor-prose pre .hljs-comment { color: #64758b; font-style: italic; }
       [data-kb-part="content-editor"] .kb-editor-prose pre .hljs-title,
       [data-kb-part="content-editor"] .kb-editor-prose pre .hljs-function,
       [data-kb-part="content-editor"] .kb-editor-prose pre .hljs-params { color: #60a5fa; }

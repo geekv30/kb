@@ -75,7 +75,7 @@ export function SubCategoriesTable({
                         e.stopPropagation();
                         onItemClick?.(item.id);
                       }}
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#64748b] hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]"
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#64758b] hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]"
                     >
                       <RiFolderLine size={16} aria-hidden="true" />
                     </button>
@@ -91,7 +91,7 @@ export function SubCategoriesTable({
                   <div className="flex items-center justify-end">
                     <RiArrowRightSLine
                       size={16}
-                      className="text-[#64748b]"
+                      className="text-[#64758b]"
                       aria-hidden="true"
                     />
                   </div>

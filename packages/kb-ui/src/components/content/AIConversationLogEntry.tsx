@@ -183,7 +183,7 @@ function TailRow({ tail }: TailRowProps) {
         icon={
           <RiCornerDownRightLine
             aria-hidden="true"
-            className="h-4 w-4 text-[#64748b]"
+            className="h-4 w-4 text-[#64758b]"
           />
         }
       >
@@ -209,7 +209,7 @@ function TailRow({ tail }: TailRowProps) {
       icon={
         <RiCornerDownRightLine
           aria-hidden="true"
-          className="h-4 w-4 text-[#64748b]"
+          className="h-4 w-4 text-[#64758b]"
         />
       }
     >
@@ -322,7 +322,7 @@ export function AIConversationLogEntry({
             icon={
               <RiCornerDownRightLine
                 aria-hidden="true"
-                className="h-4 w-4 text-[#64748b]"
+                className="h-4 w-4 text-[#64758b]"
               />
             }
           >
