@@ -49,7 +49,7 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj;
 
-/* ── Rail (dark, 4 items, analytics active) ─────────────────── */
+/* ── Rail (4 items, analytics active) ─────────────────────────── */
 
 const railItems: NavRailItem[] = [
   { id: 'ai', icon: <AiIcon size={16} />, label: 'AI' },
@@ -126,11 +126,7 @@ function SearchAnalyticsPage() {
           theme="light"
           items={railItems}
           activeId="analytics"
-          brandLogo={
-            <div className="flex size-[40px] items-center justify-center rounded-[8px] bg-[#2d2d2d]">
-              <CompanyLogo size={24} />
-            </div>
-          }
+          brandLogo={<CompanyLogo size={24} />}
           bottomSlot={<Avatar initials="A" />}
         />
       }

@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../tokens.css';
-import { RiMailLine, RiQuillPenLine, RiFolderLine, RiSettings5Line } from '@remixicon/react';
+import { RiMailLine, RiQuillPenLine, RiBarChartBoxLine, RiSettings5Line } from '@remixicon/react';
 import { AppShell } from '../components/shell/AppShell';
 import { KBBreadcrumbBar } from '../components/shell/KBBreadcrumbBar';
 import { SideNavRail } from '../components/nav/SideNavRail';
@@ -27,7 +27,7 @@ const PageIcon = () => (
 const railItems = [
   { id: 'ai', icon: <AiIcon size={16} />, label: 'AI' },
   { id: 'editor', icon: <RiQuillPenLine size={16} />, label: 'Editor' },
-  { id: 'folders', icon: <RiFolderLine size={16} />, label: 'Folders' },
+  { id: 'analytics', icon: <RiBarChartBoxLine size={16} />, label: 'Analytics' },
   { id: 'settings', icon: <RiSettings5Line size={16} />, label: 'Settings' },
 ];
 

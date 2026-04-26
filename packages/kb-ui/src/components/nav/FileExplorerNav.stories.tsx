@@ -89,14 +89,6 @@ const tree: NavItem[] = [
   },
 ];
 
-export const Dark: Story = {
-  render: () => (
-    <div style={{ height: '100vh', display: 'flex' }}>
-      <FileExplorerNav theme="dark" title="Editor" items={tree} activeId="tut-organize" />
-    </div>
-  ),
-};
-
 export const Light: Story = {
   render: () => (
     <div style={{ height: '100vh', display: 'flex' }}>
@@ -121,14 +113,6 @@ export const RootArticleActive: Story = {
   ),
 };
 
-export const BothThemes: Story = {
-  render: () => (
-    <div style={{ height: '100vh', display: 'flex' }}>
-      <FileExplorerNav theme="dark" title="Editor" items={tree} activeId="tut-organize" />
-      <FileExplorerNav theme="light" title="Editor" items={tree} activeId="tut-organize" />
-    </div>
-  ),
-};
 // Figma variant: `.menu-items` set State=default — no row active, all folders collapsed.
 // Covers the zero-selection initial state otherwise missing from the current story set.
 export const Default: Story = {

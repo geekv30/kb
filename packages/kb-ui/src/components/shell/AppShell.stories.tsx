@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../../tokens.css';
-import { RiQuillPenLine, RiFolderLine, RiSettings5Line } from '@remixicon/react';
+import { RiQuillPenLine, RiBarChartBoxLine, RiSettings5Line } from '@remixicon/react';
 import { AppShell } from './AppShell';
 import { KBBreadcrumbBar } from './KBBreadcrumbBar';
 import { SideNavRail } from '../nav/SideNavRail';
@@ -20,7 +20,7 @@ type Story = StoryObj<typeof AppShell>;
 const railItems = [
   { id: 'ai', icon: <AiIcon size={16} />, label: 'AI' },
   { id: 'editor', icon: <RiQuillPenLine size={16} />, label: 'Editor' },
-  { id: 'folders', icon: <RiFolderLine size={16} />, label: 'Folders' },
+  { id: 'analytics', icon: <RiBarChartBoxLine size={16} />, label: 'Analytics' },
   { id: 'settings', icon: <RiSettings5Line size={16} />, label: 'Settings' },
 ];
 
@@ -86,7 +86,7 @@ export const CategoryView: Story = {
     <AppShell
       rail={
         <SideNavRail
-          theme="dark"
+          theme="light"
           items={railItems}
           activeId="editor"
           brandLogo={<CompanyLogo size={24} />}
@@ -118,7 +118,7 @@ export const EditorView: Story = {
     <AppShell
       rail={
         <SideNavRail
-          theme="dark"
+          theme="light"
           items={railItems}
           activeId="editor"
           brandLogo={<CompanyLogo size={24} />}

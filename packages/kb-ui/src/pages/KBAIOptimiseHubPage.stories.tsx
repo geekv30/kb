@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../tokens.css';
 import {
   RiQuillPenLine,
+  RiBarChartBoxLine,
   RiSettings5Line,
   RiMagicLine,
 } from '@remixicon/react';
@@ -23,7 +24,7 @@ import { AiIcon } from '../components/brand/AiIcon';
  * section 1 `ai-optimise-01`).
  *
  * Three-column layout:
- *   [1] SideNavRail (dark, 54)   — ai (active), editor, settings
+ *   [1] SideNavRail (54)         — ai (active), editor, analytics, settings
  *   [2] AISubNav (288)           — AI Centre (section) + AI Optimise (item, active)
  *   [3] Content column (938)     — breadcrumb + page header + 3 suggestion cards
  *
@@ -31,8 +32,6 @@ import { AiIcon } from '../components/brand/AiIcon';
  *   - Settings icon = `RiSettings5Line` (matches existing page stories;
  *     spec suggested `RiSettings3Line`/`RiSettingsLine` — CLAUDE.md rule
  *     #3 says match existing conventions, so `5Line` wins).
- *   - Rail has 3 nav items (vs 4 in category/editor pages) — the AI hub
- *     drops the `folders` slot per Figma 74:8928.
  *   - Page header is built inline rather than using `PageHeader` — the
  *     hub doesn't have a CTA button and `PageHeader` hard-wires one;
  *     it also uses 18px/gap-0.5 typography whereas the hub uses 24/20
@@ -49,11 +48,12 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj;
 
-/* ------- Rail items (column 1, dark theme) ------- */
+/* ------- Rail items (column 1) ------- */
 
 const railItems: NavRailItem[] = [
   { id: 'ai', icon: <AiIcon size={16} />, label: 'AI' },
   { id: 'editor', icon: <RiQuillPenLine size={16} />, label: 'Editor' },
+  { id: 'analytics', icon: <RiBarChartBoxLine size={16} />, label: 'Analytics' },
   { id: 'settings', icon: <RiSettings5Line size={16} />, label: 'Settings' },
 ];
 
@@ -172,23 +172,10 @@ function AIOptimiseHubPage() {
     <AppShell
       rail={
         <SideNavRail
-          theme="dark"
+          theme="light"
           items={railItems}
           activeId="ai"
-          brandLogo={
-            /*
-             * H1 — Wrap CompanyLogo in a 40 × 40 tile that matches the
-             * logo's own background so the brand mark blends with the dark
-             * rail. Without this wrapper the 24 × 24 logo silhouette reads
-             * as a discontinuous tile against the rail's #1a1a1a (the
-             * logo's internal `#2D2D2D` rect is one shade lighter). 40 ×
-             * 40 / radius 8 mirrors the established logo-frame in
-             * KBCategoryPage's pixel-polish pass (logs.md 2026-04-18).
-             */
-            <div className="flex size-[40px] items-center justify-center rounded-[8px] bg-[#2d2d2d]">
-              <CompanyLogo size={24} />
-            </div>
-          }
+          brandLogo={<CompanyLogo size={24} />}
           bottomSlot={<Avatar initials="A" />}
         />
       }
