@@ -36,6 +36,7 @@ export { ArticleBody } from './ArticleBody';
 export type {
   ArticleBodyProps,
   ArticleBodyDecisions,
+  ArticleBodyRegions,
   ArticleSuggestionDecision,
 } from './ArticleBody';
 export type {
