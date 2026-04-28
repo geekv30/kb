@@ -9,16 +9,15 @@
 //   - Reducer state lives in MockStore per-article (PRD §8.5 mid-flow
 //     persistence) rather than via React.useReducer.
 //   - Suggestions are sourced from the store's `suggestions` slice and
-//     mapped position-wise onto `ArticleBody`'s hardcoded s1/s2/s3 slots
-//     (the kb-ui `ArticleBody` is hardwired for the password-reset article
-//     content and the s1/s2/s3 anchor ids — when the slugged article is
-//     `art-how-to-reset-your-password` the mapping is 1:1; for the other
-//     two AI-targeted articles the visual highlight blocks still render
-//     because the mapping is by position, but the body copy itself is
-//     password-reset content rather than that article's HTML. This is the
-//     contractual limit of the canonical ArticleBody — see ai-gaps.md
-//     §"open items" #4. Scope-correct for v1; expanding ArticleBody to
-//     accept arbitrary HTML is a follow-up).
+//     mapped position-wise onto `ArticleBody`'s s1/s2/s3 slots.
+//     `ArticleBody` now accepts a `regions` prop carrying the article
+//     markup, and the demo passes `passwordResetRegions` (defined in
+//     `./passwordResetRegions.tsx`) for all three AI-targeted articles
+//     in v1, since the mock store doesn't yet model per-article body
+//     HTML. The visual highlight chrome and slot positions are correct
+//     per article, but the surrounding copy is the password-reset
+//     article for every AI review session. Modelling per-article body
+//     HTML in the mock store is left for a future demo iteration.
 //   - PRD §9.5 terminal-state-after-publish branch: when an article was
 //     previously published from this flow, all suggestions have status
 //     `'published'` so we render the terminal state with chips reflecting
@@ -49,6 +48,7 @@ import {
 } from '../../store/selectors';
 import { useAIGapsForArticle } from '../../hooks/useAIGapsForArticle';
 import { routes } from '../../lib/routes';
+import { passwordResetRegions } from './passwordResetRegions';
 import type {
   AISuggestion as StoreAISuggestion,
   ConversationSource as StoreConversationSource,
@@ -366,7 +366,11 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
         data-kb-part="ai-gaps-columns"
         className="flex flex-row justify-between items-start gap-6"
       >
-        <ArticleBody decisions={articleDecisions} className="max-w-[720px] w-full" />
+        <ArticleBody
+          decisions={articleDecisions}
+          regions={passwordResetRegions}
+          className="max-w-[720px] w-full"
+        />
         <aside
           data-kb-part="ai-gaps-rail"
           className="w-[380px] shrink-0 flex flex-col gap-4 sticky top-4"

@@ -6,6 +6,7 @@ import { KBBreadcrumbBar } from '../components/shell/KBBreadcrumbBar';
 import { ArticleBody } from '../components/content/ArticleBody';
 import type {
   ArticleBodyDecisions,
+  ArticleBodyRegions,
   ArticleSuggestionDecision,
 } from '../components/content/ArticleBody';
 import { AISuggestionsCard } from '../components/content/AISuggestionsCard';
@@ -96,6 +97,167 @@ const SUMMARY =
   'Refining the article with updated instruction set, updating link and by removing legacy instructions';
 
 /* ─────────────────────────────────────────────────────────────
+ * Password-reset article markup
+ *
+ * Authored once and threaded through every story (static + interactive)
+ * via `ArticleBody`'s `regions` prop. Lives here so the canonical
+ * password-reset content has a single source of truth — the demo's
+ * AI review route mirrors the same shape.
+ *
+ * Typography helpers stay private to this file: ArticleBody no longer
+ * ships them and the consumer owns the article markup, so each consumer
+ * matches their own article styling. The values below are extracted
+ * from Figma `9aGp5t9fH1d0PXi4LMhOdb#74:10788` to match the editor
+ * chrome 1:1.
+ * ───────────────────────────────────────────────────────────── */
+
+function H1({ children }: { children: React.ReactNode }) {
+  return (
+    <h1 className="mb-2 text-[24px] font-semibold leading-[32px] text-[#0f172a]">
+      {children}
+    </h1>
+  );
+}
+
+function Subtitle({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="mb-6 text-[14px] font-normal leading-[20px] text-[#64758b]">
+      {children}
+    </p>
+  );
+}
+
+function H2({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="mt-6 mb-3 text-[20px] font-semibold leading-[28px] text-[#0f172a]">
+      {children}
+    </h2>
+  );
+}
+
+function H3({ children }: { children: React.ReactNode }) {
+  return (
+    <h3 className="mt-4 mb-2 text-[16px] font-semibold leading-[24px] text-[#0f172a]">
+      {children}
+    </h3>
+  );
+}
+
+function P({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="mb-4 text-[16px] font-normal leading-[24px] text-[#334155]">
+      {children}
+    </p>
+  );
+}
+
+function OL({ children }: { children: React.ReactNode }) {
+  return (
+    <ol className="mb-4 list-decimal pl-6 text-[16px] font-normal leading-[24px] text-[#334155] [&>li]:mb-2">
+      {children}
+    </ol>
+  );
+}
+
+function UL({ children }: { children: React.ReactNode }) {
+  return (
+    <ul className="mb-4 list-disc pl-6 text-[16px] font-normal leading-[24px] text-[#334155] [&>li]:mb-2">
+      {children}
+    </ul>
+  );
+}
+
+function Strong({ children }: { children: React.ReactNode }) {
+  return (
+    <strong className="font-semibold text-[#0f172a]">{children}</strong>
+  );
+}
+
+const passwordResetRegions: ArticleBodyRegions = {
+  header: (
+    <>
+      <H1>How to Reset Your Password</H1>
+      <Subtitle>Last updated 2 months ago</Subtitle>
+    </>
+  ),
+  beforeS1: (
+    <P>
+      Resetting your password in Hiver is simple and secure. You can update
+      it from your account settings if you remember your current password,
+      or use the password recovery flow if you&rsquo;ve forgotten it.
+    </P>
+  ),
+  s1: (
+    <>
+      <H2>Resetting Your Password via Mobile App</H2>
+      <P>
+        If you&rsquo;re using the Hiver mobile app, follow these steps to
+        reset your password:
+      </P>
+      <OL>
+        <li>Open the Hiver mobile app on your device</li>
+        <li>Tap on &ldquo;Forgot Password&rdquo; on the login screen</li>
+        <li>Enter your registered email address</li>
+        <li>Check your email for a password reset link</li>
+        <li>Tap the link and follow the instructions to set a new password</li>
+        <li>Log in with your new password</li>
+      </OL>
+    </>
+  ),
+  betweenS1AndS2: (
+    <>
+      <H2>Resetting Password via Admin Panel</H2>
+      <P>
+        If you&rsquo;re an administrator, you can reset passwords on behalf
+        of other users:
+      </P>
+    </>
+  ),
+  s2: {
+    before: (
+      <P>
+        Navigate to the admin panel at{' '}
+        <Strong>admin.hiver.com/legacy/users</Strong> and select the user
+        whose password needs to be reset.
+      </P>
+    ),
+    after: (
+      <P>
+        Navigate to the admin panel at{' '}
+        <Strong>admin.hiver.com/settings/users</Strong> and select the user
+        whose password needs to be reset. You can also use the search bar
+        to quickly find users by name or email.
+      </P>
+    ),
+  },
+  betweenS2AndS3: null,
+  s3: (
+    <>
+      <H2>Troubleshooting</H2>
+      <H3>Resetting via Chrome Extension</H3>
+      <P>
+        If you&rsquo;re using the Hiver Chrome Extension and experiencing
+        issues resetting your password, try clearing your browser cache,
+        restarting Chrome, and attempting the reset flow again. If issues
+        persist, contact support.
+      </P>
+    </>
+  ),
+  afterS3: (
+    <>
+      <H2>Password Requirements</H2>
+      <P>Your new password must meet the following criteria:</P>
+      <UL>
+        <li>At least 8 characters long</li>
+        <li>Include at least one uppercase letter</li>
+        <li>Include at least one number</li>
+        <li>Include at least one special character</li>
+      </UL>
+    </>
+  ),
+};
+
+/* ─────────────────────────────────────────────────────────────
  * Settings panel data
  *
  * Real `ArticleSettingsPanel` in its `compact` variant (380 px width,
@@ -157,7 +319,11 @@ function FrameShell({ decisions, rail, publishDisabled }: FrameShellProps) {
         data-kb-part="ai-gaps-columns"
         className="flex flex-row justify-between items-start gap-6"
       >
-        <ArticleBody decisions={decisions} className="max-w-[720px] w-full" />
+        <ArticleBody
+          decisions={decisions}
+          regions={passwordResetRegions}
+          className="max-w-[720px] w-full"
+        />
         <aside
           data-kb-part="ai-gaps-rail"
           /*
@@ -672,6 +838,7 @@ function InteractiveRender({ enableKeyboard }: { enableKeyboard: boolean }) {
         >
           <ArticleBody
             decisions={articleDecisions}
+            regions={passwordResetRegions}
             className="max-w-[720px] w-full"
           />
           <aside

@@ -1,14 +1,34 @@
 // Figma: 9aGp5t9fH1d0PXi4LMhOdb#74:10788 (AI Gaps review flow)
 //        frames 2/3/5/6/8/10 — varying per-suggestion state
 //
-// Read-mode article body used by the AI Gaps review experience. Renders the
-// three suggestion regions (s1 addition, s2 replace, s3 removal) wrapped in
-// `SuggestionBlock` when "active"/"inactive", or inlined as plain text when
-// "accepted"/"dismissed" per the flow-doc semantics.
+// Read-mode article body used by the AI Gaps review experience.
 //
-// NOTE: body copy here is hardcoded per the dispatch spec — do not swap for
-// the editor body in `KBEditorPage.stories.tsx`, which is a different
-// article state and uses a different first paragraph and headings.
+// The component owns the **decision-to-render** logic for the three
+// suggestion regions (s1 addition, s2 replace, s3 removal):
+//
+//   - `inactive` / `active` → the region content is wrapped in a
+//     `SuggestionBlock` of the matching variant (green addition wash for
+//     s1, red+green stacked diff for s2, red removal wash for s3).
+//   - `accepted` (s1 addition)  → region rendered as plain body text.
+//   - `accepted` (s2 replace)   → only the `after` half rendered, plain.
+//   - `accepted` (s3 removal)   → region hidden.
+//   - `dismissed` (s1 addition) → region hidden (addition never applied).
+//   - `dismissed` (s2 replace)  → `before` half rendered, plain (revert).
+//   - `dismissed` (s3 removal)  → region rendered as plain body text.
+//
+// **The article copy itself lives in the consumer.** ArticleBody no longer
+// hardcodes any specific article — it accepts a `regions` object whose
+// fields carry the surrounding-article markup AND the per-region content.
+// The consumer chooses which markup to render between/around the
+// suggestion slots; ArticleBody only handles the SuggestionBlock wrapping
+// per the decision state above.
+//
+// Typography helpers are deliberately NOT exported. Consumers should
+// either author plain HTML/JSX inside the region slots (the SuggestionBlock
+// chrome will apply automatic background tints) or co-locate their own
+// typography components matching their article's style. The stories file
+// at `src/pages/KBAIGapsExperience.stories.tsx` shows the canonical
+// example consumer.
 import * as React from 'react';
 import { cn } from '../../utils/cn';
 import { SuggestionBlock } from './SuggestionBlock';
@@ -24,12 +44,57 @@ export type ArticleSuggestionDecision =
   | 'dismissed';
 
 export type ArticleBodyDecisions = {
-  /** s1 — addition block wrapping the mobile-app section. */
+  /** s1 — addition block wrapping consumer-provided new content. */
   s1: ArticleSuggestionDecision;
-  /** s2 — replace block swapping the admin URL paragraph. */
+  /** s2 — replace block swapping consumer-provided before/after halves. */
   s2: ArticleSuggestionDecision;
-  /** s3 — removal block wrapping the Troubleshooting section. */
+  /** s3 — removal block wrapping consumer-provided existing content. */
   s3: ArticleSuggestionDecision;
+};
+
+/**
+ * Article-shaped slot map. Every slot is required so the rendered output
+ * is fully determined by the consumer — the component supplies no fallback
+ * markup. Pass `null` (or an empty fragment) for any slot you don't need.
+ *
+ * Render order is fixed:
+ *   `header` → `beforeS1` → s1 region → `betweenS1AndS2` → s2 region
+ *           → `betweenS2AndS3` → s3 region → `afterS3`
+ *
+ * The s1/s2/s3 regions are wrapped per the decision state — see the
+ * file-top JSDoc for the full table.
+ */
+export type ArticleBodyRegions = {
+  /** Top of the article — typically heading + subtitle/byline. */
+  header: React.ReactNode;
+  /** Body content between the header and the s1 region. */
+  beforeS1: React.ReactNode;
+  /**
+   * s1 — addition. Rendered as plain body text when `accepted`; wrapped
+   * in a green addition `SuggestionBlock` when `inactive`/`active`;
+   * hidden when `dismissed`.
+   */
+  s1: React.ReactNode;
+  /** Body content between the s1 and s2 regions. */
+  betweenS1AndS2: React.ReactNode;
+  /**
+   * s2 — replace. The `before` half is the existing content; the `after`
+   * half is the proposed replacement. When `inactive`/`active`, both are
+   * shown stacked inside a `SuggestionBlock` of type `replace`. When
+   * `accepted`, only `after` renders as plain body text. When
+   * `dismissed`, only `before` renders as plain body text.
+   */
+  s2: { before: React.ReactNode; after: React.ReactNode };
+  /** Body content between the s2 and s3 regions. */
+  betweenS2AndS3: React.ReactNode;
+  /**
+   * s3 — removal. Rendered as plain body text when `dismissed`; wrapped
+   * in a red removal `SuggestionBlock` when `inactive`/`active`; hidden
+   * when `accepted`.
+   */
+  s3: React.ReactNode;
+  /** Trailing body content after the s3 region. Optional. */
+  afterS3?: React.ReactNode;
 };
 
 export type ArticleBodyProps = {
@@ -40,164 +105,37 @@ export type ArticleBodyProps = {
    * - `accepted` — highlight removed; content applied per suggestion type.
    * - `dismissed`— highlight removed; content reverted per suggestion type.
    *
-   * For P6.5a static frames, `active` and `inactive` render identically —
-   * the distinction exists so a future state machine can style the active
-   * block more prominently (ring, scroll target).
+   * For static frames, `active` and `inactive` render identically — the
+   * distinction exists so the active block can be a scroll target via
+   * `SuggestionBlock`'s `id` (the component wires `id="s1|s2|s3"` onto
+   * the wrapping block).
    */
   decisions: ArticleBodyDecisions;
+  /**
+   * Article markup (header + body content + per-region content). Required —
+   * ArticleBody does not provide any default copy.
+   *
+   * The component owns the SuggestionBlock wrapping for s1/s2/s3 based on
+   * `decisions`; the consumer owns the surrounding HTML between regions.
+   */
+  regions: ArticleBodyRegions;
   className?: string;
 };
-
-/* ─────────────────────────────────────────────────────────────
- * Typography helpers
- *
- * Extracted from the article card in Figma `53:8464` (ContentEditor
- * reference) and tightened to match the review-mode chrome in
- * `74:10788`. Values mirror what `ContentEditor` applies via Tiptap's
- * ProseMirror element — we can't re-use that here because this body
- * is NOT a Tiptap editor; it's a static render that composes inside
- * `SuggestionBlock` regions.
- * ───────────────────────────────────────────────────────────── */
-
-function H1({ children }: { children: React.ReactNode }) {
-  return (
-    <h1 className="mb-2 text-[24px] font-semibold leading-[32px] text-[#0f172a]">
-      {children}
-    </h1>
-  );
-}
-
-function Subtitle({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="mb-6 text-[14px] font-normal leading-[20px] text-[#64758b]">
-      {children}
-    </p>
-  );
-}
-
-function H2({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 className="mt-6 mb-3 text-[20px] font-semibold leading-[28px] text-[#0f172a]">
-      {children}
-    </h2>
-  );
-}
-
-function H3({ children }: { children: React.ReactNode }) {
-  return (
-    <h3 className="mt-4 mb-2 text-[16px] font-semibold leading-[24px] text-[#0f172a]">
-      {children}
-    </h3>
-  );
-}
-
-function P({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="mb-4 text-[16px] font-normal leading-[24px] text-[#334155]">
-      {children}
-    </p>
-  );
-}
-
-function OL({ children }: { children: React.ReactNode }) {
-  return (
-    <ol className="mb-4 list-decimal pl-6 text-[16px] font-normal leading-[24px] text-[#334155] [&>li]:mb-2">
-      {children}
-    </ol>
-  );
-}
-
-function UL({ children }: { children: React.ReactNode }) {
-  return (
-    <ul className="mb-4 list-disc pl-6 text-[16px] font-normal leading-[24px] text-[#334155] [&>li]:mb-2">
-      {children}
-    </ul>
-  );
-}
-
-function Strong({ children }: { children: React.ReactNode }) {
-  return (
-    <strong className="font-semibold text-[#0f172a]">{children}</strong>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────
- * Suggestion region content
- *
- * Each region is authored once and rendered three different ways
- * depending on `decisions[sN]`:
- *   1. inactive/active → wrapped in <SuggestionBlock>
- *   2. accepted        → rendered plain (addition) / swapped (replace) / hidden (removal)
- *   3. dismissed       → hidden (addition) / reverted (replace) / kept plain (removal)
- *
- * The helpers below centralize the content so the three branches don't
- * duplicate markup and drift out of sync.
- * ───────────────────────────────────────────────────────────── */
-
-function S1Content() {
-  return (
-    <>
-      <H2>Resetting Your Password via Mobile App</H2>
-      <P>
-        If you&rsquo;re using the Hiver mobile app, follow these steps to reset
-        your password:
-      </P>
-      <OL>
-        <li>Open the Hiver mobile app on your device</li>
-        <li>Tap on &ldquo;Forgot Password&rdquo; on the login screen</li>
-        <li>Enter your registered email address</li>
-        <li>Check your email for a password reset link</li>
-        <li>Tap the link and follow the instructions to set a new password</li>
-        <li>Log in with your new password</li>
-      </OL>
-    </>
-  );
-}
-
-function S2OldContent() {
-  return (
-    <P>
-      Navigate to the admin panel at{' '}
-      <Strong>admin.hiver.com/legacy/users</Strong> and select the user whose
-      password needs to be reset.
-    </P>
-  );
-}
-
-function S2NewContent() {
-  return (
-    <P>
-      Navigate to the admin panel at{' '}
-      <Strong>admin.hiver.com/settings/users</Strong> and select the user
-      whose password needs to be reset. You can also use the search bar to
-      quickly find users by name or email.
-    </P>
-  );
-}
-
-function S3Content() {
-  return (
-    <>
-      <H2>Troubleshooting</H2>
-      <H3>Resetting via Chrome Extension</H3>
-      <P>
-        If you&rsquo;re using the Hiver Chrome Extension and experiencing
-        issues resetting your password, try clearing your browser cache,
-        restarting Chrome, and attempting the reset flow again. If issues
-        persist, contact support.
-      </P>
-    </>
-  );
-}
 
 /* ─────────────────────────────────────────────────────────────
  * Per-suggestion renderers — encode the accept/dismiss semantics
  * ───────────────────────────────────────────────────────────── */
 
-function S1Region({ decision }: { decision: ArticleSuggestionDecision }) {
+function S1Region({
+  decision,
+  content,
+}: {
+  decision: ArticleSuggestionDecision;
+  content: React.ReactNode;
+}) {
   if (decision === 'accepted') {
     // Addition accepted → content kept as plain body text.
-    return <S1Content />;
+    return <>{content}</>;
   }
   if (decision === 'dismissed') {
     // Addition dismissed → content never added.
@@ -206,19 +144,27 @@ function S1Region({ decision }: { decision: ArticleSuggestionDecision }) {
   // inactive | active → highlight block.
   return (
     <SuggestionBlock type="addition" id="s1" className="mb-4">
-      <S1Content />
+      {content}
     </SuggestionBlock>
   );
 }
 
-function S2Region({ decision }: { decision: ArticleSuggestionDecision }) {
+function S2Region({
+  decision,
+  before,
+  after,
+}: {
+  decision: ArticleSuggestionDecision;
+  before: React.ReactNode;
+  after: React.ReactNode;
+}) {
   if (decision === 'accepted') {
     // Replace accepted → new content remains as plain text.
-    return <S2NewContent />;
+    return <>{after}</>;
   }
   if (decision === 'dismissed') {
     // Replace dismissed → old content remains.
-    return <S2OldContent />;
+    return <>{before}</>;
   }
   // inactive | active → red (old) + green (new) stacked pair.
   return (
@@ -226,25 +172,31 @@ function S2Region({ decision }: { decision: ArticleSuggestionDecision }) {
       type="replace"
       id="s2"
       className="mb-4"
-      oldContent={<S2OldContent />}
-      newContent={<S2NewContent />}
+      oldContent={before}
+      newContent={after}
     />
   );
 }
 
-function S3Region({ decision }: { decision: ArticleSuggestionDecision }) {
+function S3Region({
+  decision,
+  content,
+}: {
+  decision: ArticleSuggestionDecision;
+  content: React.ReactNode;
+}) {
   if (decision === 'accepted') {
     // Removal accepted → content deleted.
     return null;
   }
   if (decision === 'dismissed') {
     // Removal dismissed → existing content stays as plain body.
-    return <S3Content />;
+    return <>{content}</>;
   }
   // inactive | active → red wash over the existing content.
   return (
     <SuggestionBlock type="removal" id="s3" className="mb-4">
-      <S3Content />
+      {content}
     </SuggestionBlock>
   );
 }
@@ -253,7 +205,11 @@ function S3Region({ decision }: { decision: ArticleSuggestionDecision }) {
  * Component
  * ───────────────────────────────────────────────────────────── */
 
-export function ArticleBody({ decisions, className }: ArticleBodyProps) {
+export function ArticleBody({
+  decisions,
+  regions,
+  className,
+}: ArticleBodyProps) {
   return (
     <article
       data-kb-component="article-body"
@@ -267,34 +223,18 @@ export function ArticleBody({ decisions, className }: ArticleBodyProps) {
         className,
       )}
     >
-      <H1>How to Reset Your Password</H1>
-      <Subtitle>Last updated 2 months ago</Subtitle>
-      <P>
-        Resetting your password in Hiver is simple and secure. You can update
-        it from your account settings if you remember your current password,
-        or use the password recovery flow if you&rsquo;ve forgotten it.
-      </P>
-
-      <S1Region decision={decisions.s1} />
-
-      <H2>Resetting Password via Admin Panel</H2>
-      <P>
-        If you&rsquo;re an administrator, you can reset passwords on behalf of
-        other users:
-      </P>
-
-      <S2Region decision={decisions.s2} />
-
-      <S3Region decision={decisions.s3} />
-
-      <H2>Password Requirements</H2>
-      <P>Your new password must meet the following criteria:</P>
-      <UL>
-        <li>At least 8 characters long</li>
-        <li>Include at least one uppercase letter</li>
-        <li>Include at least one number</li>
-        <li>Include at least one special character</li>
-      </UL>
+      {regions.header}
+      {regions.beforeS1}
+      <S1Region decision={decisions.s1} content={regions.s1} />
+      {regions.betweenS1AndS2}
+      <S2Region
+        decision={decisions.s2}
+        before={regions.s2.before}
+        after={regions.s2.after}
+      />
+      {regions.betweenS2AndS3}
+      <S3Region decision={decisions.s3} content={regions.s3} />
+      {regions.afterS3}
     </article>
   );
 }
