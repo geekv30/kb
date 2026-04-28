@@ -36,6 +36,10 @@ Follow the phases in `plan.md` exactly. Do not skip phases. Do not reorder. Atom
 
 Before building any component, always fetch the relevant Figma screen via `get_design_context` + `get_screenshot`. Unique screen node IDs are in `design.md`.
 
+### 5. Don't disrupt the running Storybook
+
+The user keeps Storybook open during sessions; HMR crashes or noisy recompiles block their access. **During Phase 8 (publish) and Phase 9 (MCP companion) work, do NOT edit `packages/kb-ui/src/`** — confine changes to `packages/kb-ui/package.json`, `tsup.config.ts`, `scripts/`, `LICENSE`, `README.md`, `CHANGELOG.md`, the new `packages/kb-mcp/` package, or `apps/demo/`. If an issue genuinely requires a `packages/kb-ui/src/` change (component API, new export), surface it to the user BEFORE dispatching `ui-engineer` — they may need to pause Storybook first.
+
 ---
 
 ## Repository Purpose (secondary)
