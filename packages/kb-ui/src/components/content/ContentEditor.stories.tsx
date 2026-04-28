@@ -1,19 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../../tokens.css';
 import { ContentEditor } from './ContentEditor';
-import { AppShell } from '../shell/AppShell';
-import { KBBreadcrumbBar } from '../shell/KBBreadcrumbBar';
-import { SideNavRail } from '../nav/SideNavRail';
-import { FileExplorerNav } from '../nav/FileExplorerNav';
-import { RiQuillPenLine } from '@remixicon/react';
-
-const meta: Meta<typeof ContentEditor> = {
-  title: 'Components/Content/ContentEditor',
-  component: ContentEditor,
-  parameters: { layout: 'padded' },
-};
-export default meta;
-type Story = StoryObj<typeof ContentEditor>;
 
 const SAMPLE_HTML = `
 <h1>How to Reset Your Password</h1>
@@ -67,105 +54,21 @@ console.log(status.expiresAt);</code></pre>
 <blockquote>Passwords must be at least 12 characters and include uppercase, lowercase, a number, and a symbol.</blockquote>
 `.trim();
 
-export const Interactive: Story = {
-  name: 'Interactive',
-  render: () => (
-    <div style={{ background: '#f5f5f5', padding: 32, minHeight: 600 }}>
-      <ContentEditor placeholder="Start writing your article…" />
-    </div>
-  ),
-};
-
-export const Empty: Story = {
-  name: 'Empty',
-  render: () => (
-    <div style={{ background: '#f5f5f5', padding: 32, minHeight: 600 }}>
-      <ContentEditor placeholder="Start writing your article…" />
-    </div>
-  ),
-};
-
-export const WithContent: Story = {
-  name: 'WithContent',
-  render: () => (
-    <div style={{ background: '#f5f5f5', padding: 32, minHeight: 900 }}>
-      <ContentEditor initialContent={SAMPLE_HTML} />
-    </div>
-  ),
-};
-
-export const ReadOnly: Story = {
-  name: 'ReadOnly',
-  render: () => (
-    <div style={{ background: '#f5f5f5', padding: 32, minHeight: 900 }}>
-      <ContentEditor initialContent={SAMPLE_HTML} readOnly />
-    </div>
-  ),
-};
-
-/* ──────────────────────────────────────────────────────────────
- * Pattern: minimal KB Editor Page composition
- * AppShell + KBBreadcrumbBar (editor variant) + ContentEditor.
- * Full editor page (incl. Settings panel) lands in Phase 5 step 3.
- * ──────────────────────────────────────────────────────────── */
-
-const EDITOR_CRUMBS = [
-  { id: 'home', label: 'Home' },
-  { id: 'getting-started', label: 'Getting Started' },
-  { id: 'integrating-slack', label: 'Integrating Hiver in Slack' },
-  { id: 'incognito', label: 'Hiver in Incognito' },
-  { id: 'reset-password', label: 'How to reset your Password' },
-];
-
-const NAV_ITEMS = [
-  {
-    id: 'getting-started',
-    title: 'Getting Started',
-    type: 'folder' as const,
-    count: 12,
-    children: [
-      { id: 'integrating-slack', title: 'Integrating Hiver in Slack', type: 'folder' as const, count: 3 },
-      {
-        id: 'incognito',
-        title: 'Hiver in Incognito',
-        type: 'folder' as const,
-        count: 4,
-        children: [
-          { id: 'reset-password', title: 'How to reset your Password', type: 'article' as const, status: 'draft' as const },
-        ],
-      },
-    ],
+const meta: Meta<typeof ContentEditor> = {
+  title: 'Components/Article/Content Editor',
+  component: ContentEditor,
+  parameters: { layout: 'padded' },
+  args: {
+    initialContent: SAMPLE_HTML,
+    placeholder: 'Start writing your article…',
+    readOnly: false,
   },
-];
-
-export const KBEditorPagePattern: Story = {
-  name: 'Patterns / KB Editor Page',
-  parameters: { layout: 'fullscreen' },
-  render: () => (
-    <div style={{ width: 1280, height: 900, overflow: 'hidden' }}>
-      <AppShell
-        rail={
-          <SideNavRail
-            items={[{ id: 'editor', icon: <RiQuillPenLine size={16} />, label: 'Editor' }]}
-            activeId="editor"
-            theme="light"
-          />
-        }
-        explorer={<FileExplorerNav items={NAV_ITEMS} activeId="reset-password" />}
-        breadcrumb={
-          <KBBreadcrumbBar
-            items={EDITOR_CRUMBS}
-            variant="editor"
-            onSaveAsDraft={() => {}}
-            onPublish={() => {}}
-            onClose={() => {}}
-          />
-        }
-      >
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '24px 0' }}>
-          <ContentEditor initialContent={SAMPLE_HTML} />
-        </div>
-      </AppShell>
+  render: (args) => (
+    <div style={{ background: '#f5f5f5', padding: 32, minHeight: 900 }}>
+      <ContentEditor {...args} />
     </div>
   ),
 };
+export default meta;
+
+export const Default: StoryObj<typeof ContentEditor> = {};

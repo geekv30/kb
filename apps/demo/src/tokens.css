@@ -1,0 +1,71 @@
+/* Pulls the canonical Hiver KB design tokens + Tailwind v4 layer from
+ * the kb-ui package. The package's `exports` field exposes
+ * `./styles` → `src/tokens.css`, so this single import wires fonts,
+ * colors, spacing, radii, and the Tailwind v4 source directive
+ * identically to how Storybook does in `packages/kb-ui/.storybook/preview.ts`.
+ */
+@import '@hiver/kb-ui/styles';
+
+/* Tailwind v4's content auto-discovery skips `node_modules` by default.
+ * Our shell + nav components live in the `@hiver/kb-ui` package and
+ * resolve through the npm-workspace symlink to that package's `dist/`
+ * bundle. Without this `@source` directive, arbitrary classes used
+ * only inside `dist/` (e.g. `w-[54px]` on `SideNavRail`) get tree-
+ * shaken out of the demo's generated stylesheet and the rail collapses
+ * to its content width. The path is resolved relative to this CSS
+ * file (apps/demo/src/), so we walk up to repo root and into the kb-ui
+ * dist bundle.
+ */
+@source "../../../packages/kb-ui/dist/**/*.{js,mjs}";
+
+/* ─────────────────────────────────────────────────────────────
+ * Phase 7.5.8 — demo-only utilities
+ *
+ * Tailwind v4 doesn't ship our custom keyframes, so we register the
+ * Toast entrance animation + the indeterminate progress slide here.
+ * Both are scoped to `@layer utilities` so they sit alongside the
+ * generated atomic classes and stay JIT-tree-shakeable.
+ * ───────────────────────────────────────────────────────────── */
+
+@layer utilities {
+  /* Toast entrance — fade-in + 8px slide from above (~200ms) */
+  @keyframes kb-toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-toast-in {
+    animation: kb-toast-in 200ms ease-out;
+  }
+
+  /* Indeterminate progress bar — slides a 30%-wide band L → R in a loop. */
+  @keyframes kb-progress-slide {
+    0% {
+      left: -30%;
+    }
+    100% {
+      left: 100%;
+    }
+  }
+  .animate-progress-slide {
+    animation: kb-progress-slide 1.1s linear infinite;
+  }
+
+  /* RouteTransition fade-in — 150ms opacity ease (PRD §12.3). */
+  @keyframes kb-route-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  .animate-route-fade-in {
+    animation: kb-route-fade-in 150ms ease-out;
+  }
+}

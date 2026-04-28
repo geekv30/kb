@@ -18,6 +18,20 @@ export type NavItem = {
   status?: 'published' | 'draft';
   count?: number;
   children?: NavItem[];
+  /**
+   * Flat-mode role. Defaults to `'item'`.
+   *
+   * - `item`     — clickable nav row, hover pill + active pill.
+   * - `section`  — non-interactive label row that introduces a
+   *                group below it. Renders without hover/active
+   *                affordances and ships an inset 1-px divider
+   *                immediately below.
+   *
+   * Tree-mode rendering is unaffected.
+   */
+  kind?: 'section' | 'item';
+  /** Optional leading glyph rendered in flat-mode rows. */
+  icon?: React.ReactNode;
 };
 
 export type FileExplorerNavProps = {
@@ -103,30 +117,50 @@ type FlatRowProps = {
 };
 
 function FlatRow({ item, isActive, isDark, onClick }: FlatRowProps) {
+  const kind = item.kind ?? 'item';
+  const isSection = kind === 'section';
+
   return (
     <div
       data-kb-part="flat-row"
+      data-kb-kind={kind}
       data-kb-active={isActive ? 'true' : 'false'}
       className="w-full px-[16px] py-0"
     >
       <button
         type="button"
         onClick={onClick}
-        aria-current={isActive ? 'page' : undefined}
+        aria-current={isActive && !isSection ? 'page' : undefined}
+        // Section rows are non-interactive labels — keep them focusable
+        // for a11y, but suppress hover/active affordances.
         className={cn(
           'flex h-9 w-full items-center rounded-[6px] px-[12px]',
+          item.icon && 'gap-2',
           'text-left text-[14px] leading-[20px] transition-colors duration-150',
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
           isDark ? 'text-white/90' : 'text-[#0f172a]',
-          isActive
-            ? isDark
-              ? 'bg-white/[0.08] font-medium'
-              : 'bg-[#f8fafc] font-medium'
-            : isDark
-              ? 'font-normal hover:bg-white/[0.05]'
-              : 'font-normal hover:bg-[#f8fafc]',
+          isSection
+            ? 'cursor-default font-medium'
+            : isActive
+              ? isDark
+                ? 'bg-white/[0.08] font-medium'
+                : 'bg-[#f8fafc] font-medium'
+              : isDark
+                ? 'font-normal hover:bg-white/[0.05]'
+                : 'font-normal hover:bg-[#f8fafc]',
         )}
       >
+        {item.icon && (
+          <span
+            aria-hidden
+            className={cn(
+              'inline-flex size-4 shrink-0 items-center justify-center [&>svg]:w-4 [&>svg]:h-4',
+              isDark ? 'text-white/60' : 'text-[#475569]',
+            )}
+          >
+            {item.icon}
+          </span>
+        )}
         <span className="truncate">{item.title}</span>
       </button>
     </div>
@@ -536,15 +570,31 @@ export function FileExplorerNav({
         className="flex-1 overflow-y-auto pt-[12px] pb-[12px] flex flex-col gap-[2px]"
       >
         {isFlat
-          ? items.map((item) => (
-              <FlatRow
-                key={item.id}
-                item={item}
-                isActive={item.id === activeId}
-                isDark={isDark}
-                onClick={() => onItemClick?.(item.id)}
-              />
-            ))
+          ? items.map((item, idx) => {
+              const kind = item.kind ?? 'item';
+              const isLast = idx === items.length - 1;
+              const isSection = kind === 'section';
+              return (
+                <React.Fragment key={item.id}>
+                  <FlatRow
+                    item={item}
+                    isActive={item.id === activeId}
+                    isDark={isDark}
+                    onClick={() => onItemClick?.(item.id)}
+                  />
+                  {isSection && !isLast && (
+                    <div
+                      aria-hidden
+                      data-kb-part="flat-section-divider"
+                      className={cn(
+                        'h-px mx-[16px]',
+                        isDark ? 'bg-white/10' : 'bg-[#e2e8f0]',
+                      )}
+                    />
+                  )}
+                </React.Fragment>
+              );
+            })
           : renderItems(items, 0)}
       </div>
     </aside>

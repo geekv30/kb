@@ -5,21 +5,6 @@ import { AIConversationLogsCard } from './AIConversationLogsCard';
 import { AIConversationLogEntry } from './AIConversationLogEntry';
 import type { ConversationSource } from '../overlays/SourcesSideSheet';
 
-const meta: Meta<typeof AIConversationLogsCard> = {
-  title: 'Components/Content/AI Conversation Logs Card',
-  component: AIConversationLogsCard,
-  parameters: { layout: 'centered' },
-  decorators: [
-    (Story) => (
-      <div className="w-[890px] bg-[#f8fafc] p-4">
-        <Story />
-      </div>
-    ),
-  ],
-};
-export default meta;
-type Story = StoryObj<typeof AIConversationLogsCard>;
-
 const SAMPLE_SOURCES: ConversationSource[] = [
   {
     id: '1',
@@ -51,80 +36,26 @@ const SORT_OPTIONS = [
   { id: 'unhelpful', label: 'Least helpful' },
 ];
 
-export const Default: Story = {
-  render: () => (
-    <AIConversationLogsCard
-      sortOptions={SORT_OPTIONS}
-      sortBy="recent"
-      ticketCreatedFilter={false}
-    >
-      <AIConversationLogEntry
-        question="How do I reset my password if I can't access my recovery email?"
-        timestamp="Mar 31, 2:23 PM"
-        feedback="positive"
-        answer="Outlined the 3-step account recovery process via billing info and support contact."
-        sourceCount={3}
-        sources={SAMPLE_SOURCES}
-      />
-      <AIConversationLogEntry
-        question="How do I reset my password if I can't access my recovery email?"
-        timestamp="Mar 31, 2:23 PM"
-        feedback="positive"
-        answer="Outlined the 3-step account recovery process via billing info and support contact."
-        sourceCount={3}
-        sources={SAMPLE_SOURCES}
-      />
-      <AIConversationLogEntry
-        question="Why was I charged twice this month?"
-        timestamp="Mar 30, 1:23 PM"
-        feedback={null}
-        answer="Explained duplicate charge scenarios and how to report via the billing dashboard. Included 5–7 day refund timeline as well as an apology for the duplicate charge."
-        sourceCount={3}
-        sources={SAMPLE_SOURCES}
-        tail={{ kind: 'ticket-created' }}
-      />
-      <AIConversationLogEntry
-        question="How do I set up Slack notifications for my team?"
-        timestamp="Mar 28, 2:23 PM"
-        feedback={null}
-        answer="Walked through the Slack integration setup, notification scope settings, and OAuth re-authorization steps"
-        sourceCount={3}
-        sources={SAMPLE_SOURCES}
-        followUp={{
-          question: 'How do i do this and that?',
-          answer: 'Explained about the OAuth setup',
-          sourceCount: 3,
-          sources: SAMPLE_SOURCES,
-          tail: { kind: 'source-clicked' },
-        }}
-        showViewAll
-      />
-      <AIConversationLogEntry
-        question="Does Hiver have HIPAA compliance?"
-        timestamp="Mar 27, 2:23 PM"
-        feedback="negative"
-        answer="AI could not provide an answer"
-        answerDisabled
-        sourceCount={0}
-        tail={{ kind: 'source-clicked', actor: 'the user' }}
-      />
-    </AIConversationLogsCard>
-  ),
-};
-
-export const Interactive: Story = {
-  render: () => {
-    const [sortBy, setSortBy] = React.useState('recent');
-    const [ticketCreatedFilter, setTicketCreatedFilter] = React.useState(false);
-
-    return (
-      <AIConversationLogsCard
-        sortOptions={SORT_OPTIONS}
-        sortBy={sortBy}
-        onSortChange={setSortBy}
-        ticketCreatedFilter={ticketCreatedFilter}
-        onTicketCreatedToggle={setTicketCreatedFilter}
-      >
+const meta: Meta<typeof AIConversationLogsCard> = {
+  title: 'Components/AI/AI Conversation Logs Card',
+  component: AIConversationLogsCard,
+  parameters: { layout: 'centered' },
+  args: {
+    sortOptions: SORT_OPTIONS,
+    sortBy: 'recent',
+    ticketCreatedFilter: false,
+  },
+  render: (args) => (
+    <div className="w-[890px] bg-[#f8fafc] p-4">
+      <AIConversationLogsCard {...args}>
+        <AIConversationLogEntry
+          question="How do I reset my password if I can't access my recovery email?"
+          timestamp="Mar 31, 2:23 PM"
+          feedback="positive"
+          answer="Outlined the 3-step account recovery process via billing info and support contact."
+          sourceCount={3}
+          sources={SAMPLE_SOURCES}
+        />
         <AIConversationLogEntry
           question="How do I reset my password if I can't access my recovery email?"
           timestamp="Mar 31, 2:23 PM"
@@ -137,12 +68,40 @@ export const Interactive: Story = {
           question="Why was I charged twice this month?"
           timestamp="Mar 30, 1:23 PM"
           feedback={null}
-          answer="Explained duplicate charge scenarios and how to report via the billing dashboard."
+          answer="Explained duplicate charge scenarios and how to report via the billing dashboard. Included 5–7 day refund timeline as well as an apology for the duplicate charge."
           sourceCount={3}
           sources={SAMPLE_SOURCES}
           tail={{ kind: 'ticket-created' }}
         />
+        <AIConversationLogEntry
+          question="How do I set up Slack notifications for my team?"
+          timestamp="Mar 28, 2:23 PM"
+          feedback={null}
+          answer="Walked through the Slack integration setup, notification scope settings, and OAuth re-authorization steps"
+          sourceCount={3}
+          sources={SAMPLE_SOURCES}
+          followUp={{
+            question: 'How do i do this and that?',
+            answer: 'Explained about the OAuth setup',
+            sourceCount: 3,
+            sources: SAMPLE_SOURCES,
+            tail: { kind: 'source-clicked' },
+          }}
+          showViewAll
+        />
+        <AIConversationLogEntry
+          question="Does Hiver have HIPAA compliance?"
+          timestamp="Mar 27, 2:23 PM"
+          feedback="negative"
+          answer="AI could not provide an answer"
+          answerDisabled
+          sourceCount={0}
+          tail={{ kind: 'source-clicked', actor: 'the user' }}
+        />
       </AIConversationLogsCard>
-    );
-  },
+    </div>
+  ),
 };
+export default meta;
+
+export const Default: StoryObj<typeof AIConversationLogsCard> = {};

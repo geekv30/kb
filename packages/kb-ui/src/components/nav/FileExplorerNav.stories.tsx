@@ -2,14 +2,6 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../../tokens.css';
 import { FileExplorerNav, type NavItem } from './FileExplorerNav';
 
-const meta: Meta<typeof FileExplorerNav> = {
-  title: 'Components/Navigation/FileExplorerNav',
-  component: FileExplorerNav,
-  parameters: { layout: 'fullscreen' },
-};
-export default meta;
-type Story = StoryObj<typeof FileExplorerNav>;
-
 // Realistic KB tree: 3 levels of nesting + articles at multiple depths.
 const tree: NavItem[] = [
   // Root-level article (depth 0)
@@ -89,36 +81,24 @@ const tree: NavItem[] = [
   },
 ];
 
-export const Light: Story = {
-  render: () => (
+const meta: Meta<typeof FileExplorerNav> = {
+  title: 'Components/Navigation/FileExplorerNav',
+  component: FileExplorerNav,
+  parameters: { layout: 'fullscreen' },
+  args: {
+    theme: 'light',
+    title: 'Editor',
+    items: tree,
+    activeId: 'tut-organize',
+    variant: 'tree',
+    showSearch: true,
+  },
+  render: (args) => (
     <div style={{ height: '100vh', display: 'flex' }}>
-      <FileExplorerNav theme="light" title="Editor" items={tree} activeId="tut-organize" />
+      <FileExplorerNav {...args} />
     </div>
   ),
 };
+export default meta;
 
-export const ActiveFolder: Story = {
-  render: () => (
-    <div style={{ height: '100vh', display: 'flex' }}>
-      <FileExplorerNav theme="light" title="Editor" items={tree} activeId="product-inbox" />
-    </div>
-  ),
-};
-
-export const RootArticleActive: Story = {
-  render: () => (
-    <div style={{ height: '100vh', display: 'flex' }}>
-      <FileExplorerNav theme="light" title="Editor" items={tree} activeId="changelog" />
-    </div>
-  ),
-};
-
-// Figma variant: `.menu-items` set State=default — no row active, all folders collapsed.
-// Covers the zero-selection initial state otherwise missing from the current story set.
-export const Default: Story = {
-  render: () => (
-    <div style={{ height: '100vh', display: 'flex' }}>
-      <FileExplorerNav theme="light" title="Editor" items={tree} />
-    </div>
-  ),
-};
+export const Default: StoryObj<typeof FileExplorerNav> = {};

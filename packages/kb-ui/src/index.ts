@@ -11,3 +11,18 @@ export * from './components/content';
 export * from './components/shell';
 export * from './components/brand';
 export * from './components/overlays';
+
+// Hooks — state machines that consumers can drive their own UIs with.
+export {
+  useAIGapsReducer,
+  initialAIGapsState,
+  aiGapsReducer,
+  isPublishEnabled,
+  isAllReviewed,
+} from './hooks/useAIGapsReducer';
+export type {
+  AIGapsState,
+  AIGapsAction,
+  AIGapsMode,
+  UseAIGapsReducerResult,
+} from './hooks/useAIGapsReducer';

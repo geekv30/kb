@@ -17,7 +17,7 @@ import {
   SourcesSideSheet,
   type ConversationSource,
 } from '../components/overlays/SourcesSideSheet';
-import { useAIGapsReducer } from './useAIGapsReducer';
+import { useAIGapsReducer } from '../hooks/useAIGapsReducer';
 
 /* ─────────────────────────────────────────────────────────────
  * KB AI Gaps Experience — Figma `9aGp5t9fH1d0PXi4LMhOdb#74:10788`
@@ -52,12 +52,8 @@ import { useAIGapsReducer } from './useAIGapsReducer';
  *     is `accepted` (Frames 2/3 disabled, Frames 5/6/8/10 enabled).
  * ───────────────────────────────────────────────────────────── */
 
-const meta: Meta = {
-  title: 'Patterns/KB AI Gaps',
-  parameters: { layout: 'fullscreen' },
-};
-export default meta;
-type Story = StoryObj;
+// Meta declared at the bottom of the file (after the wrapper) so it can
+// reference the unified `AIGapsExperience` wrapper for `component`/`render`.
 
 /* ─────────────────────────────────────────────────────────────
  * Shared data
@@ -194,21 +190,44 @@ const noopWithId = (id: string) => {
 };
 
 /* ─────────────────────────────────────────────────────────────
- * Frame 2 — pre-review
+ * Per-frame rail compositions
  *
- * Figma `81:17189`. All three suggestions rendered as highlight blocks in
- * the body (green / red+green / red). Right rail: Settings collapsed +
- * AI Suggestions card with `Review Suggestions (3)`. Publish disabled.
+ * Each helper returns the right-rail children + the matching
+ * `decisions` tuple + `publishDisabled` flag for one of the six static
+ * frames documented above. Inlined as helpers so the unified
+ * `AIGapsExperience` wrapper can pick a frame via the `frame` arg.
+ *
+ * Frame map:
+ *   `frame-2`  Figma `81:17189`  pre-review            — all `inactive`, AI Suggestions card
+ *   `frame-3`  Figma `81:16926`  active addition       — s1 `active`, stacked s2 preview
+ *   `frame-5`  Figma `81:16634`  first accepted        — s1 `accepted`, s2 `active`
+ *   `frame-6`  Figma `81:16342`  active replace        — same decisions as frame-5,
+ *                                                       differs only by article scroll position
+ *   `frame-8`  Figma `81:15737`  active removal        — s1/s2 `accepted`, s3 `active`
+ *   `frame-10` Figma `81:14752`  terminal              — all `accepted`, Suggestions card
  * ───────────────────────────────────────────────────────────── */
 
-export const Frame2PreReview: Story = {
-  name: 'Frame 2 — Pre-review',
-  render: () => (
-    <div className="h-screen w-full">
-      <FrameShell
-        decisions={{ s1: 'inactive', s2: 'inactive', s3: 'inactive' }}
-        publishDisabled={true}
-        rail={
+type StaticFrameId =
+  | 'frame-2'
+  | 'frame-3'
+  | 'frame-5'
+  | 'frame-6'
+  | 'frame-8'
+  | 'frame-10';
+
+type StaticFrameComposition = {
+  decisions: ArticleBodyDecisions;
+  publishDisabled: boolean;
+  rail: React.ReactNode;
+};
+
+function buildStaticFrame(frame: StaticFrameId): StaticFrameComposition {
+  switch (frame) {
+    case 'frame-2':
+      return {
+        decisions: { s1: 'inactive', s2: 'inactive', s3: 'inactive' },
+        publishDisabled: true,
+        rail: (
           <>
             <ArticleSettingsPanel compact defaultCollapsed value={dummySettings} />
             <AISuggestionsCard
@@ -220,28 +239,13 @@ export const Frame2PreReview: Story = {
               onNext={noop}
             />
           </>
-        }
-      />
-    </div>
-  ),
-};
-
-/* ─────────────────────────────────────────────────────────────
- * Frame 3 — active addition (s1)
- *
- * Figma `81:16926`. First suggestion active; second suggestion previewed
- * beneath at reduced opacity (Figma shows a dimmed card stacked below the
- * active one). Publish still disabled (no accepts yet).
- * ───────────────────────────────────────────────────────────── */
-
-export const Frame3ActiveAddition: Story = {
-  name: 'Frame 3 — Active Addition',
-  render: () => (
-    <div className="h-screen w-full">
-      <FrameShell
-        decisions={{ s1: 'active', s2: 'inactive', s3: 'inactive' }}
-        publishDisabled={true}
-        rail={
+        ),
+      };
+    case 'frame-3':
+      return {
+        decisions: { s1: 'active', s2: 'inactive', s3: 'inactive' },
+        publishDisabled: true,
+        rail: (
           <>
             <ArticleSettingsPanel compact defaultCollapsed value={dummySettings} />
             <AIGapSuggestionCard
@@ -277,28 +281,16 @@ export const Frame3ActiveAddition: Story = {
               />
             </div>
           </>
-        }
-      />
-    </div>
-  ),
-};
-
-/* ─────────────────────────────────────────────────────────────
- * Frame 5 — first accepted + active replace
- *
- * Figma `81:16634`. Addition accepted → plain body copy. s2 is now the
- * active card with the replace diff visible inline. Publish flips to
- * enabled from here on.
- * ───────────────────────────────────────────────────────────── */
-
-export const Frame5AcceptedAddition: Story = {
-  name: 'Frame 5 — Accepted Addition',
-  render: () => (
-    <div className="h-screen w-full">
-      <FrameShell
-        decisions={{ s1: 'accepted', s2: 'active', s3: 'inactive' }}
-        publishDisabled={false}
-        rail={
+        ),
+      };
+    case 'frame-5':
+    case 'frame-6':
+      // Frames 5 and 6 share state. Frame 6 differs only by article
+      // scroll position — handled by `Frame6ScrollEffect` in the wrapper.
+      return {
+        decisions: { s1: 'accepted', s2: 'active', s3: 'inactive' },
+        publishDisabled: false,
+        rail: (
           <>
             <ArticleSettingsPanel compact defaultCollapsed value={dummySettings} />
             <AIGapSuggestionCard
@@ -316,84 +308,13 @@ export const Frame5AcceptedAddition: Story = {
               onReject={noopWithId}
             />
           </>
-        }
-      />
-    </div>
-  ),
-};
-
-/* ─────────────────────────────────────────────────────────────
- * Frame 6 — active replace (same decisions as Frame 5)
- *
- * Figma `81:16342`. The only difference from Frame 5 is the conceptual
- * scroll position on the article body — a static story can't simulate
- * that. Rendering Frame 6 identically to Frame 5 so reviewers can
- * inspect the same state under a named story.
- * ───────────────────────────────────────────────────────────── */
-
-/*
- * Frame 6 differs from Frame 5 only by article scroll position — Frame 5
- * loads at the top, Frame 6 lands centred on the s2 region (per
- * `ai-suggestions-flow.md` §6 "Active Replace"). We extract the render
- * into a component so a `useEffect` can perform the one-shot scroll on
- * mount; `behavior: 'instant'` keeps the story from animating into the
- * scrolled state on first paint.
- */
-function Frame6Render() {
-  React.useEffect(() => {
-    const el = document.getElementById('s2');
-    if (el) el.scrollIntoView({ block: 'center', behavior: 'instant' });
-  }, []);
-
-  return (
-    <div className="h-screen w-full">
-      <FrameShell
-        decisions={{ s1: 'accepted', s2: 'active', s3: 'inactive' }}
-        publishDisabled={false}
-        rail={
-          <>
-            <ArticleSettingsPanel compact defaultCollapsed value={dummySettings} />
-            <AIGapSuggestionCard
-              suggestion={s1Addition}
-              state="accepted"
-              onUndo={noopWithId}
-            />
-            <AIGapSuggestionCard
-              suggestion={s2Replace}
-              state="active"
-              onPrev={noop}
-              onNext={noop}
-              onOpenSources={noopWithId}
-              onAccept={noopWithId}
-              onReject={noopWithId}
-            />
-          </>
-        }
-      />
-    </div>
-  );
-}
-
-export const Frame6ActiveReplace: Story = {
-  name: 'Frame 6 — Active Replace',
-  render: () => <Frame6Render />,
-};
-
-/* ─────────────────────────────────────────────────────────────
- * Frame 8 — active removal (s3)
- *
- * Figma `81:15737`. Two suggestions accepted (chips), third is the active
- * removal with red wash over Troubleshooting + Chrome Extension section.
- * ───────────────────────────────────────────────────────────── */
-
-export const Frame8ActiveRemoval: Story = {
-  name: 'Frame 8 — Active Removal',
-  render: () => (
-    <div className="h-screen w-full">
-      <FrameShell
-        decisions={{ s1: 'accepted', s2: 'accepted', s3: 'active' }}
-        publishDisabled={false}
-        rail={
+        ),
+      };
+    case 'frame-8':
+      return {
+        decisions: { s1: 'accepted', s2: 'accepted', s3: 'active' },
+        publishDisabled: false,
+        rail: (
           <>
             <ArticleSettingsPanel compact defaultCollapsed value={dummySettings} />
             <AIGapSuggestionCard
@@ -416,30 +337,13 @@ export const Frame8ActiveRemoval: Story = {
               onReject={noopWithId}
             />
           </>
-        }
-      />
-    </div>
-  ),
-};
-
-/* ─────────────────────────────────────────────────────────────
- * Frame 10 — terminal (all reviewed)
- *
- * Figma `81:14752`. All three accepted. Rail morphs from review-mode
- * into summary: Settings + `Suggestions [3]` terminal card with disabled
- * `✓ Reviewed All` pill. Dispatch notes the 3 accepted chips are
- * optional below the terminal card — Figma shows them hidden, so we
- * match Figma and omit them.
- * ───────────────────────────────────────────────────────────── */
-
-export const Frame10Terminal: Story = {
-  name: 'Frame 10 — Terminal',
-  render: () => (
-    <div className="h-screen w-full">
-      <FrameShell
-        decisions={{ s1: 'accepted', s2: 'accepted', s3: 'accepted' }}
-        publishDisabled={false}
-        rail={
+        ),
+      };
+    case 'frame-10':
+      return {
+        decisions: { s1: 'accepted', s2: 'accepted', s3: 'accepted' },
+        publishDisabled: false,
+        rail: (
           <>
             <ArticleSettingsPanel compact defaultCollapsed value={dummySettings} />
             <AISuggestionsCard
@@ -450,11 +354,26 @@ export const Frame10Terminal: Story = {
               onNext={noop}
             />
           </>
-        }
-      />
-    </div>
-  ),
-};
+        ),
+      };
+  }
+}
+
+/*
+ * Frame 6 lands the article body centred on the s2 region (per
+ * `ai-suggestions-flow.md` §6 "Active Replace"). One-shot scroll on
+ * mount; `behavior: 'instant'` keeps the story from animating into the
+ * scrolled state on first paint. Re-keyed via the parent's `key` so the
+ * effect re-fires when the user toggles the `frame` control to
+ * `frame-6` from another value.
+ */
+function Frame6ScrollEffect() {
+  React.useEffect(() => {
+    const el = document.getElementById('s2');
+    if (el) el.scrollIntoView({ block: 'center', behavior: 'instant' });
+  }, []);
+  return null;
+}
 
 /* ─────────────────────────────────────────────────────────────
  * Interactive story (P6.5b)
@@ -469,7 +388,7 @@ export const Frame10Terminal: Story = {
  *
  * Composition inherits exactly from the static frames above — same
  * `AppShell`, same right-rail width (380), same `ArticleBody` width
- * constraints. The reducer lives in `./useAIGapsReducer.ts`.
+ * constraints. The reducer lives in `../hooks/useAIGapsReducer.ts`.
  * ───────────────────────────────────────────────────────────── */
 
 // Module-level so identity is stable across renders of the story.
@@ -511,13 +430,31 @@ const sharedSources: ConversationSource[] = [
   },
 ];
 
-type InteractiveRenderProps = {
+type AIGapsExperienceProps = {
   /**
-   * When true, window-level keydown listener maps j/k/ArrowDown/ArrowUp/
-   * y/n/Enter/Esc to reducer actions. Default true. Exposed as a
-   * Storybook arg for reviewers who want to exercise the pure click flow.
+   * Which moment of the AI Gaps flow to render.
+   *   - `frame-2` … `frame-10` — six static review-moment frames pulled
+   *     directly from Figma. Each pins a fixed decision tuple + rail
+   *     composition (see `buildStaticFrame`).
+   *   - `interactive` — full reducer-driven 10-frame flow. Click `Review
+   *     Suggestions` to enter review, accept/reject each suggestion,
+   *     end in the terminal state. Keyboard shortcuts available when
+   *     `enableKeyboard` is true.
    */
-  enableKeyboard?: boolean;
+  frame:
+    | 'frame-2'
+    | 'frame-3'
+    | 'frame-5'
+    | 'frame-6'
+    | 'frame-8'
+    | 'frame-10'
+    | 'interactive';
+  /**
+   * Only meaningful when `frame === 'interactive'`. When true, window-level
+   * keydown listener maps j/k/ArrowDown/ArrowUp/y/n/Enter/Esc to reducer
+   * actions. Reviewers can switch off to exercise the pure click flow.
+   */
+  enableKeyboard: boolean;
 };
 
 /**
@@ -559,7 +496,37 @@ function buildArticleDecisions(
   };
 }
 
-function InteractiveRender({ enableKeyboard = true }: InteractiveRenderProps) {
+/* ─────────────────────────────────────────────────────────────
+ * Static frame render — six fixed Figma frames + Frame 6's one-shot
+ * scroll effect. Wrapped in `<div className="h-screen w-full">` to give
+ * AppShell a concrete height to fill.
+ * ───────────────────────────────────────────────────────────── */
+
+function StaticFrameRender({
+  frame,
+}: {
+  frame: Exclude<AIGapsExperienceProps['frame'], 'interactive'>;
+}) {
+  const { decisions, publishDisabled, rail } = buildStaticFrame(frame);
+  return (
+    <div className="h-screen w-full">
+      {frame === 'frame-6' && <Frame6ScrollEffect />}
+      <FrameShell
+        decisions={decisions}
+        publishDisabled={publishDisabled}
+        rail={rail}
+      />
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * Interactive render — reducer-driven 10-frame flow. Same composition
+ * as the static frames (AppShell + 720 article body + 380 rail), but
+ * decisions and rail content are state-driven.
+ * ───────────────────────────────────────────────────────────── */
+
+function InteractiveRender({ enableKeyboard }: { enableKeyboard: boolean }) {
   const { state, dispatch, publishEnabled } = useAIGapsReducer(
     interactiveSuggestions,
   );
@@ -812,15 +779,58 @@ function InteractiveRender({ enableKeyboard = true }: InteractiveRenderProps) {
   );
 }
 
-export const Interactive: StoryObj<InteractiveRenderProps> = {
-  name: 'Interactive',
-  args: { enableKeyboard: true },
+/* ─────────────────────────────────────────────────────────────
+ * Unified wrapper — picks static vs interactive render based on the
+ * `frame` arg. Component-level identity is required by Storybook's
+ * args pipeline so the controls panel re-renders the same component
+ * with new props rather than mounting a different story.
+ * ───────────────────────────────────────────────────────────── */
+
+function AIGapsExperience({ frame, enableKeyboard }: AIGapsExperienceProps) {
+  if (frame === 'interactive') {
+    return <InteractiveRender enableKeyboard={enableKeyboard} />;
+  }
+  // `key` forces a remount when toggling between static frames so
+  // Frame 6's one-shot scroll effect re-fires each time the user
+  // re-selects it from a different frame.
+  return <StaticFrameRender key={frame} frame={frame} />;
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * Meta + Stories
+ * ───────────────────────────────────────────────────────────── */
+
+const meta: Meta<typeof AIGapsExperience> = {
+  title: 'Patterns/AI Optimisation/AI Gaps',
+  parameters: { layout: 'fullscreen' },
+  component: AIGapsExperience,
+  args: {
+    frame: 'frame-2',
+    enableKeyboard: true,
+  },
   argTypes: {
+    frame: {
+      control: 'select',
+      options: [
+        'frame-2',
+        'frame-3',
+        'frame-5',
+        'frame-6',
+        'frame-8',
+        'frame-10',
+        'interactive',
+      ],
+      description:
+        'Which moment of the AI Gaps flow to render. `frame-2` … `frame-10` are static Figma frames; `interactive` is the reducer-driven full flow.',
+    },
     enableKeyboard: {
       control: 'boolean',
       description:
-        'Toggle window-level keyboard shortcuts (j/k/y/n/arrows/Enter/Esc)',
+        'Only effective when `frame === "interactive"`. Toggle window-level keyboard shortcuts (j/k/y/n/arrows/Enter/Esc).',
     },
   },
-  render: (args) => <InteractiveRender {...args} />,
+  render: (args) => <AIGapsExperience {...args} />,
 };
+export default meta;
+
+export const Default: StoryObj<typeof AIGapsExperience> = {};

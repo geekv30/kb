@@ -2,14 +2,6 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../../tokens.css';
 import { AnalyticsDonutChart } from './AnalyticsDonutChart';
 
-const meta: Meta<typeof AnalyticsDonutChart> = {
-  title: 'Components/Content/Analytics Donut Chart',
-  component: AnalyticsDonutChart,
-  parameters: { layout: 'padded' },
-};
-export default meta;
-type Story = StoryObj<typeof AnalyticsDonutChart>;
-
 // 6 segments — matches Figma Views-by-Category 1974:53988 (verified via get_variable_defs).
 const categoryData = [
   { label: 'Category 1', value: 28 },
@@ -20,18 +12,20 @@ const categoryData = [
   { label: 'Category 6', value: 8 },
 ];
 
-export const Default: Story = {
-  render: () => (
+const meta: Meta<typeof AnalyticsDonutChart> = {
+  title: 'Components/Charts & Stats/Analytics Donut Chart',
+  component: AnalyticsDonutChart,
+  parameters: { layout: 'padded' },
+  args: {
+    data: categoryData,
+    showLegend: true,
+  },
+  render: (args) => (
     <div className="bg-white p-6">
-      <AnalyticsDonutChart data={categoryData} />
+      <AnalyticsDonutChart {...args} />
     </div>
   ),
 };
+export default meta;
 
-export const WithoutLegend: Story = {
-  render: () => (
-    <div className="bg-white p-6">
-      <AnalyticsDonutChart data={categoryData} showLegend={false} />
-    </div>
-  ),
-};
+export const Default: StoryObj<typeof AnalyticsDonutChart> = {};

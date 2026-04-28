@@ -2,15 +2,6 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../../tokens.css';
 import { AnalyticsAreaChart } from './AnalyticsAreaChart';
 import { AnalyticsChartCard } from './AnalyticsChartCard';
-import { AnalyticsDonutChart } from './AnalyticsDonutChart';
-
-const meta: Meta<typeof AnalyticsChartCard> = {
-  title: 'Components/Content/Analytics Chart Card',
-  component: AnalyticsChartCard,
-  parameters: { layout: 'padded', backgrounds: { default: 'app' } },
-};
-export default meta;
-type Story = StoryObj<typeof AnalyticsChartCard>;
 
 const articleViewsData = [
   { x: 'mon', views: 4200, unique: 1800 },
@@ -21,30 +12,18 @@ const articleViewsData = [
   { x: 'sun', views: 9600, unique: 3500 },
 ];
 
-const aiDeflectionData = [
-  { x: 'mon', rate: 18 },
-  { x: 'tue', rate: 24 },
-  { x: 'wed', rate: 30 },
-  { x: 'fri', rate: 42 },
-  { x: 'sat', rate: 48 },
-  { x: 'sun', rate: 55 },
-];
-
-const categoryData = [
-  { label: 'Category 1', value: 35 },
-  { label: 'Category 2', value: 20 },
-  { label: 'Category 3', value: 18 },
-  { label: 'Category 4', value: 15 },
-  { label: 'Category 5', value: 12 },
-];
-
-export const WithChart: Story = {
-  render: () => (
+const meta: Meta<typeof AnalyticsChartCard> = {
+  title: 'Components/Charts & Stats/Analytics Chart Card',
+  component: AnalyticsChartCard,
+  parameters: { layout: 'padded', backgrounds: { default: 'app' } },
+  args: {
+    title: 'Article views over time',
+    infoTooltip: 'Total and unique views per day across the selected range.',
+    subtitle: '',
+  },
+  render: (args) => (
     <div className="bg-[#f8fafc] p-6" style={{ width: 720 }}>
-      <AnalyticsChartCard
-        title="Article views over time"
-        infoTooltip="Total and unique views per day across the selected range."
-      >
+      <AnalyticsChartCard {...args}>
         <AnalyticsAreaChart
           data={articleViewsData}
           xKey="x"
@@ -58,40 +37,6 @@ export const WithChart: Story = {
     </div>
   ),
 };
+export default meta;
 
-export const WithGoalLine: Story = {
-  render: () => (
-    <div className="bg-[#f8fafc] p-6" style={{ width: 720 }}>
-      <AnalyticsChartCard
-        title="AI deflection rate over time"
-        infoTooltip="Share of AI conversations that did not require a support ticket."
-        subtitle="% of AI conversations that did not result in a support ticket"
-      >
-        <AnalyticsAreaChart
-          data={aiDeflectionData}
-          xKey="x"
-          series={[
-            { name: 'Deflection rate', dataKey: 'rate', variant: 'positive' },
-          ]}
-          yTicks={[0, 25, 50, 75, 100]}
-          yTickFormat={(v) => `${v}`}
-          goalLine={{ y: 70, label: 'Goal : 70%' }}
-          showLegend={false}
-        />
-      </AnalyticsChartCard>
-    </div>
-  ),
-};
-
-export const WithDonut: Story = {
-  render: () => (
-    <div className="bg-[#f8fafc] p-6" style={{ width: 480 }}>
-      <AnalyticsChartCard
-        title="Views by Category"
-        infoTooltip="Distribution of views across top categories."
-      >
-        <AnalyticsDonutChart data={categoryData} />
-      </AnalyticsChartCard>
-    </div>
-  ),
-};
+export const Default: StoryObj<typeof AnalyticsChartCard> = {};

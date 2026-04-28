@@ -9,14 +9,6 @@ import { Avatar } from '../primitives/Avatar';
 import { CompanyLogo } from '../brand/CompanyLogo';
 import { AiIcon } from '../brand/AiIcon';
 
-const meta: Meta<typeof AppShell> = {
-  title: 'Components/Shell/AppShell',
-  component: AppShell,
-  parameters: { layout: 'fullscreen' },
-};
-export default meta;
-type Story = StoryObj<typeof AppShell>;
-
 const railItems = [
   { id: 'ai', icon: <AiIcon size={16} />, label: 'AI' },
   { id: 'editor', icon: <RiQuillPenLine size={16} />, label: 'Editor' },
@@ -81,41 +73,18 @@ const tree: NavItem[] = [
   },
 ];
 
-export const CategoryView: Story = {
-  render: () => (
+const meta: Meta<typeof AppShell> = {
+  title: 'Components/Shell/AppShell',
+  component: AppShell,
+  parameters: { layout: 'fullscreen' },
+  args: {
+    sidebarCollapsed: false,
+  },
+  // AppShell is a layout container with multiple ReactNode slots — slots are
+  // hardcoded in the render wrapper.
+  render: (args) => (
     <AppShell
-      rail={
-        <SideNavRail
-          theme="light"
-          items={railItems}
-          activeId="editor"
-          brandLogo={<CompanyLogo size={24} />}
-          bottomSlot={<Avatar initials="VK" />}
-        />
-      }
-      explorer={
-        <FileExplorerNav
-          theme="light"
-          title="Editor"
-          items={tree}
-          activeId="managing-emails"
-        />
-      }
-      breadcrumb={
-        <KBBreadcrumbBar
-          variant="category"
-          items={[{ id: '1', label: 'Offer Multi-channel Support' }]}
-        />
-      }
-    >
-      <div className="text-sm text-[#64758b]">Content area</div>
-    </AppShell>
-  ),
-};
-
-export const EditorView: Story = {
-  render: () => (
-    <AppShell
+      {...args}
       rail={
         <SideNavRail
           theme="light"
@@ -136,6 +105,7 @@ export const EditorView: Story = {
       breadcrumb={
         <KBBreadcrumbBar
           variant="editor"
+          sidebarCollapsed={args.sidebarCollapsed}
           items={[
             { id: '1', label: 'Offer Multi-channel Support' },
             { id: '2', label: 'Managing emails' },
@@ -144,7 +114,10 @@ export const EditorView: Story = {
         />
       }
     >
-      <div className="text-sm text-[#64758b]">Editor content area</div>
+      <div className="text-sm text-[#64758b] p-6">Content area</div>
     </AppShell>
   ),
 };
+export default meta;
+
+export const Default: StoryObj<typeof AppShell> = {};

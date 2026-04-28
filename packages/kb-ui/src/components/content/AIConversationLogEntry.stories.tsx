@@ -1,26 +1,8 @@
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../../tokens.css';
-import {
-  AIConversationLogEntry,
-  type AIConversationLogEntryProps,
-} from './AIConversationLogEntry';
+import { AIConversationLogEntry } from './AIConversationLogEntry';
 import type { ConversationSource } from '../overlays/SourcesSideSheet';
-
-const meta: Meta<typeof AIConversationLogEntry> = {
-  title: 'Components/Content/AI Conversation Log Entry',
-  component: AIConversationLogEntry,
-  parameters: { layout: 'centered' },
-  decorators: [
-    (Story) => (
-      <div className="w-[850px] rounded-[12px] border border-card-border bg-white px-5">
-        <Story />
-      </div>
-    ),
-  ],
-};
-export default meta;
-type Story = StoryObj<typeof AIConversationLogEntry>;
 
 const SAMPLE_SOURCES: ConversationSource[] = [
   {
@@ -46,7 +28,10 @@ const SAMPLE_SOURCES: ConversationSource[] = [
   },
 ];
 
-export const Default: Story = {
+const meta: Meta<typeof AIConversationLogEntry> = {
+  title: 'Components/AI/AI Conversation Log Entry',
+  component: AIConversationLogEntry,
+  parameters: { layout: 'centered' },
   args: {
     question: "How do I reset my password if I can't access my recovery email?",
     timestamp: 'Mar 31, 2:23 PM',
@@ -55,51 +40,15 @@ export const Default: Story = {
       'Outlined the 3-step account recovery process via billing info and support contact.',
     sourceCount: 3,
     sources: SAMPLE_SOURCES,
-  } satisfies AIConversationLogEntryProps,
+    answerDisabled: false,
+    showViewAll: false,
+  },
+  render: (args) => (
+    <div className="w-[850px] rounded-[12px] border border-card-border bg-white px-5">
+      <AIConversationLogEntry {...args} />
+    </div>
+  ),
 };
+export default meta;
 
-export const WithTicketCreated: Story = {
-  args: {
-    question: 'Why was I charged twice this month?',
-    timestamp: 'Mar 30, 1:23 PM',
-    feedback: null,
-    answer:
-      'Explained duplicate charge scenarios and how to report via the billing dashboard. Included 5–7 day refund timeline as well as an apology for the duplicate charge.',
-    sourceCount: 3,
-    sources: SAMPLE_SOURCES,
-    tail: { kind: 'ticket-created' },
-  } satisfies AIConversationLogEntryProps,
-};
-
-export const WithFollowUp: Story = {
-  args: {
-    question: 'How do I set up Slack notifications for my team?',
-    timestamp: 'Mar 28, 2:23 PM',
-    feedback: null,
-    answer:
-      'Walked through the Slack integration setup, notification scope settings, and OAuth re-authorization steps',
-    sourceCount: 3,
-    sources: SAMPLE_SOURCES,
-    followUp: {
-      question: 'How do i do this and that?',
-      answer: 'Explained about the OAuth setup',
-      sourceCount: 3,
-      sources: SAMPLE_SOURCES,
-      tail: { kind: 'source-clicked' },
-    },
-    showViewAll: true,
-    onViewAll: () => alert('view all clicked'),
-  } satisfies AIConversationLogEntryProps,
-};
-
-export const Negative: Story = {
-  args: {
-    question: 'Does Hiver have HIPAA compliance?',
-    timestamp: 'Mar 27, 2:23 PM',
-    feedback: 'negative',
-    answer: 'AI could not provide an answer',
-    answerDisabled: true,
-    sourceCount: 0,
-    tail: { kind: 'source-clicked' },
-  } satisfies AIConversationLogEntryProps,
-};
+export const Default: StoryObj<typeof AIConversationLogEntry> = {};

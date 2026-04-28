@@ -6,20 +6,16 @@ const meta: Meta<typeof Badge> = {
   title: 'Components/Primitives/Badge',
   component: Badge,
   parameters: { layout: 'centered', backgrounds: { default: 'white' } },
-};
-export default meta;
-type Story = StoryObj<typeof Badge>;
-
-export const Published: Story = {
-  render: () => <Badge variant="published">Published</Badge>,
-};
-export const Draft: Story = { render: () => <Badge variant="draft">Draft</Badge> };
-export const AllVariants: Story = {
-  render: () => (
-    <div className="flex gap-1 p-4 items-center">
-      <Badge variant="published">Published</Badge>
-      <Badge variant="draft">Draft</Badge>
-      <Badge variant="neutral">Neutral</Badge>
+  args: {
+    variant: 'published',
+    children: 'Published',
+  },
+  render: (args) => (
+    <div className="bg-white p-4">
+      <Badge {...args} />
     </div>
   ),
 };
+export default meta;
+
+export const Default: StoryObj<typeof Badge> = {};

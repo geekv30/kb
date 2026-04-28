@@ -1,28 +1,29 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../tokens.css';
-import { RiMailLine, RiQuillPenLine, RiBarChartBoxLine, RiSettings5Line } from '@remixicon/react';
+import {
+  RiMailLine,
+  RiQuillPenLine,
+  RiBarChartBoxLine,
+  RiSettings5Line,
+  RiFolderLine,
+  RiArrowRightSLine,
+  RiFile3Line,
+  RiMore2Line,
+} from '@remixicon/react';
 import { AppShell } from '../components/shell/AppShell';
 import { KBBreadcrumbBar } from '../components/shell/KBBreadcrumbBar';
 import { SideNavRail } from '../components/nav/SideNavRail';
 import { FileExplorerNav, type NavItem } from '../components/nav/FileExplorerNav';
 import { PageHeader } from '../components/content/PageHeader';
-import { SubCategoriesTable } from '../components/content/SubCategoriesTable';
-import { ArticlesTable, type Article } from '../components/content/ArticlesTable';
+import { DataTable, type DataTableColumn } from '../components/content/DataTable';
 import { Avatar } from '../components/primitives/Avatar';
+import { Badge } from '../components/primitives/Badge';
 import { CompanyLogo } from '../components/brand/CompanyLogo';
 import { AiIcon } from '../components/brand/AiIcon';
+import { cn } from '../utils/cn';
 
-const meta: Meta = {
-  title: 'Patterns/KB Category Page',
-  parameters: { layout: 'fullscreen' },
-};
-export default meta;
-type Story = StoryObj;
-
-const PageIcon = () => (
-  <RiMailLine size={22} className="text-[#6366f1]" />
-);
+const PageIcon = () => <RiMailLine size={22} className="text-[#6366f1]" />;
 
 const railItems = [
   { id: 'ai', icon: <AiIcon size={16} />, label: 'AI' },
@@ -68,10 +69,19 @@ const breadcrumbItems = [
   { id: 'manage-emails', label: 'Managing emails' },
 ];
 
-const subCategories = [
+type SubCategory = { id: string; title: string };
+const subCategories: SubCategory[] = [
   { id: 'org-email', title: 'Organize email conversations' },
   { id: 'shared-inbox', title: 'Shared Inbox Management' },
 ];
+
+type Article = {
+  id: string;
+  title: string;
+  status: 'published' | 'draft';
+  authorInitials: string;
+  lastUpdated: string;
+};
 
 const articles: Article[] = [
   {
@@ -104,59 +114,227 @@ const articles: Article[] = [
   },
 ];
 
-export const ManagingEmails: Story = {
-  name: 'KB Category Page / Managing Emails',
-  render: () => {
-    const [activeNavId, setActiveNavId] = React.useState('manage-emails');
-    return (
-      <AppShell
-        rail={
-          <SideNavRail
-            theme="light"
-            items={railItems}
-            activeId="editor"
-            brandLogo={<CompanyLogo size={24} />}
-            bottomSlot={<Avatar initials="A" />}
-          />
-        }
-        explorer={
-          <FileExplorerNav
-            theme="light"
-            title="Editor"
-            items={navItems}
-            activeId={activeNavId}
-            onItemClick={(id) => {
-              console.log('nav click:', id);
-              setActiveNavId(id);
-            }}
-          />
-        }
-        breadcrumb={
-          <KBBreadcrumbBar
-            variant="category"
-            items={breadcrumbItems}
-            onCollapse={() => console.log('collapse')}
-          />
-        }
-      >
-        <div className="flex flex-col gap-6">
-          <PageHeader
-            icon={<PageIcon />}
-            title="Managing emails"
-            subtitle="Organize and manage email conversations"
-            newButtonLabel="New"
-            onNewClick={() => console.log('new article')}
-          />
-          <SubCategoriesTable
-            items={subCategories}
-            onItemClick={(id) => console.log('subcategory click:', id)}
-          />
-          <ArticlesTable
-            articles={articles}
-            onArticleClick={(id) => console.log('article click:', id)}
-          />
-        </div>
-      </AppShell>
-    );
+/* ─────────────────────────────────────────────────────────────
+ * Column shapes — co-located with the page that owns them.
+ * Geometry is the legacy ArticlesTable / SubCategoriesTable
+ * unwrapped chrome (white card, slate border, 8 px radius,
+ * grey #f5f5f5 header, 6-px vertical cell padding).
+ * ───────────────────────────────────────────────────────────── */
+
+const subCategoryColumns: DataTableColumn<SubCategory>[] = [
+  {
+    id: 'title',
+    header: 'Sub-categories',
+    headerClassName: 'pl-4 pr-0 py-0 text-[#475569]',
+    className: 'pl-4 pr-0',
+    render: (item) => (
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          aria-label={`Open ${item.title}`}
+          onClick={(e) => e.stopPropagation()}
+          className={cn(
+            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#64758b]',
+            'hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
+          )}
+        >
+          <RiFolderLine size={16} aria-hidden="true" />
+        </button>
+        <span className="text-[14px] font-normal leading-[20px] text-[#0f172a]">
+          {item.title}
+        </span>
+      </div>
+    ),
   },
+  {
+    id: 'chev',
+    header: '',
+    align: 'right',
+    width: 48,
+    headerClassName: 'pl-0 pr-4 py-0',
+    className: 'pl-0 pr-4',
+    render: () => (
+      <div className="flex items-center justify-end">
+        <RiArrowRightSLine
+          size={16}
+          className="text-[#64758b]"
+          aria-hidden="true"
+        />
+      </div>
+    ),
+  },
+];
+
+const articleColumns: DataTableColumn<Article>[] = [
+  {
+    id: 'title',
+    header: 'Articles',
+    headerClassName: 'pl-4 pr-0 py-0 text-[#475569]',
+    className: 'px-4',
+    render: (a) => (
+      <div className="flex items-center gap-1 min-w-0">
+        <button
+          type="button"
+          aria-label={`Open ${a.title}`}
+          onClick={(e) => e.stopPropagation()}
+          className={cn(
+            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#64758b]',
+            'hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
+          )}
+        >
+          <RiFile3Line size={16} aria-hidden="true" />
+        </button>
+        <span className="text-[14px] font-normal leading-[20px] text-[#0f172a] truncate">
+          {a.title}
+        </span>
+      </div>
+    ),
+  },
+  {
+    id: 'kebab',
+    header: '',
+    align: 'center',
+    width: 48,
+    headerClassName: 'px-0 py-0',
+    className: 'px-0',
+    render: (a) => (
+      <div className="flex items-center justify-center">
+        <button
+          type="button"
+          aria-label={`More actions for ${a.title}`}
+          onClick={(e) => e.stopPropagation()}
+          className={cn(
+            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#94a3b8]',
+            'hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
+          )}
+        >
+          <RiMore2Line size={16} aria-hidden="true" />
+        </button>
+      </div>
+    ),
+  },
+  {
+    id: 'status',
+    header: 'Status',
+    width: 127,
+    headerClassName: 'px-4 py-0 text-[#475569]',
+    className: 'px-4',
+    render: (a) => (
+      <Badge variant={a.status}>
+        {a.status === 'published' ? 'Published' : 'Draft'}
+      </Badge>
+    ),
+  },
+  {
+    id: 'author',
+    header: 'Author',
+    align: 'center',
+    width: 94,
+    headerClassName: 'px-4 py-0 text-[#475569]',
+    className: 'px-4',
+    render: (a) => (
+      <div className="flex items-center justify-center">
+        <Avatar initials={a.authorInitials} />
+      </div>
+    ),
+  },
+  {
+    id: 'updated',
+    header: 'Last Updated',
+    width: 251,
+    headerClassName: 'px-4 py-0 text-[#475569]',
+    className: 'px-4',
+    render: (a) => (
+      <span className="text-[#64758b]">{a.lastUpdated}</span>
+    ),
+  },
+];
+
+function CategoryPage() {
+  const [activeNavId, setActiveNavId] = React.useState('manage-emails');
+  return (
+    <AppShell
+      rail={
+        <SideNavRail
+          theme="light"
+          items={railItems}
+          activeId="editor"
+          brandLogo={<CompanyLogo size={24} />}
+          bottomSlot={<Avatar initials="A" />}
+        />
+      }
+      explorer={
+        <FileExplorerNav
+          theme="light"
+          title="Editor"
+          items={navItems}
+          activeId={activeNavId}
+          onItemClick={(id) => {
+            // eslint-disable-next-line no-console
+            console.log('nav click:', id);
+            setActiveNavId(id);
+          }}
+        />
+      }
+      breadcrumb={
+        <KBBreadcrumbBar
+          variant="category"
+          items={breadcrumbItems}
+          onCollapse={() => {
+            // eslint-disable-next-line no-console
+            console.log('collapse');
+          }}
+        />
+      }
+    >
+      <div className="flex flex-col gap-6">
+        <PageHeader
+          icon={<PageIcon />}
+          title="Managing emails"
+          subtitle="Organize and manage email conversations"
+          newButtonLabel="New"
+          onNewClick={() => {
+            // eslint-disable-next-line no-console
+            console.log('new article');
+          }}
+        />
+        <DataTable
+          dataKbComponent="sub-categories-table"
+          rows={subCategories}
+          columns={subCategoryColumns}
+          wrapped={false}
+          headerBackground="#f5f5f5"
+          cellPaddingY={6}
+          emptyMessage="No sub-categories"
+          onRowClick={(row) => {
+            // eslint-disable-next-line no-console
+            console.log('subcategory click:', row.id);
+          }}
+        />
+        <DataTable
+          dataKbComponent="articles-table"
+          rows={articles}
+          columns={articleColumns}
+          wrapped={false}
+          headerBackground="#f5f5f5"
+          cellPaddingY={6}
+          emptyMessage="No articles"
+          onRowClick={(row) => {
+            // eslint-disable-next-line no-console
+            console.log('article click:', row.id);
+          }}
+        />
+      </div>
+    </AppShell>
+  );
+}
+
+const meta: Meta<typeof CategoryPage> = {
+  title: 'Patterns/Knowledge Base/Category Page',
+  parameters: { layout: 'fullscreen' },
+  component: CategoryPage,
+  render: () => <CategoryPage />,
 };
+export default meta;
+
+export const Default: StoryObj<typeof CategoryPage> = {};

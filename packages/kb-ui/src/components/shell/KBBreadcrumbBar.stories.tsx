@@ -3,35 +3,25 @@ import '../../tokens.css';
 import { KBBreadcrumbBar } from './KBBreadcrumbBar';
 
 const meta: Meta<typeof KBBreadcrumbBar> = {
-  title: 'Components/Shell/KBBreadcrumbBar',
+  title: 'Components/Navigation/KB Breadcrumb Bar',
   component: KBBreadcrumbBar,
   parameters: { layout: 'fullscreen' },
+  args: {
+    variant: 'editor',
+    sidebarCollapsed: false,
+    publishDisabled: false,
+    items: [
+      { id: '1', label: 'Offer Multi-channel Support' },
+      { id: '2', label: 'Managing emails' },
+      { id: '3', label: 'Search, filter, and create email views' },
+    ],
+  },
+  render: (args) => (
+    <div style={{ borderBottom: '1px solid #e2e8f0' }}>
+      <KBBreadcrumbBar {...args} />
+    </div>
+  ),
 };
 export default meta;
-type Story = StoryObj<typeof KBBreadcrumbBar>;
 
-export const Category: Story = {
-  render: () => (
-    <div style={{ borderBottom: '1px solid #e2e8f0' }}>
-      <KBBreadcrumbBar
-        variant="category"
-        items={[{ id: '1', label: 'Offer Multi-channel Support' }]}
-      />
-    </div>
-  ),
-};
-
-export const Editor: Story = {
-  render: () => (
-    <div style={{ borderBottom: '1px solid #e2e8f0' }}>
-      <KBBreadcrumbBar
-        variant="editor"
-        items={[
-          { id: '1', label: 'Offer Multi-channel Support' },
-          { id: '2', label: 'Managing emails' },
-          { id: '3', label: 'Search, filter, and create email views' },
-        ]}
-      />
-    </div>
-  ),
-};
+export const Default: StoryObj<typeof KBBreadcrumbBar> = {};

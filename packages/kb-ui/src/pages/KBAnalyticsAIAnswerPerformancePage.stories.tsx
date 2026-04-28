@@ -4,6 +4,8 @@ import {
   RiQuillPenLine,
   RiSettings5Line,
   RiBarChartBoxLine,
+  RiFile3Line,
+  RiInformationLine,
 } from '@remixicon/react';
 import { AppShell } from '../components/shell/AppShell';
 import { KBBreadcrumbBar } from '../components/shell/KBBreadcrumbBar';
@@ -21,36 +23,14 @@ import { AnalyticsAreaChart } from '../components/content/AnalyticsAreaChart';
 import { AnalyticsChartCard } from '../components/content/AnalyticsChartCard';
 import { AIConversationLogsCard } from '../components/content/AIConversationLogsCard';
 import { AIConversationLogEntry } from '../components/content/AIConversationLogEntry';
-import {
-  MostCitedArticlesTable,
-  type MostCitedRow,
-} from '../components/content/MostCitedArticlesTable';
+import { PageHeader } from '../components/content/PageHeader';
+import { DataTable, type DataTableColumn } from '../components/content/DataTable';
 import type { ConversationSource } from '../components/overlays/SourcesSideSheet';
 
 /* ─────────────────────────────────────────────────────────────
  * KB Analytics — AI Answer Performance
  * Figma `251DTRmxl2L6jmXd3FWzHe#1974:53167`.
- *
- * Page composition (top → bottom):
- *   - Page header: title + subtitle | DateRangePill
- *   - StatCardGrid "AI Search Performance" — 4 metrics
- *   - AnalyticsChartCard "AI deflection rate over time" — single-series
- *     positive (green) area + Goal:70% reference line
- *   - AIConversationLogsCard — 5 entries
- *   - MostCitedArticlesTable — 5 rows
  * ───────────────────────────────────────────────────────────── */
-
-const meta: Meta = {
-  title: 'Patterns/KB Analytics — AI Answer Performance',
-  parameters: {
-    layout: 'fullscreen',
-    viewport: { defaultViewport: 'responsive' },
-  },
-};
-export default meta;
-type Story = StoryObj;
-
-/* ── Rail (4 items, analytics active) ─────────────────────────── */
 
 const railItems: NavRailItem[] = [
   { id: 'ai', icon: <AiIcon size={16} />, label: 'AI' },
@@ -68,8 +48,6 @@ const analyticsNavItems: NavItem[] = [
   { id: 'search', type: 'article', title: 'Search' },
   { id: 'ai', type: 'article', title: 'AI Answer Performance' },
 ];
-
-/* ── Mock data ──────────────────────────────────────────────── */
 
 const aiDeflectionData = [
   { x: 'mon', deflection: 22 },
@@ -112,7 +90,9 @@ const SORT_OPTIONS = [
   { id: 'unhelpful', label: 'Least helpful' },
 ];
 
-const mostCitedRows: MostCitedRow[] = [
+type Cited = { id: string; title: string; citations: number };
+
+const mostCitedRows: Cited[] = [
   {
     id: '1',
     title: 'Syncing past emails while creating a new Shared Mailbox',
@@ -140,9 +120,28 @@ const mostCitedRows: MostCitedRow[] = [
   },
 ];
 
-/* ─────────────────────────────────────────────────────────────
- * Page composition
- * ───────────────────────────────────────────────────────────── */
+const citedColumns: DataTableColumn<Cited>[] = [
+  {
+    id: 'title',
+    header: 'Article Title',
+    render: (r) => (
+      <span className="inline-flex items-center gap-2">
+        <RiFile3Line
+          size={16}
+          className="shrink-0 text-[#64758b]"
+          aria-hidden="true"
+        />
+        <span>{r.title}</span>
+      </span>
+    ),
+  },
+  {
+    id: 'citations',
+    header: 'Citations',
+    align: 'right',
+    render: (r) => r.citations,
+  },
+];
 
 function AIAnswerPerformancePage() {
   return (
@@ -176,21 +175,13 @@ function AIAnswerPerformancePage() {
       }
     >
       <div className="flex flex-col gap-5">
-        {/* Page header */}
-        <header className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-[24px] font-semibold leading-[32px] text-[#0f172a]">
-              AI Answer Performance
-            </h1>
-            <p className="mt-1 text-[14px] font-normal leading-[20px] text-[#475569]">
-              Is the AI search feature actually helping, or are people still
-              needing human support?
-            </p>
-          </div>
-          <DateRangePill value="7d" />
-        </header>
+        <PageHeader
+          size="lg"
+          title="AI Answer Performance"
+          subtitle="Is the AI search feature actually helping, or are people still needing human support?"
+          rightSlot={<DateRangePill value="7d" />}
+        />
 
-        {/* AI Search Performance stats */}
         <StatCardGrid
           title="AI Search Performance"
           stats={[
@@ -221,7 +212,6 @@ function AIAnswerPerformancePage() {
           ]}
         />
 
-        {/* AI deflection rate over time + goal line */}
         <AnalyticsChartCard
           title="AI deflection rate over time"
           subtitle="% of AI conversations that did not result in a support ticket"
@@ -243,7 +233,6 @@ function AIAnswerPerformancePage() {
           />
         </AnalyticsChartCard>
 
-        {/* AI conversation logs (5 entries — verbatim from Step 6 Default) */}
         <AIConversationLogsCard
           sortOptions={SORT_OPTIONS}
           sortBy="recent"
@@ -301,19 +290,44 @@ function AIAnswerPerformancePage() {
           />
         </AIConversationLogsCard>
 
-        {/* Most cited articles table */}
-        <MostCitedArticlesTable rows={mostCitedRows} />
+        <DataTable
+          dataKbComponent="most-cited-articles-table"
+          rows={mostCitedRows}
+          columns={citedColumns}
+          emptyMessage="No cited articles"
+          heading={
+            <div className="flex items-center">
+              <h3 className="text-[14px] font-medium leading-[20px] text-[#0f172a]">
+                Most Cited KB Articles
+              </h3>
+              <span className="ml-2 inline-flex" aria-hidden>
+                <RiInformationLine
+                  size={16}
+                  className="text-[#475569]"
+                  aria-hidden="true"
+                />
+              </span>
+            </div>
+          }
+        />
       </div>
     </AppShell>
   );
 }
 
-/** Default — AI Answer Performance page at responsive width.
- *  Matches Figma `1974:53167`. */
-export const Default: Story = {
+const meta: Meta<typeof AIAnswerPerformancePage> = {
+  title: 'Patterns/Analytics/AI Answer Performance',
+  parameters: {
+    layout: 'fullscreen',
+    viewport: { defaultViewport: 'responsive' },
+  },
+  component: AIAnswerPerformancePage,
   render: () => (
     <div className="h-screen w-full">
       <AIAnswerPerformancePage />
     </div>
   ),
 };
+export default meta;
+
+export const Default: StoryObj<typeof AIAnswerPerformancePage> = {};

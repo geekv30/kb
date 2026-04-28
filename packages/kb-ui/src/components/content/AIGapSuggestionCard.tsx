@@ -4,8 +4,6 @@
 //        9aGp5t9fH1d0PXi4LMhOdb#81:15737 (active Removal in context)
 import * as React from 'react';
 import {
-  RiArrowUpSLine,
-  RiArrowDownSLine,
   RiCheckLine,
   RiCloseLine,
   RiAddLine,
@@ -14,53 +12,40 @@ import {
   RiArrowGoBackLine,
 } from '@remixicon/react';
 import { cn } from '../../utils/cn';
+import { AICard } from './AICard';
+import { NavArrow } from './NavArrow';
 import type {
   AISuggestion,
   AISuggestionState,
   AISuggestionType,
 } from './ai-suggestion-types';
 
-/* ─────────────────────────────────────────────────────────────
- * Types
- * ───────────────────────────────────────────────────────────── */
-
 export type AIGapSuggestionCardProps = {
   suggestion: AISuggestion;
   state: AISuggestionState;
-  /** Prev arrow — active state only. */
   onPrev?: () => void;
-  /** Next arrow — active state only. */
   onNext?: () => void;
-  /** `N Sources` opens the sources side-sheet (active state only). */
   onOpenSources?: (id: string) => void;
-  /** Green check — active state only. */
   onAccept?: (id: string) => void;
-  /** Red × — active state only. */
   onReject?: (id: string) => void;
-  /** Undo arrow — accepted/dismissed chip only. */
   onUndo?: (id: string) => void;
   className?: string;
 };
 
 /* ─────────────────────────────────────────────────────────────
- * Type chip — icon + label, color-coded per suggestion type.
+ * Type chip — color-coded label + glyph per suggestion type.
  *
- * The chip is the same glyph in both the active-card header and
- * the collapsed accepted/dismissed chip, so it's a local atom.
+ * Hex literals mirrored 1:1 in tokens.css (--color-ai-addition /
+ * -replace / -removal). Inline because Tailwind arbitrary classes
+ * for dynamic per-type color don't tree-shake via the inline
+ * style path used here, and the same literals also feed inline
+ * SVG fill.
  * ───────────────────────────────────────────────────────────── */
 
 const TYPE_META: Record<
   AISuggestionType,
   { label: string; color: string; Icon: React.ComponentType<{ className?: string }> }
 > = {
-  // Hex values mirrored 1:1 in tokens.css (--color-ai-addition / -replace /
-  // -removal), sourced from Figma file 9aGp5t9fH1d0PXi4LMhOdb Frame 3 active
-  // addition (81:16926). Figma tokens: text/success/default (#086e3f),
-  // text/info/default (#065b89), text/danger/default (#d52c1f). Kept inline
-  // because Tailwind arbitrary classes for dynamic per-type color don't
-  // tree-shake via the inline `style={{ color }}` path used in TypeChip —
-  // these literals also feed inline SVG `fill` so they cannot be utility
-  // classes. Keep in lockstep with --color-ai-* tokens.
   addition: { label: 'Addition', color: '#086e3f', Icon: RiAddLine },
   replace: { label: 'Replace', color: '#065b89', Icon: RiRefreshLine },
   removal: { label: 'Removal', color: '#d52c1f', Icon: RiCloseLine },
@@ -80,40 +65,6 @@ function TypeChip({ type }: { type: AISuggestionType }) {
     </span>
   );
 }
-
-/* ─────────────────────────────────────────────────────────────
- * Local ▲▼ arrow — duplicated here (see AISuggestionsCard) to
- * keep each file self-contained. Intentional per dispatch spec.
- * ───────────────────────────────────────────────────────────── */
-
-function NavArrow({
-  direction,
-  onClick,
-}: {
-  direction: 'up' | 'down';
-  onClick?: () => void;
-}) {
-  const Icon = direction === 'up' ? RiArrowUpSLine : RiArrowDownSLine;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={direction === 'up' ? 'Previous suggestion' : 'Next suggestion'}
-      className={cn(
-        'inline-flex size-6 items-center justify-center rounded-[4px]',
-        'text-[#64758b] transition-colors',
-        'hover:bg-[#f1f5f9] hover:text-[#0f172a]',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
-      )}
-    >
-      <Icon aria-hidden="true" className="h-4 w-4" />
-    </button>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────
- * Active-state sub-components
- * ───────────────────────────────────────────────────────────── */
 
 function SourcesButton({
   count,
@@ -147,9 +98,7 @@ function RejectButton({ onClick }: { onClick?: () => void }) {
       aria-label="Reject suggestion"
       className={cn(
         'inline-flex size-6 items-center justify-center rounded-full bg-[var(--color-btn-danger-bg)]',
-        // Hover bg derived from --color-ai-removal (#d52c1f) at ~12% over white
-        // — re-derived from the Figma text/danger/default token, replacing the
-        // earlier #fbd6d2 which was tied to the old red-500 (#ef4444) base.
+        // Hover bg derived from --color-ai-removal (#d52c1f) at ~12% over white.
         'text-ai-removal transition-colors hover:bg-[#fad9d6]',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
       )}
@@ -176,59 +125,6 @@ function AcceptButton({ onClick }: { onClick?: () => void }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
- * Chip (accepted / dismissed) sub-component
- * ───────────────────────────────────────────────────────────── */
-
-function DecisionChip({
-  suggestion,
-  decision,
-  onUndo,
-  className,
-}: {
-  suggestion: AISuggestion;
-  decision: Exclude<AISuggestionState, 'active'>;
-  onUndo?: (id: string) => void;
-  className?: string;
-}) {
-  const label = decision === 'accepted' ? 'ACCEPTED' : 'DISMISSED';
-  return (
-    <div
-      data-kb-component="ai-gap-suggestion-card"
-      data-kb-state={decision}
-      data-kb-type={suggestion.type}
-      className={cn(
-        'flex w-full items-center rounded-[12px] border border-card-border bg-white',
-        'px-3 py-2',
-        className,
-      )}
-    >
-      <TypeChip type={suggestion.type} />
-      <span aria-hidden className="mx-3 h-4 w-px shrink-0 bg-card-divider" />
-      <span className="text-[12px] font-medium leading-[18px] text-[#475569] tracking-wide">
-        {label}
-      </span>
-      <button
-        type="button"
-        onClick={() => onUndo?.(suggestion.id)}
-        aria-label={`Undo ${decision} for ${suggestion.title}`}
-        className={cn(
-          'ml-auto inline-flex size-6 items-center justify-center rounded-[4px]',
-          'text-[#64758b] transition-colors',
-          'hover:bg-[#f1f5f9] hover:text-[#0f172a]',
-          'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
-        )}
-      >
-        <RiArrowGoBackLine aria-hidden="true" className="h-4 w-4" />
-      </button>
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────
- * Main component — routes between active card and chip
- * ───────────────────────────────────────────────────────────── */
-
 export function AIGapSuggestionCard({
   suggestion,
   state,
@@ -241,68 +137,78 @@ export function AIGapSuggestionCard({
   className,
 }: AIGapSuggestionCardProps) {
   if (state !== 'active') {
+    const decisionLabel = state === 'accepted' ? 'ACCEPTED' : 'DISMISSED';
     return (
-      <DecisionChip
-        suggestion={suggestion}
-        decision={state}
-        onUndo={onUndo}
+      <AICard
+        mode="collapsed"
         className={className}
-      />
+        data-kb-component="ai-gap-suggestion-card"
+        data-kb-state={state}
+        data-kb-type={suggestion.type}
+      >
+        <TypeChip type={suggestion.type} />
+        <span aria-hidden className="mx-3 h-4 w-px shrink-0 bg-card-divider" />
+        <span className="text-[12px] font-medium leading-[18px] text-[#475569] tracking-wide">
+          {decisionLabel}
+        </span>
+        <button
+          type="button"
+          onClick={() => onUndo?.(suggestion.id)}
+          aria-label={`Undo ${state} for ${suggestion.title}`}
+          className={cn(
+            'ml-auto inline-flex size-6 items-center justify-center rounded-[4px]',
+            'text-[#64758b] transition-colors',
+            'hover:bg-[#f1f5f9] hover:text-[#0f172a]',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
+          )}
+        >
+          <RiArrowGoBackLine aria-hidden="true" className="h-4 w-4" />
+        </button>
+      </AICard>
     );
   }
 
   return (
-    <section
+    <AICard
+      mode="active"
+      className={className}
       data-kb-component="ai-gap-suggestion-card"
       data-kb-state="active"
       data-kb-type={suggestion.type}
-      className={cn(
-        'flex w-full flex-col rounded-[12px] border border-card-border bg-white',
-        'p-4',
-        className,
-      )}
-    >
-      {/* Header — type chip */}
-      <TypeChip type={suggestion.type} />
-
-      {/* Title */}
-      <h3
-        data-kb-part="ai-gap-title"
-        className="mt-2 text-[14px] font-semibold leading-[20px] text-[#0f172a]"
-      >
-        {suggestion.title}
-      </h3>
-
-      {/* Description */}
-      <p
-        data-kb-part="ai-gap-description"
-        className="mt-1 text-[14px] font-normal leading-[20px] text-[#475569]"
-      >
-        {suggestion.description}
-      </p>
-
-      {/* Divider — visible hairline (#e5e5e5) per design/ai-gaps.md spec. */}
-      <div
-        aria-hidden="true"
-        data-kb-part="ai-gap-divider"
-        className="mt-3 h-px w-full bg-card-divider"
-      />
-
-      {/* Footer — arrows left, actions right */}
-      <div className="mt-3 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1">
-          <NavArrow direction="up" onClick={onPrev} />
-          <NavArrow direction="down" onClick={onNext} />
-        </div>
-        <div className="flex items-center gap-2">
-          <SourcesButton
-            count={suggestion.sourceCount}
-            onClick={() => onOpenSources?.(suggestion.id)}
-          />
-          <RejectButton onClick={() => onReject?.(suggestion.id)} />
-          <AcceptButton onClick={() => onAccept?.(suggestion.id)} />
-        </div>
-      </div>
-    </section>
+      header={<TypeChip type={suggestion.type} />}
+      body={
+        <>
+          <h3
+            data-kb-part="ai-gap-title"
+            className="mt-2 text-[14px] font-semibold leading-[20px] text-[#0f172a]"
+          >
+            {suggestion.title}
+          </h3>
+          <p
+            data-kb-part="ai-gap-description"
+            className="mt-1 text-[14px] font-normal leading-[20px] text-[#475569]"
+          >
+            {suggestion.description}
+          </p>
+        </>
+      }
+      showFooterDivider
+      footer={
+        <>
+          <div className="flex items-center gap-1">
+            <NavArrow direction="up" onClick={onPrev} />
+            <NavArrow direction="down" onClick={onNext} />
+          </div>
+          <div className="flex items-center gap-2">
+            <SourcesButton
+              count={suggestion.sourceCount}
+              onClick={() => onOpenSources?.(suggestion.id)}
+            />
+            <RejectButton onClick={() => onReject?.(suggestion.id)} />
+            <AcceptButton onClick={() => onAccept?.(suggestion.id)} />
+          </div>
+        </>
+      }
+    />
   );
 }

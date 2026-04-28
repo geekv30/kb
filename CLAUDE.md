@@ -21,15 +21,19 @@ Build a **pixel-perfect, 1:1 component library** for Hiver's KB product (`app.hi
 ## Mandatory Rules
 
 ### 1. Pixel-perfect
+
 Every component must match Figma **exactly**: padding, spacing, border-radius, typography, color tokens, shadows, interaction states. Extract all values from Figma before writing a single line of CSS. See `design.md` for extracted specs and screen node IDs.
 
 ### 2. Use the ui-engineer agent for all coding
+
 **Every coding task must go through the `ui-engineer` agent** (`agents/ui-engineer.md`). Do not write production component code in the main Claude session. Dispatch to `ui-engineer`, review the output.
 
 ### 3. Build order
+
 Follow the phases in `plan.md` exactly. Do not skip phases. Do not reorder. Atoms before molecules before organisms.
 
 ### 4. Figma first
+
 Before building any component, always fetch the relevant Figma screen via `get_design_context` + `get_screenshot`. Unique screen node IDs are in `design.md`.
 
 ---

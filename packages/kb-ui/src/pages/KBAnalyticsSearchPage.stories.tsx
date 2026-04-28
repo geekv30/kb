@@ -4,6 +4,7 @@ import {
   RiQuillPenLine,
   RiSettings5Line,
   RiBarChartBoxLine,
+  RiInformationLine,
 } from '@remixicon/react';
 import { AppShell } from '../components/shell/AppShell';
 import { KBBreadcrumbBar } from '../components/shell/KBBreadcrumbBar';
@@ -18,38 +19,20 @@ import { AiIcon } from '../components/brand/AiIcon';
 import { DateRangePill } from '../components/content/DateRangePill';
 import { AnalyticsAreaChart } from '../components/content/AnalyticsAreaChart';
 import { AnalyticsChartCard } from '../components/content/AnalyticsChartCard';
-import {
-  SearchKeywordsTable,
-  type SearchKeywordRow,
-} from '../components/content/SearchKeywordsTable';
-import {
-  ContentGapsTable,
-  type ContentGapRow,
-} from '../components/content/ContentGapsTable';
+import { DataTable, type DataTableColumn } from '../components/content/DataTable';
+import { cn } from '../utils/cn';
 
 /* ─────────────────────────────────────────────────────────────
  * KB Analytics — Search
  * Figma `251DTRmxl2L6jmXd3FWzHe#1974:54154`.
  *
  * Page composition (top → bottom):
- *   - Page header: title + subtitle | DateRangePill
- *   - 2-up: Search vol. over time (unique-blue area) | Missed search rate
+ *   - Page header
+ *   - 2-up: Search vol over time (unique-blue area) | Missed search rate
  *           (positive-green area + Goal:70% line)
- *   - SearchKeywordsTable — 5 rows
- *   - ContentGapsTable — 12 rows
+ *   - DataTable — top search keywords (5 rows, no header divider)
+ *   - DataTable — content gaps (12 rows, with "Write Article" CTA)
  * ───────────────────────────────────────────────────────────── */
-
-const meta: Meta = {
-  title: 'Patterns/KB Analytics — Search',
-  parameters: {
-    layout: 'fullscreen',
-    viewport: { defaultViewport: 'responsive' },
-  },
-};
-export default meta;
-type Story = StoryObj;
-
-/* ── Rail (4 items, analytics active) ─────────────────────────── */
 
 const railItems: NavRailItem[] = [
   { id: 'ai', icon: <AiIcon size={16} />, label: 'AI' },
@@ -90,7 +73,8 @@ const missedSearchData = [
   { x: 'sun', missed: 18 },
 ];
 
-const searchKeywordsRows: SearchKeywordRow[] = [
+type Keyword = { id: string; keyword: string; count: string };
+const searchKeywordsRows: Keyword[] = [
   { id: '1', keyword: '1. password reset', count: '11200' },
   { id: '2', keyword: '2. billing duplicate charges', count: '1200' },
   { id: '3', keyword: '3. slack integration', count: '200' },
@@ -98,13 +82,25 @@ const searchKeywordsRows: SearchKeywordRow[] = [
   { id: '5', keyword: '5. gmail addon install', count: '2' },
 ];
 
+const keywordColumns: DataTableColumn<Keyword>[] = [
+  { id: 'keyword', header: 'Keywords', render: (r) => r.keyword },
+  {
+    id: 'count',
+    header: 'Search Count',
+    align: 'right',
+    render: (r) => r.count,
+  },
+];
+
+type Gap = { id: string; topic: string; frequency: string; ticketRate: string };
+
 const CONTENT_GAP_TOPICS = [
   'Cancel Subscription / account deletion',
   'Mobile app availability',
   'Dark mode / UI customisation',
 ] as const;
 
-const contentGapsRows: ContentGapRow[] = Array.from({ length: 12 }, (_, idx) => {
+const contentGapsRows: Gap[] = Array.from({ length: 12 }, (_, idx) => {
   const isLast = idx === 11;
   return {
     id: String(idx + 1),
@@ -113,6 +109,46 @@ const contentGapsRows: ContentGapRow[] = Array.from({ length: 12 }, (_, idx) => 
     ticketRate: idx === 0 ? '45%' : '50%',
   };
 });
+
+function WriteArticleButton({ onClick }: { onClick?: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'inline-flex items-center gap-1.5 rounded-[6px] bg-[#f1f5f9] px-2 py-1',
+        'text-[14px] font-medium leading-[20px] text-[#0f172a]',
+        'transition-colors hover:bg-[#e2e8f0]',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
+      )}
+    >
+      <RiQuillPenLine
+        size={14}
+        className="text-[#475569]"
+        aria-hidden="true"
+      />
+      Write Article
+    </button>
+  );
+}
+
+const gapColumns: DataTableColumn<Gap>[] = [
+  { id: 'topic', header: 'Topic', render: (r) => r.topic },
+  { id: 'frequency', header: 'Frequency', render: (r) => r.frequency },
+  { id: 'ticketRate', header: 'Ticket Rate', render: (r) => r.ticketRate },
+  {
+    id: 'action',
+    header: 'Action',
+    render: (r) => (
+      <WriteArticleButton
+        onClick={() => {
+          // eslint-disable-next-line no-console
+          console.log('write', r.id);
+        }}
+      />
+    ),
+  },
+];
 
 /* ─────────────────────────────────────────────────────────────
  * Page composition
@@ -150,7 +186,6 @@ function SearchAnalyticsPage() {
       }
     >
       <div className="flex flex-col gap-5">
-        {/* Page header */}
         <header className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-[24px] font-semibold leading-[32px] text-[#0f172a]">
@@ -164,7 +199,6 @@ function SearchAnalyticsPage() {
           <DateRangePill value="7d" />
         </header>
 
-        {/* 2-up: Search vol over time | Missed search rate */}
         <div className="flex gap-4">
           <div className="flex-1 min-w-0">
             <AnalyticsChartCard
@@ -206,22 +240,71 @@ function SearchAnalyticsPage() {
           </div>
         </div>
 
-        {/* Search keywords table */}
-        <SearchKeywordsTable rows={searchKeywordsRows} />
+        <DataTable
+          dataKbComponent="search-keywords-table"
+          rows={searchKeywordsRows}
+          columns={keywordColumns}
+          emptyMessage="No keywords"
+          heading={
+            <div className="flex items-center">
+              <h3 className="text-[14px] font-medium leading-[20px] text-[#0f172a]">
+                Top 5 Search Keywords
+              </h3>
+              <span className="ml-2 inline-flex" aria-hidden>
+                <RiInformationLine
+                  size={16}
+                  className="text-[#475569]"
+                  aria-hidden="true"
+                />
+              </span>
+            </div>
+          }
+        />
 
-        {/* Content gaps table */}
-        <ContentGapsTable rows={contentGapsRows} />
+        <DataTable
+          dataKbComponent="content-gaps-table"
+          rows={contentGapsRows}
+          columns={gapColumns}
+          emptyMessage="No content gaps"
+          heading={
+            <div>
+              <div className="flex items-center">
+                <h3 className="text-[14px] font-medium leading-[20px] text-[#0f172a]">
+                  Content Gaps
+                </h3>
+                <span className="ml-2 inline-flex" aria-hidden>
+                  <RiInformationLine
+                    size={16}
+                    className="text-[#475569]"
+                    aria-hidden="true"
+                  />
+                </span>
+              </div>
+              <p className="mt-1 text-[13px] font-normal leading-[19px] text-[#475569]">
+                Topics users searched for but didn&apos;t find. Write articles to
+                close these gaps
+              </p>
+            </div>
+          }
+        />
       </div>
     </AppShell>
   );
 }
 
-/** Default — Search analytics page at responsive width.
- *  Matches Figma `1974:54154`. */
-export const Default: Story = {
+const meta: Meta<typeof SearchAnalyticsPage> = {
+  title: 'Patterns/Analytics/Search',
+  parameters: {
+    layout: 'fullscreen',
+    viewport: { defaultViewport: 'responsive' },
+  },
+  component: SearchAnalyticsPage,
   render: () => (
     <div className="h-screen w-full">
       <SearchAnalyticsPage />
     </div>
   ),
 };
+export default meta;
+
+export const Default: StoryObj<typeof SearchAnalyticsPage> = {};

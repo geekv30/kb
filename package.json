@@ -1,0 +1,18 @@
+{
+  "name": "hiver-kb-monorepo",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=apps/demo",
+    "demo:dev": "npm run dev --workspace=apps/demo",
+    "demo:build": "npm run build --workspace=apps/demo",
+    "demo:preview": "npm run preview --workspace=apps/demo",
+    "kb-ui:storybook": "npm run storybook --workspace=packages/kb-ui",
+    "kb-ui:build": "npm run build --workspace=packages/kb-ui",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present"
+  }
+}

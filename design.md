@@ -2,28 +2,32 @@
 
 ## Foundations story (source of visual token verification)
 
-Every design token, text style, and icon used in this package is rendered on a single Storybook page: **`Foundations/Overview`** (file: `packages/kb-ui/src/components/foundations/Foundations.stories.tsx`). Use this story to eyeball-check tokens against Figma before assuming a component is off-spec. Sibling stories `Foundations/Overview` → Typography, Colors, Icons, Spacing & Radius split the same content into narrower views.
+Every design token, text style, and icon used in this package is rendered on a single Storybook page: `**Foundations/Overview**` (file: `packages/kb-ui/src/components/foundations/Foundations.stories.tsx`). Use this story to eyeball-check tokens against Figma before assuming a component is off-spec. Sibling stories `Foundations/Overview` → Typography, Colors, Icons, Spacing & Radius split the same content into narrower views.
 
 ## Figma Source
 
 File: `https://www.figma.com/design/251DTRmxl2L6jmXd3FWzHe/kb-gaps`
 
-| Section | Node ID | Priority |
-|---|---|---|
-| KB revamp (core layout + navigation) | `1952-10869` | CRUCIAL |
-| KB gaps (AI feature) | `1958-32263` | CRUCIAL |
-| KB analytics dashboard | `1952-10867` | CRUCIAL |
-| Login revamp | `1952-10870` | Secondary |
+
+| Section                                | Node ID      | Priority  |
+| -------------------------------------- | ------------ | --------- |
+| KB revamp (core layout + navigation)   | `1952-10869` | CRUCIAL   |
+| KB gaps (AI feature)                   | `1958-32263` | CRUCIAL   |
+| KB analytics dashboard                 | `1952-10867` | CRUCIAL   |
+| Login revamp                           | `1952-10870` | Secondary |
 | KB creation flow (from main Hiver app) | `1952-10868` | Secondary |
+
 
 ### Unique Screens (study before building any component)
 
-| Screen | Node ID | What it covers |
-|---|---|---|
+
+| Screen                   | Node ID      | What it covers                                                        |
+| ------------------------ | ------------ | --------------------------------------------------------------------- |
 | Screen 1 — Category view | `2166-50022` | Rail nav, tree nav, breadcrumb, category header, sub-categories table |
-| Screen 1 atoms | `2172-51551` | Isolated atoms for screen 1 |
-| Screen 2 — Editor view | `2166-51107` | Editor card, settings panel, breadcrumb with actions |
-| Screen 2 atoms | `2172-51552` | Isolated atoms for screen 2 |
+| Screen 1 atoms           | `2172-51551` | Isolated atoms for screen 1                                           |
+| Screen 2 — Editor view   | `2166-51107` | Editor card, settings panel, breadcrumb with actions                  |
+| Screen 2 atoms           | `2172-51552` | Isolated atoms for screen 2                                           |
+
 
 **Rule:** Always `get_design_context` + `get_screenshot` on the relevant screen node before building any component from that screen.
 
@@ -31,27 +35,31 @@ File: `https://www.figma.com/design/251DTRmxl2L6jmXd3FWzHe/kb-gaps`
 
 File key: `9aGp5t9fH1d0PXi4LMhOdb` — **Note: `get_design_context` returns "nothing selected" for all nodes in this file. Use screenshots + specs below.**
 
-| Component | Node ID | Themes |
-|---|---|---|
-| SideNavRail | `0:1` | dark + light |
-| FileExplorerNav | `1:4823` | dark + light |
-| Avatar | `2:388` | light only |
-| StatusBadge (tag) | `2:400` | published + draft |
-| Table | `1:5178` | light only |
-| Breadcrumb | `1:5389` | light only |
-| PageHeader + Button | `1:5452` | light only |
+
+| Component           | Node ID  | Themes            |
+| ------------------- | -------- | ----------------- |
+| SideNavRail         | `0:1`    | dark + light      |
+| FileExplorerNav     | `1:4823` | dark + light      |
+| Avatar              | `2:388`  | light only        |
+| StatusBadge (tag)   | `2:400`  | published + draft |
+| Table               | `1:5178` | light only        |
+| Breadcrumb          | `1:5389` | light only        |
+| PageHeader + Button | `1:5452` | light only        |
+
 
 **Phase 6 — AI Gaps surface** (canonical spec at `design/ai-gaps.md`):
 
-| Component / Pattern | Node ID | Notes |
-|---|---|---|
-| SideNavRail ai-active state | `74:8794` | Uses existing `SideNavRail` with `activeId="ai"` |
-| AISubNav | `74:8871` | NEW component — 288 px flat nav with section/item kinds |
-| SuggestionCard (hub) | `74:8927` | NEW — hub card with title / description / HR / meta row |
-| KB AI Optimise Hub page | `74:8928` | Pattern story composing rail + AISubNav + breadcrumb + cards |
-| AI gap cards (rail) | `74:9431` | 3×4 grid — pre-review + 3 active + 3 accepted + 3 dismissed |
-| Sources side-sheet | `76:12567` | Radix Dialog overlay |
-| AI Gaps Experience pattern | `74:10788` | 10-frame review loop — 6 static frame stories + 1 interactive |
+
+| Component / Pattern         | Node ID    | Notes                                                         |
+| --------------------------- | ---------- | ------------------------------------------------------------- |
+| SideNavRail ai-active state | `74:8794`  | Uses existing `SideNavRail` with `activeId="ai"`              |
+| AISubNav                    | `74:8871`  | NEW component — 288 px flat nav with section/item kinds       |
+| SuggestionCard (hub)        | `74:8927`  | NEW — hub card with title / description / HR / meta row       |
+| KB AI Optimise Hub page     | `74:8928`  | Pattern story composing rail + AISubNav + breadcrumb + cards  |
+| AI gap cards (rail)         | `74:9431`  | 3×4 grid — pre-review + 3 active + 3 accepted + 3 dismissed   |
+| Sources side-sheet          | `76:12567` | Radix Dialog overlay                                          |
+| AI Gaps Experience pattern  | `74:10788` | 10-frame review loop — 6 static frame stories + 1 interactive |
+
 
 ---
 
@@ -120,19 +128,21 @@ File key: `9aGp5t9fH1d0PXi4LMhOdb` — **Note: `get_design_context` returns "not
 
 **Why card-border vs border-input:** `border-input` is for form fields (inputs/dropdowns). `card-border` is for surface cards. Same hex, different semantic — keeps the two from drifting independently.
 
-**Why trend tokens duplicate ai-* hexes:** AI gaps semantics (`addition`/`replace`/`removal`) are about diff direction in an article; analytics trend tokens are about a metric going up or down. Same hex, distinct semantic — don't conflate the two in component code.
+*Why trend tokens duplicate ai- hexes:** AI gaps semantics (`addition`/`replace`/`removal`) are about diff direction in an article; analytics trend tokens are about a metric going up or down. Same hex, distinct semantic — don't conflate the two in component code.
 
 ### Typography (all Inter)
 
-| Token | Size | Weight | Line Height |
-|---|---|---|---|
-| `heading/lg` | 24px | 600 SemiBold | 32px |
-| `heading/md` | 20px | 600 SemiBold | 28px |
-| `body/lg` | 16px | 400 Regular | 24px |
-| `body/sm/medium` | 14px | 500 Medium | 20px |
-| `body/sm/regular` | 14px | 400 Regular | 20px |
-| `body/xs` | 12px | 500 Medium | 18px |
-| `body/xs/regular` | 12px | 400 Regular | 18px |
+
+| Token             | Size | Weight       | Line Height |
+| ----------------- | ---- | ------------ | ----------- |
+| `heading/lg`      | 24px | 600 SemiBold | 32px        |
+| `heading/md`      | 20px | 600 SemiBold | 28px        |
+| `body/lg`         | 16px | 400 Regular  | 24px        |
+| `body/sm/medium`  | 14px | 500 Medium   | 20px        |
+| `body/sm/regular` | 14px | 400 Regular  | 20px        |
+| `body/xs`         | 12px | 500 Medium   | 18px        |
+| `body/xs/regular` | 12px | 400 Regular  | 18px        |
+
 
 ### Spacing & Layout
 
@@ -148,13 +158,15 @@ Settings panel:   452px
 
 ### Border Radius
 
-| Token | Value | Used on |
-|---|---|---|
-| `r-card` | 12px | cards, panels, editor card |
-| `r-button` | 6px | buttons, icon buttons |
-| `r-input` | 8px | text inputs, dropdowns |
-| `r-pill` | 999px | status badges, pills |
-| `r-breadcrumb` | 4px | breadcrumb items |
+
+| Token          | Value | Used on                    |
+| -------------- | ----- | -------------------------- |
+| `r-card`       | 12px  | cards, panels, editor card |
+| `r-button`     | 6px   | buttons, icon buttons      |
+| `r-input`      | 8px   | text inputs, dropdowns     |
+| `r-pill`       | 999px | status badges, pills       |
+| `r-breadcrumb` | 4px   | breadcrumb items           |
+
 
 ### Shadows
 
@@ -171,12 +183,14 @@ box-shadow: 0px 8px 12px -4px rgba(0,0,0,0.05), 0px 4px 6px -2px rgba(0,0,0,0.10
 ## Component Specs (from Figma screen analysis)
 
 ### Rail Nav (54px wide)
+
 - Logo slot: 54×54, icon centered, 1px separator below
 - Nav icon items: 54×36, icon only, centered
 - Bottom: Avatar 54×36
 - Background: white
 
 ### Tree Nav (288px wide)
+
 - Header: 288×54 — "Editor" text (16px semibold) + search icon button (28px, r:4) at right, 24px h-padding
 - Separator: 1px full-width
 - Nav row (`.menu-items`): 284×36 — chevron (24px) + folder icon (24px) + label + count badge + add/more icons
@@ -184,37 +198,45 @@ box-shadow: 0px 8px 12px -4px rgba(0,0,0,0.05), 0px 4px 6px -2px rgba(0,0,0,0.10
 - Subfolder rows: same structure, indented
 
 ### Breadcrumb Bar (1280×54)
+
 - Height: 54px, white bg, sticky
 - Left: collapse-left icon (14px) → slash (14px) → text items (14px regular, color text-meta) → slash → current item (14px medium, bg surface-subtle, r:4)
 - Right (editor only): "Save as draft" button + "Publish" button (with icon) + trash icon button (32×32, r:6, bg surface-muted)
 
 ### Category Header
+
 - Icon (24px branded) + Title (24px semibold) + subtitle (14px regular, text-meta)
 - `+ New` button: black bg, white text, 14px medium, r:6, px:12 py:6
 
 ### Sub-categories Table
+
 > Authoritative spec: `design/table.md` (live Figma tokens). This section summarises.
+
 - **Outer container**: padding 4 TB / 24 LR; sibling gap 16.
 - **Table frame**: radius 8, 1px inside border `#e5e5e5`.
 - **Heading row**: 48px tall; bg `#f5f5f5` (`background/canvas/default` — **2026-04-21 revert of the 2026-04-20 white-bg change; user confirmed grey is correct**); padding 0 TB / 16 LR (heading-label left edge aligned with body-row icon's left edge); 1px `#e5e5e5` bottom divider to separate from body; text Inter Medium 14/20 `#475569` (case preserved — no uppercase).
 - **Body row**: 48px tall; padding 6 TB / 16 LR; 1px inside row-divider `#e5e5e5` (hidden on last row); label Inter Regular 14/20 `#0f172a`; 24×24 ghost button holding 16px folder glyph; 4px icon↔label gap.
 
 ### Articles Table (5-col)
+
 Same outer container + table frame + heading/body row rules as Sub-categories. Columns:
 
-| Col | Width | Content |
-|---|---|---|
-| Articles | flex | 24×24 ghost button (doc icon) + title |
-| Actions | 48 | centered 24×24 ghost button (ellipsis) |
-| Status | 127 | `Tag` pill (see `design/tag.md`); cell padding 6 TB / 20 LR |
-| Author | 94 | Avatar 24×24 |
-| Last Updated | 251 | text 14/20 `#64748b` |
+
+| Col          | Width | Content                                                     |
+| ------------ | ----- | ----------------------------------------------------------- |
+| Articles     | flex  | 24×24 ghost button (doc icon) + title                       |
+| Actions      | 48    | centered 24×24 ghost button (ellipsis)                      |
+| Status       | 127   | `Tag` pill (see `design/tag.md`); cell padding 6 TB / 20 LR |
+| Author       | 94    | Avatar 24×24                                                |
+| Last Updated | 251   | text 14/20 `#64748b`                                        |
+
 
 Heading-row "Actions" column hides its "Link" label but preserves padding. All rows 48px tall.
 
 ### SideNavRail (54px wide — from library-check `0:1`)
 
 **Dark theme (default):**
+
 - Background: `#1e1e1e` or near-black (~`#1a1a1a`)
 - Width: 54px, full viewport height
 - Top: Hiver brand logo icon, 54×54, centered
@@ -225,6 +247,7 @@ Heading-row "Actions" column hides its "Link" label but preserves padding. All r
 - Bottom: Avatar circle (24px, gray, initials "A")
 
 **Light theme variant:**
+
 - Background: white
 - Nav items: icon `text-[#64748b]`
 - Active: bg `#f1f5f9`, icon `text-[#0f172a]`
@@ -236,6 +259,7 @@ Heading-row "Actions" column hides its "Link" label but preserves padding. All r
 **Source of truth for structure: `206:6837`**; **source of truth for width: `1958:33209`**.
 
 **Data model:** `NavItem` (unified — articles can appear at any depth 0-3):
+
 ```ts
 type NavItem = { id, title, type: 'folder'|'article', status?, count?, children? }
 ```
@@ -243,23 +267,28 @@ type NavItem = { id, title, type: 'folder'|'article', status?, count?, children?
 **Width: 340px. Row height: 36px.**
 
 **Header (48px):**
+
 - Left: `RiPencilLine` (16px, `#64748b`) + "Editor" (14px semibold, `#0f172a`)
 - Right: `RiSearchLine` search button
 - 1px border-bottom
 
 **Indentation system (content left-padding inside inner container):**
-| Depth | Outer padding | Content pl |
-|-------|-------------|-----------|
-| 0 (root) | `px-[12px] py-0` | 0 |
-| 1 | `pl-[16px] pr-[12px] py-0` | `pl-[20px]` |
-| 2 | same | `pl-[44px]` |
-| 3 | same | `pl-[68px]` |
+
+
+| Depth    | Outer padding              | Content pl  |
+| -------- | -------------------------- | ----------- |
+| 0 (root) | `px-[12px] py-0`           | 0           |
+| 1        | `pl-[16px] pr-[12px] py-0` | `pl-[20px]` |
+| 2        | same                       | `pl-[44px]` |
+| 3        | same                       | `pl-[68px]` |
+
 
 **Folder row:** Chevron (`RiArrowRightSLine`/`RiArrowDownSLine`) + `RiFolderLine` + label (14px) + count (right, 14px, `#475569`). On hover: count replaced by `RiMore2Line`.
 
 **Article row:** 6px bullet dot (no chevron) + `RiArticleLine` + label (14px) + status dot (right, `#22c55e` published / `#94a3b8` draft). On hover: status dot replaced by `RiMore2Line`.
 
 **State backgrounds (light):**
+
 - default: transparent
 - hover: `rgba(230,230,230,0.32)`
 - active: `rgba(230,230,230,0.44)`
@@ -283,11 +312,13 @@ type NavItem = { id, title, type: 'folder'|'article', status?, count?, children?
 > Authoritative spec: `design/table.md`. The entry below is a legacy summary kept for screen-level context — it predates the 2026-04-20 heading-bg and alignment fix. See the "Sub-categories Table" / "Articles Table" sections above for the current canonical summary.
 
 **Sub-categories section:**
+
 - White card, r:8, border `#e5e5e5`
 - Header row 48px (bg `#ffffff`, 1px `#e5e5e5` bottom divider): "Sub-categories" (14px medium, `#475569`), left edge aligned with body-row icon
 - Data row 48px: folder icon (16px, `#64748b`) + label (14px regular, `#0f172a`), 16px left padding
 
 **Articles section:**
+
 - White card, r:8, border `#e5e5e5`
 - Column headers (48px, 14px medium `#475569`, bg `#ffffff`, 1px `#e5e5e5` bottom divider): Articles | (actions) | Status | Author | Last Updated
 - Data row (48px): 
@@ -308,14 +339,17 @@ type NavItem = { id, title, type: 'folder'|'article', status?, count?, children?
 
 ### Primitive Fixes Required (from Playwright gap analysis)
 
-| Component | Issue | Fix |
-|---|---|---|
-| Badge (draft/neutral) | Pill invisible on white background | Add `border border-[#e2e8f0]` to draft + neutral variants |
-| Badge (published) | `CheckCircle2` icon doesn't match Figma | Replace with `<span className="size-[6px] rounded-full bg-[#22c55e]" />` |
+
+| Component             | Issue                                   | Fix                                                                      |
+| --------------------- | --------------------------------------- | ------------------------------------------------------------------------ |
+| Badge (draft/neutral) | Pill invisible on white background      | Add `border border-[#e2e8f0]` to draft + neutral variants                |
+| Badge (published)     | `CheckCircle2` icon doesn't match Figma | Replace with `<span className="size-[6px] rounded-full bg-[#22c55e]" />` |
+
 
 ---
 
 ### Editor Card (720px)
+
 - White, r:12, p:40, shadow-lg, border
 - Title: 24px semibold, `#0f172a`
 - Body text: 16px regular, 24px line-height
@@ -324,6 +358,7 @@ type NavItem = { id, title, type: 'folder'|'article', status?, count?, children?
 - AI highlight strips: `#e7f9ee` bg, 24px height
 
 ### Settings Panel (452px)
+
 - White, r:12, px:22 py:24, gap:20, shadow-md, border
 - Header: gear icon (16px) + "Settings" label (14px medium) + chevron-up (16px)
 - Divider: 1px
@@ -338,7 +373,8 @@ type NavItem = { id, title, type: 'folder'|'article', status?, count?, children?
 
 ## Phase 6 spec pointer
 
-See **`design/ai-gaps.md`** for the full AI Gaps / AI Optimise specification covering:
+See `**design/ai-gaps.md`** for the full AI Gaps / AI Optimise specification covering:
+
 - Figma node IDs for every surface
 - Component inventory + file paths
 - Shared TypeScript types (`AISuggestion`, `AISuggestionDecision`, etc.)

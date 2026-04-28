@@ -6,11 +6,15 @@ import {
   RiBarChartBoxLine,
   RiSettings5Line,
   RiMagicLine,
+  RiSparkling2Line,
 } from '@remixicon/react';
 import { AppShell } from '../components/shell/AppShell';
 import { KBBreadcrumbBar } from '../components/shell/KBBreadcrumbBar';
 import { SideNavRail, type NavRailItem } from '../components/nav/SideNavRail';
-import { AISubNav, type AISubNavItem } from '../components/nav/AISubNav';
+import {
+  FileExplorerNav,
+  type NavItem,
+} from '../components/nav/FileExplorerNav';
 import { SuggestionCard } from '../components/content/SuggestionCard';
 import { Avatar } from '../components/primitives/Avatar';
 import { CompanyLogo } from '../components/brand/CompanyLogo';
@@ -25,7 +29,7 @@ import { AiIcon } from '../components/brand/AiIcon';
  *
  * Three-column layout:
  *   [1] SideNavRail (54)         — ai (active), editor, analytics, settings
- *   [2] AISubNav (288)           — AI Centre (section) + AI Optimise (item, active)
+ *   [2] FileExplorerNav flat (288) — AI Centre (section) + AI Optimise (item, active)
  *   [3] Content column (938)     — breadcrumb + page header + 3 suggestion cards
  *
  * Convention notes:
@@ -38,15 +42,8 @@ import { AiIcon } from '../components/brand/AiIcon';
  *     with a 4px gap per Figma.
  * ───────────────────────────────────────────────────────────── */
 
-const meta: Meta = {
-  title: 'Patterns/KB AI Optimise Hub',
-  parameters: {
-    layout: 'fullscreen',
-    viewport: { defaultViewport: 'responsive' },
-  },
-};
-export default meta;
-type Story = StoryObj;
+// Meta declared after the wrapper (see bottom of file) so it can reference
+// `AIOptimiseHubPage` for `component`/`render`.
 
 /* ------- Rail items (column 1) ------- */
 
@@ -59,18 +56,20 @@ const railItems: NavRailItem[] = [
 
 /* ------- Sub-nav items (column 2) ------- */
 
-const subNavItems: AISubNavItem[] = [
+const subNavItems: NavItem[] = [
   {
     id: 'ai-centre',
-    icon: <AiIcon size={18} />,
-    label: 'AI Centre',
+    type: 'article',
+    title: 'AI Centre',
     kind: 'section',
+    icon: <AiIcon size={16} />,
   },
   {
     id: 'ai-optimise',
-    icon: <RiMagicLine size={18} />,
-    label: 'AI Optimise',
+    type: 'article',
+    title: 'AI Optimise',
     kind: 'item',
+    icon: <RiMagicLine size={16} />,
   },
 ];
 
@@ -180,7 +179,11 @@ function AIOptimiseHubPage() {
         />
       }
       explorer={
-        <AISubNav
+        <FileExplorerNav
+          variant="flat"
+          theme="light"
+          title="AI"
+          headerIcon={<RiSparkling2Line size={16} />}
           items={subNavItems}
           activeId="ai-optimise"
           onItemClick={(id) => {
@@ -253,11 +256,21 @@ function AIOptimiseHubPage() {
 }
 
 /* ─────────────────────────────────────────────────────────────
- * Stories
+ * Meta + Stories
+ *
+ * Single `Default` story. The wrapper currently has no toggleable
+ * primitive props worth exposing — surfacing controls would mean
+ * fabricating fake ones. Per the refactor rules we keep `Default`
+ * with empty args and an empty controls panel.
  * ───────────────────────────────────────────────────────────── */
 
-/** Default AI Optimise hub at 1280×900 — matches Figma `74:8928`. */
-export const Default: Story = {
+const meta: Meta<typeof AIOptimiseHubPage> = {
+  title: 'Patterns/AI Optimisation/AI Optimise Hub',
+  parameters: {
+    layout: 'fullscreen',
+    viewport: { defaultViewport: 'responsive' },
+  },
+  component: AIOptimiseHubPage,
   render: () => (
     // h-screen decorator so AppShell's h-screen has a concrete height to fill.
     <div className="h-screen w-full">
@@ -265,3 +278,7 @@ export const Default: Story = {
     </div>
   ),
 };
+export default meta;
+
+/** Default AI Optimise hub at 1280×900 — matches Figma `74:8928`. */
+export const Default: StoryObj<typeof AIOptimiseHubPage> = {};

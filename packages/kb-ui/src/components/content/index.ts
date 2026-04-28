@@ -1,9 +1,7 @@
-export { SubCategoriesTable } from './SubCategoriesTable';
-export type { SubCategoriesTableProps, SubCategory } from './SubCategoriesTable';
-export { ArticlesTable } from './ArticlesTable';
-export type { ArticlesTableProps, Article } from './ArticlesTable';
+export { DataTable } from './DataTable';
+export type { DataTableProps, DataTableColumn } from './DataTable';
 export { PageHeader } from './PageHeader';
-export type { PageHeaderProps } from './PageHeader';
+export type { PageHeaderProps, PageHeaderSize } from './PageHeader';
 export { ContentEditor } from './ContentEditor';
 export type { ContentEditorProps } from './ContentEditor';
 export { ArticleSettingsPanel } from './ArticleSettingsPanel';
@@ -28,6 +26,10 @@ export type {
 } from './AISuggestionsCard';
 export { AIGapSuggestionCard } from './AIGapSuggestionCard';
 export type { AIGapSuggestionCardProps } from './AIGapSuggestionCard';
+export { AICard } from './AICard';
+export type { AICardProps, AICardMode } from './AICard';
+export { NavArrow } from './NavArrow';
+export type { NavArrowProps } from './NavArrow';
 export { SuggestionBlock } from './SuggestionBlock';
 export type { SuggestionBlockProps } from './SuggestionBlock';
 export { ArticleBody } from './ArticleBody';
@@ -63,26 +65,6 @@ export { AnalyticsChartCard } from './AnalyticsChartCard';
 export type { AnalyticsChartCardProps } from './AnalyticsChartCard';
 export { HelpfulnessTag } from './HelpfulnessTag';
 export type { HelpfulnessTagProps, HelpfulnessVariant } from './HelpfulnessTag';
-export { ArticlesNeedsAttentionTable } from './ArticlesNeedsAttentionTable';
-export type {
-  ArticlesNeedsAttentionTableProps,
-  ArticleAttentionRow,
-} from './ArticlesNeedsAttentionTable';
-export { ArticlePerformanceTable } from './ArticlePerformanceTable';
-export type {
-  ArticlePerformanceTableProps,
-  ArticlePerformanceRow,
-} from './ArticlePerformanceTable';
-export { SearchKeywordsTable } from './SearchKeywordsTable';
-export type {
-  SearchKeywordsTableProps,
-  SearchKeywordRow,
-} from './SearchKeywordsTable';
-export { ContentGapsTable } from './ContentGapsTable';
-export type {
-  ContentGapsTableProps,
-  ContentGapRow,
-} from './ContentGapsTable';
 export { AIConversationLogEntry } from './AIConversationLogEntry';
 export type {
   AIConversationLogEntryProps,
@@ -95,8 +77,3 @@ export type {
   AIConversationLogsCardProps,
   SortOption,
 } from './AIConversationLogsCard';
-export { MostCitedArticlesTable } from './MostCitedArticlesTable';
-export type {
-  MostCitedArticlesTableProps,
-  MostCitedRow,
-} from './MostCitedArticlesTable';

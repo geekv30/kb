@@ -31,19 +31,20 @@ import { AiIcon } from '../components/brand/AiIcon';
  *   - Editor card and Settings panel sit side-by-side (no stacking
  *     needed — full viewport has room for 720 + 24 + 452 ≈ 1196 px).
  *
- * Stories:
- *   - `Default` — collapsed, populated content + settings (matches Figma).
- *   - `WithSidebars` — expanded shell (rail + explorer visible), useful as
- *     a regression story for the non-collapsed path.
- *   - `EmptyDraft` — collapsed + empty editor + empty settings.
+ * Single `Default` story driven by Storybook controls:
+ *   - `sidebarCollapsed` — when true, rail + explorer are unmounted (Figma
+ *     `53:8464`). When false, the expanded shell renders for regression.
+ *   - `populated` — when true, editor seeds with the reset-password HTML
+ *     and `populatedSettings`. When false, blank editor + empty settings
+ *     (greenfield state).
+ *
+ * Breadcrumb path is selected internally based on `sidebarCollapsed` to
+ * keep the trail consistent with the visible side-nav state (collapsed →
+ * Getting Started chain, expanded → Offer Multi-channel chain).
  * ───────────────────────────────────────────────────────────── */
 
-const meta: Meta = {
-  title: 'Patterns/KB Editor Page',
-  parameters: { layout: 'fullscreen' },
-};
-export default meta;
-type Story = StoryObj;
+// Meta declared at bottom of file (after wrapper) so it can reference
+// `EditorPage` for `component`/`args`/`render`.
 
 /* ------- Side nav rail ------- */
 
@@ -195,24 +196,43 @@ const emptySettings: ArticleSettings = {
  * ───────────────────────────────────────────────────────────── */
 
 type EditorPageProps = {
-  initialSettings: ArticleSettings;
-  initialHTML?: string;
   /** Controls whether rail + explorer are rendered. Default collapsed (matches Figma `53:8464`). */
-  sidebarCollapsed?: boolean;
-  /** Breadcrumb path — distinct per sidebar state (see constants above). */
-  breadcrumbItems: { id: string; label: string }[];
+  sidebarCollapsed: boolean;
+  /**
+   * When true, editor seeds with reset-password HTML and `populatedSettings`.
+   * When false, blank editor body + `emptySettings` (greenfield state).
+   */
+  populated: boolean;
 };
 
-function EditorPage({
-  initialSettings,
-  initialHTML,
-  sidebarCollapsed = true,
-  breadcrumbItems,
-}: EditorPageProps) {
+function EditorPage({ sidebarCollapsed, populated }: EditorPageProps) {
+  // Pick baked-in seed data based on the `populated` toggle. Both branches
+  // use module-level constants so identity is stable and the editor's
+  // initial-content effect doesn't refire when toggling unrelated controls.
+  const initialSettings = populated ? populatedSettings : emptySettings;
+  const initialHTML = populated ? RESET_PASSWORD_HTML : '';
+  // Breadcrumb path is paired with sidebar state so the trail matches
+  // what's visible in the explorer (or, in the collapsed case, the home
+  // chain from Figma `53:8464`).
+  const breadcrumbItems = sidebarCollapsed
+    ? collapsedBreadcrumbItems
+    : expandedBreadcrumbItems;
+
   const editorRootRef = React.useRef<HTMLDivElement>(null);
   const [activeNavId, setActiveNavId] = React.useState('managing-emails-reset');
   const [settings, setSettings] = React.useState<ArticleSettings>(initialSettings);
   const [collapsed, setCollapsed] = React.useState(sidebarCollapsed);
+
+  // Sync local state with control changes: toggling `sidebarCollapsed` or
+  // `populated` from the Storybook controls panel should reset the local
+  // wrapper state to match — otherwise the user's prior in-component
+  // edits (e.g. tags they added) shadow the new arg value.
+  React.useEffect(() => {
+    setCollapsed(sidebarCollapsed);
+  }, [sidebarCollapsed]);
+  React.useEffect(() => {
+    setSettings(initialSettings);
+  }, [initialSettings]);
 
   const dispatchSave = () => {
     const editorDom = editorRootRef.current?.querySelector('.ProseMirror');
@@ -339,41 +359,31 @@ function EditorPage({
 }
 
 /* ─────────────────────────────────────────────────────────────
- * Stories
+ * Meta + Stories
  * ───────────────────────────────────────────────────────────── */
 
-/** Collapsed shell — matches Figma `53:8464`. */
-export const Default: Story = {
-  render: () => (
-    <EditorPage
-      sidebarCollapsed
-      initialSettings={populatedSettings}
-      initialHTML={RESET_PASSWORD_HTML}
-      breadcrumbItems={collapsedBreadcrumbItems}
-    />
-  ),
+const meta: Meta<typeof EditorPage> = {
+  title: 'Patterns/Knowledge Base/Editor Page',
+  parameters: { layout: 'fullscreen' },
+  component: EditorPage,
+  args: {
+    sidebarCollapsed: true,
+    populated: true,
+  },
+  argTypes: {
+    sidebarCollapsed: {
+      control: 'boolean',
+      description:
+        'When true, rail + explorer are unmounted (matches Figma `53:8464`). When false, expanded shell renders.',
+    },
+    populated: {
+      control: 'boolean',
+      description:
+        'When true, editor seeds with reset-password HTML + populated settings. When false, blank greenfield state.',
+    },
+  },
+  render: (args) => <EditorPage {...args} />,
 };
+export default meta;
 
-/** Expanded shell (rail + explorer visible). Regression coverage for the non-collapsed path. */
-export const WithSidebars: Story = {
-  render: () => (
-    <EditorPage
-      sidebarCollapsed={false}
-      initialSettings={populatedSettings}
-      initialHTML={RESET_PASSWORD_HTML}
-      breadcrumbItems={expandedBreadcrumbItems}
-    />
-  ),
-};
-
-/** Collapsed shell + empty editor + empty settings — the greenfield state. */
-export const EmptyDraft: Story = {
-  render: () => (
-    <EditorPage
-      sidebarCollapsed
-      initialSettings={emptySettings}
-      initialHTML=""
-      breadcrumbItems={collapsedBreadcrumbItems}
-    />
-  ),
-};
+export const Default: StoryObj<typeof EditorPage> = {};

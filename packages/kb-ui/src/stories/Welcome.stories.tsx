@@ -151,7 +151,7 @@ function WelcomePage(): JSX.Element {
             <td style={{ padding: '10px 12px', color: '#475569' }}>
               <strong>Primitives</strong> (Button, Badge, Avatar&hellip;),{' '}
               <strong>Navigation</strong> (SideNavRail, FileExplorerNav),{' '}
-              <strong>Content</strong> (ArticlesTable, PageHeader&hellip;), <strong>Shell</strong>{' '}
+              <strong>Content</strong> (DataTable, PageHeader&hellip;), <strong>Shell</strong>{' '}
               (AppShell, KBBreadcrumbBar).
             </td>
           </tr>

@@ -1,19 +1,9 @@
-import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../../tokens.css';
-import { Button } from '../primitives';
 import {
   SourcesSideSheet,
   type ConversationSource,
 } from './SourcesSideSheet';
-
-const meta: Meta<typeof SourcesSideSheet> = {
-  title: 'Components/Overlays/Sources Side Sheet',
-  component: SourcesSideSheet,
-  parameters: { layout: 'fullscreen' },
-};
-export default meta;
-type Story = StoryObj<typeof SourcesSideSheet>;
 
 const SAMPLE_SOURCES: ConversationSource[] = [
   {
@@ -46,41 +36,21 @@ const SAMPLE_SOURCES: ConversationSource[] = [
   },
 ];
 
-export const Default: Story = {
-  render: () => {
-    const [open, setOpen] = React.useState(true);
-    return (
-      <SourcesSideSheet
-        open={open}
-        onOpenChange={setOpen}
-        sources={SAMPLE_SOURCES}
-      />
-    );
+const meta: Meta<typeof SourcesSideSheet> = {
+  title: 'Components/Overlays/Sources Side Sheet',
+  component: SourcesSideSheet,
+  parameters: { layout: 'fullscreen' },
+  args: {
+    open: true,
+    sources: SAMPLE_SOURCES,
   },
+  render: (args) => (
+    <SourcesSideSheet
+      {...args}
+      onOpenChange={() => {}}
+    />
+  ),
 };
+export default meta;
 
-export const Interactive: Story = {
-  render: () => {
-    const [open, setOpen] = React.useState(false);
-    return (
-      <div
-        style={{
-          height: '100vh',
-          width: '100vw',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: '#f5f5f5',
-        }}
-      >
-        <Button onClick={() => setOpen(true)}>Open sources</Button>
-        <SourcesSideSheet
-          open={open}
-          onOpenChange={setOpen}
-          sources={SAMPLE_SOURCES}
-          onSourceClick={(id) => console.log('Clicked source:', id)}
-        />
-      </div>
-    );
-  },
-};
+export const Default: StoryObj<typeof SourcesSideSheet> = {};

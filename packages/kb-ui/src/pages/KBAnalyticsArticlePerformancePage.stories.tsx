@@ -4,6 +4,8 @@ import {
   RiQuillPenLine,
   RiSettings5Line,
   RiBarChartBoxLine,
+  RiFile3Line,
+  RiInformationLine,
 } from '@remixicon/react';
 import { AppShell } from '../components/shell/AppShell';
 import { KBBreadcrumbBar } from '../components/shell/KBBreadcrumbBar';
@@ -20,14 +22,11 @@ import { DateRangePill } from '../components/content/DateRangePill';
 import { AnalyticsAreaChart } from '../components/content/AnalyticsAreaChart';
 import { AnalyticsChartCard } from '../components/content/AnalyticsChartCard';
 import { AnalyticsDonutChart } from '../components/content/AnalyticsDonutChart';
+import { DataTable, type DataTableColumn } from '../components/content/DataTable';
 import {
-  ArticlesNeedsAttentionTable,
-  type ArticleAttentionRow,
-} from '../components/content/ArticlesNeedsAttentionTable';
-import {
-  ArticlePerformanceTable,
-  type ArticlePerformanceRow,
-} from '../components/content/ArticlePerformanceTable';
+  HelpfulnessTag,
+  type HelpfulnessVariant,
+} from '../components/content/HelpfulnessTag';
 
 /* ─────────────────────────────────────────────────────────────
  * KB Analytics — Article Performance
@@ -37,26 +36,9 @@ import {
  *   - Page header: title + subtitle (left) | DateRangePill (right)
  *   - StatCardGrid "Support Performance" — 4 metrics
  *   - AnalyticsChartCard "Article views over time" — 2-series area chart
- *   - 2-up: AnalyticsChartCard "Views by Category" (donut) | ArticlesNeedsAttentionTable
- *   - ArticlePerformanceTable
- *
- * Side-nav:
- *   - Rail (54): AI / Editor / Analytics (active) / Settings
- *   - Explorer: FileExplorerNav variant="flat" with `views` active
- *   - Breadcrumb: category variant with single item "Analytics"
+ *   - 2-up: AnalyticsChartCard "Views by Category" (donut) | DataTable (needs-attention)
+ *   - DataTable (article performance — 5 cols)
  * ───────────────────────────────────────────────────────────── */
-
-const meta: Meta = {
-  title: 'Patterns/KB Analytics — Article Performance',
-  parameters: {
-    layout: 'fullscreen',
-    viewport: { defaultViewport: 'responsive' },
-  },
-};
-export default meta;
-type Story = StoryObj;
-
-/* ── Rail (4 items, analytics active) ─────────────────────────── */
 
 const railItems: NavRailItem[] = [
   { id: 'ai', icon: <AiIcon size={16} />, label: 'AI' },
@@ -68,8 +50,6 @@ const railItems: NavRailItem[] = [
   },
   { id: 'settings', icon: <RiSettings5Line size={16} />, label: 'Settings' },
 ];
-
-/* ── Analytics explorer items (3 sections, flat list) ──────── */
 
 const analyticsNavItems: NavItem[] = [
   { id: 'views', type: 'article', title: 'Article Views and Engagement' },
@@ -97,14 +77,54 @@ const viewsByCategoryData = [
   { label: 'Category 6', value: 10 },
 ];
 
-const needsAttentionRows: ArticleAttentionRow[] = [
+type AttentionRow = {
+  id: string;
+  title: string;
+  helpfulness: string;
+  variant: HelpfulnessVariant;
+};
+
+const needsAttentionRows: AttentionRow[] = [
   { id: '1', title: 'Syncing past emails while creating', helpfulness: '24%', variant: 'down' },
   { id: '2', title: 'How to Sync Previous Emails Whe...', helpfulness: '31%', variant: 'down' },
   { id: '3', title: 'Setting Up a New Shared Mailbox:', helpfulness: '91%', variant: 'up' },
   { id: '4', title: 'Creating a New Shared Mailbox? H...', helpfulness: '95%', variant: 'up' },
 ];
 
-const articlePerformanceRows: ArticlePerformanceRow[] = [
+const attentionColumns: DataTableColumn<AttentionRow>[] = [
+  {
+    id: 'title',
+    header: 'Article Title',
+    render: (r) => (
+      <div className="flex items-center gap-2 min-w-0 pr-2">
+        <RiFile3Line
+          size={16}
+          className="shrink-0 text-[#64758b]"
+          aria-hidden="true"
+        />
+        <span className="truncate">{r.title}</span>
+      </div>
+    ),
+  },
+  {
+    id: 'helpfulness',
+    header: 'Helpfulness',
+    align: 'right',
+    render: (r) => <HelpfulnessTag value={r.helpfulness} variant={r.variant} />,
+  },
+];
+
+type PerfRow = {
+  id: string;
+  title: string;
+  category: string;
+  totalViews: string;
+  avgTimeSpent: string;
+  helpfulness: string;
+  helpfulnessVariant: HelpfulnessVariant;
+};
+
+const articlePerformanceRows: PerfRow[] = [
   {
     id: '1',
     title: 'Syncing past emails while cr...',
@@ -140,6 +160,63 @@ const articlePerformanceRows: ArticlePerformanceRow[] = [
     avgTimeSpent: '02m : 45s',
     helpfulness: '91%',
     helpfulnessVariant: 'down',
+  },
+];
+
+const performanceColumns: DataTableColumn<PerfRow>[] = [
+  {
+    id: 'title',
+    header: 'Article Title',
+    width: 230,
+    render: (r) => (
+      <div className="flex items-center gap-2 min-w-0 pr-2">
+        <RiFile3Line
+          size={16}
+          className="shrink-0 text-[#64758b]"
+          aria-hidden="true"
+        />
+        <span className="truncate">{r.title}</span>
+      </div>
+    ),
+  },
+  {
+    id: 'category',
+    header: 'Category',
+    width: 208,
+    headerClassName: 'pl-6',
+    className: 'pl-6',
+    render: (r) => (
+      <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#f7f7f7] text-[13px] font-normal leading-[19px] text-[#0f172a]">
+        {r.category}
+      </span>
+    ),
+  },
+  {
+    id: 'totalViews',
+    header: 'Total Views',
+    width: 126,
+    headerClassName: 'pl-6',
+    className: 'pl-6',
+    render: (r) => r.totalViews,
+  },
+  {
+    id: 'avgTimeSpent',
+    header: 'Avg. Time Spent',
+    width: 158,
+    headerClassName: 'pl-6',
+    className: 'pl-6',
+    render: (r) => r.avgTimeSpent,
+  },
+  {
+    id: 'helpfulness',
+    header: 'Helpfulness',
+    width: 128,
+    align: 'right',
+    headerClassName: 'pr-6',
+    className: 'pr-6',
+    render: (r) => (
+      <HelpfulnessTag value={r.helpfulness} variant={r.helpfulnessVariant} />
+    ),
   },
 ];
 
@@ -179,7 +256,6 @@ function ArticlePerformancePage() {
       }
     >
       <div className="flex flex-col gap-5">
-        {/* Page header */}
         <header className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-[24px] font-semibold leading-[32px] text-[#0f172a]">
@@ -192,7 +268,6 @@ function ArticlePerformancePage() {
           <DateRangePill value="7d" />
         </header>
 
-        {/* Stats — Support Performance */}
         <StatCardGrid
           title="Support Performance"
           infoTooltip="Total support performance metrics"
@@ -224,7 +299,6 @@ function ArticlePerformancePage() {
           ]}
         />
 
-        {/* Article views over time */}
         <AnalyticsChartCard
           title="Article views over time"
           infoTooltip="Total vs unique views over the selected period"
@@ -240,7 +314,6 @@ function ArticlePerformancePage() {
           />
         </AnalyticsChartCard>
 
-        {/* 2-up: Views by Category | Articles needs attention */}
         <div className="flex gap-4">
           <div className="flex-1 min-w-0">
             <AnalyticsChartCard
@@ -251,23 +324,83 @@ function ArticlePerformancePage() {
             </AnalyticsChartCard>
           </div>
           <div className="flex-1 min-w-0">
-            <ArticlesNeedsAttentionTable rows={needsAttentionRows} />
+            <DataTable
+              dataKbComponent="articles-needs-attention-table"
+              rows={needsAttentionRows}
+              columns={attentionColumns}
+              emptyMessage="No articles"
+              headingGap={8}
+              heading={
+                <div>
+                  <div className="flex items-center">
+                    <h3 className="text-[14px] font-medium leading-[20px] text-[#0f172a]">
+                      Articles needs attention
+                    </h3>
+                    <RiInformationLine
+                      size={16}
+                      className="ml-2 text-[#475569]"
+                      aria-hidden="true"
+                    />
+                    <span className="flex-1" />
+                    <span
+                      className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#f7f7f7] text-[12px] font-medium leading-[18px] text-[#0f172a]"
+                      aria-label={`${needsAttentionRows.length} Articles`}
+                    >
+                      {`${needsAttentionRows.length} Articles`}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-[13px] font-normal leading-[19px] text-[#475569]">
+                    Articles with very low helpfulness index
+                  </p>
+                  <div className="mt-4 h-px bg-[#e2e8f0]" />
+                </div>
+              }
+              headerDivider={false}
+            />
           </div>
         </div>
 
-        {/* Article Performance table */}
-        <ArticlePerformanceTable rows={articlePerformanceRows} />
+        <DataTable
+          dataKbComponent="article-performance-table"
+          rows={articlePerformanceRows}
+          columns={performanceColumns}
+          emptyMessage="No articles"
+          headingGap={8}
+          heading={
+            <div>
+              <div className="flex items-center">
+                <h3 className="text-[14px] font-medium leading-[20px] text-[#0f172a]">
+                  Article Performance
+                </h3>
+                <RiInformationLine
+                  size={16}
+                  className="ml-2 text-[#475569]"
+                  aria-hidden="true"
+                />
+              </div>
+              <div className="mt-4 h-px bg-[#e2e8f0]" />
+            </div>
+          }
+          headerDivider={false}
+        />
       </div>
     </AppShell>
   );
 }
 
-/** Default — Article Performance page composed at responsive width.
- *  Matches Figma `1974:53692`. */
-export const Default: Story = {
+const meta: Meta<typeof ArticlePerformancePage> = {
+  title: 'Patterns/Analytics/Article Performance',
+  parameters: {
+    layout: 'fullscreen',
+    viewport: { defaultViewport: 'responsive' },
+  },
+  component: ArticlePerformancePage,
   render: () => (
     <div className="h-screen w-full">
       <ArticlePerformancePage />
     </div>
   ),
 };
+export default meta;
+
+export const Default: StoryObj<typeof ArticlePerformancePage> = {};

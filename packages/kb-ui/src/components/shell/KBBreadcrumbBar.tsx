@@ -49,6 +49,17 @@ export type KBBreadcrumbBarProps = {
    * user has accepted at least one suggestion (see `KBAIGapsExperience`).
    */
   publishDisabled?: boolean;
+  /**
+   * Editor variant only. When `true`, the Save-as-draft button is rendered
+   * disabled (muted text + `cursor-not-allowed`) and `onSaveAsDraft` will not
+   * fire.
+   *
+   * Optional — when undefined, falls back to `publishDisabled` for backwards
+   * compatibility with the AI Gaps flow (which mutes Save and Publish in
+   * lockstep). The KB editor route passes this independently so Save can
+   * disable on a clean editor while Publish remains enabled.
+   */
+  saveDisabled?: boolean;
   className?: string;
 };
 
@@ -67,8 +78,14 @@ export function KBBreadcrumbBar({
   onPublish,
   onClose,
   publishDisabled = false,
+  saveDisabled,
   className,
 }: KBBreadcrumbBarProps) {
+  // Save-as-draft falls back to `publishDisabled` when `saveDisabled` is
+  // not supplied — preserves the AI Gaps "lockstep" behaviour where both
+  // controls mute together until at least one suggestion is accepted.
+  const effectiveSaveDisabled =
+    saveDisabled === undefined ? publishDisabled : saveDisabled;
   const handleLeadingClick = onToggleSidebar ?? onCollapse;
   const LeadingIcon = sidebarCollapsed ? RiHome5Line : RiLayoutLeftLine;
   const leadingLabel = sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar';
@@ -154,11 +171,11 @@ export function KBBreadcrumbBar({
           <button
             type="button"
             onClick={onSaveAsDraft}
-            disabled={publishDisabled}
+            disabled={effectiveSaveDisabled}
             className={cn(
               'inline-flex items-center h-8 px-3 py-1.5 rounded-[6px] text-[14px] font-normal',
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
-              publishDisabled
+              effectiveSaveDisabled
                 ? 'text-[#94a3b8] cursor-not-allowed'
                 : 'text-[#475569] hover:bg-[#f8fafc]',
             )}
