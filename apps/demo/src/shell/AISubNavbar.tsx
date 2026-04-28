@@ -1,4 +1,4 @@
-// Phase 7.5.3 — Route-aware wrapper around `AISubNav` for the
+// Phase 7.5.3 — Route-aware wrapper around the local `AISubNav` for the
 // `/ai-optimise/*` surface.
 //
 // Two rows per Figma `74:8871` (AI Optimise hub):
@@ -10,7 +10,8 @@
 
 import { RiMagicLine } from '@remixicon/react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { AISubNav, type AISubNavItem, AiIcon } from '@hiver/kb-ui';
+import { AiIcon } from '@hiver/kb-ui';
+import { AISubNav, type AISubNavItem } from './AISubNav';
 import { routes } from '../lib/routes';
 import { useToast } from '../components/Toast';
 

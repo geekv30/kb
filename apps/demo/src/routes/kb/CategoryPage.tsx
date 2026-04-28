@@ -1,10 +1,12 @@
 // Phase 7.5.4 — Category page.
 //
-// Composes the kb-ui `PageHeader` + `SubCategoriesTable` + `ArticlesTable`
-// per TRD §7.3. Resolves the deepest URL segment to a category, lists
-// its child sub-categories and articles, and wires the "+ New" CTA to
-// `editor/createNew` followed by an immediate navigation to the new
-// article's editor (PRD Journey A step 13).
+// Mirrors `packages/kb-ui/src/pages/KBCategoryPage.stories.tsx` —
+// uses `DataTable` + inline columns per Phase 7.5 consolidation.
+// The legacy `ArticlesTable` / `SubCategoriesTable` components were
+// collapsed into the single canonical `<DataTable<T> />` primitive in
+// commit `de1f197`; row geometry, colours, and chrome remain identical
+// (white card, slate border, 8 px radius, grey #f5f5f5 header,
+// 6 px vertical cell padding, h-12 row height).
 //
 // All visual elements come from `@hiver/kb-ui`. The only bespoke UI is
 // (a) the inline "category not found" state and (b) the inline empty
@@ -13,13 +15,19 @@
 
 import { useCallback, useMemo } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { RiFile3Line } from '@remixicon/react';
 import {
-  ArticlesTable,
+  RiArrowRightSLine,
+  RiFile3Line,
+  RiFolderLine,
+  RiMore2Line,
+} from '@remixicon/react';
+import {
+  Avatar,
+  Badge,
+  cn,
+  DataTable,
   PageHeader,
-  SubCategoriesTable,
-  type Article as TableArticle,
-  type SubCategory as TableSubCategory,
+  type DataTableColumn,
 } from '@hiver/kb-ui';
 import { useMockStore } from '../../store/MockStoreContext';
 import {
@@ -33,9 +41,167 @@ import { formatRelativeDate } from '../../lib/relativeDate';
 import { EmptyState } from '../../components/EmptyState';
 
 /* ─────────────────────────────────────────────────────────────
+ * Row types — co-located with the page that owns them.
+ *
+ * These match the (now-dropped) `SubCategory` / `Article` shapes
+ * from kb-ui pre-Phase-7.5. `articleCount` is kept on the row for
+ * potential future use, but is not rendered (matches legacy
+ * SubCategoriesTable, which never displayed it either).
+ * ───────────────────────────────────────────────────────────── */
+
+type SubCategoryRow = {
+  id: string;
+  title: string;
+  articleCount: number;
+};
+
+type ArticleRow = {
+  id: string;
+  title: string;
+  status: 'published' | 'draft';
+  authorInitials?: string;
+  lastUpdated: string;
+};
+
+/* ─────────────────────────────────────────────────────────────
+ * Column configs — lifted verbatim from
+ * `KBCategoryPage.stories.tsx`. Geometry is the legacy
+ * ArticlesTable / SubCategoriesTable unwrapped chrome (white
+ * card, slate border, 8 px radius, grey #f5f5f5 header,
+ * 6-px vertical cell padding).
+ * ───────────────────────────────────────────────────────────── */
+
+const subCategoryColumns: DataTableColumn<SubCategoryRow>[] = [
+  {
+    id: 'title',
+    header: 'Sub-categories',
+    headerClassName: 'pl-4 pr-0 py-0 text-[#475569]',
+    className: 'pl-4 pr-0',
+    render: (item) => (
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          aria-label={`Open ${item.title}`}
+          onClick={(e) => e.stopPropagation()}
+          className={cn(
+            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#64758b]',
+            'hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
+          )}
+        >
+          <RiFolderLine size={16} aria-hidden="true" />
+        </button>
+        <span className="text-[14px] font-normal leading-[20px] text-[#0f172a]">
+          {item.title}
+        </span>
+      </div>
+    ),
+  },
+  {
+    id: 'chev',
+    header: '',
+    align: 'right',
+    width: 48,
+    headerClassName: 'pl-0 pr-4 py-0',
+    className: 'pl-0 pr-4',
+    render: () => (
+      <div className="flex items-center justify-end">
+        <RiArrowRightSLine
+          size={16}
+          className="text-[#64758b]"
+          aria-hidden="true"
+        />
+      </div>
+    ),
+  },
+];
+
+const articleColumns: DataTableColumn<ArticleRow>[] = [
+  {
+    id: 'title',
+    header: 'Articles',
+    headerClassName: 'pl-4 pr-0 py-0 text-[#475569]',
+    className: 'px-4',
+    render: (a) => (
+      <div className="flex items-center gap-1 min-w-0">
+        <button
+          type="button"
+          aria-label={`Open ${a.title}`}
+          onClick={(e) => e.stopPropagation()}
+          className={cn(
+            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#64758b]',
+            'hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
+          )}
+        >
+          <RiFile3Line size={16} aria-hidden="true" />
+        </button>
+        <span className="text-[14px] font-normal leading-[20px] text-[#0f172a] truncate">
+          {a.title}
+        </span>
+      </div>
+    ),
+  },
+  {
+    id: 'kebab',
+    header: '',
+    align: 'center',
+    width: 48,
+    headerClassName: 'px-0 py-0',
+    className: 'px-0',
+    render: (a) => (
+      <div className="flex items-center justify-center">
+        <button
+          type="button"
+          aria-label={`More actions for ${a.title}`}
+          onClick={(e) => e.stopPropagation()}
+          className={cn(
+            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#94a3b8]',
+            'hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
+          )}
+        >
+          <RiMore2Line size={16} aria-hidden="true" />
+        </button>
+      </div>
+    ),
+  },
+  {
+    id: 'status',
+    header: 'Status',
+    width: 127,
+    headerClassName: 'px-4 py-0 text-[#475569]',
+    className: 'px-4',
+    render: (a) => (
+      <Badge variant={a.status}>
+        {a.status === 'published' ? 'Published' : 'Draft'}
+      </Badge>
+    ),
+  },
+  {
+    id: 'author',
+    header: 'Author',
+    align: 'center',
+    width: 94,
+    headerClassName: 'px-4 py-0 text-[#475569]',
+    className: 'px-4',
+    render: (a) => (
+      <div className="flex items-center justify-center">
+        {a.authorInitials ? <Avatar initials={a.authorInitials} /> : null}
+      </div>
+    ),
+  },
+  {
+    id: 'updated',
+    header: 'Last Updated',
+    width: 251,
+    headerClassName: 'px-4 py-0 text-[#475569]',
+    className: 'px-4',
+    render: (a) => <span className="text-[#64758b]">{a.lastUpdated}</span>,
+  },
+];
+
+/* ─────────────────────────────────────────────────────────────
  * View-model helpers
  *
- * The store's domain shapes don't 1:1 match the kb-ui table props,
+ * The store's domain shapes don't 1:1 match the table row shapes,
  * so we project them here. Keeps the JSX tidy and makes it obvious
  * which fields the tables actually consume.
  * ───────────────────────────────────────────────────────────── */
@@ -43,7 +209,7 @@ import { EmptyState } from '../../components/EmptyState';
 function toSubCategoryRow(
   cat: Category,
   articleCount: number,
-): TableSubCategory {
+): SubCategoryRow {
   return {
     id: cat.id,
     title: cat.title,
@@ -54,7 +220,7 @@ function toSubCategoryRow(
 function toArticleRow(
   article: Article,
   author: User | undefined,
-): TableArticle {
+): ArticleRow {
   return {
     id: article.id,
     title: article.title,
@@ -203,23 +369,23 @@ export default function CategoryPage() {
   const childCategories = selectChildCategories(state, category.id);
   const articles = selectArticlesInCategory(state, category.id);
 
-  const subCategoryRows: TableSubCategory[] = childCategories.map((c) =>
+  const subCategoryRows: SubCategoryRow[] = childCategories.map((c) =>
     toSubCategoryRow(c, selectArticlesInCategory(state, c.id).length),
   );
-  const articleRows: TableArticle[] = articles.map((a) =>
+  const articleRows: ArticleRow[] = articles.map((a) =>
     toArticleRow(a, state.users[a.authorId]),
   );
 
   /* ── Click handlers ────────────────────────────────────────── */
 
-  const handleSubCategoryClick = (childId: string) => {
-    const child = state.categories[childId];
+  const handleSubCategoryClick = (row: SubCategoryRow) => {
+    const child = state.categories[row.id];
     if (!child) return;
     navigate(buildChildCategoryUrl(child, topLevel, mid, depth2));
   };
 
-  const handleArticleClick = (articleId: string) => {
-    const article = state.articles[articleId];
+  const handleArticleClick = (row: ArticleRow) => {
+    const article = state.articles[row.id];
     if (!article) return;
     navigate(routes.article(article.slug));
   };
@@ -242,15 +408,27 @@ export default function CategoryPage() {
       ) : (
         <>
           {subCategoryRows.length > 0 && (
-            <SubCategoriesTable
-              items={subCategoryRows}
-              onItemClick={handleSubCategoryClick}
+            <DataTable
+              dataKbComponent="sub-categories-table"
+              rows={subCategoryRows}
+              columns={subCategoryColumns}
+              wrapped={false}
+              headerBackground="#f5f5f5"
+              cellPaddingY={6}
+              emptyMessage="No sub-categories"
+              onRowClick={handleSubCategoryClick}
             />
           )}
           {articleRows.length > 0 && (
-            <ArticlesTable
-              articles={articleRows}
-              onArticleClick={handleArticleClick}
+            <DataTable
+              dataKbComponent="articles-table"
+              rows={articleRows}
+              columns={articleColumns}
+              wrapped={false}
+              headerBackground="#f5f5f5"
+              cellPaddingY={6}
+              emptyMessage="No articles"
+              onRowClick={handleArticleClick}
             />
           )}
         </>
