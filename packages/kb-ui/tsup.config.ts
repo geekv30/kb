@@ -1,4 +1,5 @@
 import { defineConfig } from 'tsup';
+import { copyFile } from 'node:fs/promises';
 
 export default defineConfig({
   entry: ['src/index.ts'],
@@ -8,4 +9,7 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   external: ['react', 'react-dom'],
+  onSuccess: async () => {
+    await copyFile('src/tokens.css', 'dist/tokens.css');
+  },
 });
