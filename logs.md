@@ -2,7 +2,7 @@
 
 ## Current Status
 
-**Phase 7.5 complete (demo app shipped). Ready for Phase 8 (npm publish) / Phase 9 (MCP).**
+**Phase 8 in progress (issue-driven workflow). 3 of 6 Phase 8 issues closed (PRs #14-#16). Phase 9 (MCP server) not yet started.**
 
 Phases 1–7.5 done. Phase 7.5 shipped a **standalone Vite + React 18 demo app** at `apps/demo/` that consumes `@hiver/kb-ui` via npm workspace — proving the integration story before publish. Built across 9 sequential `ui-engineer` dispatches per `demo-app-prd.md` + `demo-app-trd.md`. All three PRD §6 journeys (Browse & Edit, AI Optimise Review, Analytics Drill) functional end-to-end with zero `console.log` placeholders. Production-grade polish: top-right Toast, Radix-themed ConfirmDialog (replaces `window.confirm`), `?` cheat sheet, 150ms route cross-fade, branded 404, focus management on route change, code-split per route. Bundle: 233 KB initial gzip (under the 250 KB budget). Sign-off harness at `apps/demo/scripts/phase-7-5-9-signoff.mjs` walks all 3 journeys cold and asserts every PRD step — currently 56 / 56 PASS.
 
@@ -44,6 +44,7 @@ Phase 7 (predecessor) shipped the **Analytics surface** — the third CRUCIAL se
 | 2026-04-21 | Phase 6 — docs                    | ✅ Done      | **P6.7** — `design/ai-gaps.md` created (canonical spec with node IDs / types / state machine / keyboard / stories / open items). `design.md` updated with Phase 6 pointer. `ai-suggestions-flow.md` amended with 3 Figma-verified gaps.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | 2026-04-26 | Phase 7.5 (demo app)              | ✅ Done      | Built `apps/demo/` — a standalone Vite + React 18 + RR v6 + TS strict + Tailwind v4 SPA that consumes `@hiver/kb-ui` via npm workspace. 9 ui-engineer dispatches covered: workspace + scaffold (7.5.1), MockStore + 17 articles + 23 categories + 9 suggestions across 3 articles + 12 conversation sources (7.5.2), shell + routing skeleton (7.5.3), category page + tree expansion (7.5.4), editor page + Cmd-S/Cmd-Enter + unsaved-changes guard + + New flow (7.5.5), AI Optimise hub + AI Gaps reducer-driven review with mid-flow persistence (7.5.6), 3 analytics tabs with deep-links into editor (7.5.7), production polish — Toast + ConfirmDialog + cheat sheet + route cross-fade + branded 404 + EmptyState + error boundary + focus management (7.5.8), final verification + docs + memory (7.5.9). Bundle: 233 KB initial gzip, all 3 PRD §6 journeys completable cold. Sign-off harness `apps/demo/scripts/phase-7-5-9-signoff.mjs` reports 56 / 56 PASS. Known limitation flagged for kb-ui Phase 8 follow-up: `ArticleBody` is hardcoded for password-reset content — accepts arbitrary HTML in a future kb-ui change. |
 | 2026-04-27 | Storybook taxonomy + repo tidy    | ✅ Done      | **Storybook reorg** — split the 24-item `Components/Content` bucket into `Components/Layout`, `Components/Article`, `Components/Tables`, `Components/Charts & Stats`, `Components/AI`. Moved `KBBreadcrumbBar` from Shell → Navigation. Split `Patterns/` into `Patterns/Knowledge Base/`*, `Patterns/AI Optimisation/`*, `Patterns/Analytics/*`. Updated 31 story `meta.title` strings + `preview.ts` `storySort.order`. Normalised PascalCase titles to spaced names (e.g. `ArticlesTable` → `Articles Table`). Typecheck clean. **Repo tidy** — deleted: `.DS_Store`, `.playwright-mcp/` (3.8 MB stale console logs, gitignored), root `screenshots/` (1.2 MB, canonical lives under `design/screenshots/`, gitignored), root `CompanyLogo.svg` (duplicate of `packages/kb-ui/src/components/brand/CompanyLogo.tsx`), empty `design/raw/`, `design/phase-6-diff-report.md` + `design/phase-7-diff-report.md` + `design/phase-7-plan.md` (orphaned per-phase artifacts; cumulative log lives in `design/_diff-report.md`).                                                                                                              |
+| 2026-04-28 | Phase 8 kickoff (issue-driven)    | 🔁 In progress | Filed 12 GitHub issues mapping 1:1 to plan sections (#1-#12 cover Phase 8.1-8.6 + Phase 9.1-9.6) plus #13 (a discovered AISubNav demo regression). Workflow per user: one issue at a time, branch + ui-engineer dispatch + thorough verify + PR + merge. **Closed:** #1 (CSS distribution gap, PR #14 — tsup onSuccess copies tokens.css → dist/, exports retargeted), #2 (npm publish metadata, PR #15 — license/author/repo/bugs/keywords/sideEffects/publishConfig added to packages/kb-ui/package.json), #3 (LICENSE + root README + package README + CHANGELOG, PR #16). **Open:** #4 (ArticleBody refactor — partial WIP stashed on a topic branch), #5 (smoke test, blocked by #1-#4 + #13), #6 (publish kb-ui, blocked by #5, requires user `npm login` + @hiver scope claim), #7-#11 (MCP server build), #12 (publish kb-mcp, requires user `npm login`), #13 (AISubNav demo build regression — pre-existing from commit `de1f197`, blocks #5).                                                                                                                                                                            |
 
 
 ## What's Done
@@ -98,12 +99,43 @@ All fixes should be dispatched via ui-engineer. The following were applied this 
 
 ## What's Next
 
-- Phase 5: Article Editor — done 2026-04-21
-- Phase 6: KB Gaps / AI Optimise — done 2026-04-21
-- Phase 7: Analytics (StatCard, LineChart, ConversationLogsTable, Dashboard) — done 2026-04-25
-- Phase 7.5: Demo app (`apps/demo`) — done 2026-04-26
-- **Phase 8: npm publish.** Phase 7.5 already proved every public export resolves cleanly through the workspace barrel, so this phase is mostly: barrel audit (ensure `useAIGapsReducer` + types are exported per TRD §2.2), version bump from `0.1.0` → `0.2.0` (or `1.0.0` if treating Phase 8 as the v1 release), `npm publish --access public`, write release notes covering the public API surface introduced through Phases 5–7. Optional: GitHub Actions release workflow + automated changelog. One follow-up coming out of Phase 7.5 demo work: kb-ui's `ArticleBody` is currently hardcoded for password-reset content — a future kb-ui change should let it accept arbitrary HTML.
-- Phase 9: MCP companion server
+Phase 8 (npm publish) and Phase 9 (MCP companion) are now tracked as 13 GitHub issues at https://github.com/geekv30/kb/issues. The plan file at `.claude/plans/understand-the-requirements-of-inherited-snail.md` is the source of truth for scope; this section is the operational status.
+
+### Phase 8 — npm publish
+
+| # | Title | Status | Notes |
+|---|---|---|---|
+| 1 | Phase 8.1 — Fix CSS distribution gap | ✅ closed (PR #14) | tsup `onSuccess` copies tokens.css → dist/, `exports["./styles"]` retargeted |
+| 2 | Phase 8.2 — Complete package.json metadata | ✅ closed (PR #15) | license, author, repo, bugs, keywords, sideEffects, publishConfig |
+| 3 | Phase 8.3 — LICENSE + READMEs + CHANGELOG | ✅ closed (PR #16) | MIT, root README, package README (npm landing), CHANGELOG 1.0.0 entry |
+| 4 | Phase 8.4 — ArticleBody arbitrary HTML refactor | 🔁 WIP (stashed) | First ui-engineer dispatch was cancelled mid-run; partial edits stashed (`git stash list` shows entry on issue-4 branch). Either resume via `git stash pop` on a fresh `issue-4-articlebody-regions` branch, or start over. Goal: replace hardcoded password-reset JSX in `ArticleBody.tsx` with a required `regions` prop; move JSX to `KBAIGapsExperience.stories.tsx` and the demo's AI review route. Acceptance: 56/56 sign-off harness passes. |
+| 13 | Fix demo build — AISubNav imported but not exported | ⬜ open (blocks #5) | Pre-existing from commit `de1f197` ("Drop AISubNav (replaced at the app layer)") — demo still imports `AISubNav` from kb-ui. `npm run demo:build` fails today; sign-off harness uses `dev` so it didn't surface. Fix in demo (build the nav locally), not in kb-ui. |
+| 5 | Phase 8.5 — Pre-publish smoke test | ⬜ open (blocked by #1-#4, #13) | `npm pack` + scratch-dir install + tsc check + apps/demo tgz swap + 56/56 harness |
+| 6 | Phase 8.6 — Publish @hiver/kb-ui v1.0.0 to npm | ⬜ open (blocked by #5, **requires user action**) | User must (a) claim the `@hiver` scope on npmjs.com, (b) run `npm login` locally, (c) run `npm publish` from `packages/kb-ui/`. Fallback name `@hiverkb/ui` if `@hiver` is taken. |
+
+### Phase 9 — MCP companion server
+
+| # | Title | Status | Notes |
+|---|---|---|---|
+| 7 | Phase 9.1 — Scaffold packages/kb-mcp/ | ⬜ open (blocked by #6) | Workspace package with `bin: { kb-mcp: ... }`, peer-dep on @hiver/kb-ui, stdio transport, `@modelcontextprotocol/sdk` + zod |
+| 8 | Phase 9.2 — Build component + token spec indices | ⬜ open (blocked by #7) | TypeScript compiler API for component props; tokens.ts + tokens.css parser |
+| 9 | Phase 9.3 — Tier 1 MCP tools | ⬜ open (blocked by #8) | `list_components`, `get_component_spec`, `list_tokens`, `get_token_value`, `get_story_code` + `kb://design/overview` resource |
+| 10 | Phase 9.4 — recommend_components_for_prd | ⬜ open (blocked by #9) | Hand-written keyword map + retrieval scoring + composition templates |
+| 11 | Phase 9.5 — MCP setup docs | ⬜ open (blocked by #9, #10) | `packages/kb-mcp/README.md` covering Claude Code / Desktop / Cursor wire-up |
+| 12 | Phase 9.6 — Publish @hiver/kb-mcp v1.0.0 | ⬜ open (blocked by #9, #10, #11, **requires user action**) | Same publish prerequisites as #6 |
+
+### Workflow rules established this session (saved as memory)
+
+- **All codebase touches go through the `ui-engineer` agent** — including configs, package.json, tsup.config.ts, markdown. Main session reads files, runs git, runs tests, dispatches subagents — never edits repo files directly. Only main-session writes: plan files in `.claude/plans/`, memory files (outside repo), and git commit messages.
+- **No `§` (section sign) character in outward-facing content** — banned in code, commits, issues, PRs, READMEs. Use plain words like "section 8.1" or just the number. Allowed in chat replies only.
+- **One issue at a time** — branch named `issue-N-short-slug`, dispatch ui-engineer with full brief, verify thoroughly (build + typecheck + functional test where applicable), commit with "closes #N", open PR with verification checklist, squash-merge with `--delete-branch`, sync main, move to next.
+- **Autonomous between user-action gates** — for issues that don't need the user, don't pause; report once at the end. The two real gates are #6 and #12 (both need `npm login` + scope claim from the user).
+
+### Recovery notes for next session
+
+- Run `git stash list` — should show one entry: `issue-4 WIP from cancelled dispatch`. Either pop it onto a fresh `issue-4-articlebody-regions` branch and review what was done, or `git stash drop` and start clean. The stash contains partial edits to `ArticleBody.tsx`, `KBAIGapsExperience.stories.tsx`, demo's AI review route, plus a new `apps/demo/src/routes/ai-optimise/passwordResetRegions.tsx` file.
+- A stray `packages/kb-ui/package-lock.json` is untracked from a sub-package `npm install` test in an earlier session. Repo `.gitignore` only ignores `node_modules/`. Delete the stray lockfile when convenient (or add `packages/*/package-lock.json` to `.gitignore` as a small cleanup PR).
+- The Phase 7.5 sign-off harness at `apps/demo/scripts/phase-7-5-9-signoff.mjs` reports 56/56 PASS today against `npm run dev`, BUT `npm run demo:build` fails due to the AISubNav export gap (issue #13). Don't be surprised by that.
 
 ## Open items
 
