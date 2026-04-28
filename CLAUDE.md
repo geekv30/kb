@@ -36,9 +36,9 @@ Follow the phases in `plan.md` exactly. Do not skip phases. Do not reorder. Atom
 
 Before building any component, always fetch the relevant Figma screen via `get_design_context` + `get_screenshot`. Unique screen node IDs are in `design.md`.
 
-### 5. Don't disrupt the running Storybook
+### 5. Storybook must still work at the end of every PR
 
-The user keeps Storybook open during sessions; HMR crashes or noisy recompiles block their access. **During Phase 8 (publish) and Phase 9 (MCP companion) work, do NOT edit `packages/kb-ui/src/`** — confine changes to `packages/kb-ui/package.json`, `tsup.config.ts`, `scripts/`, `LICENSE`, `README.md`, `CHANGELOG.md`, the new `packages/kb-mcp/` package, or `apps/demo/`. If an issue genuinely requires a `packages/kb-ui/src/` change (component API, new export), surface it to the user BEFORE dispatching `ui-engineer` — they may need to pause Storybook first.
+The user keeps Storybook open. There's **no in-flight scope limit** on what files Phase 8 (publish) or Phase 9 (MCP) work can edit — any file in the repo is fair game. The rule is end-state: every issue's PR must leave Storybook bootable. Add a Storybook smoke-boot to the per-issue verification gate alongside the existing tsc / build / harness checks — cheapest version is `npm run --workspace=packages/kb-ui build-storybook` (catches every story compile error). If a regression surfaces, fix it in the same PR; no flag-for-later deferrals.
 
 ---
 
