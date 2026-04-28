@@ -1,15 +1,17 @@
 // Phase 7.5.7 — Analytics: AI Answer Performance.
 //
-// Mirrors `KBAnalyticsAIAnswerPerformancePage` story composition exactly
-// (per CLAUDE.md "reuse main components, never recreate"). The story is
-// already pixel-tuned per Figma `1974:53167`.
+// Mirrors `packages/kb-ui/src/pages/KBAnalyticsAIAnswerPerformancePage.stories.tsx` —
+// uses `DataTable` + inline columns per Phase 7.5 consolidation.
+// `citedColumns` is lifted verbatim from the story; only the row-click
+// wiring is local (it maps a fixture id back to the real article slug
+// for navigation).
 //
 // Page composition (top → bottom):
 //   1. Custom <header>: title + subtitle | DateRangePill
 //   2. StatCardGrid "AI Search Performance" — 4 metrics
 //   3. AnalyticsChartCard "AI deflection rate over time" (positive area + Goal:70%)
 //   4. AIConversationLogsCard with 5 anonymised entries
-//   5. MostCitedArticlesTable
+//   5. DataTable "Most Cited KB Articles"
 //
 // Interactions (PRD §7.8):
 //   - DateRangePill change → toast placeholder
@@ -19,24 +21,57 @@
 //     opens, but the placeholder log fires alongside it. v1 wiring per
 //     PRD § 7.8 — the real "open contextual conversation drawer" lands
 //     in a future phase.)
-//   - MostCitedArticlesTable row → /articles/<slug>/edit
+//   - Most Cited row → /articles/<slug>/edit
 
 import type { MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { RiFile3Line, RiInformationLine } from '@remixicon/react';
 import {
   AIConversationLogEntry,
   AIConversationLogsCard,
   AnalyticsAreaChart,
   AnalyticsChartCard,
+  DataTable,
   DateRangePill,
-  MostCitedArticlesTable,
   StatCardGrid,
+  type DataTableColumn,
 } from '@hiver/kb-ui';
 import { useMockStore } from '../../store/MockStoreContext';
 import { selectArticleById } from '../../store/selectors';
-import { aiAnswerFixtures } from '../../store/fixtures/analytics';
+import {
+  aiAnswerFixtures,
+  type MostCitedRow,
+} from '../../store/fixtures/analytics';
 import { routes } from '../../lib/routes';
 import { useToast } from '../../components/Toast';
+
+/* ─────────────────────────────────────────────────────────────
+ * Column config — lifted verbatim from
+ * `KBAnalyticsAIAnswerPerformancePage.stories.tsx`.
+ * ───────────────────────────────────────────────────────────── */
+
+const citedColumns: DataTableColumn<MostCitedRow>[] = [
+  {
+    id: 'title',
+    header: 'Article Title',
+    render: (r) => (
+      <span className="inline-flex items-center gap-2">
+        <RiFile3Line
+          size={16}
+          className="shrink-0 text-[#64758b]"
+          aria-hidden="true"
+        />
+        <span>{r.title}</span>
+      </span>
+    ),
+  },
+  {
+    id: 'citations',
+    header: 'Citations',
+    align: 'right',
+    render: (r) => r.citations,
+  },
+];
 
 export default function AIAnswerPerformancePage() {
   const navigate = useNavigate();
@@ -145,7 +180,27 @@ export default function AIAnswerPerformancePage() {
       </div>
 
       {/* Most cited articles */}
-      <MostCitedArticlesTable rows={mostCitedRows} onRowClick={goToArticle} />
+      <DataTable
+        dataKbComponent="most-cited-articles-table"
+        rows={mostCitedRows}
+        columns={citedColumns}
+        emptyMessage="No cited articles"
+        heading={
+          <div className="flex items-center">
+            <h3 className="text-[14px] font-medium leading-[20px] text-[#0f172a]">
+              Most Cited KB Articles
+            </h3>
+            <span className="ml-2 inline-flex" aria-hidden>
+              <RiInformationLine
+                size={16}
+                className="text-[#475569]"
+                aria-hidden="true"
+              />
+            </span>
+          </div>
+        }
+        onRowClick={(row) => goToArticle(row.id)}
+      />
     </div>
   );
 }

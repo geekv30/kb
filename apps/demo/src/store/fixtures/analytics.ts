@@ -17,14 +17,57 @@
 import type {
   AnalyticsAreaSeries,
   AnalyticsAreaChartGoalLine,
-  ArticleAttentionRow,
-  ArticlePerformanceRow,
-  ContentGapRow,
   DonutDatum,
-  MostCitedRow,
-  SearchKeywordRow,
+  HelpfulnessVariant,
   StatCardProps,
 } from '@hiver/kb-ui';
+
+/* ─────────────────────────────────────────────────────────────
+ * Row types (Phase 7.5 migration — moved app-side).
+ *
+ * After kb-ui collapsed its 7 bespoke `*Table` components into a
+ * single `<DataTable<T> />` primitive (commit `de1f197`), the
+ * row-shape types live with the consumer. The shapes are unchanged
+ * from the legacy ones — see the analytics pattern stories in
+ * `packages/kb-ui/src/pages/KBAnalytics*.stories.tsx` for the
+ * canonical column configs that pair with each row type.
+ * ───────────────────────────────────────────────────────────── */
+
+export type ArticleAttentionRow = {
+  id: string;
+  title: string;
+  helpfulness: string;
+  variant: HelpfulnessVariant;
+};
+
+export type ArticlePerformanceRow = {
+  id: string;
+  title: string;
+  category: string;
+  totalViews: string;
+  avgTimeSpent: string;
+  helpfulness: string;
+  helpfulnessVariant: HelpfulnessVariant;
+};
+
+export type ContentGapRow = {
+  id: string;
+  topic: string;
+  frequency: string;
+  ticketRate: string;
+};
+
+export type MostCitedRow = {
+  id: string;
+  title: string;
+  citations: number;
+};
+
+export type SearchKeywordRow = {
+  id: string;
+  keyword: string;
+  count: string;
+};
 
 /* ─────────────────────────────────────────────────────────────
  * Helpers
