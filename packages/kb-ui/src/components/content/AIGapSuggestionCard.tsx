@@ -30,6 +30,8 @@ export type AIGapSuggestionCardProps = {
   onReject?: (id: string) => void;
   onUndo?: (id: string) => void;
   className?: string;
+  actions?: React.ReactNode;
+  meta?: React.ReactNode;
 };
 
 /* ─────────────────────────────────────────────────────────────
@@ -135,6 +137,8 @@ export function AIGapSuggestionCard({
   onReject,
   onUndo,
   className,
+  actions,
+  meta,
 }: AIGapSuggestionCardProps) {
   if (state !== 'active') {
     const decisionLabel = state === 'accepted' ? 'ACCEPTED' : 'DISMISSED';
@@ -178,6 +182,7 @@ export function AIGapSuggestionCard({
       header={<TypeChip type={suggestion.type} />}
       body={
         <>
+          {meta}
           <h3
             data-kb-part="ai-gap-title"
             className="mt-2 text-[14px] font-semibold leading-[20px] text-[#0f172a]"
@@ -194,20 +199,24 @@ export function AIGapSuggestionCard({
       }
       showFooterDivider
       footer={
-        <>
-          <div className="flex items-center gap-1">
-            <NavArrow direction="up" onClick={onPrev} />
-            <NavArrow direction="down" onClick={onNext} />
-          </div>
-          <div className="flex items-center gap-2">
-            <SourcesButton
-              count={suggestion.sourceCount}
-              onClick={() => onOpenSources?.(suggestion.id)}
-            />
-            <RejectButton onClick={() => onReject?.(suggestion.id)} />
-            <AcceptButton onClick={() => onAccept?.(suggestion.id)} />
-          </div>
-        </>
+        actions !== undefined ? (
+          actions
+        ) : (
+          <>
+            <div className="flex items-center gap-1">
+              <NavArrow direction="up" onClick={onPrev} />
+              <NavArrow direction="down" onClick={onNext} />
+            </div>
+            <div className="flex items-center gap-2">
+              <SourcesButton
+                count={suggestion.sourceCount}
+                onClick={() => onOpenSources?.(suggestion.id)}
+              />
+              <RejectButton onClick={() => onReject?.(suggestion.id)} />
+              <AcceptButton onClick={() => onAccept?.(suggestion.id)} />
+            </div>
+          </>
+        )
       }
     />
   );
