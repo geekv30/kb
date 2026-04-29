@@ -7,7 +7,7 @@
 // by the rest of the app.
 
 import { Link } from 'react-router-dom';
-import { CompanyLogo } from '@hiver/kb-ui';
+import { CompanyLogo } from '@test-kb-ui/kb-ui';
 import { routes } from '../lib/routes';
 import { cn } from '../lib/cn';
 

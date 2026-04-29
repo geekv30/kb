@@ -1,6 +1,6 @@
-# @hiver/kb-demo
+# @test-kb-ui/kb-demo
 
-A standalone Vite + React 18 application that consumes [`@hiver/kb-ui`](../../packages/kb-ui) the way an external Hiver engineer would — `import { ... } from '@hiver/kb-ui'`. It stitches every pattern shipped in kb-ui's Phases 3–7 into a single navigable product so the library can be experienced end-to-end without opening Storybook. This app is the integration test for the Phase 8 npm publish: if it consumes the workspace package cleanly, downstream users will too.
+A standalone Vite + React 18 application that consumes [`@test-kb-ui/kb-ui`](../../packages/kb-ui) the way an external Hiver engineer would — `import { ... } from '@test-kb-ui/kb-ui'`. It stitches every pattern shipped in kb-ui's Phases 3–7 into a single navigable product so the library can be experienced end-to-end without opening Storybook. This app is the integration test for the Phase 8 npm publish: if it consumes the workspace package cleanly, downstream users will too.
 
 For the full design contract see [`demo-app-prd.md`](../../demo-app-prd.md) (PRD) and [`demo-app-trd.md`](../../demo-app-trd.md) (TRD).
 
@@ -53,11 +53,11 @@ npm run typecheck --workspace=apps/demo
 | Routing | React Router (data router) | ^6.26 |
 | Styling | Tailwind CSS v4 (`@tailwindcss/vite`) | ^4.0 |
 | State | React Context + `useReducer` (custom MockStore) | n/a |
-| Component library | `@hiver/kb-ui` | workspace `*` link |
+| Component library | `@test-kb-ui/kb-ui` | workspace `*` link |
 
-No additional runtime dependencies. Tiptap, Recharts, Radix primitives, and `@remixicon/react` come transitively through `@hiver/kb-ui`.
+No additional runtime dependencies. Tiptap, Recharts, Radix primitives, and `@remixicon/react` come transitively through `@test-kb-ui/kb-ui`.
 
-The kb-ui package is consumed via npm workspaces — there is no build step coupling between the two; the demo simply imports from `@hiver/kb-ui` and Vite resolves it through `node_modules` like any other package.
+The kb-ui package is consumed via npm workspaces — there is no build step coupling between the two; the demo simply imports from `@test-kb-ui/kb-ui` and Vite resolves it through `node_modules` like any other package.
 
 ## Mock data
 

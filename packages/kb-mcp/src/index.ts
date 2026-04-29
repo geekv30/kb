@@ -1,4 +1,4 @@
-// @hiver/kb-mcp — MCP companion server for @hiver/kb-ui
+// @test-kb-ui/kb-mcp — MCP companion server for @test-kb-ui/kb-ui
 //
 // Stdio transport. Issue #9 (Phase 9.3) wires up the Tier 1 toolkit:
 //   - list_components       (filter by category)
@@ -10,7 +10,7 @@
 //   - kb://design/overview  (full text of design.md)
 //
 // Indices for components/tokens are built ONCE at startup from the
-// workspace install of @hiver/kb-ui (issue #8 module). The server
+// workspace install of @test-kb-ui/kb-ui (issue #8 module). The server
 // is read-only; no caching beyond the in-memory indices.
 //
 // Run locally for development:
@@ -70,7 +70,7 @@ import {
  * Path resolution: kb-ui src root + repo root
  * ─────────────────────────────────────────────────────────────
  *
- * `require.resolve('@hiver/kb-ui')` returns the `main` entry —
+ * `require.resolve('@test-kb-ui/kb-ui')` returns the `main` entry —
  * `.../packages/kb-ui/dist/index.js` in workspace mode. We walk up to
  * the package directory (containing `package.json`), then into `src/`
  * for story-file scans. The repo root is two levels above the package
@@ -79,21 +79,21 @@ import {
 const require = createRequire(import.meta.url);
 
 function resolveKbUiPaths(): { kbUiPkgDir: string; kbUiSrcRoot: string; repoRoot: string } {
-  const kbUiMain = require.resolve('@hiver/kb-ui');
+  const kbUiMain = require.resolve('@test-kb-ui/kb-ui');
   let kbUiPkgDir = dirname(kbUiMain);
   // Walk up until we find a package.json. Bounded loop for safety.
   for (let i = 0; i < 5; i += 1) {
     if (existsSync(resolve(kbUiPkgDir, 'package.json'))) break;
     const parent = dirname(kbUiPkgDir);
     if (parent === kbUiPkgDir) {
-      throw new Error('Could not locate @hiver/kb-ui package root.');
+      throw new Error('Could not locate @test-kb-ui/kb-ui package root.');
     }
     kbUiPkgDir = parent;
   }
   const kbUiSrcRoot = resolve(kbUiPkgDir, 'src');
   if (!existsSync(kbUiSrcRoot)) {
     throw new Error(
-      `@hiver/kb-ui src/ not found at ${kbUiSrcRoot}. kb-mcp currently requires the workspace install (issue #8 scope).`,
+      `@test-kb-ui/kb-ui src/ not found at ${kbUiSrcRoot}. kb-mcp currently requires the workspace install (issue #8 scope).`,
     );
   }
   // Workspace layout: <repo>/packages/kb-ui — repo is two levels up.
@@ -197,7 +197,7 @@ const toolByName = new Map<string, ToolEntry>(tools.map((t) => [t.name, t]));
 
 const server = new Server(
   {
-    name: '@hiver/kb-mcp',
+    name: '@test-kb-ui/kb-mcp',
     version: '1.0.0',
   },
   {

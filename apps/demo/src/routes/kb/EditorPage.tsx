@@ -37,7 +37,7 @@ import {
   type ArticleSettings as KbUiArticleSettings,
   type ArticleSettingsPerson,
   type ArticleVisibility as KbUiArticleVisibility,
-} from '@hiver/kb-ui';
+} from '@test-kb-ui/kb-ui';
 import { useMockStore } from '../../store/MockStoreContext';
 import {
   selectArticleBySlug,

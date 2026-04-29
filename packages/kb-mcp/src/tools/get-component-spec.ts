@@ -26,7 +26,7 @@ export function getComponentSpec(
   if (!found) {
     const known = Array.from(index.keys()).sort().slice(0, 10).join(', ');
     throw new Error(
-      `Component "${input.name}" not found in @hiver/kb-ui. Known components include: ${known}${index.size > 10 ? ', …' : ''}.`,
+      `Component "${input.name}" not found in @test-kb-ui/kb-ui. Known components include: ${known}${index.size > 10 ? ', …' : ''}.`,
     );
   }
   return found;

@@ -4,10 +4,10 @@
  * colors, spacing, radii, and the Tailwind v4 source directive
  * identically to how Storybook does in `packages/kb-ui/.storybook/preview.ts`.
  */
-@import '@hiver/kb-ui/styles';
+@import '@test-kb-ui/kb-ui/styles';
 
 /* Tailwind v4's content auto-discovery skips `node_modules` by default.
- * Our shell + nav components live in the `@hiver/kb-ui` package and
+ * Our shell + nav components live in the `@test-kb-ui/kb-ui` package and
  * resolve through the npm-workspace symlink to that package's `dist/`
  * bundle. Without this `@source` directive, arbitrary classes used
  * only inside `dist/` (e.g. `w-[54px]` on `SideNavRail`) get tree-

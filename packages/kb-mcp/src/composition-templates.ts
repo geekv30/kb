@@ -8,7 +8,7 @@
 // nothing automatically — the picker falls back to it explicitly.
 //
 // Snippet shape rules:
-//   - Real importable component names from `@hiver/kb-ui`.
+//   - Real importable component names from `@test-kb-ui/kb-ui`.
 //   - 15–40 lines of TSX, syntactically valid, copy-pasteable.
 //   - `// ...` comments where the consumer fills in their own data.
 //   - Column configs / sample data don't have to be runtime-perfect; the
@@ -40,8 +40,8 @@ export const compositionTemplates: CompositionTemplate[] = [
   ContentEditor,
   ArticleSettingsPanel,
   type ArticleSettings,
-} from '@hiver/kb-ui';
-import '@hiver/kb-ui/styles';
+} from '@test-kb-ui/kb-ui';
+import '@test-kb-ui/kb-ui/styles';
 
 const settings: ArticleSettings = {
   // ... fill from your article record (visibility, owner, tags, etc.)
@@ -89,8 +89,8 @@ export function ArticleEditorPage() {
   AISuggestionsCard,
   AIGapSuggestionCard,
   SourcesSideSheet,
-} from '@hiver/kb-ui';
-import '@hiver/kb-ui/styles';
+} from '@test-kb-ui/kb-ui';
+import '@test-kb-ui/kb-ui/styles';
 
 export function AIGapsReviewPage() {
   return (
@@ -135,8 +135,8 @@ export function AIGapsReviewPage() {
   SideNavRail,
   KBBreadcrumbBar,
   SuggestionCard,
-} from '@hiver/kb-ui';
-import '@hiver/kb-ui/styles';
+} from '@test-kb-ui/kb-ui';
+import '@test-kb-ui/kb-ui/styles';
 
 export function AIOptimiseHub() {
   return (
@@ -176,8 +176,8 @@ export function AIOptimiseHub() {
   DateRangePill,
   DataTable,
   type DataTableColumn,
-} from '@hiver/kb-ui';
-import '@hiver/kb-ui/styles';
+} from '@test-kb-ui/kb-ui';
+import '@test-kb-ui/kb-ui/styles';
 
 type ArticleRow = { id: string; title: string; views: number; helpfulness: string };
 
@@ -223,8 +223,8 @@ export function ArticlePerformancePage({ rows }: { rows: ArticleRow[] }) {
   AnalyticsAreaChart,
   DataTable,
   type DataTableColumn,
-} from '@hiver/kb-ui';
-import '@hiver/kb-ui/styles';
+} from '@test-kb-ui/kb-ui';
+import '@test-kb-ui/kb-ui/styles';
 
 type SearchRow = { id: string; keyword: string; searches: number; ctr: string };
 
@@ -265,8 +265,8 @@ export function SearchAnalyticsPage({ rows }: { rows: SearchRow[] }) {
   PageHeader,
   DataTable,
   type DataTableColumn,
-} from '@hiver/kb-ui';
-import '@hiver/kb-ui/styles';
+} from '@test-kb-ui/kb-ui';
+import '@test-kb-ui/kb-ui/styles';
 
 type Article = { id: string; title: string; status: 'published' | 'draft'; updatedAt: string };
 
@@ -305,8 +305,8 @@ export function CategoryPage({ items }: { items: Article[] }) {
   SideNavRail,
   KBBreadcrumbBar,
   Card,
-} from '@hiver/kb-ui';
-import '@hiver/kb-ui/styles';
+} from '@test-kb-ui/kb-ui';
+import '@test-kb-ui/kb-ui/styles';
 
 export function NewKBPage() {
   return (

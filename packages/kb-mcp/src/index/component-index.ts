@@ -1,10 +1,10 @@
-// Walks `@hiver/kb-ui`'s `src/components/**/*.tsx` and builds an in-memory
+// Walks `@test-kb-ui/kb-ui`'s `src/components/**/*.tsx` and builds an in-memory
 // index of every canonical component (the file-named export). The result is
 // a `Map<string, ComponentSpec>` keyed by component name, ready for future
 // MCP tools (issues #9, #10) to query by name, category, or Figma node.
 //
 // Scope notes:
-// - Targets the WORKSPACE install of `@hiver/kb-ui` (the `node_modules`
+// - Targets the WORKSPACE install of `@test-kb-ui/kb-ui` (the `node_modules`
 //   symlink to `packages/kb-ui/`). Production tarballs only ship `dist/`,
 //   so this throws a clear error in that mode — handling that case is a
 //   separate, post-#6 polish step.
@@ -29,10 +29,10 @@ const require = createRequire(import.meta.url);
 
 function resolveKbUiSrc(): string {
   // Resolve through the package's main entry, then walk up to the package
-  // root. We can't `require.resolve('@hiver/kb-ui/package.json')` directly
+  // root. We can't `require.resolve('@test-kb-ui/kb-ui/package.json')` directly
   // because kb-ui's `exports` map doesn't expose `./package.json`.
-  const mainEntry = require.resolve('@hiver/kb-ui');
-  // mainEntry => `.../node_modules/@hiver/kb-ui/dist/index.js` (or .mjs).
+  const mainEntry = require.resolve('@test-kb-ui/kb-ui');
+  // mainEntry => `.../node_modules/@test-kb-ui/kb-ui/dist/index.js` (or .mjs).
   // The package root is the parent of `dist/`.
   let root = dirname(mainEntry);
   // Walk up until we find a directory containing `package.json`.
@@ -43,7 +43,7 @@ function resolveKbUiSrc(): string {
   const src = resolve(root, 'src');
   if (!existsSync(src)) {
     throw new Error(
-      `kb-ui source files not found at ${src} — kb-mcp currently requires the workspace install of @hiver/kb-ui (issue #8 scope). Production support tracked separately.`,
+      `kb-ui source files not found at ${src} — kb-mcp currently requires the workspace install of @test-kb-ui/kb-ui (issue #8 scope). Production support tracked separately.`,
     );
   }
   return src;
@@ -512,7 +512,7 @@ export function buildComponentIndex(): ComponentIndex {
       figmaNode,
       props,
       storyFiles,
-      importStatement: `import { ${file.componentName} } from '@hiver/kb-ui';`,
+      importStatement: `import { ${file.componentName} } from '@test-kb-ui/kb-ui';`,
     };
 
     index.set(file.componentName, spec);

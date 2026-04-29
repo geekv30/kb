@@ -6,8 +6,8 @@
 // so it can be reasoned about (and unit-tested in a later phase) on
 // its own.
 
-import { aiGapsReducer, initialAIGapsState } from '@hiver/kb-ui';
-import type { AISuggestion as KbUiAISuggestion } from '@hiver/kb-ui';
+import { aiGapsReducer, initialAIGapsState } from '@test-kb-ui/kb-ui';
+import type { AISuggestion as KbUiAISuggestion } from '@test-kb-ui/kb-ui';
 import type {
   AIGapsAction,
   AIGapsState,

@@ -10,7 +10,7 @@
 
 import { useNavigate } from 'react-router-dom';
 import { RiCheckLine } from '@remixicon/react';
-import { SuggestionCard } from '@hiver/kb-ui';
+import { SuggestionCard } from '@test-kb-ui/kb-ui';
 import { useMockStore } from '../../store/MockStoreContext';
 import {
   selectPendingSuggestionArticles,

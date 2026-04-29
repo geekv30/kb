@@ -53,7 +53,7 @@ function WelcomePage(): JSX.Element {
       </h1>
 
       <p style={{ fontSize: 18, lineHeight: 1.6, color: '#475569', marginTop: 8, marginBottom: 32 }}>
-        <strong style={{ color: '#0f172a' }}>@hiver/kb-ui</strong> is a pixel-perfect, 1:1 React
+        <strong style={{ color: '#0f172a' }}>@test-kb-ui/kb-ui</strong> is a pixel-perfect, 1:1 React
         component library for{' '}
         <a
           href="https://app.hiverkb.com"
@@ -203,7 +203,7 @@ function WelcomePage(): JSX.Element {
         }}
       >
         Built with React 18, TypeScript, Tailwind, and Radix primitives. Distributed as{' '}
-        <code style={{ fontSize: 11 }}>@hiver/kb-ui</code>.
+        <code style={{ fontSize: 11 }}>@test-kb-ui/kb-ui</code>.
       </p>
     </div>
   );

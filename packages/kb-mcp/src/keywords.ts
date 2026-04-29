@@ -9,7 +9,7 @@
 //   +2  if the component name itself appears in the PRD
 //
 // Coverage rule: every one of the 36 components currently exported by
-// @hiver/kb-ui must have an entry — see test fixtures and the smoke output
+// @test-kb-ui/kb-ui must have an entry — see test fixtures and the smoke output
 // for the live recommendation surface.
 
 export const componentKeywords: Record<string, string[]> = {

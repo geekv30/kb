@@ -35,7 +35,7 @@ import {
   DateRangePill,
   StatCardGrid,
   type DataTableColumn,
-} from '@hiver/kb-ui';
+} from '@test-kb-ui/kb-ui';
 import { useMockStore } from '../../store/MockStoreContext';
 import { selectArticleById } from '../../store/selectors';
 import {

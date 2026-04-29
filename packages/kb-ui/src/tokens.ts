@@ -1,4 +1,4 @@
-// @hiver/kb-ui — design tokens (programmatic access)
+// @test-kb-ui/kb-ui — design tokens (programmatic access)
 // Source of truth mirrored from src/tokens.css. Keep in sync.
 
 export const tokens = {

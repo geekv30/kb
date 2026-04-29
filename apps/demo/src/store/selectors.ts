@@ -5,7 +5,7 @@
 // Memoization can be revisited if a future profiler pass shows
 // hot spots; until then, KISS.
 
-import type { NavItem } from '@hiver/kb-ui';
+import type { NavItem } from '@test-kb-ui/kb-ui';
 import type {
   AISuggestion,
   Article,

@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to `@hiver/kb-ui` will be documented in this file.
+All notable changes to `@test-kb-ui/kb-ui` will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
@@ -81,7 +81,7 @@ Initial public release. Built across nine phases (0 through 7.5) culminating in 
 #### Foundations
 
 - Design tokens (`tokens.ts` plus `tokens.css`) — colors (kb palette, AI gaps semantic palette, analytics chart palette), typography, spacing, border radius
-- `import '@hiver/kb-ui/styles'` exposes the canonical Tailwind v4 plus tokens layer
+- `import '@test-kb-ui/kb-ui/styles'` exposes the canonical Tailwind v4 plus tokens layer
 - `cn` utility re-exported for class composition
 
 [1.0.0]: https://github.com/geekv30/kb/releases/tag/v1.0.0

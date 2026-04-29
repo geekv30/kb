@@ -17,7 +17,7 @@
 
 import { useCallback, useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { FileExplorerNav, type NavItem } from '@hiver/kb-ui';
+import { FileExplorerNav, type NavItem } from '@test-kb-ui/kb-ui';
 import { useMockStore } from '../store/MockStoreContext';
 import {
   selectArticleBySlug,

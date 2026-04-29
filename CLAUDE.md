@@ -12,7 +12,7 @@ Read: logs.md       → current status, what's done, what's next
 
 ## ACTIVE PROJECT: Hiver KB Component Library
 
-Build a **pixel-perfect, 1:1 component library** for Hiver's KB product (`app.hiverkb.com`), distributed as the npm package `@hiver/kb-ui`.
+Build a **pixel-perfect, 1:1 component library** for Hiver's KB product (`app.hiverkb.com`), distributed as the npm package `@test-kb-ui/kb-ui`.
 
 **Problem statement in full:** designers, PMs, and engineers should be able to build any new KB feature from a PRD alone — zero bespoke Figma effort, 100% visual cohesion with the product.
 
