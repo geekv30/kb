@@ -23,7 +23,7 @@
 // mapping for the rationale.
 
 import * as React from 'react';
-import type { ArticleBodyRegions } from '@hiver/kb-ui';
+import type { ArticleBodyRegions } from '@test-kb-ui/kb-ui';
 
 function H1({ children }: { children: React.ReactNode }) {
   return (

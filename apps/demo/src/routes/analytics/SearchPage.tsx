@@ -28,7 +28,7 @@ import {
   DataTable,
   DateRangePill,
   type DataTableColumn,
-} from '@hiver/kb-ui';
+} from '@test-kb-ui/kb-ui';
 import {
   searchFixtures,
   type ContentGapRow,

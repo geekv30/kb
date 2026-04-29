@@ -5,10 +5,10 @@
 // strings (no Date objects in the store — keeps the reducer pure and
 // JSON-serialisable for future dev-tools snapshots).
 
-// Re-exported from @hiver/kb-ui after Phase 7.5.1 prep so the demo's
+// Re-exported from @test-kb-ui/kb-ui after Phase 7.5.1 prep so the demo's
 // per-article reducer slots align exactly with what the kb-ui state
 // machine produces.
-import type { AIGapsState, AIGapsAction } from '@hiver/kb-ui';
+import type { AIGapsState, AIGapsAction } from '@test-kb-ui/kb-ui';
 
 export type { AIGapsState, AIGapsAction };
 

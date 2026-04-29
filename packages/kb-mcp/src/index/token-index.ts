@@ -19,9 +19,9 @@ const require = createRequire(import.meta.url);
 
 function resolveKbUiSrc(): string {
   // Resolve through the package's main entry, then walk up to the package
-  // root. We can't `require.resolve('@hiver/kb-ui/package.json')` directly
+  // root. We can't `require.resolve('@test-kb-ui/kb-ui/package.json')` directly
   // because kb-ui's `exports` map doesn't expose `./package.json`.
-  const mainEntry = require.resolve('@hiver/kb-ui');
+  const mainEntry = require.resolve('@test-kb-ui/kb-ui');
   let root = dirname(mainEntry);
   for (let i = 0; i < 5; i += 1) {
     if (existsSync(resolve(root, 'package.json'))) break;
@@ -30,7 +30,7 @@ function resolveKbUiSrc(): string {
   const src = resolve(root, 'src');
   if (!existsSync(src)) {
     throw new Error(
-      `kb-ui source files not found at ${src} — kb-mcp currently requires the workspace install of @hiver/kb-ui (issue #8 scope). Production support tracked separately.`,
+      `kb-ui source files not found at ${src} — kb-mcp currently requires the workspace install of @test-kb-ui/kb-ui (issue #8 scope). Production support tracked separately.`,
     );
   }
   return src;

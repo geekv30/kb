@@ -22,7 +22,7 @@ import {
   isPublishEnabled,
   KBBreadcrumbBar,
   type KBBreadcrumbItem,
-} from '@hiver/kb-ui';
+} from '@test-kb-ui/kb-ui';
 import { useMockStore } from '../store/MockStoreContext';
 import {
   selectArticleBySlug,

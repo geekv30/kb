@@ -6,7 +6,7 @@
 // muted block so the user can describe what they saw to the team.
 
 import { useRouteError } from 'react-router-dom';
-import { Button } from '@hiver/kb-ui';
+import { Button } from '@test-kb-ui/kb-ui';
 import { RiErrorWarningLine } from '@remixicon/react';
 
 function describe(error: unknown): string {

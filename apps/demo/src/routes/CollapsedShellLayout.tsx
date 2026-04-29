@@ -14,7 +14,7 @@
 
 import { Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
-import { AppShell } from '@hiver/kb-ui';
+import { AppShell } from '@test-kb-ui/kb-ui';
 import { BreadcrumbBar } from '../shell/BreadcrumbBar';
 import { PageProgressBar } from '../components/PageProgressBar';
 import { RouteTransition } from '../components/RouteTransition';

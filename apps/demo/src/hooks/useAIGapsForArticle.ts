@@ -18,7 +18,7 @@ import {
   initialAIGapsState,
   type AIGapsAction,
   type AIGapsState,
-} from '@hiver/kb-ui';
+} from '@test-kb-ui/kb-ui';
 import { useMockStore } from '../store/MockStoreContext';
 
 export type UseAIGapsForArticleResult = readonly [

@@ -8,7 +8,7 @@
 import { useMemo } from 'react';
 import { RiBarChartBoxLine } from '@remixicon/react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FileExplorerNav } from '@hiver/kb-ui';
+import { FileExplorerNav } from '@test-kb-ui/kb-ui';
 import { useMockStore } from '../store/MockStoreContext';
 import { selectAnalyticsExplorerItems } from '../store/selectors';
 import { routes } from '../lib/routes';

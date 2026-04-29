@@ -1,18 +1,18 @@
-# @hiver/kb-ui
+# @test-kb-ui/kb-ui
 
 Pixel-perfect React component library for Hiver's knowledge base product — primitives, shell, nav, content, editor, AI gap review surface, and analytics in one package.
 
 ## Install
 
 ```bash
-npm install @hiver/kb-ui
+npm install @test-kb-ui/kb-ui
 ```
 
 ## Quickstart
 
 ```tsx
-import { AppShell, KBBreadcrumbBar, SideNavRail, FileExplorerNav } from '@hiver/kb-ui';
-import '@hiver/kb-ui/styles';
+import { AppShell, KBBreadcrumbBar, SideNavRail, FileExplorerNav } from '@test-kb-ui/kb-ui';
+import '@test-kb-ui/kb-ui/styles';
 
 export function App() {
   return (

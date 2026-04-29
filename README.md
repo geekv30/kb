@@ -1,21 +1,21 @@
 # Hiver KB Component Library
 
-`@hiver/kb-ui` is the React component library that powers Hiver's knowledge base product (`app.hiverkb.com`). It exists so designers, PMs, and engineers can assemble any new KB feature directly from a PRD — every primitive, nav surface, content block, editor, AI gap reviewer, and analytics card needed to match the product is already in the box, with 1:1 Figma fidelity.
+`@test-kb-ui/kb-ui` is the React component library that powers Hiver's knowledge base product (`app.hiverkb.com`). It exists so designers, PMs, and engineers can assemble any new KB feature directly from a PRD — every primitive, nav surface, content block, editor, AI gap reviewer, and analytics card needed to match the product is already in the box, with 1:1 Figma fidelity.
 
-- npm: [`@hiver/kb-ui`](https://www.npmjs.com/package/@hiver/kb-ui)
+- npm: [`@test-kb-ui/kb-ui`](https://www.npmjs.com/package/@test-kb-ui/kb-ui)
 - Demo app: see "Explore" below
 
 ## Install
 
 ```bash
-npm install @hiver/kb-ui
+npm install @test-kb-ui/kb-ui
 ```
 
 ## Quickstart
 
 ```tsx
-import { AppShell, KBBreadcrumbBar, SideNavRail, FileExplorerNav } from '@hiver/kb-ui';
-import '@hiver/kb-ui/styles';
+import { AppShell, KBBreadcrumbBar, SideNavRail, FileExplorerNav } from '@test-kb-ui/kb-ui';
+import '@test-kb-ui/kb-ui/styles';
 
 export function App() {
   return (

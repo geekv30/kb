@@ -12,7 +12,7 @@
 // `window.confirm` calls in EditorPage and the AI Gaps breadcrumb.
 
 import * as Dialog from '@radix-ui/react-dialog';
-import { Button } from '@hiver/kb-ui';
+import { Button } from '@test-kb-ui/kb-ui';
 import { cn } from '../lib/cn';
 
 export type ConfirmDialogProps = {

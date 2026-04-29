@@ -18,7 +18,7 @@ import {
   CompanyLogo,
   SideNavRail,
   type NavRailItem,
-} from '@hiver/kb-ui';
+} from '@test-kb-ui/kb-ui';
 import { useMockStore } from '../store/MockStoreContext';
 import { selectCurrentUser } from '../store/selectors';
 import { DEFAULT_KB_CATEGORY_SLUG, routes } from '../lib/routes';

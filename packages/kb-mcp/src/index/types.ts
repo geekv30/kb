@@ -51,7 +51,7 @@ export type ComponentSpec = {
   storyFiles: string[];
   /**
    * The recommended import statement,
-   * e.g. `import { KBBreadcrumbBar } from '@hiver/kb-ui';`.
+   * e.g. `import { KBBreadcrumbBar } from '@test-kb-ui/kb-ui';`.
    */
   importStatement: string;
 };

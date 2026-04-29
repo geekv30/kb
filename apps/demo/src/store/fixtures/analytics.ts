@@ -20,7 +20,7 @@ import type {
   DonutDatum,
   HelpfulnessVariant,
   StatCardProps,
-} from '@hiver/kb-ui';
+} from '@test-kb-ui/kb-ui';
 
 /* ─────────────────────────────────────────────────────────────
  * Row types (Phase 7.5 migration — moved app-side).

@@ -11,7 +11,7 @@
 
 import { Suspense } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { AppShell } from '@hiver/kb-ui';
+import { AppShell } from '@test-kb-ui/kb-ui';
 import { AppRail } from '../shell/AppRail';
 import { EditorExplorer } from '../shell/EditorExplorer';
 import { AnalyticsExplorer } from '../shell/AnalyticsExplorer';

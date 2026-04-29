@@ -10,7 +10,7 @@
 
 import { RiMagicLine } from '@remixicon/react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { AiIcon } from '@hiver/kb-ui';
+import { AiIcon } from '@test-kb-ui/kb-ui';
 import { AISubNav, type AISubNavItem } from './AISubNav';
 import { routes } from '../lib/routes';
 import { useToast } from '../components/Toast';

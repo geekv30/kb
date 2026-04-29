@@ -8,7 +8,7 @@
 // (white card, slate border, 8 px radius, grey #f5f5f5 header,
 // 6 px vertical cell padding, h-12 row height).
 //
-// All visual elements come from `@hiver/kb-ui`. The only bespoke UI is
+// All visual elements come from `@test-kb-ui/kb-ui`. The only bespoke UI is
 // (a) the inline "category not found" state and (b) the inline empty
 // state when the category has neither children nor articles. Both are
 // intentionally simple — Phase 7.5.8 owns the polished empty-state pass.
@@ -28,7 +28,7 @@ import {
   DataTable,
   PageHeader,
   type DataTableColumn,
-} from '@hiver/kb-ui';
+} from '@test-kb-ui/kb-ui';
 import { useMockStore } from '../../store/MockStoreContext';
 import {
   selectArticlesInCategory,

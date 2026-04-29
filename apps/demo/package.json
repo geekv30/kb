@@ -1,5 +1,5 @@
 {
-  "name": "@hiver/kb-demo",
+  "name": "@test-kb-ui/kb-demo",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,7 +10,7 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
-    "@hiver/kb-ui": "*",
+    "@test-kb-ui/kb-ui": "*",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-router-dom": "^6.26.0"

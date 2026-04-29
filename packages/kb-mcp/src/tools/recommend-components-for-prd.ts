@@ -326,7 +326,7 @@ export async function recommendComponentsForPrd(
       category: spec?.category ?? 'unknown',
       why,
       importStatement:
-        spec?.importStatement ?? `import { ${s.name} } from '@hiver/kb-ui';`,
+        spec?.importStatement ?? `import { ${s.name} } from '@test-kb-ui/kb-ui';`,
     };
   });
 
