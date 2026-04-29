@@ -13,10 +13,12 @@
 // reasoning on top of what this tool returns.
 
 import { z } from 'zod';
-import { readdir, readFile } from 'node:fs/promises';
-import { join } from 'node:path';
 
 import type { ComponentIndex } from '../index/types.js';
+import {
+  type StoriesIndex,
+  listPatternStoryTitles as listPatternTitlesFromIndex,
+} from '../index/stories-index.js';
 import { componentKeywords } from '../keywords.js';
 import { compositionTemplates } from '../composition-templates.js';
 import { getStoryCode } from './get-story-code.js';
@@ -177,26 +179,9 @@ function scoreComponent(
  * Pattern picker
  * ───────────────────────────────────────────────────────────── */
 
-async function listPatternStoryTitles(
-  kbUiSrcRoot: string,
-): Promise<string[]> {
-  const pagesDir = join(kbUiSrcRoot, 'pages');
-  let entries: string[] = [];
-  try {
-    entries = await readdir(pagesDir);
-  } catch {
-    return [];
-  }
-  const titles: string[] = [];
-  for (const entry of entries) {
-    if (!entry.endsWith('.stories.tsx')) continue;
-    const source = await readFile(join(pagesDir, entry), 'utf8');
-    // First `title:` literal in the file is the meta title.
-    const match = source.match(/title\s*:\s*['"`]([^'"`]+)['"`]/);
-    if (match) titles.push(match[1]);
-  }
-  return titles;
-}
+// Pattern story titles are pulled from the pre-built StoriesIndex via the
+// helper exported from `index/stories-index.ts`. The legacy filesystem
+// version was removed when we moved to bundled JSON (issue #28).
 
 /** Score a pattern story title using the same tokenization rules. */
 function scoreStoryTitle(
@@ -249,14 +234,14 @@ function pickCompositionSnippet(topComponentNames: string[]): string {
  * Score every component, fetch the best matching pattern story (if any),
  * and assemble a composition snippet.
  *
- * `kbUiSrcRoot` is optional for unit tests — when omitted the function
+ * `storiesIndex` is optional for unit tests — when omitted the function
  * skips the pattern lookup and returns `suggestedPattern: null`. The MCP
- * server entrypoint always passes the resolved kb-ui src root.
+ * server entrypoint always passes the loaded StoriesIndex.
  */
 export async function recommendComponentsForPrd(
   index: ComponentIndex,
   input: RecommendComponentsForPrdInput,
-  options: { kbUiSrcRoot?: string } = {},
+  options: { storiesIndex?: StoriesIndex } = {},
 ): Promise<RecommendComponentsForPrdOutput> {
   const prd = input.prd;
   const prdLower = prd.toLowerCase();
@@ -332,8 +317,8 @@ export async function recommendComponentsForPrd(
 
   /* ── 2. Pattern picker ───────────────────────────────────── */
   let suggestedPattern: SuggestedPattern | null = null;
-  if (options.kbUiSrcRoot) {
-    const titles = await listPatternStoryTitles(options.kbUiSrcRoot);
+  if (options.storiesIndex) {
+    const titles = listPatternTitlesFromIndex(options.storiesIndex);
     let best: { title: string; score: number } | null = null;
     for (const title of titles) {
       const titleScore = scoreStoryTitle(title, prdLower, tokenSet, bigramSet);
@@ -341,7 +326,7 @@ export async function recommendComponentsForPrd(
       if (!best || titleScore > best.score) best = { title, score: titleScore };
     }
     if (best) {
-      const code = await getStoryCode(options.kbUiSrcRoot, {
+      const code = await getStoryCode(options.storiesIndex, {
         storyTitle: best.title,
       });
       suggestedPattern = {

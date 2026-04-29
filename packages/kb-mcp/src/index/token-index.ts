@@ -2,11 +2,17 @@
 // merges them by value-equality, and returns a `Map<string, TokenSpec>`
 // keyed by canonical token name (CSS form preferred when both exist).
 //
-// Used by future MCP tools (issues #9, #10) to resolve token names,
-// list available tokens by category, and surface inline documentation.
+// Two entry points (mirroring component-index.ts):
+//   - `buildTokenIndex(kbUiSrcRoot?)`: pure indexer — reads `tokens.css`
+//     and `tokens.ts` from disk. Used at BUILD time and in fixture tests
+//     where the workspace install of `@test-kb-ui/kb-ui` is available.
+//   - `loadTokenIndex()`: runtime loader — reads pre-built JSON from
+//     `dist/`. Used by the MCP server entrypoint so plain npm installs
+//     work even when kb-ui ships only `dist/`. See issue #28.
 
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import ts from 'typescript';
 import type { TokenIndex, TokenSpec } from './types.js';
@@ -14,13 +20,10 @@ import type { TokenIndex, TokenSpec } from './types.js';
 const require = createRequire(import.meta.url);
 
 /* ─────────────────────────────────────────────────────────────
- * kb-ui source resolution
+ * kb-ui source resolution (workspace fallback only)
  * ───────────────────────────────────────────────────────────── */
 
-function resolveKbUiSrc(): string {
-  // Resolve through the package's main entry, then walk up to the package
-  // root. We can't `require.resolve('@test-kb-ui/kb-ui/package.json')` directly
-  // because kb-ui's `exports` map doesn't expose `./package.json`.
+function resolveWorkspaceKbUiSrc(): string {
   const mainEntry = require.resolve('@test-kb-ui/kb-ui');
   let root = dirname(mainEntry);
   for (let i = 0; i < 5; i += 1) {
@@ -30,7 +33,7 @@ function resolveKbUiSrc(): string {
   const src = resolve(root, 'src');
   if (!existsSync(src)) {
     throw new Error(
-      `kb-ui source files not found at ${src} — kb-mcp currently requires the workspace install of @test-kb-ui/kb-ui (issue #8 scope). Production support tracked separately.`,
+      `kb-ui source files not found at ${src} — buildTokenIndex requires the workspace install of @test-kb-ui/kb-ui. At runtime, use loadTokenIndex() to read the pre-built JSON instead.`,
     );
   }
   return src;
@@ -318,10 +321,18 @@ function mergeTokens(cssTokens: TokenSpec[], jsTokens: TokenSpec[]): TokenIndex 
  * Public API
  * ───────────────────────────────────────────────────────────── */
 
-export function buildTokenIndex(): TokenIndex {
-  const kbUiSrc = resolveKbUiSrc();
-  const cssPath = resolve(kbUiSrc, 'tokens.css');
-  const tsPath = resolve(kbUiSrc, 'tokens.ts');
+/**
+ * Build the token index from kb-ui source. Pure: takes the path,
+ * returns a serialisable Map.
+ *
+ * @param kbUiSrcRoot - Optional absolute path to kb-ui's `src/` dir.
+ *   If omitted, falls back to the `require.resolve`-based workspace
+ *   lookup. Pass an explicit path in build scripts.
+ */
+export function buildTokenIndex(kbUiSrcRoot?: string): TokenIndex {
+  const srcRoot = kbUiSrcRoot ?? resolveWorkspaceKbUiSrc();
+  const cssPath = resolve(srcRoot, 'tokens.css');
+  const tsPath = resolve(srcRoot, 'tokens.ts');
 
   if (!existsSync(cssPath)) {
     throw new Error(`kb-ui tokens.css not found at ${cssPath}`);
@@ -333,4 +344,42 @@ export function buildTokenIndex(): TokenIndex {
   const cssTokens = parseTokensCss(cssPath);
   const jsTokens = parseTokensTs(tsPath);
   return mergeTokens(cssTokens, jsTokens);
+}
+
+/**
+ * Convert a `TokenIndex` (Map) to a JSON-serialisable plain object
+ * keyed by token name. Used by the build script.
+ */
+export function serializeTokenIndex(
+  index: TokenIndex,
+): Record<string, TokenSpec> {
+  return Object.fromEntries(index);
+}
+
+/**
+ * Runtime loader: read the pre-built `token-index.json` shipped in `dist/`.
+ * See the matching note in `loadComponentIndex` re: why we probe two
+ * candidate locations.
+ */
+export function loadTokenIndex(): TokenIndex {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const candidates = [
+    resolve(here, 'token-index.json'),
+    resolve(here, '..', 'token-index.json'),
+  ];
+  let jsonPath: string | null = null;
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) {
+      jsonPath = candidate;
+      break;
+    }
+  }
+  if (!jsonPath) {
+    throw new Error(
+      `kb-mcp pre-built token index not found. Looked in: ${candidates.join(', ')}. Run \`npm run --workspace=packages/kb-mcp build\` to generate it.`,
+    );
+  }
+  const raw = readFileSync(jsonPath, 'utf8');
+  const obj = JSON.parse(raw) as Record<string, TokenSpec>;
+  return new Map(Object.entries(obj));
 }

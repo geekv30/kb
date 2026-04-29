@@ -1,6 +1,6 @@
 {
   "name": "@test-kb-ui/kb-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP companion server for @test-kb-ui/kb-ui — read components, tokens, and pattern stories from the kb-ui library",
   "license": "MIT",
   "author": "Hiver",
@@ -36,7 +36,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && tsx scripts/build-indices.mjs",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test test/**/*.test.ts"
