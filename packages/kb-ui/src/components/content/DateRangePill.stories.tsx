@@ -18,3 +18,15 @@ const meta: Meta<typeof DateRangePill> = {
 export default meta;
 
 export const Default: StoryObj<typeof DateRangePill> = {};
+
+export const CustomPresets: StoryObj<typeof DateRangePill> = {
+  name: 'Custom Presets',
+  args: {
+    value: 'today' as never,
+    presets: [
+      { value: 'today', label: 'Today' },
+      { value: 'yesterday', label: 'Yesterday' },
+      { value: 'this-quarter', label: 'This Quarter' },
+    ],
+  },
+};
