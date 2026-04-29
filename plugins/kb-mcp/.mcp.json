@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "test-kb-ui": {
+      "command": "npx",
+      "args": ["-y", "@test-kb-ui/kb-mcp"]
+    }
+  }
+}

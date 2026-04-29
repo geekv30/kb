@@ -11,6 +11,17 @@
 npm install @test-kb-ui/kb-ui
 ```
 
+## Use it from Claude Code
+
+This repo ships as a Claude Code plugin — installing it wires the kb-mcp server straight into your CLI, so you can ask Claude for a kb-ui composition from a plain-English PRD.
+
+```bash
+/plugin marketplace add geekv30/kb
+/plugin install kb-mcp@test-kb-ui
+```
+
+Then, in any Claude Code session: *"Build me a settings page where admins manage AI gap rules — propose a kb-ui composition."*
+
 ## Quickstart
 
 ```tsx

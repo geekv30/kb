@@ -1,0 +1,30 @@
+{
+  "name": "test-kb-ui",
+  "owner": {
+    "name": "geekv30",
+    "url": "https://github.com/geekv30"
+  },
+  "plugins": [
+    {
+      "name": "kb-mcp",
+      "source": "./plugins/kb-mcp",
+      "description": "MCP server for the @test-kb-ui/kb-ui component library. Turns plain-English PRDs into starting React compositions, with reads for components, design tokens, and pattern stories.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Hiver"
+      },
+      "homepage": "https://github.com/geekv30/kb",
+      "repository": "https://github.com/geekv30/kb",
+      "license": "MIT",
+      "keywords": [
+        "mcp",
+        "design-system",
+        "components",
+        "kb-ui",
+        "react",
+        "tailwind"
+      ],
+      "category": "productivity"
+    }
+  ]
+}
