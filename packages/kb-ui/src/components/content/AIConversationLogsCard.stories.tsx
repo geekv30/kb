@@ -105,3 +105,70 @@ const meta: Meta<typeof AIConversationLogsCard> = {
 export default meta;
 
 export const Default: StoryObj<typeof AIConversationLogsCard> = {};
+
+export const CustomToolbar: StoryObj<typeof AIConversationLogsCard> = {
+  name: 'Custom Toolbar',
+  render: (args) => (
+    <div className="w-[890px] bg-[#f8fafc] p-4">
+      <AIConversationLogsCard
+        {...args}
+        toolbar={
+          <span className="text-[12px] font-medium text-[#475569]">
+            Filtered: Last 7 days
+          </span>
+        }
+      >
+        <AIConversationLogEntry
+          question="How do I reset my password if I can't access my recovery email?"
+          timestamp="Mar 31, 2:23 PM"
+          feedback="positive"
+          answer="Outlined the 3-step account recovery process via billing info and support contact."
+          sourceCount={3}
+          sources={SAMPLE_SOURCES}
+        />
+        <AIConversationLogEntry
+          question="How do I reset my password if I can't access my recovery email?"
+          timestamp="Mar 31, 2:23 PM"
+          feedback="positive"
+          answer="Outlined the 3-step account recovery process via billing info and support contact."
+          sourceCount={3}
+          sources={SAMPLE_SOURCES}
+        />
+        <AIConversationLogEntry
+          question="Why was I charged twice this month?"
+          timestamp="Mar 30, 1:23 PM"
+          feedback={null}
+          answer="Explained duplicate charge scenarios and how to report via the billing dashboard. Included 5–7 day refund timeline as well as an apology for the duplicate charge."
+          sourceCount={3}
+          sources={SAMPLE_SOURCES}
+          tail={{ kind: 'ticket-created' }}
+        />
+        <AIConversationLogEntry
+          question="How do I set up Slack notifications for my team?"
+          timestamp="Mar 28, 2:23 PM"
+          feedback={null}
+          answer="Walked through the Slack integration setup, notification scope settings, and OAuth re-authorization steps"
+          sourceCount={3}
+          sources={SAMPLE_SOURCES}
+          followUp={{
+            question: 'How do i do this and that?',
+            answer: 'Explained about the OAuth setup',
+            sourceCount: 3,
+            sources: SAMPLE_SOURCES,
+            tail: { kind: 'source-clicked' },
+          }}
+          showViewAll
+        />
+        <AIConversationLogEntry
+          question="Does Hiver have HIPAA compliance?"
+          timestamp="Mar 27, 2:23 PM"
+          feedback="negative"
+          answer="AI could not provide an answer"
+          answerDisabled
+          sourceCount={0}
+          tail={{ kind: 'source-clicked', actor: 'the user' }}
+        />
+      </AIConversationLogsCard>
+    </div>
+  ),
+};
