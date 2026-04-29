@@ -1,6 +1,6 @@
 {
   "name": "@test-kb-ui/kb-mcp",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "MCP companion server for @test-kb-ui/kb-ui — read components, tokens, and pattern stories from the kb-ui library",
   "license": "MIT",
   "author": "Hiver",

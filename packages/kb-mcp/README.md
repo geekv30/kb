@@ -71,42 +71,51 @@ If you prefer editing the config file directly, the same JSON shape used by Clau
 
 | Tool | What it does |
 | --- | --- |
+| `find_relevant_journey` | Scope a PRD to one of the 3 user journeys (Browse & Edit, AI Optimise Review, Analytics Drill). Returns entry point, landing page, key components, and confidence. **Call this first** — it grounds component recommendations in product context. |
 | `list_components` | List every public kb-ui component (name + category + one-line description), optionally filtered by category. |
 | `get_component_spec` | Full TypeScript prop spec, story files, Figma node, and import statement for one component. |
 | `list_tokens` | List every design token in `tokens.css` (color, spacing, radius, typography, etc.), optionally filtered by section. |
 | `get_token_value` | Resolve one token by CSS name (`--color-canvas`) or dotted JS path (`color.canvas`). |
 | `get_story_code` | Return the full source of any pattern story by Storybook title (e.g. `Patterns/Knowledge Base/Category Page`). |
-| `recommend_components_for_prd` | Headline tool. Turn a PRD into a starting composition: top 3-7 components with reasons, the closest pattern story, and a working composition snippet. |
+| `recommend_components_for_prd` | Turn a PRD into a starting composition: top 3-7 components with reasons, the closest pattern story, and a working composition snippet. Best used after `find_relevant_journey` + reading the relevant `kb://product/*` resources. |
 
-The server also exposes a single MCP **resource**:
+The server also exposes MCP **resources**:
 
-- `kb://design/overview` — full text of `design.md` (tokens, typography, spacing, per-component Figma references).
+| Resource | Contents |
+| --- | --- |
+| `kb://design/overview` | Full text of `design.md` — tokens, typography, spacing, per-component Figma references. |
+| `kb://product/journeys` | The 3 primary user journeys with personas, entry points, and where new features attach. |
+| `kb://product/information-architecture` | Sitemap, top-level rail sections, sub-nav per section, shell modes, per-route component composition. |
+| `kb://product/feature-map` | What the product does today by capability area, plus a list of common asks NOT yet built. |
 
-## Example interaction
+## Example interaction (scope first, then components)
 
 You, in Claude Code:
 
-> Build me an article editor for our knowledge base. The user should be able to edit an article body and see AI suggestions reviewed inline next to it.
+> I want to add a date range filter to analytics — last 7, 30, 90 days, custom.
 
-Claude calls `recommend_components_for_prd` with that prompt. The tool returns a JSON envelope something like:
+Claude calls `find_relevant_journey` first. It returns:
 
 ```jsonc
 {
-  "recommendedComponents": [
-    { "name": "AppShell",            "why": "outer chrome (top bar + side nav)" },
-    { "name": "KBBreadcrumbBar",     "why": "in-app breadcrumb above the editor" },
-    { "name": "ContentEditor",       "why": "rich-text editor surface" },
-    { "name": "ArticleBody",         "why": "rendered article preview" },
-    { "name": "AIGapSuggestionCard", "why": "inline AI suggestion card" },
-    { "name": "AISuggestionsCard",   "why": "list of AI-generated edits" },
-    { "name": "SourcesSideSheet",    "why": "right-rail sources reviewer" }
-  ],
-  "suggestedPattern": { "storyTitle": "Patterns/Knowledge Base/Article Editor", "storySource": "..." },
-  "compositionSnippet": "<AppShell> ... </AppShell>"
+  "bestMatch": {
+    "name": "Analytics Drill",
+    "entryPoint": "Rail \"Analytics\" icon -> /analytics/...",
+    "landingPage": "One of 3 tabs: /analytics/article-performance, /analytics/search, /analytics/ai-answer-performance",
+    "keyComponents": ["DateRangePill", "PageHeader", "StatCardGrid", "..."],
+    "confidence": "high"
+  },
+  "guidance": "Strong match for \"Analytics Drill\". Read `kb://product/journeys` for the full journey detail, then confirm scope with the user before recommending components."
 }
 ```
 
-Claude then reads the snippet and the pattern story, and writes a real React file in your repo using those exports — no bespoke components, no hand-rolled chrome.
+Claude reads `kb://product/journeys` + `kb://product/feature-map` and sees that `DateRangePill` already exists but is currently a no-op. It comes back to you:
+
+> This lands on all 3 analytics tabs. The `DateRangePill` component is already in the design system — it's currently a no-op. We'd wire it to filter state. Should the filter persist across tabs, or reset per tab?
+
+You answer. Once scope is confirmed, Claude calls `recommend_components_for_prd` for the actual composition snippet, reads the matching pattern story, and writes a real React file using kb-ui exports — no bespoke chrome.
+
+The MCP doesn't enforce this flow. Claude reasons over the tools and resources naturally. The `find_relevant_journey` tool + `kb://product/*` resources just give Claude enough context to scope before reaching for code.
 
 ## Troubleshooting
 
