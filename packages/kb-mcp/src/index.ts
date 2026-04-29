@@ -6,19 +6,15 @@
 //   - list_tokens           (filter by tokens.css section)
 //   - get_token_value       (CSS or dotted JS form)
 //   - get_story_code        (full source by Storybook title)
+//   - recommend_components_for_prd
 // plus one MCP resource:
 //   - kb://design/overview  (full text of design.md)
 //
-// Indices for components/tokens are built ONCE at startup from the
-// workspace install of @test-kb-ui/kb-ui (issue #8 module). The server
-// is read-only; no caching beyond the in-memory indices.
-//
-// Run locally for development:
-//   npm run --workspace=packages/kb-mcp build
-//   node packages/kb-mcp/dist/index.js
-//
-// Or wired into Claude Code / Desktop / Cursor via the JSON config
-// shipped in #11's README.
+// Indices for components, tokens, and stories are pre-built at
+// PACKAGE-BUILD time (see `scripts/build-indices.mjs`) and shipped as
+// JSON in `dist/`. At runtime we just JSON.parse them — no filesystem
+// scan of `@test-kb-ui/kb-ui/src/` is needed, which is what makes the
+// package work as a plain `npx` install (issue #28).
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -32,12 +28,13 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { existsSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { ZodTypeAny } from 'zod';
 
-import { buildComponentIndex } from './index/component-index.js';
-import { buildTokenIndex } from './index/token-index.js';
+import { loadComponentIndex } from './index/component-index.js';
+import { loadTokenIndex } from './index/token-index.js';
+import { loadStoriesIndex } from './index/stories-index.js';
 import {
   listComponents,
   listComponentsInputSchema,
@@ -67,47 +64,42 @@ import {
 } from './resources/design-overview.js';
 
 /* ─────────────────────────────────────────────────────────────
- * Path resolution: kb-ui src root + repo root
+ * design.md location
  * ─────────────────────────────────────────────────────────────
  *
- * `require.resolve('@test-kb-ui/kb-ui')` returns the `main` entry —
- * `.../packages/kb-ui/dist/index.js` in workspace mode. We walk up to
- * the package directory (containing `package.json`), then into `src/`
- * for story-file scans. The repo root is two levels above the package
- * (packages/kb-ui → packages → repo).
+ * The bundled-index refactor (issue #28) removed every `node_modules`
+ * lookup at startup, but the `kb://design/overview` resource still wants
+ * to read `design.md`. In a workspace install we walk up from this file
+ * (`packages/kb-mcp/dist/index.js`) to the repo root. In a non-workspace
+ * install no `design.md` is shipped — the resource handler will surface
+ * a clear ENOENT to the client when (and only when) the resource is
+ * actually requested. This is intentionally lazy so it doesn't block
+ * server startup for npm-install consumers who never use the resource.
  */
-const require = createRequire(import.meta.url);
+const HERE = dirname(fileURLToPath(import.meta.url));
 
-function resolveKbUiPaths(): { kbUiPkgDir: string; kbUiSrcRoot: string; repoRoot: string } {
-  const kbUiMain = require.resolve('@test-kb-ui/kb-ui');
-  let kbUiPkgDir = dirname(kbUiMain);
-  // Walk up until we find a package.json. Bounded loop for safety.
-  for (let i = 0; i < 5; i += 1) {
-    if (existsSync(resolve(kbUiPkgDir, 'package.json'))) break;
-    const parent = dirname(kbUiPkgDir);
-    if (parent === kbUiPkgDir) {
-      throw new Error('Could not locate @test-kb-ui/kb-ui package root.');
-    }
-    kbUiPkgDir = parent;
+function resolveDesignOverviewRoot(): string {
+  // Workspace layout: <repo>/packages/kb-mcp/dist/index.js → repo is 3 up.
+  let dir = HERE;
+  for (let i = 0; i < 6; i += 1) {
+    if (existsSync(resolve(dir, 'design.md'))) return dir;
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
   }
-  const kbUiSrcRoot = resolve(kbUiPkgDir, 'src');
-  if (!existsSync(kbUiSrcRoot)) {
-    throw new Error(
-      `@test-kb-ui/kb-ui src/ not found at ${kbUiSrcRoot}. kb-mcp currently requires the workspace install (issue #8 scope).`,
-    );
-  }
-  // Workspace layout: <repo>/packages/kb-ui — repo is two levels up.
-  const repoRoot = resolve(kbUiPkgDir, '..', '..');
-  return { kbUiPkgDir, kbUiSrcRoot, repoRoot };
+  // Fall back to whatever 3-up gives — readDesignOverview will throw a
+  // clear ENOENT at request time if the file isn't there.
+  return resolve(HERE, '..', '..', '..');
 }
 
-const { kbUiSrcRoot, repoRoot } = resolveKbUiPaths();
+const designOverviewRoot = resolveDesignOverviewRoot();
 
 /* ─────────────────────────────────────────────────────────────
- * Build indices once at startup.
+ * Load indices once at startup from bundled JSON.
  * ───────────────────────────────────────────────────────────── */
-const componentIndex = buildComponentIndex();
-const tokenIndex = buildTokenIndex();
+const componentIndex = loadComponentIndex();
+const tokenIndex = loadTokenIndex();
+const storiesIndex = loadStoriesIndex();
 
 /* ─────────────────────────────────────────────────────────────
  * Tool registry
@@ -174,7 +166,7 @@ const tools: ToolEntry[] = [
     inputSchema: getStoryCodeInputSchema,
     handler: async (args) => {
       const parsed = getStoryCodeInputSchema.parse(args ?? {});
-      return getStoryCode(kbUiSrcRoot, parsed);
+      return getStoryCode(storiesIndex, parsed);
     },
   },
   {
@@ -184,7 +176,7 @@ const tools: ToolEntry[] = [
     inputSchema: recommendComponentsForPrdInputSchema,
     handler: async (args) => {
       const parsed = recommendComponentsForPrdInputSchema.parse(args ?? {});
-      return recommendComponentsForPrd(componentIndex, parsed, { kbUiSrcRoot });
+      return recommendComponentsForPrd(componentIndex, parsed, { storiesIndex });
     },
   },
 ];
@@ -198,7 +190,7 @@ const toolByName = new Map<string, ToolEntry>(tools.map((t) => [t.name, t]));
 const server = new Server(
   {
     name: '@test-kb-ui/kb-mcp',
-    version: '1.0.0',
+    version: '1.0.1',
   },
   {
     capabilities: {
@@ -282,7 +274,7 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
       `Unknown resource URI "${uri}". Known: ${DESIGN_OVERVIEW_URI}.`,
     );
   }
-  const { mimeType, text } = await readDesignOverview(repoRoot);
+  const { mimeType, text } = await readDesignOverview(designOverviewRoot);
   return {
     contents: [
       {

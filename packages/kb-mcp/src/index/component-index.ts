@@ -1,22 +1,28 @@
 // Walks `@test-kb-ui/kb-ui`'s `src/components/**/*.tsx` and builds an in-memory
 // index of every canonical component (the file-named export). The result is
-// a `Map<string, ComponentSpec>` keyed by component name, ready for future
-// MCP tools (issues #9, #10) to query by name, category, or Figma node.
+// a `Map<string, ComponentSpec>` keyed by component name.
 //
-// Scope notes:
-// - Targets the WORKSPACE install of `@test-kb-ui/kb-ui` (the `node_modules`
-//   symlink to `packages/kb-ui/`). Production tarballs only ship `dist/`,
-//   so this throws a clear error in that mode — handling that case is a
-//   separate, post-#6 polish step.
-// - One file = one canonical component. Helper exports in the same file
-//   are intentionally not indexed; only the export whose name matches the
-//   filename is returned.
-// - Prop extraction uses the TypeScript compiler API. If a single file
-//   fails to parse, that component ships with `props: []` and a stderr
-//   warning; the rest of the index still builds.
+// Two entry points:
+//   - `buildComponentIndex(kbUiSrcRoot?)`: pure indexer — walks the kb-ui
+//     source tree and parses with the TypeScript compiler API. Used at
+//     BUILD time (see `scripts/build-indices.mjs`) and from fixture tests
+//     where the workspace install of `@test-kb-ui/kb-ui` is available.
+//     If `kbUiSrcRoot` is omitted, falls back to resolving the workspace
+//     install via `require.resolve`.
+//   - `loadComponentIndex()`: runtime loader — reads the pre-built
+//     `component-index.json` that ships alongside `dist/index.js`. Used by
+//     the MCP server entrypoint so a plain `npm install` of kb-mcp works
+//     even when kb-ui ships only `dist/`. See issue #28.
+//
+// One file = one canonical component. Helper exports in the same file
+// are intentionally not indexed; only the export whose name matches the
+// filename is returned. Prop extraction uses the TypeScript compiler API.
+// If a single file fails to parse, that component ships with `props: []`
+// and a stderr warning; the rest of the index still builds.
 
 import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs';
 import { dirname, basename, resolve, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import ts from 'typescript';
 import type { ComponentIndex, ComponentPropSpec, ComponentSpec } from './types.js';
@@ -24,18 +30,19 @@ import type { ComponentIndex, ComponentPropSpec, ComponentSpec } from './types.j
 const require = createRequire(import.meta.url);
 
 /* ─────────────────────────────────────────────────────────────
- * kb-ui source resolution
+ * kb-ui source resolution (workspace fallback only)
  * ───────────────────────────────────────────────────────────── */
 
-function resolveKbUiSrc(): string {
-  // Resolve through the package's main entry, then walk up to the package
-  // root. We can't `require.resolve('@test-kb-ui/kb-ui/package.json')` directly
-  // because kb-ui's `exports` map doesn't expose `./package.json`.
+/**
+ * Resolve the `src/` root of the workspace install of `@test-kb-ui/kb-ui`.
+ * Used as a fallback when `buildComponentIndex` is called without an
+ * explicit path (e.g. fixture tests). At runtime in non-workspace
+ * installs the kb-ui package only ships `dist/` and this throws — that's
+ * the path `loadComponentIndex` exists to bypass.
+ */
+function resolveWorkspaceKbUiSrc(): string {
   const mainEntry = require.resolve('@test-kb-ui/kb-ui');
-  // mainEntry => `.../node_modules/@test-kb-ui/kb-ui/dist/index.js` (or .mjs).
-  // The package root is the parent of `dist/`.
   let root = dirname(mainEntry);
-  // Walk up until we find a directory containing `package.json`.
   for (let i = 0; i < 5; i += 1) {
     if (existsSync(resolve(root, 'package.json'))) break;
     root = dirname(root);
@@ -43,7 +50,7 @@ function resolveKbUiSrc(): string {
   const src = resolve(root, 'src');
   if (!existsSync(src)) {
     throw new Error(
-      `kb-ui source files not found at ${src} — kb-mcp currently requires the workspace install of @test-kb-ui/kb-ui (issue #8 scope). Production support tracked separately.`,
+      `kb-ui source files not found at ${src} — buildComponentIndex requires the workspace install of @test-kb-ui/kb-ui. At runtime, use loadComponentIndex() to read the pre-built JSON instead.`,
     );
   }
   return src;
@@ -465,9 +472,18 @@ function findStoryFiles(componentDir: string, componentName: string): string[] {
  * Public API
  * ───────────────────────────────────────────────────────────── */
 
-export function buildComponentIndex(): ComponentIndex {
-  const kbUiSrc = resolveKbUiSrc();
-  const componentsDir = resolve(kbUiSrc, 'components');
+/**
+ * Build the component index from kb-ui source. Pure: takes the path,
+ * returns a serialisable Map. Used at build time and from fixture tests.
+ *
+ * @param kbUiSrcRoot - Optional absolute path to kb-ui's `src/` dir.
+ *   If omitted, falls back to `require.resolve('@test-kb-ui/kb-ui')`-based
+ *   workspace lookup. Pass an explicit path in build scripts so the
+ *   resolution doesn't depend on `node_modules` topology.
+ */
+export function buildComponentIndex(kbUiSrcRoot?: string): ComponentIndex {
+  const srcRoot = kbUiSrcRoot ?? resolveWorkspaceKbUiSrc();
+  const componentsDir = resolve(srcRoot, 'components');
   const files = walkComponents(componentsDir);
 
   const index: ComponentIndex = new Map();
@@ -519,6 +535,56 @@ export function buildComponentIndex(): ComponentIndex {
   }
 
   return index;
+}
+
+/**
+ * Convert a `ComponentIndex` (Map) to a JSON-serialisable plain object
+ * keyed by component name. Used by the build script that ships the
+ * pre-computed index alongside `dist/index.js`.
+ */
+export function serializeComponentIndex(
+  index: ComponentIndex,
+): Record<string, ComponentSpec> {
+  return Object.fromEntries(index);
+}
+
+/**
+ * Runtime loader: read the pre-built `component-index.json` that the
+ * build script ships in `dist/`. This is what the MCP server uses in
+ * production — it works regardless of whether `@test-kb-ui/kb-ui` ships
+ * `src/` (which it doesn't on npm).
+ *
+ * The JSON is written to `dist/component-index.json`. Because tsup bundles
+ * each `entry` separately (with `splitting: false`), this loader's
+ * `import.meta.url` may resolve EITHER to `dist/index.js` (when called
+ * from the bin entrypoint) OR to `dist/index/component-index.js` (when
+ * the indexer module is imported directly, e.g. from a smoke test).
+ * We probe both candidate locations rather than committing to one.
+ *
+ * Throws if the JSON file isn't found in either location — that means the
+ * package was built incorrectly (the build script must run before publish).
+ */
+export function loadComponentIndex(): ComponentIndex {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const candidates = [
+    resolve(here, 'component-index.json'),
+    resolve(here, '..', 'component-index.json'),
+  ];
+  let jsonPath: string | null = null;
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) {
+      jsonPath = candidate;
+      break;
+    }
+  }
+  if (!jsonPath) {
+    throw new Error(
+      `kb-mcp pre-built component index not found. Looked in: ${candidates.join(', ')}. Run \`npm run --workspace=packages/kb-mcp build\` to generate it.`,
+    );
+  }
+  const raw = readFileSync(jsonPath, 'utf8');
+  const obj = JSON.parse(raw) as Record<string, ComponentSpec>;
+  return new Map(Object.entries(obj));
 }
 
 // Suppress unused-import warning for `basename`/`sep` if minified — kept here
