@@ -2,6 +2,7 @@ import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../../tokens.css';
 import { AISuggestionsCard } from './AISuggestionsCard';
+import { Button } from '../primitives/Button';
 
 /**
  * The rail is intended to live in a 320–380px column. The preview
@@ -43,3 +44,35 @@ const meta: Meta<typeof AISuggestionsCard> = {
 export default meta;
 
 export const Default: StoryObj<typeof AISuggestionsCard> = {};
+
+export const CustomTitleAndCta: StoryObj<typeof AISuggestionsCard> = {
+  name: 'Custom Title & CTA',
+  render: () => (
+    <div style={CANVAS}>
+      <div style={{ ...RAIL, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <AISuggestionsCard
+          mode="pre-review"
+          count={3}
+          summary={SUMMARY}
+          onPrev={() => {}}
+          onNext={() => {}}
+          title="Compliance Suggestions"
+          cta={
+            <Button variant="ghost" onClick={() => {}}>
+              Open compliance review
+            </Button>
+          }
+        />
+        <AISuggestionsCard
+          mode="terminal"
+          count={3}
+          summary={SUMMARY}
+          onPrev={() => {}}
+          onNext={() => {}}
+          title="Compliance Suggestions"
+          terminalLabel="All checked"
+        />
+      </div>
+    </div>
+  ),
+};
