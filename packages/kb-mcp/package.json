@@ -1,0 +1,56 @@
+{
+  "name": "@hiver/kb-mcp",
+  "version": "1.0.0",
+  "description": "MCP companion server for @hiver/kb-ui — read components, tokens, and pattern stories from the kb-ui library",
+  "license": "MIT",
+  "author": "Hiver",
+  "homepage": "https://github.com/geekv30/kb#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/geekv30/kb.git",
+    "directory": "packages/kb-mcp"
+  },
+  "bugs": {
+    "url": "https://github.com/geekv30/kb/issues"
+  },
+  "keywords": [
+    "hiver",
+    "kb",
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "anthropic",
+    "design-system",
+    "components"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "kb-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@hiver/kb-ui": "*"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@hiver/kb-ui": "*",
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0"
+  }
+}
