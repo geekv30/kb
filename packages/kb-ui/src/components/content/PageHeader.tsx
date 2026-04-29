@@ -37,6 +37,7 @@ export type PageHeaderProps = {
   onNewClick?: () => void;
   newButtonLabel?: string;
   className?: string;
+  cta?: React.ReactNode;
 };
 
 export function PageHeader({
@@ -49,6 +50,7 @@ export function PageHeader({
   onNewClick,
   newButtonLabel = 'New article',
   className,
+  cta,
 }: PageHeaderProps) {
   const isLg = size === 'lg';
   const renderCta = showCta ?? !isLg;
@@ -105,14 +107,16 @@ export function PageHeader({
         </div>
       </div>
       {rightSlot ?? (
-        renderCta && (
-          <Button
-            variant="primary"
-            icon={<RiAddLine size={14} />}
-            onClick={onNewClick}
-          >
-            {newButtonLabel}
-          </Button>
+        cta !== undefined ? cta : (
+          renderCta && (
+            <Button
+              variant="primary"
+              icon={<RiAddLine size={14} />}
+              onClick={onNewClick}
+            >
+              {newButtonLabel}
+            </Button>
+          )
         )
       )}
     </div>
