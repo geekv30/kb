@@ -56,6 +56,10 @@ import {
   getStoryCodeInputSchema,
 } from './tools/get-story-code.js';
 import {
+  recommendComponentsForPrd,
+  recommendComponentsForPrdInputSchema,
+} from './tools/recommend-components-for-prd.js';
+import {
   DESIGN_OVERVIEW_MIME,
   DESIGN_OVERVIEW_NAME,
   DESIGN_OVERVIEW_URI,
@@ -171,6 +175,16 @@ const tools: ToolEntry[] = [
     handler: async (args) => {
       const parsed = getStoryCodeInputSchema.parse(args ?? {});
       return getStoryCode(kbUiSrcRoot, parsed);
+    },
+  },
+  {
+    name: 'recommend_components_for_prd',
+    description:
+      'Turn a plain-English PRD into a starting composition: top 3–7 kb-ui components that match (with one-line reasons), the closest matching pattern story (full source), and a hand-curated composition snippet wiring the picks into an AppShell.',
+    inputSchema: recommendComponentsForPrdInputSchema,
+    handler: async (args) => {
+      const parsed = recommendComponentsForPrdInputSchema.parse(args ?? {});
+      return recommendComponentsForPrd(componentIndex, parsed, { kbUiSrcRoot });
     },
   },
 ];
