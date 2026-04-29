@@ -9,12 +9,27 @@ export type {
   ArticleSettings,
   ArticleSettingsPanelProps,
   ArticleSettingsPerson,
+  ArticleSettingsSection,
   ArticleVisibility,
 } from './ArticleSettingsPanel';
-export { SuggestionCard } from './SuggestionCard';
+export {
+  FieldLabel,
+  FieldBox,
+  ChevronSuffix,
+  CharCounter,
+  Placeholder,
+  TagChip,
+  AddChipButton,
+} from './ArticleSettingsPanelAtoms';
+export type {
+  FieldBoxProps,
+  TagChipProps,
+} from './ArticleSettingsPanelAtoms';
+export { SuggestionCard, DEFAULT_SUGGESTION_KINDS } from './SuggestionCard';
 export type {
   SuggestionCardProps,
   SuggestionKind,
+  SuggestionKindMeta,
   SuggestionImpact,
 } from './SuggestionCard';
 
