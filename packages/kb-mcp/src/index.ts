@@ -57,11 +57,21 @@ import {
   recommendComponentsForPrdInputSchema,
 } from './tools/recommend-components-for-prd.js';
 import {
+  findRelevantJourney,
+  findRelevantJourneyInputSchema,
+} from './tools/find-relevant-journey.js';
+import {
   DESIGN_OVERVIEW_MIME,
   DESIGN_OVERVIEW_NAME,
   DESIGN_OVERVIEW_URI,
   readDesignOverview,
 } from './resources/design-overview.js';
+import {
+  PRODUCT_MIME,
+  PRODUCT_RESOURCES,
+  isProductResourceUri,
+  readProductResource,
+} from './resources/product-context.js';
 
 /* ─────────────────────────────────────────────────────────────
  * design.md location
@@ -170,9 +180,19 @@ const tools: ToolEntry[] = [
     },
   },
   {
+    name: 'find_relevant_journey',
+    description:
+      'Given a plain-English PRD, return the existing user journey it most likely attaches to (Browse & Edit, AI Optimise Review, or Analytics Drill), with entry point, landing page, key components touched, and confidence. Call this BEFORE recommend_components_for_prd to scope where the feature lands. Pairs with the `kb://product/journeys` resource for full journey detail.',
+    inputSchema: findRelevantJourneyInputSchema,
+    handler: (args) => {
+      const parsed = findRelevantJourneyInputSchema.parse(args ?? {});
+      return findRelevantJourney(parsed);
+    },
+  },
+  {
     name: 'recommend_components_for_prd',
     description:
-      'Turn a plain-English PRD into a starting composition: top 3–7 kb-ui components that match (with one-line reasons), the closest matching pattern story (full source), and a hand-curated composition snippet wiring the picks into an AppShell.',
+      'Turn a plain-English PRD into a starting composition: top 3-7 kb-ui components that match (with one-line reasons), the closest matching pattern story (full source), and a hand-curated composition snippet wiring the picks into an AppShell. Best used AFTER scoping the journey via `find_relevant_journey` and reading the relevant `kb://product/*` resources, so component picks are grounded in product context.',
     inputSchema: recommendComponentsForPrdInputSchema,
     handler: async (args) => {
       const parsed = recommendComponentsForPrdInputSchema.parse(args ?? {});
@@ -262,28 +282,31 @@ server.setRequestHandler(ListResourcesRequestSchema, async () => {
         description:
           'Full text of the kb-ui design system spec (design.md): tokens, typography, spacing, component-by-component Figma references.',
       },
+      ...PRODUCT_RESOURCES.map((r) => ({
+        uri: r.uri,
+        name: r.name,
+        mimeType: PRODUCT_MIME,
+        description: r.description,
+      })),
     ],
   };
 });
 
 server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
   const { uri } = request.params;
-  if (uri !== DESIGN_OVERVIEW_URI) {
-    throw new McpError(
-      ErrorCode.InvalidParams,
-      `Unknown resource URI "${uri}". Known: ${DESIGN_OVERVIEW_URI}.`,
-    );
+  if (uri === DESIGN_OVERVIEW_URI) {
+    const { mimeType, text } = await readDesignOverview(designOverviewRoot);
+    return { contents: [{ uri, mimeType, text }] };
   }
-  const { mimeType, text } = await readDesignOverview(designOverviewRoot);
-  return {
-    contents: [
-      {
-        uri,
-        mimeType,
-        text,
-      },
-    ],
-  };
+  if (isProductResourceUri(uri)) {
+    const { mimeType, text } = await readProductResource(uri);
+    return { contents: [{ uri, mimeType, text }] };
+  }
+  const known = [DESIGN_OVERVIEW_URI, ...PRODUCT_RESOURCES.map((r) => r.uri)].join(', ');
+  throw new McpError(
+    ErrorCode.InvalidParams,
+    `Unknown resource URI "${uri}". Known: ${known}.`,
+  );
 });
 
 const transport = new StdioServerTransport();

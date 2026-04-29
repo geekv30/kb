@@ -9,7 +9,7 @@
 // This script is invoked from `package.json`'s `build` script via tsx,
 // so it runs as TypeScript and can import the indexer modules directly.
 
-import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -63,3 +63,17 @@ writeFileSync(
 );
 // eslint-disable-next-line no-console
 console.log(`[build-indices] wrote ${stories.size} stories to dist/stories-index.json`);
+
+// Bundle product context docs (Phase 11).
+const PRODUCT_SRC = resolve(PKG_ROOT, 'product');
+const PRODUCT_DIST = resolve(DIST, 'product');
+mkdirSync(PRODUCT_DIST, { recursive: true });
+for (const name of ['journeys.md', 'information-architecture.md', 'feature-map.md']) {
+  const src = resolve(PRODUCT_SRC, name);
+  if (!existsSync(src)) {
+    console.error(`[build-indices] missing ${src}`);
+    process.exit(1);
+  }
+  writeFileSync(resolve(PRODUCT_DIST, name), readFileSync(src, 'utf8'), 'utf8');
+}
+console.log('[build-indices] bundled 3 product docs to dist/product/');
