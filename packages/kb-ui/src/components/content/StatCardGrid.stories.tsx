@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../../tokens.css';
 import { StatCardGrid } from './StatCardGrid';
+import { Button } from '../primitives/Button';
 
 const meta: Meta<typeof StatCardGrid> = {
   title: 'Components/Charts & Stats/Stat Card Grid',
@@ -35,3 +36,15 @@ const meta: Meta<typeof StatCardGrid> = {
 export default meta;
 
 export const Default: StoryObj<typeof StatCardGrid> = {};
+
+export const CustomHeaderSlot: StoryObj<typeof StatCardGrid> = {
+  name: 'Custom Header Slot',
+  args: {
+    title: 'Engagement',
+    headerRight: (
+      <Button variant="ghost" onClick={() => {}}>
+        View all
+      </Button>
+    ),
+  },
+};

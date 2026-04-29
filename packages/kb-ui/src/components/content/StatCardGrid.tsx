@@ -22,9 +22,11 @@ export type StatCardGridProps = {
   /** Stats (typically 4) distributed evenly across the card. */
   stats: StatCardProps[];
   className?: string;
+  /** Optional right-aligned slot rendered in the header row (e.g. a "View all" button). */
+  headerRight?: React.ReactNode;
 };
 
-export function StatCardGrid({ title, infoTooltip, stats, className }: StatCardGridProps) {
+export function StatCardGrid({ title, infoTooltip, stats, className, headerRight }: StatCardGridProps) {
   return (
     <Card
       padding="none"
@@ -39,6 +41,7 @@ export function StatCardGrid({ title, infoTooltip, stats, className }: StatCardG
         >
           <RiInformationLine size={16} className="text-[#64758b]" aria-hidden="true" />
         </span>
+        {headerRight !== undefined ? <div className="ml-auto flex items-center">{headerRight}</div> : null}
       </div>
       <div className="mt-4 flex items-start gap-6">
         {stats.map((stat, i) => (
