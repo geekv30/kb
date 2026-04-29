@@ -2,11 +2,7 @@
 
 ## Current Status
 
-**Phase 8 nearly complete (issue-driven workflow). 6 of 7 Phase 8 items closed (issues #1-#5 + #13, PRs #14-#19); only #6 (publish to npm) remains, gated on user `npm login` + `@hiver` scope claim. Phase 9 (MCP server) not yet started.**
-
-Phases 1–7.5 done. Phase 7.5 shipped a **standalone Vite + React 18 demo app** at `apps/demo/` that consumes `@hiver/kb-ui` via npm workspace — proving the integration story before publish. Built across 9 sequential `ui-engineer` dispatches per `demo-app-prd.md` + `demo-app-trd.md`. All three PRD §6 journeys (Browse & Edit, AI Optimise Review, Analytics Drill) functional end-to-end with zero `console.log` placeholders. Production-grade polish: top-right Toast, Radix-themed ConfirmDialog (replaces `window.confirm`), `?` cheat sheet, 150ms route cross-fade, branded 404, focus management on route change, code-split per route. Bundle: 233 KB initial gzip (under the 250 KB budget). Sign-off harness at `apps/demo/scripts/phase-7-5-9-signoff.mjs` walks all 3 journeys cold and asserts every PRD step — currently 56 / 56 PASS.
-
-Phase 7 (predecessor) shipped the **Analytics surface** — the third CRUCIAL section per `design.md`. Built across 8 sequential `ui-engineer` dispatches under a strict 1:1 Figma fidelity rule (`feedback_one_to_one_figma_fidelity.md`), with `get_variable_defs` + `get_screenshot` precomputed for every step before dispatch. Components: 1 new primitive (`Card`), 13 content components (StatCard/Grid, DateRangePill, AnalyticsAreaChart, AnalyticsDonutChart, AnalyticsChartCard, HelpfulnessTag, ArticlesNeedsAttentionTable, ArticlePerformanceTable, SearchKeywordsTable, ContentGapsTable, AIConversationLogEntry, AIConversationLogsCard, MostCitedArticlesTable), 1 new nav (`AnalyticsSideNav`), 3 new pattern stories (`Patterns/Analytics/`*). New tokens: trend-up/down/neutral, chart-views/unique/positive/wash-up/down/info, donut-1..6, chart-goal-line, chart-goal-label-bg, chart-body, card-border, card-divider. New dependency: `@radix-ui/react-switch`. Typecheck + tsup build clean. Live re-audit folded into Step 7 — no follow-up R-pass needed.
+**Phases 1-9 are all done. Both packages (`@test-kb-ui/kb-ui` v1.0.0 and `@test-kb-ui/kb-mcp` v1.0.0) are published to npm. All 13 GitHub issues are closed. The project is feature-complete on the publish goal — see "What's Next" for follow-up considerations.**
 
 ## Progress Log
 
@@ -48,6 +44,11 @@ Phase 7 (predecessor) shipped the **Analytics surface** — the third CRUCIAL se
 | 2026-04-28 | Phase 8 — issue #13 closed        | ✅ Done      | AISubNav ported to `apps/demo/` and the half-finished DataTable migration from the Phase 7.5 commit completed. Addressed 14 dropped exports (AISubNav + 7 tables + 6 row/entity types) by lifting the canonical DataTable + inline columns verbatim from the kb-ui pattern stories into the demo. PR #17 (branch `issue-13-demo-aisubnav-local`). Sign-off harness 56/56 green; `demo:build` now succeeds. |
 | 2026-04-28 | Phase 8 — issue #4 closed         | ✅ Done      | `ArticleBody` refactored to accept a `regions: ArticleBodyRegions` prop (`header` / `beforeS1` / `s1` / `betweenS1AndS2` / `s2` { `before`, `after` } / `betweenS2AndS3` / `s3` / `afterS3?`). Hardcoded password-reset JSX + typography helpers moved to the kb-ui story file (canonical example) and a sibling demo file. PR #18 (branch `issue-4-articlebody-regions`). Sign-off harness 56/56 green. Resolves the Phase 7.5 known limitation. |
 | 2026-04-28 | Phase 8 — issue #5 closed         | ✅ Done      | Pre-publish smoke test surfaced two real publish blockers, both folded into PR #19: (a) `package.json` version was still `0.1.0` (issue #2 added metadata but missed the version bump); bumped to `1.0.0` to match CHANGELOG; (b) strict-TS consumers of `import '@hiver/kb-ui/styles'` hit TS2882 because the `./styles` exports map only had a `.css` target — added a `dist/styles.d.ts` stub via a chained post-build script (`scripts/emit-styles-dts.mjs`), and `./styles` exports are now conditional with `types`+`default`. Smoke test verified end-to-end: tarball contents OK, scratch-dir strict-TS tsc clean, demo swapped to `file:tgz`, demo build + harness 56/56, demo restored. PR #19 (branch `issue-5-prepublish-smoke`). |
+| 2026-04-29 | Phase 9.4 — recommend_components_for_prd | ✅ Done | Headline retrieval tool: hand-curated keyword index (336 lines, all 36 components), 8 composition templates keyed by primary recommendation, pattern-story picker that scores `meta.title` strings against the PRD. Tokenizer with stopwords, single-token (+1) / bigram (+3) / 3-word phrase (+5) scoring, component-name self-match (+2). Co-occurrence rule: AppShell is auto-promoted whenever any page-level content component (ContentEditor, ArticleBody, AnalyticsAreaChart, ArticlesTable, etc.) is in the top picks — page chrome rarely keyword-matches directly. 3/3 fixture tests pass (settings page / analytics / article editor with AI suggestions). Closes #10. PR #23. |
+| 2026-04-29 | Scope rename @hiver -> @test-kb-ui | ✅ Done | Per user's npm org. 48 files touched: 3 package manifests (`packages/kb-ui`, `packages/kb-mcp`, `apps/demo`), 8 kb-mcp source files, 4 kb-ui source/script files, 24 demo source files, 5 active doc files (root README, CHANGELOG, CLAUDE.md, kb-ui README, demo README), root package-lock.json regenerated. Historical narrative left as snapshots: plan.md, logs.md (this row aside), demo-app-prd.md, demo-app-trd.md, design/_diff-report.md, design/side-nav.md. Internal demo workspace also renamed (`@hiver/kb-demo` -> `@test-kb-ui/kb-demo`) for consistency. PR #24. |
+| 2026-04-29 | Phase 9.5 — MCP setup docs        | ✅ Done      | `packages/kb-mcp/README.md` (126 lines) covering 1-paragraph overview, quickstart (`npx @test-kb-ui/kb-mcp`), Claude Code / Claude Desktop / Cursor wire-up JSON, 6-tool reference + `kb://design/overview` resource, example PRD-to-composition transcript, troubleshooting (restart MCP client, MCP inspector command, `npm view` check). Closes #11. PR #25. |
+| 2026-04-29 | Phase 8.6 — Publish @test-kb-ui/kb-ui v1.0.0 | ✅ Done | Published to npm under user's `@test-kb-ui` scope (passkey 2FA, user drove the publish locally). 867 kB tarball, 10 files, MIT. Live at https://www.npmjs.com/package/@test-kb-ui/kb-ui. Closes #6. |
+| 2026-04-29 | Phase 9.6 — Publish @test-kb-ui/kb-mcp v1.0.0 | ✅ Done | Published to npm. 60 kB tarball, 12 files, MIT. Bin entry resolves to `dist/index.js` with shebang, so `npx @test-kb-ui/kb-mcp` works out-of-the-box. Live at https://www.npmjs.com/package/@test-kb-ui/kb-mcp. Closes #12. **Project feature-complete on the publish goal.** |
 
 
 ## What's Done
@@ -102,41 +103,7 @@ All fixes should be dispatched via ui-engineer. The following were applied this 
 
 ## What's Next
 
-Phase 8 (npm publish) and Phase 9 (MCP companion) are now tracked as 13 GitHub issues at https://github.com/geekv30/kb/issues. The plan file at `.claude/plans/understand-the-requirements-of-inherited-snail.md` is the source of truth for scope; this section is the operational status.
-
-### Phase 8 — npm publish
-
-| # | Title | Status | Notes |
-|---|---|---|---|
-| 1 | Phase 8.1 — Fix CSS distribution gap | ✅ closed (PR #14) | tsup `onSuccess` copies tokens.css → dist/, `exports["./styles"]` retargeted |
-| 2 | Phase 8.2 — Complete package.json metadata | ✅ closed (PR #15) | license, author, repo, bugs, keywords, sideEffects, publishConfig |
-| 3 | Phase 8.3 — LICENSE + READMEs + CHANGELOG | ✅ closed (PR #16) | MIT, root README, package README (npm landing), CHANGELOG 1.0.0 entry |
-| 4 | Phase 8.4 — ArticleBody arbitrary HTML refactor | ✅ closed (PR #18) | `regions: ArticleBodyRegions` prop replaces the hardcoded password-reset JSX; canonical example lives in `KBAIGapsExperience.stories.tsx`, demo route uses a sibling regions file |
-| 13 | Fix demo build — AISubNav imported but not exported | ✅ closed (PR #17) | AISubNav + canonical DataTable + inline columns lifted into `apps/demo/`; addressed 14 dropped kb-ui exports; `demo:build` green |
-| 5 | Phase 8.5 — Pre-publish smoke test | ✅ closed (PR #19) | version bump 0.1.0→1.0.0 + styles.d.ts stub (resolves TS2882) folded in |
-| 6 | Phase 8.6 — Publish @hiver/kb-ui v1.0.0 to npm | ⬜ open (**requires user action**) | User must (a) claim the `@hiver` scope on npmjs.com, (b) run `npm login` locally, (c) run `npm publish` from `packages/kb-ui/`. Fallback name `@hiverkb/ui` if `@hiver` is taken. |
-
-### Phase 9 — MCP companion server
-
-| # | Title | Status | Notes |
-|---|---|---|---|
-| 7 | Phase 9.1 — Scaffold packages/kb-mcp/ | ⬜ open (blocked by #6) | Workspace package with `bin: { kb-mcp: ... }`, peer-dep on @hiver/kb-ui, stdio transport, `@modelcontextprotocol/sdk` + zod |
-| 8 | Phase 9.2 — Build component + token spec indices | ⬜ open (blocked by #7) | TypeScript compiler API for component props; tokens.ts + tokens.css parser |
-| 9 | Phase 9.3 — Tier 1 MCP tools | ⬜ open (blocked by #8) | `list_components`, `get_component_spec`, `list_tokens`, `get_token_value`, `get_story_code` + `kb://design/overview` resource |
-| 10 | Phase 9.4 — recommend_components_for_prd | ⬜ open (blocked by #9) | Hand-written keyword map + retrieval scoring + composition templates |
-| 11 | Phase 9.5 — MCP setup docs | ⬜ open (blocked by #9, #10) | `packages/kb-mcp/README.md` covering Claude Code / Desktop / Cursor wire-up |
-| 12 | Phase 9.6 — Publish @hiver/kb-mcp v1.0.0 | ⬜ open (blocked by #9, #10, #11, **requires user action**) | Same publish prerequisites as #6 |
-
-### Workflow rules established this session (saved as memory)
-
-- **All codebase touches go through the `ui-engineer` agent** — including configs, package.json, tsup.config.ts, markdown. Main session reads files, runs git, runs tests, dispatches subagents — never edits repo files directly. Only main-session writes: plan files in `.claude/plans/`, memory files (outside repo), and git commit messages.
-- **No `§` (section sign) character in outward-facing content** — banned in code, commits, issues, PRs, READMEs. Use plain words like "section 8.1" or just the number. Allowed in chat replies only.
-- **One issue at a time** — branch named `issue-N-short-slug`, dispatch ui-engineer with full brief, verify thoroughly (build + typecheck + functional test where applicable), commit with "closes #N", open PR with verification checklist, squash-merge with `--delete-branch`, sync main, move to next.
-- **Autonomous between user-action gates** — for issues that don't need the user, don't pause; report once at the end. The two real gates are #6 and #12 (both need `npm login` + scope claim from the user).
-
-### Recovery notes for next session
-
-- A stray `packages/kb-ui/package-lock.json` is still untracked from a prior session — leave alone or clean up in a separate small PR (repo `.gitignore` only covers `node_modules/`; could add `packages/*/package-lock.json`).
+All 13 GitHub issues are closed and both packages are published to npm. Two follow-up considerations the user might revisit later: (1) decide whether the `@test-kb-ui` scope is permanent, or migrate to `@hiver` once that scope is claimable; (2) integration smoke — install the published packages from npm into a fresh repo and verify the dev experience matches local-workspace behaviour.
 
 ## Open items
 
