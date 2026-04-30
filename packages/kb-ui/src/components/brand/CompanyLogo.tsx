@@ -3,6 +3,8 @@ import * as React from 'react';
 export type CompanyLogoProps = React.SVGProps<SVGSVGElement> & {
   /** Rendered size in px. Default 24. */
   size?: number;
+  src?: string;
+  glyph?: React.ReactNode;
 };
 
 /**
@@ -10,12 +12,66 @@ export type CompanyLogoProps = React.SVGProps<SVGSVGElement> & {
  * Hiver glyph rendered in white. Used in the SideNavRail brand slot.
  *
  * Source asset: /CompanyLogo.svg (repo root).
+ *
+ * Override slots (defaults preserved when both are undefined):
+ * - `src`: render an <img> inside the dark rounded-rect wrapper.
+ * - `glyph`: render arbitrary React content inside the dark rounded-rect wrapper.
  */
 export function CompanyLogo({
   size = 24,
   className,
+  src,
+  glyph,
   ...rest
 }: CompanyLogoProps) {
+  if (typeof src === 'string' && src.length > 0) {
+    return (
+      <span
+        className={className}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: size,
+          height: size,
+          borderRadius: 4,
+          backgroundColor: '#2D2D2D',
+          overflow: 'hidden',
+        }}
+        aria-hidden="true"
+      >
+        <img
+          src={src}
+          alt=""
+          width={size}
+          height={size}
+          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+        />
+      </span>
+    );
+  }
+
+  if (glyph !== undefined && glyph !== null) {
+    return (
+      <span
+        className={className}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: size,
+          height: size,
+          borderRadius: 4,
+          backgroundColor: '#2D2D2D',
+          overflow: 'hidden',
+        }}
+        aria-hidden="true"
+      >
+        {glyph}
+      </span>
+    );
+  }
+
   return (
     <svg
       width={size}
