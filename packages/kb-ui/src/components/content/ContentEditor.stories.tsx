@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { RiMagicLine, RiInformationLine } from '@remixicon/react';
 import '../../tokens.css';
-import { ContentEditor } from './ContentEditor';
+import { ContentEditor, DEFAULT_TOOLBAR_ITEMS, type ToolbarItemDef } from './ContentEditor';
+import type { SlashCommand } from './SlashCommandMenu';
 
 const SAMPLE_HTML = `
 <h1>How to Reset Your Password</h1>
@@ -72,3 +74,52 @@ const meta: Meta<typeof ContentEditor> = {
 export default meta;
 
 export const Default: StoryObj<typeof ContentEditor> = {};
+
+const customToolbar: ToolbarItemDef[] = [
+  ...DEFAULT_TOOLBAR_ITEMS.filter((i) => ['bold', 'italic', 'link'].includes(i.id)),
+  {
+    id: 'uppercase',
+    label: 'Uppercase selection',
+    icon: <RiMagicLine className="h-4 w-4" />,
+    onClick: (editor) => {
+      const { from, to } = editor.state.selection;
+      const text = editor.state.doc.textBetween(from, to, ' ');
+      if (text) {
+        editor
+          .chain()
+          .focus()
+          .insertContentAt({ from, to }, text.toUpperCase())
+          .run();
+      }
+    },
+  },
+];
+
+const customSlash: SlashCommand[] = [
+  {
+    id: 'callout',
+    title: 'Callout',
+    subtitle: 'Insert a callout block',
+    icon: RiInformationLine,
+    aliases: ['note', 'info', 'callout'],
+    command: (editor, range) => {
+      editor
+        .chain()
+        .focus()
+        .deleteRange(range)
+        .insertContent('<blockquote><p>Callout: </p></blockquote>')
+        .run();
+    },
+  },
+];
+
+export const CustomToolbarAndSlash: StoryObj<typeof ContentEditor> = {
+  name: 'Custom Toolbar and Slash',
+  args: {
+    initialContent: SAMPLE_HTML,
+    placeholder: 'Start writing your article…',
+    readOnly: false,
+    toolbarItems: customToolbar,
+    slashCommands: customSlash,
+  },
+};
