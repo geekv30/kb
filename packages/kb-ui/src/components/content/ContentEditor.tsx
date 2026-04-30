@@ -3,6 +3,7 @@ import { useEditor, EditorContent, type Editor } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
 import { StarterKit } from '@tiptap/starter-kit';
 import { SlashCommandExtension } from './extensions/SlashCommand';
+import { DEFAULT_SLASH_COMMANDS, type SlashCommand } from './SlashCommandMenu';
 import { Link } from '@tiptap/extension-link';
 import { Image } from '@tiptap/extension-image';
 import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
@@ -72,6 +73,12 @@ export type ContentEditorProps = {
    * menu — the dropdowns themselves are not configurable here.
    */
   toolbarItems?: ToolbarItemDef[];
+  /**
+   * Override the slash-command menu's items. When omitted, the built-in
+   * `DEFAULT_SLASH_COMMANDS` set is used. Filtering rules (title-prefix
+   * + alias-prefix match) are applied to whichever list is active.
+   */
+  slashCommands?: SlashCommand[];
 };
 
 /* ─────────────────────────────────────────────────────────────
@@ -326,48 +333,6 @@ function ParagraphDropdown({ editor }: { editor: Editor }) {
 }
 
 /* ─────────────────────────────────────────────────────────────
- * Link dialog (simple inline)
- * ───────────────────────────────────────────────────────────── */
-
-function LinkButton({ editor }: { editor: Editor }) {
-  const active = editor.isActive('link');
-
-  const handleClick = () => {
-    if (active) {
-      editor.chain().focus().unsetLink().run();
-      return;
-    }
-    const previousUrl = editor.getAttributes('link').href as string | undefined;
-    const url = typeof window !== 'undefined' ? window.prompt('Enter URL', previousUrl ?? 'https://') : null;
-    if (url === null) return;
-    if (url === '') {
-      editor.chain().focus().unsetLink().run();
-      return;
-    }
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
-  };
-
-  return (
-    <ToolbarButton onClick={handleClick} active={active} label={active ? 'Unlink' : 'Insert link'}>
-      <RiLinkM />
-    </ToolbarButton>
-  );
-}
-
-function ImageButton({ editor }: { editor: Editor }) {
-  const handleClick = () => {
-    const url = typeof window !== 'undefined' ? window.prompt('Image URL', 'https://') : null;
-    if (!url) return;
-    editor.chain().focus().setImage({ src: url }).run();
-  };
-  return (
-    <ToolbarButton onClick={handleClick} label="Insert image">
-      <RiImage2Line />
-    </ToolbarButton>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────
  * Overflow ("More") menu — blockquote, hr, image (features
  * requested in spec but not distinct icons in Figma toolbar)
  * ───────────────────────────────────────────────────────────── */
@@ -520,8 +485,10 @@ export function ContentEditor({
   className,
   readOnly = false,
   toolbarItems,
+  slashCommands,
 }: ContentEditorProps) {
   const resolvedToolbarItems = toolbarItems ?? DEFAULT_TOOLBAR_ITEMS;
+  const resolvedSlashCommands = slashCommands ?? DEFAULT_SLASH_COMMANDS;
   const editor = useEditor({
     editable: !readOnly,
     extensions: [
@@ -551,7 +518,7 @@ export function ContentEditor({
         placeholder,
         emptyEditorClass: 'is-editor-empty',
       }),
-      SlashCommandExtension,
+      SlashCommandExtension.configure({ slashCommands: resolvedSlashCommands }),
     ],
     content: initialContent ?? '',
     editorProps: {

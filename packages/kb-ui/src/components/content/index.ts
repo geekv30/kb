@@ -4,6 +4,8 @@ export { PageHeader } from './PageHeader';
 export type { PageHeaderProps, PageHeaderSize } from './PageHeader';
 export { ContentEditor, DEFAULT_TOOLBAR_ITEMS } from './ContentEditor';
 export type { ContentEditorProps, ToolbarItemDef } from './ContentEditor';
+export { DEFAULT_SLASH_COMMANDS } from './SlashCommandMenu';
+export type { SlashCommand } from './SlashCommandMenu';
 export { ArticleSettingsPanel } from './ArticleSettingsPanel';
 export type {
   ArticleSettings,

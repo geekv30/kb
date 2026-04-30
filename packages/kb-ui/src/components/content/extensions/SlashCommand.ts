@@ -7,7 +7,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import * as React from 'react';
 import {
   SlashCommandMenu,
-  SLASH_COMMANDS,
+  DEFAULT_SLASH_COMMANDS,
   filterSlashCommands,
   type SlashCommand as SlashCommandItem,
 } from '../SlashCommandMenu';
@@ -188,11 +188,22 @@ function createRenderer(): NonNullable<SuggestionOptions['render']> {
   };
 }
 
-export const SlashCommandExtension = Extension.create({
+export type SlashCommandExtensionOptions = {
+  /**
+   * Override the slash command list. When omitted, falls back to the
+   * built-in `DEFAULT_SLASH_COMMANDS` set. Filtering (title-prefix +
+   * alias-prefix) is applied to whichever list is active.
+   */
+  slashCommands?: SlashCommandItem[];
+  suggestion: Partial<SuggestionOptions<SlashCommandItem>>;
+};
+
+export const SlashCommandExtension = Extension.create<SlashCommandExtensionOptions>({
   name: 'slashCommand',
 
   addOptions() {
     return {
+      slashCommands: undefined,
       suggestion: {
         char: '/',
         startOfLine: false,
@@ -200,9 +211,6 @@ export const SlashCommandExtension = Extension.create({
         // Only trigger when `/` follows start of node or whitespace,
         // so mid-word URLs ("https://…") don't open the menu.
         allowedPrefixes: [' ', '\n', '\t'],
-        // Filter: empty list is "No results" (menu shows that state),
-        // so we always return at least []
-        items: ({ query }: { query: string }) => filterSlashCommands(query),
 
         // When the user picks an item, run its Tiptap command.
         // `range` spans from the `/` to the end of the typed query.
@@ -231,15 +239,19 @@ export const SlashCommandExtension = Extension.create({
   },
 
   addProseMirrorPlugins() {
+    const items = this.options.slashCommands ?? DEFAULT_SLASH_COMMANDS;
     return [
       Suggestion({
         editor: this.editor,
         ...this.options.suggestion,
+        // Filter: empty list is "No results" (menu shows that state),
+        // so we always return at least []
+        items: ({ query }: { query: string }) => filterSlashCommands(query, items),
       }),
     ];
   },
 });
 
 // Re-export so consumers (e.g. ContentEditor) can use one entry point.
-export { SLASH_COMMANDS, filterSlashCommands };
+export { DEFAULT_SLASH_COMMANDS, filterSlashCommands };
 export type { SlashCommandItem };
