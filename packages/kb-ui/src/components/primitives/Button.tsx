@@ -24,12 +24,12 @@ export function Button({
       disabled={disabled}
       className={cn(
         'inline-flex items-center justify-center gap-1.5 font-sans text-[14px] font-medium leading-5 transition-colors',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1] focus-visible:ring-offset-1',
         {
-          'bg-black text-white hover:bg-black/90 px-3 py-1.5 rounded-[6px]': variant === 'primary',
-          'bg-[#f8fafc] text-[#0f172a] hover:bg-[#f1f5f9] px-3 py-1.5 rounded-[6px] border border-[#cbd5e1]': variant === 'subtle',
-          'bg-transparent text-[#0f172a] hover:bg-[#f8fafc] px-3 py-1.5 rounded-[6px]': variant === 'ghost',
-          'bg-[#f8fafc] text-[#0f172a] hover:bg-[#e2e8f0] p-2 rounded-[6px]': variant === 'icon',
+          'bg-black text-white hover:bg-black/90 active:bg-black/80 px-3 py-1.5 rounded-[6px]': variant === 'primary',
+          'bg-[#f8fafc] text-[#0f172a] hover:bg-[#f1f5f9] active:bg-[#e2e8f0] px-3 py-1.5 rounded-[6px] border border-[#cbd5e1]': variant === 'subtle',
+          'bg-transparent text-[#0f172a] hover:bg-[#f8fafc] active:bg-[#f1f5f9] px-3 py-1.5 rounded-[6px]': variant === 'ghost',
+          'bg-[#f8fafc] text-[#0f172a] hover:bg-[#e2e8f0] active:bg-[#cbd5e1] p-2 rounded-[6px]': variant === 'icon',
           'opacity-50 cursor-not-allowed pointer-events-none': disabled,
         },
         className,
