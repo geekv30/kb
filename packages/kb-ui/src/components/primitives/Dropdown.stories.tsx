@@ -1,33 +1,36 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import * as React from 'react';
 import '../../tokens.css';
 import { Dropdown } from './Dropdown';
 
 const meta: Meta<typeof Dropdown> = {
   title: 'Components/Primitives/Dropdown',
   component: Dropdown,
-  parameters: { layout: 'centered' },
+  parameters: { layout: 'padded' },
   globals: { backgrounds: { value: 'white' } },
-  args: {
-    label: 'Category',
-    value: 'Hiver in Incognito',
-    placeholder: '',
-    disabled: false,
-  },
-  render: (args) => <Dropdown {...args} />,
 };
 export default meta;
 
-export const Default: StoryObj<typeof Dropdown> = {};
+function DropdownPlayground() {
+  const [selected, setSelected] = React.useState<string>('Newest first');
 
-export const WithMenu: StoryObj<typeof Dropdown> = {
-  name: 'With Menu',
-  args: {
-    label: 'Sort by',
-    options: [
-      { value: 'newest', label: 'Newest first' },
-      { value: 'oldest', label: 'Oldest first' },
-      { value: 'popular', label: 'Most popular' },
-    ],
-    onSelect: (v: string) => console.log(v),
-  },
+  return (
+    <div className="w-80 font-sans">
+      <Dropdown
+        label="Sort by"
+        value={selected}
+        options={[
+          { value: 'Newest first', label: 'Newest first' },
+          { value: 'Oldest first', label: 'Oldest first' },
+          { value: 'Most popular', label: 'Most popular' },
+          { value: 'Least popular', label: 'Least popular' },
+        ]}
+        onSelect={(v) => setSelected(v)}
+      />
+    </div>
+  );
+}
+
+export const Playground: StoryObj<typeof Dropdown> = {
+  render: () => <DropdownPlayground />,
 };
