@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { useState } from 'react';
 import { RiAddLine } from '@remixicon/react';
 import '../../tokens.css';
 import { Button } from './Button';
@@ -13,32 +12,20 @@ const meta: Meta<typeof Button> = {
 export default meta;
 
 function ButtonPlayground() {
-  const [count, setCount] = useState(0);
-  const bump = () => setCount((c) => c + 1);
-
   return (
     <div className="flex flex-col gap-4 font-sans">
-      <div className="flex flex-col gap-1">
-        <h2 className="text-[16px] font-semibold leading-6 text-text-primary">
-          Button — interactive
-        </h2>
-        <p className="text-[13px] leading-5 text-text-muted">
-          Hover, focus (Tab), and click any non-disabled button to increment the counter.
-        </p>
-      </div>
-
-      <div className="text-[13px] leading-5 text-text-muted">
-        Clicks: <span className="font-medium text-text-primary">{count}</span>
-      </div>
+      <h2 className="text-[16px] font-semibold leading-6 text-text-primary">
+        Button
+      </h2>
 
       <div className="flex flex-wrap gap-3">
-        <Button variant="primary" onClick={bump}>
-          Click me
+        <Button variant="primary" onClick={() => {}}>
+          Save
         </Button>
-        <Button variant="subtle" onClick={bump}>
+        <Button variant="subtle" onClick={() => {}}>
           Cancel
         </Button>
-        <Button variant="ghost" onClick={bump}>
+        <Button variant="ghost" onClick={() => {}}>
           Learn more
         </Button>
       </div>
@@ -47,7 +34,7 @@ function ButtonPlayground() {
         <Button variant="primary" disabled>
           Disabled
         </Button>
-        <Button variant="primary" icon={<RiAddLine size={14} />} onClick={bump}>
+        <Button variant="primary" icon={<RiAddLine size={14} />} onClick={() => {}}>
           New article
         </Button>
       </div>
