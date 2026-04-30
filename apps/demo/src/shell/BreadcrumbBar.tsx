@@ -19,6 +19,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
+  EditorBreadcrumbActions,
   isPublishEnabled,
   KBBreadcrumbBar,
   type KBBreadcrumbItem,
@@ -154,8 +155,6 @@ export function BreadcrumbBar() {
     return fallback('Knowledge Base');
   }, [pathname, params, state]);
 
-  const variant = config.collapsed ? 'editor' : 'category';
-
   // Collapsed-shell `home` icon click → return to the article's category
   // page. For non-article cases (shouldn't reach here since collapsed is
   // false elsewhere), fall back to the default KB landing.
@@ -253,28 +252,27 @@ export function BreadcrumbBar() {
   return (
     <>
       <KBBreadcrumbBar
-        variant={variant}
         sidebarCollapsed={config.collapsed}
         items={config.items}
         onCollapse={activeHandlers ? activeHandlers.onClose : handleHomeClick}
         onToggleSidebar={
           activeHandlers ? activeHandlers.onClose : handleHomeClick
         }
-        onSaveAsDraft={
-          activeHandlers ? activeHandlers.onSaveAsDraft : placeholderSave
-        }
-        onPublish={
-          activeHandlers ? activeHandlers.onPublish : placeholderPublish
-        }
-        onClose={activeHandlers ? activeHandlers.onClose : handleHomeClick}
-        publishDisabled={
-          editorHandlers
-            ? editorHandlers.publishDisabled
-            : aiGapsHandlers
-              ? aiGapsPublishDisabled
-              : false
-        }
-        saveDisabled={editorHandlers ? editorHandlers.saveDisabled : undefined}
+        actions={config.collapsed ? (
+          <EditorBreadcrumbActions
+            onSaveAsDraft={activeHandlers ? activeHandlers.onSaveAsDraft : placeholderSave}
+            onPublish={activeHandlers ? activeHandlers.onPublish : placeholderPublish}
+            onClose={activeHandlers ? activeHandlers.onClose : handleHomeClick}
+            publishDisabled={
+              editorHandlers
+                ? editorHandlers.publishDisabled
+                : aiGapsHandlers
+                  ? aiGapsPublishDisabled
+                  : false
+            }
+            saveDisabled={editorHandlers ? editorHandlers.saveDisabled : undefined}
+          />
+        ) : undefined}
       />
 
       {/* AI Gaps "Discard review?" confirm — Radix portal to <body>. */}
