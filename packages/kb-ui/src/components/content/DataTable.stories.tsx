@@ -1,25 +1,22 @@
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../../tokens.css';
-import { RiFile3Line, RiArrowRightSLine } from '@remixicon/react';
+import { RiFile3Line } from '@remixicon/react';
 import { DataTable, type DataTableColumn } from './DataTable';
 import { Badge } from '../primitives/Badge';
 import { Avatar } from '../primitives/Avatar';
-import { HelpfulnessTag } from './HelpfulnessTag';
+import { Card } from '../primitives/Card';
 
 /* ─────────────────────────────────────────────────────────────
- * DataTable canonical stories — covers every layout shape that
- * the 7 legacy tables previously rendered:
+ * DataTable Playground — full article-management table.
  *
- *   Default                 wrapped + header-divider, h-12 rows,
- *                           default `cellPaddingY={12}`.
- *   No card wrapper         `wrapped={false}` + chrome — matches
- *                           the legacy ArticlesTable / SubCategoriesTable
- *                           rendering used inside the editor.
- *   No header divider       `headerDivider={false}` — matches
- *                           SearchKeywordsTable (Figma `1974:54404`).
- *   With row click          `onRowClick` — surfaces the hover
- *                           pill + cursor.
+ * Renders the canonical "All articles" table with 12 realistic
+ * Hiver KB rows, all four columns (title + file icon, status
+ * badge, author avatar, last-updated date), and a clickable row
+ * handler so the hover pill + cursor surface naturally.
+ *
+ * Wrapped in a real `<Card padding="none">` so the chrome is the
+ * production card chrome, not a hand-rolled bg-white sandbox.
  * ───────────────────────────────────────────────────────────── */
 
 type Article = {
@@ -31,27 +28,18 @@ type Article = {
 };
 
 const ARTICLES: Article[] = [
-  {
-    id: 'a1',
-    title: 'How to set up your first workspace',
-    status: 'published',
-    authorInitials: 'RM',
-    lastUpdated: 'Apr 12, 2026',
-  },
-  {
-    id: 'a2',
-    title: 'Invite teammates and assign roles',
-    status: 'draft',
-    authorInitials: 'SK',
-    lastUpdated: 'Apr 10, 2026',
-  },
-  {
-    id: 'a3',
-    title: 'Understanding your billing cycle',
-    status: 'published',
-    authorInitials: 'JL',
-    lastUpdated: 'Apr 08, 2026',
-  },
+  { id: 'a1',  title: 'How to reset your password',                              status: 'published', authorInitials: 'VK', lastUpdated: 'Apr 28, 2026' },
+  { id: 'a2',  title: 'Setting up SSO with Okta or Google Workspace',            status: 'published', authorInitials: 'AK', lastUpdated: 'Apr 26, 2026' },
+  { id: 'a3',  title: 'Migrating from Confluence to Hiver KB',                   status: 'draft',     authorInitials: 'MR', lastUpdated: 'Apr 25, 2026' },
+  { id: 'a4',  title: 'Enabling two-factor authentication for your team',        status: 'published', authorInitials: 'TS', lastUpdated: 'Apr 22, 2026' },
+  { id: 'a5',  title: 'Bulk-importing contacts via CSV',                         status: 'published', authorInitials: 'VK', lastUpdated: 'Apr 21, 2026' },
+  { id: 'a6',  title: 'Configuring shared inbox routing rules',                  status: 'draft',     authorInitials: 'AK', lastUpdated: 'Apr 19, 2026' },
+  { id: 'a7',  title: 'Managing user permissions and roles',                     status: 'published', authorInitials: 'MR', lastUpdated: 'Apr 17, 2026' },
+  { id: 'a8',  title: 'Connecting Hiver to Slack',                               status: 'published', authorInitials: 'TS', lastUpdated: 'Apr 15, 2026' },
+  { id: 'a9',  title: 'Legacy API removal — migration guide',                    status: 'draft',     authorInitials: 'VK', lastUpdated: 'Apr 14, 2026' },
+  { id: 'a10', title: 'Understanding billing and usage',                         status: 'published', authorInitials: 'AK', lastUpdated: 'Apr 11, 2026' },
+  { id: 'a11', title: 'Customising notification preferences',                    status: 'published', authorInitials: 'MR', lastUpdated: 'Apr 09, 2026' },
+  { id: 'a12', title: 'Exporting analytics reports as CSV or PDF',               status: 'draft',     authorInitials: 'TS', lastUpdated: 'Apr 07, 2026' },
 ];
 
 const articleColumns: DataTableColumn<Article>[] = [
@@ -96,166 +84,31 @@ const articleColumns: DataTableColumn<Article>[] = [
   },
 ];
 
-type AttentionRow = {
-  id: string;
-  title: string;
-  helpfulness: string;
-  variant: 'up' | 'down';
-};
-
-const ATTENTION_ROWS: AttentionRow[] = [
-  { id: '1', title: 'Syncing past emails while creating', helpfulness: '24%', variant: 'down' },
-  { id: '2', title: 'How to Sync Previous Emails Whe...', helpfulness: '31%', variant: 'down' },
-  { id: '3', title: 'Setting Up a New Shared Mailbox:', helpfulness: '91%', variant: 'up' },
-  { id: '4', title: 'Creating a New Shared Mailbox? H...', helpfulness: '95%', variant: 'up' },
-];
-
-const attentionColumns: DataTableColumn<AttentionRow>[] = [
-  {
-    id: 'title',
-    header: 'Article Title',
-    render: (r) => (
-      <div className="flex items-center gap-2 min-w-0 pr-2">
-        <RiFile3Line size={16} className="shrink-0 text-[#64758b]" aria-hidden="true" />
-        <span className="truncate">{r.title}</span>
-      </div>
-    ),
-  },
-  {
-    id: 'helpfulness',
-    header: 'Helpfulness',
-    align: 'right',
-    render: (r) => <HelpfulnessTag value={r.helpfulness} variant={r.variant} />,
-  },
-];
-
-type Keyword = { id: string; keyword: string; count: string };
-const KEYWORDS: Keyword[] = [
-  { id: '1', keyword: '1. password reset', count: '11200' },
-  { id: '2', keyword: '2. billing duplicate charges', count: '1200' },
-  { id: '3', keyword: '3. slack integration', count: '200' },
-];
-
-const keywordColumns: DataTableColumn<Keyword>[] = [
-  { id: 'keyword', header: 'Keywords', render: (r) => r.keyword },
-  { id: 'count', header: 'Search Count', align: 'right', render: (r) => r.count },
-];
-
-type Cat = { id: string; title: string };
-const CATS: Cat[] = [
-  { id: 'c1', title: 'Organize email conversations' },
-  { id: 'c2', title: 'Shared Inbox Management' },
-];
-
 const meta: Meta<typeof DataTable> = {
   title: 'Components/Tables/DataTable',
   component: DataTable as React.ComponentType<unknown>,
-  parameters: { layout: 'padded', backgrounds: { default: 'canvas' } },
-  argTypes: {
-    headerDivider: { control: 'boolean' },
-    wrapped: { control: 'boolean' },
-    cellPaddingY: { control: 'number' },
-  },
+  parameters: { layout: 'padded' },
+  globals: { backgrounds: { value: 'canvas' } },
 };
 export default meta;
 
-type Story = StoryObj<typeof DataTable>;
+function DataTablePlayground() {
+  return (
+    <Card padding="none" style={{ width: 920 }}>
+      <h3 className="text-[14px] font-medium leading-[20px] text-[#0f172a] px-6 pt-5">
+        All articles
+      </h3>
+      <DataTable
+        rows={ARTICLES}
+        columns={articleColumns}
+        wrapped={false}
+        unwrappedChrome={false}
+        onRowClick={() => {}}
+      />
+    </Card>
+  );
+}
 
-export const Default: Story = {
-  render: () => (
-    <div style={{ background: '#ffffff', padding: 24, minHeight: 360 }}>
-      <div style={{ width: 890 }}>
-        <DataTable
-          rows={ATTENTION_ROWS}
-          columns={attentionColumns}
-          heading={
-            <h3 className="text-[14px] font-medium leading-[20px] text-[#0f172a]">
-              Articles needs attention
-            </h3>
-          }
-        />
-      </div>
-    </div>
-  ),
-};
-
-/** Unwrapped chrome — legacy ArticlesTable / SubCategoriesTable rendering. */
-export const NoCardWrapper: Story = {
-  render: () => (
-    <div style={{ background: '#ffffff', padding: 24, minHeight: 360 }}>
-      <div style={{ width: 880 }}>
-        <DataTable
-          rows={ARTICLES}
-          columns={articleColumns}
-          wrapped={false}
-          headerBackground="#f5f5f5"
-          cellPaddingY={6}
-          onRowClick={() => {
-            // eslint-disable-next-line no-console
-            console.log('row click');
-          }}
-        />
-      </div>
-    </div>
-  ),
-};
-
-/** SearchKeywordsTable — no header divider (just whitespace). */
-export const NoHeaderDivider: Story = {
-  render: () => (
-    <div style={{ background: '#ffffff', padding: 24, minHeight: 360 }}>
-      <div style={{ width: 890 }}>
-        <DataTable
-          rows={KEYWORDS}
-          columns={keywordColumns}
-          headerDivider={false}
-          heading={
-            <h3 className="text-[14px] font-medium leading-[20px] text-[#0f172a]">
-              Top 5 Search Keywords
-            </h3>
-          }
-        />
-      </div>
-    </div>
-  ),
-};
-
-/** Hover + cursor — active row-click handler. */
-export const WithRowClick: Story = {
-  render: () => (
-    <div style={{ background: '#ffffff', padding: 24, minHeight: 360 }}>
-      <div style={{ width: 880 }}>
-        <DataTable
-          rows={CATS}
-          columns={[
-            {
-              id: 'title',
-              header: 'Sub-categories',
-              render: (c) => c.title,
-            },
-            {
-              id: 'chev',
-              header: '',
-              align: 'right',
-              width: 48,
-              render: () => (
-                <RiArrowRightSLine
-                  size={16}
-                  className="text-[#64758b]"
-                  aria-hidden="true"
-                />
-              ),
-            },
-          ]}
-          wrapped={false}
-          headerBackground="#f5f5f5"
-          cellPaddingY={6}
-          onRowClick={(c) => {
-            // eslint-disable-next-line no-console
-            console.log('clicked', c.id);
-          }}
-        />
-      </div>
-    </div>
-  ),
+export const Playground: StoryObj<typeof DataTable> = {
+  render: () => <DataTablePlayground />,
 };
