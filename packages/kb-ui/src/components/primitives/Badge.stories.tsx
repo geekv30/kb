@@ -5,16 +5,13 @@ import { Badge } from './Badge';
 const meta: Meta<typeof Badge> = {
   title: 'Components/Primitives/Badge',
   component: Badge,
-  parameters: { layout: 'centered', backgrounds: { default: 'white' } },
+  parameters: { layout: 'centered' },
+  globals: { backgrounds: { value: 'white' } },
   args: {
     variant: 'published',
     children: 'Published',
   },
-  render: (args) => (
-    <div className="bg-white p-4">
-      <Badge {...args} />
-    </div>
-  ),
+  render: (args) => <Badge {...args} />,
 };
 export default meta;
 

@@ -5,15 +5,12 @@ import { Divider } from './Divider';
 const meta: Meta<typeof Divider> = {
   title: 'Components/Primitives/Divider',
   component: Divider,
-  parameters: { layout: 'centered', backgrounds: { default: 'white' } },
+  parameters: { layout: 'centered' },
+  globals: { backgrounds: { value: 'white' } },
   args: {
     subtle: false,
   },
-  render: (args) => (
-    <div className="w-64 p-4 bg-white">
-      <Divider {...args} />
-    </div>
-  ),
+  render: (args) => <Divider {...args} />,
 };
 export default meta;
 

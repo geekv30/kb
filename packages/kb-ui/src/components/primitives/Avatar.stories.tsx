@@ -5,16 +5,13 @@ import { Avatar } from './Avatar';
 const meta: Meta<typeof Avatar> = {
   title: 'Components/Primitives/Avatar',
   component: Avatar,
-  parameters: { layout: 'centered', backgrounds: { default: 'white' } },
+  parameters: { layout: 'centered' },
+  globals: { backgrounds: { value: 'white' } },
   args: {
     initials: 'VK',
     showStatus: false,
   },
-  render: (args) => (
-    <div className="bg-white p-4">
-      <Avatar {...args} />
-    </div>
-  ),
+  render: (args) => <Avatar {...args} />,
 };
 export default meta;
 

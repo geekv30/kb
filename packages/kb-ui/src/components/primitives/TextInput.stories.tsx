@@ -5,17 +5,14 @@ import { TextInput } from './TextInput';
 const meta: Meta<typeof TextInput> = {
   title: 'Components/Primitives/TextInput',
   component: TextInput,
-  parameters: { layout: 'centered', backgrounds: { default: 'white' } },
+  parameters: { layout: 'centered' },
+  globals: { backgrounds: { value: 'white' } },
   args: {
     placeholder: 'Enter value...',
     value: '',
     disabled: false,
   },
-  render: (args) => (
-    <div className="w-80 p-4 bg-white">
-      <TextInput {...args} />
-    </div>
-  ),
+  render: (args) => <TextInput {...args} />,
 };
 export default meta;
 

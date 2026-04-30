@@ -5,18 +5,15 @@ import { Dropdown } from './Dropdown';
 const meta: Meta<typeof Dropdown> = {
   title: 'Components/Primitives/Dropdown',
   component: Dropdown,
-  parameters: { layout: 'centered', backgrounds: { default: 'white' } },
+  parameters: { layout: 'centered' },
+  globals: { backgrounds: { value: 'white' } },
   args: {
     label: 'Category',
     value: 'Hiver in Incognito',
     placeholder: '',
     disabled: false,
   },
-  render: (args) => (
-    <div className="w-80 p-4 bg-white">
-      <Dropdown {...args} />
-    </div>
-  ),
+  render: (args) => <Dropdown {...args} />,
 };
 export default meta;
 
