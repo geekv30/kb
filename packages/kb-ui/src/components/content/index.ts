@@ -68,7 +68,7 @@ export { StatCardGrid } from './StatCardGrid';
 export type { StatCardGridProps } from './StatCardGrid';
 export { DateRangePill, DEFAULT_DATE_RANGE_PRESETS } from './DateRangePill';
 export type { DateRangePillProps, DateRange, DateRangePreset } from './DateRangePill';
-export { AnalyticsAreaChart } from './AnalyticsAreaChart';
+export { AnalyticsAreaChart, DEFAULT_SERIES_PALETTE } from './AnalyticsAreaChart';
 export type {
   AnalyticsAreaChartProps,
   AnalyticsAreaSeries,

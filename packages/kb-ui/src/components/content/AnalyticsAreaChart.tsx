@@ -25,7 +25,13 @@ import { cn } from '../../utils/cn';
  * multiple chart instances on the same page do not collide.
  * ───────────────────────────────────────────────────────────── */
 
-export type AreaSeriesKey = 'views' | 'unique' | 'positive';
+export type AreaSeriesKey = 'views' | 'unique' | 'positive' | (string & {});
+
+export const DEFAULT_SERIES_PALETTE: Record<string, string> = {
+  views: 'var(--color-chart-views)',
+  unique: 'var(--color-chart-unique)',
+  positive: 'var(--color-chart-positive)',
+};
 
 export type AnalyticsAreaSeries = {
   /** Display name in legend + tooltip. */
@@ -61,12 +67,7 @@ export type AnalyticsAreaChartProps = {
   /** Render height in px. Default 280. */
   height?: number;
   className?: string;
-};
-
-const STROKE: Record<AreaSeriesKey, string> = {
-  views: 'var(--color-chart-views)',
-  unique: 'var(--color-chart-unique)',
-  positive: 'var(--color-chart-positive)',
+  seriesPalette?: Record<string, string>;
 };
 
 const defaultYTickFormat = (v: number): string =>
@@ -146,7 +147,11 @@ export function AnalyticsAreaChart({
   showLegend = true,
   height = 280,
   className,
+  seriesPalette,
 }: AnalyticsAreaChartProps) {
+  const palette = seriesPalette ?? DEFAULT_SERIES_PALETTE;
+  const colorFor = (seriesKey: AreaSeriesKey): string =>
+    palette[seriesKey] ?? '#94a3b8';
   // Scope gradient ids per instance to avoid collisions when multiple
   // charts render on the same page (Recharts gradients are pulled by
   // `url(#id)` from the document — duplicate ids = wrong fills).
@@ -172,17 +177,17 @@ export function AnalyticsAreaChart({
             margin={{ top: 12, right: 16, bottom: 0, left: 0 }}
           >
             <defs>
-              {(['views', 'unique', 'positive'] as AreaSeriesKey[]).map((v) => (
+              {series.map((s) => (
                 <linearGradient
-                  key={v}
-                  id={gradientIdFor(v)}
+                  key={s.variant}
+                  id={gradientIdFor(s.variant)}
                   x1="0"
                   y1="0"
                   x2="0"
                   y2="1"
                 >
-                  <stop offset="0%" stopColor={STROKE[v]} stopOpacity={0.12} />
-                  <stop offset="100%" stopColor={STROKE[v]} stopOpacity={0} />
+                  <stop offset="0%" stopColor={colorFor(s.variant)} stopOpacity={0.12} />
+                  <stop offset="100%" stopColor={colorFor(s.variant)} stopOpacity={0} />
                 </linearGradient>
               ))}
             </defs>
@@ -221,7 +226,7 @@ export function AnalyticsAreaChart({
                 type="monotone"
                 name={s.name}
                 dataKey={s.dataKey}
-                stroke={STROKE[s.variant]}
+                stroke={colorFor(s.variant)}
                 fill={`url(#${gradientIdFor(s.variant)})`}
                 fillOpacity={1}
                 strokeWidth={2}
@@ -252,7 +257,7 @@ export function AnalyticsAreaChart({
             <div key={s.dataKey} className="flex items-center gap-1.5">
               <span
                 aria-hidden="true"
-                style={{ backgroundColor: STROKE[s.variant] }}
+                style={{ backgroundColor: colorFor(s.variant) }}
                 className="inline-block h-1 w-1 rounded-[1px]"
               />
               <span className="text-chart-body text-[12px] font-normal leading-4">
