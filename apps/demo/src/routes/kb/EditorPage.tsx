@@ -58,6 +58,7 @@ import {
 import { useUnsavedChangesGuard } from '../../hooks/useUnsavedChangesGuard';
 import { useToast } from '../../components/Toast';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
+import { ArticleSeoCard } from '../../components/ArticleSeoCard';
 
 /* ─────────────────────────────────────────────────────────────
  * Constants
@@ -532,11 +533,31 @@ function EditorPageBody({ article }: { article: Article }) {
         />
       </div>
 
-      <div data-kb-part="settings-column" className="w-[380px] shrink-0">
+      <div
+        data-kb-part="settings-column"
+        className="flex w-[380px] shrink-0 flex-col gap-4"
+      >
         <ArticleSettingsPanel
           value={kbSettings}
           onChange={handleSettingsChange}
           compact
+        />
+        <ArticleSeoCard
+          value={{
+            metaDescription: storeSettings.metaDescription ?? '',
+            canonicalUrlOverride: storeSettings.canonicalUrlOverride ?? '',
+          }}
+          onChange={(next) => {
+            setStoreSettings((prev) => ({
+              ...prev,
+              metaDescription: next.metaDescription,
+              canonicalUrlOverride: next.canonicalUrlOverride,
+            }));
+            setDirty(true);
+          }}
+          bodyHTML={bodyHTML}
+          title={article.title}
+          slug={storeSettings.slug}
         />
       </div>
 
