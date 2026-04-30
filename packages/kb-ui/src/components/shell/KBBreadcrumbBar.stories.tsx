@@ -7,23 +7,38 @@ const meta: Meta<typeof KBBreadcrumbBar> = {
   title: 'Components/Navigation/KB Breadcrumb Bar',
   component: KBBreadcrumbBar,
   parameters: { layout: 'fullscreen' },
-  args: {
-    sidebarCollapsed: false,
-    items: [
-      { id: '1', label: 'Offer Multi-channel Support' },
-      { id: '2', label: 'Managing emails' },
-      { id: '3', label: 'Search, filter, and create email views' },
-    ],
-  },
-  render: (args) => (
-    <div style={{ borderBottom: '1px solid #e2e8f0' }}>
-      <KBBreadcrumbBar
-        {...args}
-        actions={<EditorBreadcrumbActions publishDisabled={false} />}
-      />
-    </div>
-  ),
+  globals: { backgrounds: { value: 'canvas' } },
 };
 export default meta;
 
-export const Default: StoryObj<typeof KBBreadcrumbBar> = {};
+function KBBreadcrumbBarPlayground() {
+  return (
+    <div className="font-sans">
+      <KBBreadcrumbBar
+        sidebarCollapsed={false}
+        items={[
+          { id: '1', label: 'Offer Multi-channel Support' },
+          { id: '2', label: 'Managing emails' },
+          { id: '3', label: 'Search, filter, and create email views' },
+        ]}
+        actions={
+          <EditorBreadcrumbActions
+            onSaveAsDraft={() => {}}
+            onPublish={() => {}}
+            onClose={() => {}}
+            publishDisabled={false}
+          />
+        }
+      />
+      <div className="bg-white p-6" style={{ height: 320 }}>
+        <p className="text-[14px] leading-5 text-[#64748b]">
+          Article body goes here…
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export const Playground: StoryObj<typeof KBBreadcrumbBar> = {
+  render: () => <KBBreadcrumbBarPlayground />,
+};

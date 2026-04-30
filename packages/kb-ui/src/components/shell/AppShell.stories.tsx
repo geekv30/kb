@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import * as React from 'react';
 import '../../tokens.css';
 import { RiQuillPenLine, RiBarChartBoxLine, RiSettings5Line } from '@remixicon/react';
 import { AppShell } from './AppShell';
@@ -74,23 +75,32 @@ const tree: NavItem[] = [
   },
 ];
 
-const meta: Meta<typeof AppShell> = {
-  title: 'Components/Shell/AppShell',
-  component: AppShell,
-  parameters: { layout: 'fullscreen' },
-  args: {
-    sidebarCollapsed: false,
-  },
-  // AppShell is a layout container with multiple ReactNode slots — slots are
-  // hardcoded in the render wrapper.
-  render: (args) => (
+// Walk the tree to resolve an article id to its title for breadcrumb + heading.
+function findTitle(items: NavItem[], id: string): string | null {
+  for (const item of items) {
+    if (item.id === id) return item.title;
+    if (item.children && item.children.length > 0) {
+      const sub = findTitle(item.children, id);
+      if (sub) return sub;
+    }
+  }
+  return null;
+}
+
+function AppShellPlayground() {
+  const [activeRailId, setActiveRailId] = React.useState<string>('editor');
+  const [activeArticleId, setActiveArticleId] = React.useState<string>('email-views');
+  const activeArticleTitle = findTitle(tree, activeArticleId) ?? activeArticleId;
+
+  return (
     <AppShell
-      {...args}
+      sidebarCollapsed={false}
       rail={
         <SideNavRail
           theme="light"
           items={railItems}
-          activeId="editor"
+          activeId={activeRailId}
+          onItemClick={(id) => setActiveRailId(id)}
           brandLogo={<CompanyLogo size={24} />}
           bottomSlot={<Avatar initials="VK" />}
         />
@@ -100,25 +110,57 @@ const meta: Meta<typeof AppShell> = {
           theme="light"
           title="Editor"
           items={tree}
-          activeId="email-views"
+          activeId={activeArticleId}
+          onItemClick={(id) => setActiveArticleId(id)}
         />
       }
       breadcrumb={
         <KBBreadcrumbBar
-          sidebarCollapsed={args.sidebarCollapsed}
+          sidebarCollapsed={false}
           items={[
             { id: '1', label: 'Offer Multi-channel Support' },
             { id: '2', label: 'Managing emails' },
-            { id: '3', label: 'Search, filter, and create email views' },
+            { id: '3', label: activeArticleTitle },
           ]}
-          actions={<EditorBreadcrumbActions />}
+          actions={
+            <EditorBreadcrumbActions
+              onSaveAsDraft={() => {}}
+              onPublish={() => {}}
+              onClose={() => {}}
+            />
+          }
         />
       }
     >
-      <div className="text-sm text-[#64758b] p-6">Content area</div>
+      <div className="bg-white p-8 max-w-[840px] mx-auto">
+        <h1 className="text-[28px] font-semibold leading-9 text-[#0f172a] mb-4">
+          {activeArticleTitle}
+        </h1>
+        <p className="text-[14px] leading-6 text-[#475569] mb-3">
+          Last edited by Varun Kelkar · 2 hours ago · Draft
+        </p>
+        <p className="text-[15px] leading-7 text-[#0f172a] mb-4">
+          Shared inboxes let your team collaborate on a single email address — like support@ or billing@ — directly inside Gmail. Every teammate sees the same conversations, can claim ownership, and reply on behalf of the group without forwarding threads back and forth.
+        </p>
+        <p className="text-[15px] leading-7 text-[#0f172a] mb-4">
+          To create a shared inbox, open the Hiver sidebar and click the plus icon next to "Shared Inboxes." You'll be prompted to enter the email address you want to share.
+        </p>
+        <p className="text-[15px] leading-7 text-[#0f172a]">
+          Note: shared inboxes created before March 2024 used a legacy permissions model and may need to be migrated manually from the admin console.
+        </p>
+      </div>
     </AppShell>
-  ),
+  );
+}
+
+const meta: Meta<typeof AppShell> = {
+  title: 'Components/Shell/AppShell',
+  component: AppShell,
+  parameters: { layout: 'fullscreen' },
+  globals: { backgrounds: { value: 'canvas' } },
 };
 export default meta;
 
-export const Default: StoryObj<typeof AppShell> = {};
+export const Playground: StoryObj<typeof AppShell> = {
+  render: () => <AppShellPlayground />,
+};

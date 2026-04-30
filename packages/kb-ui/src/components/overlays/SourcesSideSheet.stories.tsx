@@ -1,11 +1,7 @@
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../../tokens.css';
-import {
-  SourcesSideSheet,
-  SourcesSideSheetMailItem,
-  type ConversationSource,
-} from './SourcesSideSheet';
+import { SourcesSideSheet, type ConversationSource } from './SourcesSideSheet';
 
 const SAMPLE_SOURCES: ConversationSource[] = [
   {
@@ -38,55 +34,42 @@ const SAMPLE_SOURCES: ConversationSource[] = [
   },
 ];
 
+function SourcesSideSheetPlayground() {
+  const [open, setOpen] = React.useState(true);
+  return (
+    <div className="bg-[#f5f5f5] min-h-screen p-8">
+      <div className="mx-auto max-w-[720px] rounded-[12px] border border-[#e5e5e5] bg-white p-6">
+        <h2 className="text-[18px] font-semibold leading-7 text-[#0f172a]">
+          How do I reset my password if I can&apos;t access my recovery email?
+        </h2>
+        <p className="mt-3 text-[14px] leading-6 text-[#475569]">
+          To reset your password without access to your recovery email, follow the 3-step
+          account recovery process: verify your identity using a backup phone number or
+          authenticator app, answer two security questions tied to your account, and confirm
+          a one-time code sent to a trusted device. Once verified, you&apos;ll be prompted
+          to set a new password and re-link a current recovery email.
+        </p>
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="mt-4 inline-flex items-center gap-1.5 rounded-[6px] bg-white border border-[#e5e5e5] px-3 py-1.5 text-[13px] font-medium text-[#475569] hover:bg-[#f8fafc]"
+        >
+          View 4 sources
+        </button>
+      </div>
+      <SourcesSideSheet open={open} onOpenChange={setOpen} sources={SAMPLE_SOURCES} />
+    </div>
+  );
+}
+
 const meta: Meta<typeof SourcesSideSheet> = {
   title: 'Components/Overlays/Sources Side Sheet',
   component: SourcesSideSheet,
   parameters: { layout: 'fullscreen' },
-  args: {
-    open: true,
-    sources: SAMPLE_SOURCES,
-  },
-  render: (args) => (
-    <SourcesSideSheet
-      {...args}
-      onOpenChange={() => {}}
-    />
-  ),
+  globals: { backgrounds: { value: 'canvas' } },
 };
 export default meta;
 
-export const Default: StoryObj<typeof SourcesSideSheet> = {};
-
-export const CustomItems: StoryObj<typeof SourcesSideSheet> = {
-  name: 'Custom Items',
-  render: () => {
-    const [open, setOpen] = React.useState(true);
-    return (
-      <SourcesSideSheet
-        open={open}
-        onOpenChange={setOpen}
-        sources={[]}
-        count={3}
-        items={[
-          <SourcesSideSheetMailItem
-            senderName="Anjali Kumar"
-            senderEmail="anjali@hiver.com"
-            subject="Welcome to the team"
-            snippet="Excited to have you onboard."
-            timestamp="Feb 4, 2:45 PM"
-          />,
-          <div className="rounded-[8px] border border-dashed border-[#cbd5e1] p-3 text-[14px] text-[#475569]">
-            Custom citation row
-          </div>,
-          <SourcesSideSheetMailItem
-            senderName="Marcus Chen"
-            senderEmail="marcus@hiver.com"
-            subject="Q2 roadmap review"
-            snippet="Sharing the latest deck for tomorrow's sync."
-            timestamp="Feb 5, 10:12 AM"
-          />,
-        ]}
-      />
-    );
-  },
+export const Playground: StoryObj<typeof SourcesSideSheet> = {
+  render: () => <SourcesSideSheetPlayground />,
 };
