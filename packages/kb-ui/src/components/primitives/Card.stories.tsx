@@ -5,7 +5,8 @@ import { Card } from './Card';
 const meta: Meta<typeof Card> = {
   title: 'Components/Primitives/Card',
   component: Card,
-  parameters: { layout: 'centered', backgrounds: { default: 'white' } },
+  parameters: { layout: 'centered' },
+  globals: { backgrounds: { value: 'white' } },
   args: {
     padding: 'md',
     as: 'div',

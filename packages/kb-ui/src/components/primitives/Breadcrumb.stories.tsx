@@ -6,7 +6,8 @@ import { Breadcrumb } from './Breadcrumb';
 const meta: Meta<typeof Breadcrumb> = {
   title: 'Components/Primitives/Breadcrumb',
   component: Breadcrumb,
-  parameters: { layout: 'centered', backgrounds: { default: 'white' } },
+  parameters: { layout: 'centered' },
+  globals: { backgrounds: { value: 'white' } },
   args: {
     items: [
       { id: 'home', label: 'Home', onClick: () => {} },
@@ -15,11 +16,7 @@ const meta: Meta<typeof Breadcrumb> = {
       { id: 'qs', label: 'Quick Start' },
     ],
   },
-  render: (args) => (
-    <div className="bg-white p-4">
-      <Breadcrumb {...args} />
-    </div>
-  ),
+  render: (args) => <Breadcrumb {...args} />,
 };
 export default meta;
 

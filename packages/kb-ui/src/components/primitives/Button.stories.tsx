@@ -6,17 +6,14 @@ import { Button } from './Button';
 const meta: Meta<typeof Button> = {
   title: 'Components/Primitives/Button',
   component: Button,
-  parameters: { layout: 'centered', backgrounds: { default: 'white' } },
+  parameters: { layout: 'centered' },
+  globals: { backgrounds: { value: 'white' } },
   args: {
     variant: 'primary',
     children: 'New',
     disabled: false,
   },
-  render: (args) => (
-    <div className="bg-white p-6 rounded-lg">
-      <Button {...args} icon={<RiAddLine size={14} />} />
-    </div>
-  ),
+  render: (args) => <Button {...args} icon={<RiAddLine size={14} />} />,
 };
 export default meta;
 

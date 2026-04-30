@@ -4,6 +4,9 @@ import '../src/tokens.css';
 const preview: Preview = {
   parameters: {
     layout: 'padded',
+    controls: {
+      expanded: true
+    },
     backgrounds: {
       options: {
         canvas: { name: 'canvas', value: '#f5f5f5' },
