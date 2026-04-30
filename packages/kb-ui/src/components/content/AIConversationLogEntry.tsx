@@ -14,6 +14,7 @@ import {
   SourcesSideSheet,
   type ConversationSource,
 } from '../overlays/SourcesSideSheet';
+import { ConversationRow } from './AIConversationLogEntryAtoms';
 
 /* ─────────────────────────────────────────────────────────────
  * Types
@@ -60,6 +61,7 @@ export type AIConversationLogEntryProps = {
   showViewAll?: boolean;
   onViewAll?: () => void;
   className?: string;
+  rows?: React.ReactNode[];
 };
 
 /* ─────────────────────────────────────────────────────────────
@@ -70,51 +72,25 @@ export type AIConversationLogEntryProps = {
  * row's icon sits absolutely at `left-0` w-4 (16 px) inside the
  * rail. A single absolutely-positioned dotted vertical line on
  * the entry root spans top→bottom of the rail, drawn at
- * `left-[7px]` so it bisects the 16 px icon column.
+ * `left-[7.5px]` so it bisects the 16 px icon column.
  *
  * This "shared connector" approach is simpler than per-row
  * `:before` pseudo-elements because:
  *   1. The dotted line is one element, easy to start/stop at
  *      the right vertical positions.
  *   2. Icons are absolute → can vertically align to the row's
- *      first text line via `top-1` regardless of text wrapping.
+ *      first text line via `top-[2px]` regardless of text wrapping.
  *   3. The follow-up row's "↳" corner-arrow visually breaks
  *      the line at the right place naturally — the icon's
  *      opaque BG (white card) sits over the dotted line.
+ *
+ * Row chrome (the rail's icon column + content cell) is provided
+ * by the `ConversationRow` atom in `./AIConversationLogEntryAtoms`.
+ * Because this entry uses the shared connector on the root, every
+ * `ConversationRow` here passes `hideConnectorAbove` AND
+ * `hideConnectorBelow` so the atom does not draw its own per-row
+ * connector segments on top of the shared one.
  * ───────────────────────────────────────────────────────────── */
-
-type RowProps = {
-  icon: React.ReactNode;
-  children: React.ReactNode;
-  right?: React.ReactNode;
-  /**
-   * Extra top padding on the row — used to space rows apart.
-   * The icon is positioned at `top-[2px]` to align with the
-   * first line of text given Tailwind's default `leading-5`.
-   */
-  className?: string;
-};
-
-function Row({ icon, children, right, className }: RowProps) {
-  return (
-    <div className={cn('relative pl-6', className)}>
-      {/* Icon column — absolute positioning means it does not
-       * affect the row's text column flow, and aligns vertically
-       * with the first line of text via `top-[2px]`. White bg
-       * makes the icon "punch through" the dotted connector. */}
-      <span
-        aria-hidden="true"
-        className="absolute left-0 top-[2px] inline-flex h-4 w-4 items-center justify-center bg-white"
-      >
-        {icon}
-      </span>
-      <div className="flex items-start gap-3">
-        <div className="min-w-0 flex-1">{children}</div>
-        {right ? <div className="flex shrink-0 items-center gap-2">{right}</div> : null}
-      </div>
-    </div>
-  );
-}
 
 /* ─────────────────────────────────────────────────────────────
  * Atoms — feedback glyph, sources link, tail rows
@@ -179,7 +155,9 @@ function TailRow({ tail }: TailRowProps) {
 
   if (tail.kind === 'ticket-created') {
     return (
-      <Row
+      <ConversationRow
+        hideConnectorAbove
+        hideConnectorBelow
         icon={
           <RiCornerDownRightLine
             aria-hidden="true"
@@ -187,25 +165,31 @@ function TailRow({ tail }: TailRowProps) {
           />
         }
       >
-        <div className="flex items-center gap-2 pt-[1px]">
-          <RiPriceTag3Line
-            aria-hidden="true"
-            className="h-4 w-4 shrink-0 text-[#475569]"
-          />
-          <span className="text-[13px] font-normal leading-[19px] text-[#475569]">
-            <span className="text-[#0f172a] underline underline-offset-2">
-              Ticket
-            </span>{' '}
-            created by {actor}
-          </span>
+        <div className="flex items-start gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 pt-[1px]">
+              <RiPriceTag3Line
+                aria-hidden="true"
+                className="h-4 w-4 shrink-0 text-[#475569]"
+              />
+              <span className="text-[13px] font-normal leading-[19px] text-[#475569]">
+                <span className="text-[#0f172a] underline underline-offset-2">
+                  Ticket
+                </span>{' '}
+                created by {actor}
+              </span>
+            </div>
+          </div>
         </div>
-      </Row>
+      </ConversationRow>
     );
   }
 
   // source-clicked
   return (
-    <Row
+    <ConversationRow
+      hideConnectorAbove
+      hideConnectorBelow
       icon={
         <RiCornerDownRightLine
           aria-hidden="true"
@@ -213,17 +197,21 @@ function TailRow({ tail }: TailRowProps) {
         />
       }
     >
-      <div className="flex items-center gap-2 pt-[1px]">
-        <RiBookOpenLine
-          aria-hidden="true"
-          className="h-4 w-4 shrink-0 text-[#475569]"
-        />
-        <span className="text-[13px] font-normal leading-[19px] text-[#475569]">
-          <span className="text-[#0f172a] underline underline-offset-2">Source</span>{' '}
-          clicked by {actor}
-        </span>
+      <div className="flex items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 pt-[1px]">
+            <RiBookOpenLine
+              aria-hidden="true"
+              className="h-4 w-4 shrink-0 text-[#475569]"
+            />
+            <span className="text-[13px] font-normal leading-[19px] text-[#475569]">
+              <span className="text-[#0f172a] underline underline-offset-2">Source</span>{' '}
+              clicked by {actor}
+            </span>
+          </div>
+        </div>
       </div>
-    </Row>
+    </ConversationRow>
   );
 }
 
@@ -244,6 +232,7 @@ export function AIConversationLogEntry({
   showViewAll,
   onViewAll,
   className,
+  rows,
 }: AIConversationLogEntryProps) {
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const [activeSources, setActiveSources] = React.useState<ConversationSource[]>(
@@ -271,36 +260,54 @@ export function AIConversationLogEntry({
         className="pointer-events-none absolute inset-y-5 left-[7.5px] border-l border-dashed border-[#cbd5e1]"
       />
 
+      {rows !== undefined ? (
+        <div className="flex flex-col gap-3">{rows}</div>
+      ) : (
+        <>
       {/* Row 1 — Question + (feedback | timestamp) */}
-      <Row
+      <ConversationRow
+        hideConnectorAbove
+        hideConnectorBelow
         icon={
           <RiQuestionLine
             aria-hidden="true"
             className="h-4 w-4 text-[#475569]"
           />
         }
-        right={<FeedbackTimestamp feedback={feedback} timestamp={timestamp} />}
       >
-        <p className="pt-[1px] text-[14px] font-medium leading-5 text-[#0f172a]">
-          {question}
-        </p>
-      </Row>
+        <div className="flex items-start gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="pt-[1px] text-[14px] font-medium leading-5 text-[#0f172a]">
+              {question}
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <FeedbackTimestamp feedback={feedback} timestamp={timestamp} />
+          </div>
+        </div>
+      </ConversationRow>
 
       {/* Row 2 — AI sparkle + answer */}
-      <Row icon={<AiIcon size={16} />}>
-        <p
-          className={cn(
-            'pt-[1px] text-[14px] font-normal leading-5',
-            answerDisabled ? 'text-[#94a3b8]' : 'text-[#0f172a]',
-          )}
-        >
-          {answer}
-        </p>
-      </Row>
+      <ConversationRow hideConnectorAbove hideConnectorBelow icon={<AiIcon size={16} />}>
+        <div className="flex items-start gap-3">
+          <div className="min-w-0 flex-1">
+            <p
+              className={cn(
+                'pt-[1px] text-[14px] font-normal leading-5',
+                answerDisabled ? 'text-[#94a3b8]' : 'text-[#0f172a]',
+              )}
+            >
+              {answer}
+            </p>
+          </div>
+        </div>
+      </ConversationRow>
 
       {/* Row 3 — Sources link (optional) */}
       {sourceCount > 0 ? (
-        <Row
+        <ConversationRow
+          hideConnectorAbove
+          hideConnectorBelow
           icon={
             <RiBookOpenLine
               aria-hidden="true"
@@ -308,17 +315,23 @@ export function AIConversationLogEntry({
             />
           }
         >
-          <div className="pt-[1px]">
-            <SourcesLink count={sourceCount} onClick={() => openSheet(sources)} />
+          <div className="flex items-start gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="pt-[1px]">
+                <SourcesLink count={sourceCount} onClick={() => openSheet(sources)} />
+              </div>
+            </div>
           </div>
-        </Row>
+        </ConversationRow>
       ) : null}
 
       {/* Follow-up sub-thread (optional) */}
       {followUp ? (
         <>
           {/* Row 4 — "↳ follow up : Q <question text>" */}
-          <Row
+          <ConversationRow
+            hideConnectorAbove
+            hideConnectorBelow
             icon={
               <RiCornerDownRightLine
                 aria-hidden="true"
@@ -326,30 +339,40 @@ export function AIConversationLogEntry({
               />
             }
           >
-            <div className="flex items-center gap-2 pt-[1px]">
-              <span className="text-[13px] font-normal leading-[19px] text-[#475569]">
-                follow up :
-              </span>
-              <RiQuestionLine
-                aria-hidden="true"
-                className="h-4 w-4 shrink-0 text-[#475569]"
-              />
-              <span className="text-[14px] font-medium leading-5 text-[#0f172a]">
-                {followUp.question}
-              </span>
+            <div className="flex items-start gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 pt-[1px]">
+                  <span className="text-[13px] font-normal leading-[19px] text-[#475569]">
+                    follow up :
+                  </span>
+                  <RiQuestionLine
+                    aria-hidden="true"
+                    className="h-4 w-4 shrink-0 text-[#475569]"
+                  />
+                  <span className="text-[14px] font-medium leading-5 text-[#0f172a]">
+                    {followUp.question}
+                  </span>
+                </div>
+              </div>
             </div>
-          </Row>
+          </ConversationRow>
 
           {/* Row 5 — Follow-up AI answer */}
-          <Row icon={<AiIcon size={16} />}>
-            <p className="pt-[1px] text-[14px] font-normal leading-5 text-[#0f172a]">
-              {followUp.answer}
-            </p>
-          </Row>
+          <ConversationRow hideConnectorAbove hideConnectorBelow icon={<AiIcon size={16} />}>
+            <div className="flex items-start gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="pt-[1px] text-[14px] font-normal leading-5 text-[#0f172a]">
+                  {followUp.answer}
+                </p>
+              </div>
+            </div>
+          </ConversationRow>
 
           {/* Row 6 — Follow-up sources */}
           {followUp.sourceCount > 0 ? (
-            <Row
+            <ConversationRow
+              hideConnectorAbove
+              hideConnectorBelow
               icon={
                 <RiBookOpenLine
                   aria-hidden="true"
@@ -357,13 +380,17 @@ export function AIConversationLogEntry({
                 />
               }
             >
-              <div className="pt-[1px]">
-                <SourcesLink
-                  count={followUp.sourceCount}
-                  onClick={() => openSheet(followUp.sources)}
-                />
+              <div className="flex items-start gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="pt-[1px]">
+                    <SourcesLink
+                      count={followUp.sourceCount}
+                      onClick={() => openSheet(followUp.sources)}
+                    />
+                  </div>
+                </div>
               </div>
-            </Row>
+            </ConversationRow>
           ) : null}
 
           {/* Row 7 — Follow-up tail row */}
@@ -373,6 +400,8 @@ export function AIConversationLogEntry({
 
       {/* Tail row at end of entry (when no follow-up wraps it) */}
       {tail ? <TailRow tail={tail} /> : null}
+        </>
+      )}
 
       {/* "view all" link — outside the rail, sits below the entry */}
       {showViewAll ? (

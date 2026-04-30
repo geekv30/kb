@@ -29,6 +29,7 @@ export type AIConversationLogsCardProps = {
   /** Conversation entries — order matters. */
   children: React.ReactNode;
   className?: string;
+  toolbar?: React.ReactNode;
 };
 
 /* ─────────────────────────────────────────────────────────────
@@ -111,6 +112,7 @@ export function AIConversationLogsCard({
   onTicketCreatedToggle,
   children,
   className,
+  toolbar,
 }: AIConversationLogsCardProps) {
   return (
     <Card
@@ -141,30 +143,39 @@ export function AIConversationLogsCard({
         </p>
       </div>
 
-      {/* Toolbar row — Sort by dropdown + Ticket Created switch */}
+      {/* Toolbar row — Sort by dropdown + Ticket Created switch (default),
+       * or caller-provided `toolbar` content. The wrapping container's
+       * flex layout, padding, and divider below remain intact — only the
+       * internal content swaps. */}
       <div className="mt-3 flex items-center gap-3 pb-4">
-        <SortDropdown
-          options={sortOptions}
-          value={sortBy}
-          onChange={onSortChange}
-        />
-        <div className="flex items-center gap-2">
-          <Switch.Root
-            checked={ticketCreatedFilter}
-            onCheckedChange={onTicketCreatedToggle}
-            data-kb-part="ai-conversation-logs-ticket-toggle"
-            className={cn(
-              'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors',
-              'data-[state=unchecked]:bg-[#e2e8f0] data-[state=checked]:bg-[#0f172a]',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
-            )}
-          >
-            <Switch.Thumb className="block size-4 translate-x-0.5 rounded-full bg-white shadow transition-transform data-[state=checked]:translate-x-[18px]" />
-          </Switch.Root>
-          <span className="text-[14px] font-normal leading-5 text-[#475569]">
-            Ticket Created
-          </span>
-        </div>
+        {toolbar === undefined ? (
+          <>
+            <SortDropdown
+              options={sortOptions}
+              value={sortBy}
+              onChange={onSortChange}
+            />
+            <div className="flex items-center gap-2">
+              <Switch.Root
+                checked={ticketCreatedFilter}
+                onCheckedChange={onTicketCreatedToggle}
+                data-kb-part="ai-conversation-logs-ticket-toggle"
+                className={cn(
+                  'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors',
+                  'data-[state=unchecked]:bg-[#e2e8f0] data-[state=checked]:bg-[#0f172a]',
+                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
+                )}
+              >
+                <Switch.Thumb className="block size-4 translate-x-0.5 rounded-full bg-white shadow transition-transform data-[state=checked]:translate-x-[18px]" />
+              </Switch.Root>
+              <span className="text-[14px] font-normal leading-5 text-[#475569]">
+                Ticket Created
+              </span>
+            </div>
+          </>
+        ) : (
+          toolbar
+        )}
       </div>
 
       {/* Header/list divider */}

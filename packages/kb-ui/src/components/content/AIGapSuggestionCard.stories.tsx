@@ -48,3 +48,31 @@ const meta: Meta<typeof AIGapSuggestionCard> = {
 export default meta;
 
 export const Default: StoryObj<typeof AIGapSuggestionCard> = {};
+
+export const CustomActionsMetaAndLabels: StoryObj<typeof AIGapSuggestionCard> = {
+  name: 'Custom Actions, Meta & Labels',
+  render: (args) => (
+    <div style={CANVAS}>
+      <div style={RAIL}>
+        <AIGapSuggestionCard
+          {...args}
+          meta={
+            <span className="inline-flex h-[20px] items-center rounded-full bg-[#fef3c7] px-2 text-[11px] font-medium text-[#92400e]">
+              FLAGGED
+            </span>
+          }
+          actions={
+            <button
+              type="button"
+              onClick={() => {}}
+              className="text-[12px] font-medium text-[#475569] underline"
+            >
+              Flag for compliance review
+            </button>
+          }
+          decisionLabels={{ accepted: 'APPROVED', dismissed: 'REJECTED' }}
+        />
+      </div>
+    </div>
+  ),
+};

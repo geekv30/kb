@@ -1,12 +1,6 @@
 import * as React from 'react';
-import {
-  RiLayoutLeftLine,
-  RiHome5Line,
-  RiSendPlaneLine,
-  RiCloseLine,
-} from '@remixicon/react';
+import { RiLayoutLeftLine, RiHome5Line } from '@remixicon/react';
 import { cn } from '../../utils/cn';
-import { Button } from '../primitives/Button';
 
 export type KBBreadcrumbItem = {
   id: string;
@@ -16,8 +10,6 @@ export type KBBreadcrumbItem = {
 export type KBBreadcrumbBarProps = {
   /** Path items; last entry is treated as the current page. */
   items: KBBreadcrumbItem[];
-  /** Layout variant. `category` shows only the current section; `editor` shows the full path and action buttons. */
-  variant?: 'category' | 'editor';
   /**
    * When `true`, the leading icon becomes a **home** glyph (`RiHome5Line`)
    * and the `aria-label` + testid become "home-icon" — matches the Figma
@@ -34,58 +26,28 @@ export type KBBreadcrumbBarProps = {
   onCollapse?: () => void;
   /** Alias for `onCollapse`; symmetric with `AppShell`'s `onToggleSidebar`. Either may be passed. */
   onToggleSidebar?: () => void;
-  /** Editor variant only. */
-  onSaveAsDraft?: () => void;
-  /** Editor variant only. */
-  onPublish?: () => void;
-  /** Editor variant only. */
-  onClose?: () => void;
-  /**
-   * Editor variant only. When `true`, the Publish button is rendered disabled
-   * (muted via `Button` primitive's `opacity-50 cursor-not-allowed`) and
-   * `onPublish` will not fire. Default `false` — matches existing behaviour.
-   *
-   * Used by the AI Gaps review flow where Publish stays disabled until the
-   * user has accepted at least one suggestion (see `KBAIGapsExperience`).
-   */
-  publishDisabled?: boolean;
-  /**
-   * Editor variant only. When `true`, the Save-as-draft button is rendered
-   * disabled (muted text + `cursor-not-allowed`) and `onSaveAsDraft` will not
-   * fire.
-   *
-   * Optional — when undefined, falls back to `publishDisabled` for backwards
-   * compatibility with the AI Gaps flow (which mutes Save and Publish in
-   * lockstep). The KB editor route passes this independently so Save can
-   * disable on a clean editor while Publish remains enabled.
-   */
-  saveDisabled?: boolean;
   className?: string;
+  /**
+   * Right-aligned content slot. Render any action buttons (e.g.
+   * `EditorBreadcrumbActions`) here. When undefined, the right-aligned area
+   * renders nothing.
+   */
+  actions?: React.ReactNode;
 };
 
 /**
- * 54px-tall bar that sits above the KB content area. Two variants:
- * - `category` — collapse button + current section name (pill)
- * - `editor` — collapse button + full ancestor path + Save/Publish/Close actions
+ * 54px-tall bar that sits above the KB content area. Renders a leading
+ * sidebar-toggle icon, the breadcrumb path, and an optional `actions` slot
+ * on the right.
  */
 export function KBBreadcrumbBar({
   items,
-  variant = 'category',
   sidebarCollapsed = false,
   onCollapse,
   onToggleSidebar,
-  onSaveAsDraft,
-  onPublish,
-  onClose,
-  publishDisabled = false,
-  saveDisabled,
   className,
+  actions,
 }: KBBreadcrumbBarProps) {
-  // Save-as-draft falls back to `publishDisabled` when `saveDisabled` is
-  // not supplied — preserves the AI Gaps "lockstep" behaviour where both
-  // controls mute together until at least one suggestion is accepted.
-  const effectiveSaveDisabled =
-    saveDisabled === undefined ? publishDisabled : saveDisabled;
   const handleLeadingClick = onToggleSidebar ?? onCollapse;
   const LeadingIcon = sidebarCollapsed ? RiHome5Line : RiLayoutLeftLine;
   const leadingLabel = sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar';
@@ -160,50 +122,9 @@ export function KBBreadcrumbBar({
         </nav>
       </div>
 
-      {variant === 'editor' && (
+      {actions !== undefined && (
         <div className="flex items-center gap-2 ml-auto pl-4 shrink-0">
-          {/*
-            "Save as draft" mutes whenever Publish is disabled — i.e. no
-            suggestions accepted yet, so there is nothing meaningful to
-            persist as a draft. Default ( publishDisabled === false ) keeps
-            the original Phase 5 editor styling and click behaviour.
-          */}
-          <button
-            type="button"
-            onClick={onSaveAsDraft}
-            disabled={effectiveSaveDisabled}
-            className={cn(
-              'inline-flex items-center h-8 px-3 py-1.5 rounded-[6px] text-[14px] font-normal',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
-              effectiveSaveDisabled
-                ? 'text-[#94a3b8] cursor-not-allowed'
-                : 'text-[#475569] hover:bg-[#f8fafc]',
-            )}
-          >
-            Save as draft
-          </button>
-          {/*
-            Publish — Figma `53:8464` uses `bg-black` + `text-white` with a
-            white send-plane icon (14 px). Match the `Button` primary variant
-            (bg-black, text-white, rounded-6, px-3 py-1.5, text-14/medium).
-            Icon color inherits from text via `currentColor`.
-          */}
-          <Button
-            variant="primary"
-            onClick={onPublish}
-            disabled={publishDisabled}
-            icon={<RiSendPlaneLine size={14} />}
-          >
-            Publish
-          </Button>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="inline-flex size-8 items-center justify-center rounded-[6px] text-[#64758b] hover:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]"
-          >
-            <RiCloseLine size={16} />
-          </button>
+          {actions}
         </div>
       )}
     </div>

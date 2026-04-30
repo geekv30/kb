@@ -1,6 +1,7 @@
 // Figma: 9aGp5t9fH1d0PXi4LMhOdb#74:9431 (leftmost card in the grid)
 //        9aGp5t9fH1d0PXi4LMhOdb#81:17189 (pre-review in editor chrome)
 //        9aGp5t9fH1d0PXi4LMhOdb#81:14752 (terminal — all reviewed)
+import * as React from 'react';
 import { RiCheckLine } from '@remixicon/react';
 import { cn } from '../../utils/cn';
 import { AiIcon } from '../brand/AiIcon';
@@ -21,6 +22,23 @@ export type AISuggestionsCardProps = {
   onPrev?: () => void;
   onNext?: () => void;
   className?: string;
+  /**
+   * Optional override for the card title. When omitted, the title is
+   * derived from `mode` ("AI Suggestions" for `pre-review`, "Suggestions"
+   * for `terminal`).
+   */
+  title?: string;
+  /**
+   * Optional override for the active-mode CTA. Replaces the default
+   * `Review Suggestions (N)` button when provided. Has no effect in
+   * `terminal` mode.
+   */
+  cta?: React.ReactNode;
+  /**
+   * Optional override for the terminal-mode label. Defaults to
+   * `"Reviewed All"` when omitted. Has no effect in `pre-review` mode.
+   */
+  terminalLabel?: string;
 };
 
 function CountPill({ count }: { count: number }) {
@@ -45,9 +63,13 @@ export function AISuggestionsCard({
   onPrev,
   onNext,
   className,
+  title,
+  cta,
+  terminalLabel,
 }: AISuggestionsCardProps) {
   const isTerminal = mode === 'terminal';
-  const title = isTerminal ? 'Suggestions' : 'AI Suggestions';
+  const resolvedTitle = title ?? (isTerminal ? 'Suggestions' : 'AI Suggestions');
+  const resolvedTerminalLabel = terminalLabel ?? 'Reviewed All';
 
   return (
     <AICard
@@ -60,7 +82,7 @@ export function AISuggestionsCard({
         <div className="flex items-center gap-2">
           <AiIcon size={16} aria-hidden="true" />
           <span className="text-[14px] font-semibold leading-[20px] text-[#0f172a]">
-            {title}
+            {resolvedTitle}
           </span>
           {isTerminal && <CountPill count={count} />}
         </div>
@@ -88,8 +110,10 @@ export function AISuggestionsCard({
               )}
             >
               <RiCheckLine aria-hidden="true" className="h-[14px] w-[14px]" />
-              <span>Reviewed All</span>
+              <span>{resolvedTerminalLabel}</span>
             </button>
+          ) : cta !== undefined ? (
+            cta
           ) : (
             <button
               type="button"

@@ -1,3 +1,4 @@
+import type * as React from 'react';
 import { RiLayoutLeftLine } from '@remixicon/react';
 import { cn } from '../../utils/cn';
 
@@ -11,9 +12,11 @@ export type BreadcrumbItem = {
 export type BreadcrumbProps = {
   items: BreadcrumbItem[];
   className?: string;
+  homeIcon?: React.ReactNode;
+  separator?: React.ReactNode;
 };
 
-export function Breadcrumb({ items, className }: BreadcrumbProps) {
+export function Breadcrumb({ items, className, homeIcon, separator }: BreadcrumbProps) {
   if (items.length === 0) return null;
 
   const home = items[0];
@@ -31,7 +34,7 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
         )}
         aria-label={home.label}
       >
-        <RiLayoutLeftLine size={14} className="text-[#94a3b8]" />
+        {homeIcon ?? <RiLayoutLeftLine size={14} className="text-[#94a3b8]" />}
       </button>
       {rest.map((item, idx) => {
         const isCurrent = idx === lastIdx;
@@ -42,7 +45,7 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
               aria-hidden="true"
               className="inline-flex items-center justify-center text-[14px] leading-5 text-[#cbd5e1] px-[2px] shrink-0 select-none"
             >
-              /
+              {separator ?? '/'}
             </span>
             {isCurrent ? (
               <span

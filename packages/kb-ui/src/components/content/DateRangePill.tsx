@@ -18,12 +18,21 @@ import { cn } from '../../utils/cn';
 
 export type DateRange = '7d' | '30d' | '90d' | 'custom';
 
+export type DateRangePreset = { value: string; label: string };
+
+export const DEFAULT_DATE_RANGE_PRESETS: DateRangePreset[] = [
+  { value: '7d', label: 'Last 7 days' },
+  { value: '30d', label: 'Last 30 days' },
+  { value: '90d', label: 'Last 90 days' },
+];
+
 export type DateRangePillProps = {
   value: DateRange;
   onChange?: (next: DateRange) => void;
   /** Override the human label. Defaults to the matching DEFAULT_LABEL entry. */
   label?: string;
   className?: string;
+  presets?: DateRangePreset[];
 };
 
 const DEFAULT_LABEL: Record<DateRange, string> = {
@@ -33,14 +42,9 @@ const DEFAULT_LABEL: Record<DateRange, string> = {
   custom: 'Custom',
 };
 
-const PRESETS: Array<{ value: Exclude<DateRange, 'custom'>; label: string }> = [
-  { value: '7d', label: 'Last 7 days' },
-  { value: '30d', label: 'Last 30 days' },
-  { value: '90d', label: 'Last 90 days' },
-];
-
-export function DateRangePill({ value, onChange, label, className }: DateRangePillProps) {
+export function DateRangePill({ value, onChange, label, className, presets }: DateRangePillProps) {
   const displayLabel = label ?? DEFAULT_LABEL[value];
+  const resolvedPresets = presets ?? DEFAULT_DATE_RANGE_PRESETS;
 
   const handleSelect = (next: DateRange) => () => {
     onChange?.(next);
@@ -75,10 +79,10 @@ export function DateRangePill({ value, onChange, label, className }: DateRangePi
             'shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_2px_4px_-2px_rgba(0,0,0,0.10)]',
           )}
         >
-          {PRESETS.map((preset) => (
+          {resolvedPresets.map((preset) => (
             <DropdownMenu.Item
               key={preset.value}
-              onSelect={handleSelect(preset.value)}
+              onSelect={handleSelect(preset.value as DateRange)}
               className={cn(
                 'flex cursor-pointer items-center rounded-[6px] px-2 py-1.5',
                 'text-[14px] leading-5 text-[#0f172a]',

@@ -1,15 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../../tokens.css';
 import { KBBreadcrumbBar } from './KBBreadcrumbBar';
+import { EditorBreadcrumbActions } from './EditorBreadcrumbActions';
 
 const meta: Meta<typeof KBBreadcrumbBar> = {
   title: 'Components/Navigation/KB Breadcrumb Bar',
   component: KBBreadcrumbBar,
   parameters: { layout: 'fullscreen' },
   args: {
-    variant: 'editor',
     sidebarCollapsed: false,
-    publishDisabled: false,
     items: [
       { id: '1', label: 'Offer Multi-channel Support' },
       { id: '2', label: 'Managing emails' },
@@ -18,7 +17,10 @@ const meta: Meta<typeof KBBreadcrumbBar> = {
   },
   render: (args) => (
     <div style={{ borderBottom: '1px solid #e2e8f0' }}>
-      <KBBreadcrumbBar {...args} />
+      <KBBreadcrumbBar
+        {...args}
+        actions={<EditorBreadcrumbActions publishDisabled={false} />}
+      />
     </div>
   ),
 };

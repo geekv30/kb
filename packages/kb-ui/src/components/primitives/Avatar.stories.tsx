@@ -19,3 +19,12 @@ const meta: Meta<typeof Avatar> = {
 export default meta;
 
 export const Default: StoryObj<typeof Avatar> = {};
+
+export const WithImage: StoryObj<typeof Avatar> = {
+  name: 'With Image',
+  args: {
+    src: 'https://i.pravatar.cc/64?img=12',
+    name: 'Anjali Kumar',
+    initials: 'AK',
+  },
+};

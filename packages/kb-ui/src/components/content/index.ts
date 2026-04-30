@@ -2,19 +2,36 @@ export { DataTable } from './DataTable';
 export type { DataTableProps, DataTableColumn } from './DataTable';
 export { PageHeader } from './PageHeader';
 export type { PageHeaderProps, PageHeaderSize } from './PageHeader';
-export { ContentEditor } from './ContentEditor';
-export type { ContentEditorProps } from './ContentEditor';
+export { ContentEditor, DEFAULT_TOOLBAR_ITEMS } from './ContentEditor';
+export type { ContentEditorProps, ToolbarItemDef } from './ContentEditor';
+export { DEFAULT_SLASH_COMMANDS } from './SlashCommandMenu';
+export type { SlashCommand } from './SlashCommandMenu';
 export { ArticleSettingsPanel } from './ArticleSettingsPanel';
 export type {
   ArticleSettings,
   ArticleSettingsPanelProps,
   ArticleSettingsPerson,
+  ArticleSettingsSection,
   ArticleVisibility,
 } from './ArticleSettingsPanel';
-export { SuggestionCard } from './SuggestionCard';
+export {
+  FieldLabel,
+  FieldBox,
+  ChevronSuffix,
+  CharCounter,
+  Placeholder,
+  TagChip,
+  AddChipButton,
+} from './ArticleSettingsPanelAtoms';
+export type {
+  FieldBoxProps,
+  TagChipProps,
+} from './ArticleSettingsPanelAtoms';
+export { SuggestionCard, DEFAULT_SUGGESTION_KINDS } from './SuggestionCard';
 export type {
   SuggestionCardProps,
   SuggestionKind,
+  SuggestionKindMeta,
   SuggestionImpact,
 } from './SuggestionCard';
 
@@ -24,8 +41,8 @@ export type {
   AISuggestionsCardProps,
   AISuggestionsCardMode,
 } from './AISuggestionsCard';
-export { AIGapSuggestionCard } from './AIGapSuggestionCard';
-export type { AIGapSuggestionCardProps } from './AIGapSuggestionCard';
+export { AIGapSuggestionCard, DEFAULT_GAP_TYPES } from './AIGapSuggestionCard';
+export type { AIGapSuggestionCardProps, SuggestionTypeMeta } from './AIGapSuggestionCard';
 export { AICard } from './AICard';
 export type { AICardProps, AICardMode } from './AICard';
 export { NavArrow } from './NavArrow';
@@ -51,9 +68,9 @@ export { StatCard } from './StatCard';
 export type { StatCardProps, StatTrendDirection } from './StatCard';
 export { StatCardGrid } from './StatCardGrid';
 export type { StatCardGridProps } from './StatCardGrid';
-export { DateRangePill } from './DateRangePill';
-export type { DateRangePillProps, DateRange } from './DateRangePill';
-export { AnalyticsAreaChart } from './AnalyticsAreaChart';
+export { DateRangePill, DEFAULT_DATE_RANGE_PRESETS } from './DateRangePill';
+export type { DateRangePillProps, DateRange, DateRangePreset } from './DateRangePill';
+export { AnalyticsAreaChart, DEFAULT_SERIES_PALETTE } from './AnalyticsAreaChart';
 export type {
   AnalyticsAreaChartProps,
   AnalyticsAreaSeries,
@@ -73,6 +90,8 @@ export type {
   AIConversationFollowUp,
   AIConversationTail,
 } from './AIConversationLogEntry';
+export { ConversationRow } from './AIConversationLogEntryAtoms';
+export type { ConversationRowProps } from './AIConversationLogEntryAtoms';
 export { AIConversationLogsCard } from './AIConversationLogsCard';
 export type {
   AIConversationLogsCardProps,

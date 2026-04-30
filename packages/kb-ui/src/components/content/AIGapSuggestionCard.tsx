@@ -20,6 +20,12 @@ import type {
   AISuggestionType,
 } from './ai-suggestion-types';
 
+export type SuggestionTypeMeta = {
+  label: string;
+  color: string;
+  Icon: React.ComponentType<{ className?: string }>;
+};
+
 export type AIGapSuggestionCardProps = {
   suggestion: AISuggestion;
   state: AISuggestionState;
@@ -30,6 +36,10 @@ export type AIGapSuggestionCardProps = {
   onReject?: (id: string) => void;
   onUndo?: (id: string) => void;
   className?: string;
+  actions?: React.ReactNode;
+  meta?: React.ReactNode;
+  decisionLabels?: { accepted: string; dismissed: string };
+  typeRegistry?: Record<string, SuggestionTypeMeta>;
 };
 
 /* ─────────────────────────────────────────────────────────────
@@ -42,17 +52,33 @@ export type AIGapSuggestionCardProps = {
  * SVG fill.
  * ───────────────────────────────────────────────────────────── */
 
-const TYPE_META: Record<
-  AISuggestionType,
-  { label: string; color: string; Icon: React.ComponentType<{ className?: string }> }
-> = {
+export const DEFAULT_GAP_TYPES: Record<string, SuggestionTypeMeta> = {
   addition: { label: 'Addition', color: '#086e3f', Icon: RiAddLine },
   replace: { label: 'Replace', color: '#065b89', Icon: RiRefreshLine },
   removal: { label: 'Removal', color: '#d52c1f', Icon: RiCloseLine },
 };
 
-function TypeChip({ type }: { type: AISuggestionType }) {
-  const { label, color, Icon } = TYPE_META[type];
+function TypeChip({
+  type,
+  registry,
+}: {
+  type: AISuggestionType;
+  registry: Record<string, SuggestionTypeMeta>;
+}) {
+  const meta = registry[type];
+  if (!meta) {
+    return (
+      <span
+        data-kb-part="ai-gap-type-chip"
+        data-kb-type={type}
+        className="inline-flex items-center gap-1"
+        style={{ color: '#94a3b8' }}
+      >
+        <span className="text-[12px] font-medium leading-[18px]">{type}</span>
+      </span>
+    );
+  }
+  const { label, color, Icon } = meta;
   return (
     <span
       data-kb-part="ai-gap-type-chip"
@@ -135,9 +161,17 @@ export function AIGapSuggestionCard({
   onReject,
   onUndo,
   className,
+  actions,
+  meta,
+  decisionLabels,
+  typeRegistry,
 }: AIGapSuggestionCardProps) {
+  const resolvedRegistry = typeRegistry ?? DEFAULT_GAP_TYPES;
   if (state !== 'active') {
-    const decisionLabel = state === 'accepted' ? 'ACCEPTED' : 'DISMISSED';
+    const decisionLabel =
+      state === 'accepted'
+        ? (decisionLabels?.accepted ?? 'ACCEPTED')
+        : (decisionLabels?.dismissed ?? 'DISMISSED');
     return (
       <AICard
         mode="collapsed"
@@ -146,7 +180,7 @@ export function AIGapSuggestionCard({
         data-kb-state={state}
         data-kb-type={suggestion.type}
       >
-        <TypeChip type={suggestion.type} />
+        <TypeChip type={suggestion.type} registry={resolvedRegistry} />
         <span aria-hidden className="mx-3 h-4 w-px shrink-0 bg-card-divider" />
         <span className="text-[12px] font-medium leading-[18px] text-[#475569] tracking-wide">
           {decisionLabel}
@@ -175,9 +209,10 @@ export function AIGapSuggestionCard({
       data-kb-component="ai-gap-suggestion-card"
       data-kb-state="active"
       data-kb-type={suggestion.type}
-      header={<TypeChip type={suggestion.type} />}
+      header={<TypeChip type={suggestion.type} registry={resolvedRegistry} />}
       body={
         <>
+          {meta}
           <h3
             data-kb-part="ai-gap-title"
             className="mt-2 text-[14px] font-semibold leading-[20px] text-[#0f172a]"
@@ -194,20 +229,24 @@ export function AIGapSuggestionCard({
       }
       showFooterDivider
       footer={
-        <>
-          <div className="flex items-center gap-1">
-            <NavArrow direction="up" onClick={onPrev} />
-            <NavArrow direction="down" onClick={onNext} />
-          </div>
-          <div className="flex items-center gap-2">
-            <SourcesButton
-              count={suggestion.sourceCount}
-              onClick={() => onOpenSources?.(suggestion.id)}
-            />
-            <RejectButton onClick={() => onReject?.(suggestion.id)} />
-            <AcceptButton onClick={() => onAccept?.(suggestion.id)} />
-          </div>
-        </>
+        actions !== undefined ? (
+          actions
+        ) : (
+          <>
+            <div className="flex items-center gap-1">
+              <NavArrow direction="up" onClick={onPrev} />
+              <NavArrow direction="down" onClick={onNext} />
+            </div>
+            <div className="flex items-center gap-2">
+              <SourcesButton
+                count={suggestion.sourceCount}
+                onClick={() => onOpenSources?.(suggestion.id)}
+              />
+              <RejectButton onClick={() => onReject?.(suggestion.id)} />
+              <AcceptButton onClick={() => onAccept?.(suggestion.id)} />
+            </div>
+          </>
+        )
       }
     />
   );

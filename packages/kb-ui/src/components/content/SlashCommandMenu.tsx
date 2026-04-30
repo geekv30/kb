@@ -18,7 +18,7 @@ import { cn } from '../../utils/cn';
  * Slash command registry
  *
  * Keep this file presentational + declarative. The Tiptap
- * extension (extensions/SlashCommand.ts) imports `SLASH_COMMANDS`
+ * extension (extensions/SlashCommand.ts) imports `DEFAULT_SLASH_COMMANDS`
  * and `filterSlashCommands` so the same list drives both
  * rendering AND suggestion.items().
  * ───────────────────────────────────────────────────────────── */
@@ -38,7 +38,7 @@ export type SlashCommand = {
   command: (editor: Editor, range: Range) => void;
 };
 
-export const SLASH_COMMANDS: SlashCommand[] = [
+export const DEFAULT_SLASH_COMMANDS: SlashCommand[] = [
   {
     id: 'heading-1',
     title: 'Heading 1',
@@ -165,10 +165,13 @@ export const SLASH_COMMANDS: SlashCommand[] = [
  * like "AI Highlight".
  * Empty query returns the full list.
  */
-export function filterSlashCommands(query: string): SlashCommand[] {
+export function filterSlashCommands(
+  query: string,
+  items: SlashCommand[] = DEFAULT_SLASH_COMMANDS,
+): SlashCommand[] {
   const q = query.trim().toLowerCase();
-  if (!q) return SLASH_COMMANDS;
-  return SLASH_COMMANDS.filter((cmd) => {
+  if (!q) return items;
+  return items.filter((cmd) => {
     if (cmd.title.toLowerCase().startsWith(q)) return true;
     return cmd.aliases.some((a) => a.startsWith(q));
   });

@@ -39,3 +39,15 @@ const meta: Meta<typeof AnalyticsAreaChart> = {
 export default meta;
 
 export const Default: StoryObj<typeof AnalyticsAreaChart> = {};
+
+export const CustomPalette: StoryObj<typeof AnalyticsAreaChart> = {
+  name: 'Custom Palette',
+  args: {
+    data: articleViewsData,
+    xKey: 'x',
+    series: [{ name: 'Churn', dataKey: 'views', variant: 'churn' }],
+    seriesPalette: { churn: '#ef4444' },
+    yTicks: [0, 3000, 6000, 9000, 12000],
+    showLegend: true,
+  },
+};

@@ -5,10 +5,18 @@ import {
   RiArrowDownSLine,
   RiCalendar2Line,
   RiAddLine,
-  RiCloseLine,
 } from '@remixicon/react';
 import { cn } from '../../utils/cn';
 import { Avatar } from '../primitives/Avatar';
+import {
+  FieldLabel,
+  FieldBox,
+  ChevronSuffix,
+  CharCounter,
+  Placeholder,
+  TagChip,
+  AddChipButton,
+} from './ArticleSettingsPanelAtoms';
 
 /* ─────────────────────────────────────────────────────────────
  * Types
@@ -32,6 +40,18 @@ export type ArticleSettings = {
   reviewers?: ArticleSettingsPerson[];
 };
 
+/**
+ * Composition entry for the `sections` prop. When supplied, the panel renders
+ * one `<FieldLabel>` + `content` block per entry instead of the 8 hardcoded
+ * fields. Visual chrome (outer padding, divider, vertical rhythm) is shared
+ * with the default render path.
+ */
+export type ArticleSettingsSection = {
+  id: string;
+  label: string;
+  content: React.ReactNode;
+};
+
 export type ArticleSettingsPanelProps = {
   value?: ArticleSettings;
   onChange?: (v: ArticleSettings) => void;
@@ -44,132 +64,39 @@ export type ArticleSettingsPanelProps = {
    */
   compact?: boolean;
   className?: string;
+  /**
+   * When supplied, the panel renders this list of sections instead of the 8
+   * built-in fields (author, category, slug, tags, publishDate, seoTitle,
+   * visibility, reviewers). Each entry's `label` becomes a `FieldLabel`; the
+   * `content` is rendered as-is. The panel chrome (header, divider, outer
+   * padding, vertical rhythm) is identical to the default render path so
+   * consumers can extend the panel without forking. When `undefined`, the
+   * default 8-field render path is preserved exactly.
+   */
+  sections?: ArticleSettingsSection[];
+  /**
+   * Optional content rendered inside the panel's top header band, on the
+   * right side, after the title and collapse toggle. Useful for action
+   * menus or status banners. When `undefined`, the header renders zero
+   * extra DOM and its height/padding/bottom-border are byte-identical to
+   * the default render path.
+   */
+  headerSlot?: React.ReactNode;
+  /**
+   * Optional content rendered as the last child of the panel's main
+   * content column, after the section list (or after the 8 default
+   * fields), separated by the same divider used elsewhere in the panel.
+   * Useful for save footers or compliance notes. When `undefined`, the
+   * footer renders zero extra DOM and the default render path is
+   * preserved exactly.
+   */
+  footerSlot?: React.ReactNode;
 };
 
 // Figma `53:8464` shows the slug counter reading `14/32` — the slug field
 // uses a 32-char max, not 60. SEO title remains 60.
 const SLUG_MAX = 32;
 const SEO_MAX = 60;
-
-/* ─────────────────────────────────────────────────────────────
- * Shared field atoms
- *
- * Every field uses a label row + 40-tall input box. The input box
- * is a div (not an <input>) because these controls are demo-only
- * for v1 — they open no real dropdown menus. See design doc.
- * ───────────────────────────────────────────────────────────── */
-
-function FieldLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <label className="text-[14px] font-medium leading-[20px] text-[#0f172a]">
-      {children}
-    </label>
-  );
-}
-
-type FieldBoxProps = {
-  children: React.ReactNode;
-  className?: string;
-  /** When true, the box renders as a <button> so it is focusable. */
-  as?: 'button' | 'div';
-  onClick?: () => void;
-  ariaLabel?: string;
-};
-
-function FieldBox({ children, className, as = 'button', onClick, ariaLabel }: FieldBoxProps) {
-  const baseClass = cn(
-    'flex w-full min-h-[40px] items-center gap-2 rounded-[8px] border border-[#e5e5e5] bg-white px-3',
-    'text-[14px] leading-[20px] font-normal text-[#0f172a]',
-    'transition-colors focus:outline-none focus:border-[#cbd5e1]',
-    'hover:border-[#cbd5e1]',
-    className,
-  );
-
-  if (as === 'button') {
-    return (
-      <button type="button" onClick={onClick} aria-label={ariaLabel} className={cn(baseClass, 'text-left cursor-pointer')}>
-        {children}
-      </button>
-    );
-  }
-  return <div className={baseClass}>{children}</div>;
-}
-
-function ChevronSuffix() {
-  return (
-    <RiArrowDownSLine
-      aria-hidden="true"
-      className="ml-auto h-4 w-4 shrink-0 text-[#94a3b8]"
-    />
-  );
-}
-
-function CharCounter({ count, max }: { count: number; max: number }) {
-  return (
-    <span className="text-[12px] font-normal leading-[18px] text-[#94a3b8] tabular-nums">
-      {count}/{max}
-    </span>
-  );
-}
-
-function Placeholder({ children }: { children: React.ReactNode }) {
-  return <span className="text-[#94a3b8]">{children}</span>;
-}
-
-/* ─────────────────────────────────────────────────────────────
- * Tag chip (custom — Badge primitive is not quite right:
- * Badge is pill-y but doesn't have the × close affordance and
- * has specific variant colors. Panel tags match spec better
- * with a dedicated chip).
- * ───────────────────────────────────────────────────────────── */
-
-type TagChipProps = {
-  label: string;
-  onRemove?: () => void;
-};
-
-function TagChip({ label, onRemove }: TagChipProps) {
-  return (
-    <span
-      className={cn(
-        'inline-flex h-[22px] items-center gap-1.5 rounded-full bg-[#f1f5f9] pl-2 pr-1',
-        'text-[12px] font-medium leading-[18px] text-[#0f172a]',
-      )}
-    >
-      <span>{label}</span>
-      {onRemove && (
-        <button
-          type="button"
-          onClick={onRemove}
-          aria-label={`Remove ${label}`}
-          className={cn(
-            'inline-flex h-[16px] w-[16px] items-center justify-center rounded-full',
-            'text-[#64758b] hover:bg-[#e2e8f0] hover:text-[#0f172a]',
-            'focus:outline-none focus:ring-2 focus:ring-black/10',
-          )}
-        >
-          <RiCloseLine className="h-3 w-3" />
-        </button>
-      )}
-    </span>
-  );
-}
-
-function AddChipButton({ onClick, label = '+ Add' }: { onClick?: () => void; label?: string }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        'inline-flex h-[22px] items-center rounded-full border border-dashed border-[#cbd5e1] bg-white px-2',
-        'text-[12px] font-medium leading-[18px] text-[#475569]',
-        'hover:bg-[#f8fafc] focus:outline-none focus:ring-2 focus:ring-black/10',
-      )}
-    >
-      {label}
-    </button>
-  );
-}
 
 /* ─────────────────────────────────────────────────────────────
  * Field: Author
@@ -453,6 +380,9 @@ export function ArticleSettingsPanel({
   defaultCollapsed = false,
   compact = false,
   className,
+  sections,
+  headerSlot,
+  footerSlot,
 }: ArticleSettingsPanelProps) {
   const [collapsed, setCollapsed] = React.useState(defaultCollapsed);
 
@@ -491,24 +421,48 @@ export function ArticleSettingsPanel({
       )}
     >
       {/* Header */}
-      <button
-        type="button"
-        aria-expanded={!collapsed}
-        aria-controls={panelId}
-        onClick={() => setCollapsed((c) => !c)}
-        className={cn(
-          'flex w-full items-center gap-2 text-left',
-          'focus:outline-none focus:ring-2 focus:ring-black/10 rounded-[4px]',
-        )}
-      >
-        <RiSettings5Line aria-hidden="true" className="h-4 w-4 shrink-0 text-[#0f172a]" />
-        <span className="flex-1 text-[14px] font-medium leading-[20px] text-[#0f172a]">Settings</span>
-        {collapsed ? (
-          <RiArrowDownSLine aria-hidden="true" className="h-4 w-4 shrink-0 text-[#0f172a]" />
-        ) : (
-          <RiArrowUpSLine aria-hidden="true" className="h-4 w-4 shrink-0 text-[#0f172a]" />
-        )}
-      </button>
+      {headerSlot ? (
+        <div className="flex w-full items-center gap-2">
+          <button
+            type="button"
+            aria-expanded={!collapsed}
+            aria-controls={panelId}
+            onClick={() => setCollapsed((c) => !c)}
+            className={cn(
+              'flex flex-1 items-center gap-2 text-left',
+              'focus:outline-none focus:ring-2 focus:ring-black/10 rounded-[4px]',
+            )}
+          >
+            <RiSettings5Line aria-hidden="true" className="h-4 w-4 shrink-0 text-[#0f172a]" />
+            <span className="flex-1 text-[14px] font-medium leading-[20px] text-[#0f172a]">Settings</span>
+            {collapsed ? (
+              <RiArrowDownSLine aria-hidden="true" className="h-4 w-4 shrink-0 text-[#0f172a]" />
+            ) : (
+              <RiArrowUpSLine aria-hidden="true" className="h-4 w-4 shrink-0 text-[#0f172a]" />
+            )}
+          </button>
+          <div className="flex items-center">{headerSlot}</div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          aria-expanded={!collapsed}
+          aria-controls={panelId}
+          onClick={() => setCollapsed((c) => !c)}
+          className={cn(
+            'flex w-full items-center gap-2 text-left',
+            'focus:outline-none focus:ring-2 focus:ring-black/10 rounded-[4px]',
+          )}
+        >
+          <RiSettings5Line aria-hidden="true" className="h-4 w-4 shrink-0 text-[#0f172a]" />
+          <span className="flex-1 text-[14px] font-medium leading-[20px] text-[#0f172a]">Settings</span>
+          {collapsed ? (
+            <RiArrowDownSLine aria-hidden="true" className="h-4 w-4 shrink-0 text-[#0f172a]" />
+          ) : (
+            <RiArrowUpSLine aria-hidden="true" className="h-4 w-4 shrink-0 text-[#0f172a]" />
+          )}
+        </button>
+      )}
 
       {!collapsed && (
         <div id={panelId} className="flex flex-col">
@@ -521,37 +475,60 @@ export function ArticleSettingsPanel({
 
           {/* Field stack — default 20-px gap, compact 12-px gap. Field
               heights (`min-h-[40px]`) are unchanged so click/touch
-              targets stay identical between variants. */}
+              targets stay identical between variants.
+
+              When `sections` is supplied, we render the consumer's list
+              instead of the 8 built-in fields. Outer wrapper, gaps, and
+              divider above remain identical so chrome is shared. When
+              `sections` is undefined, the original 8-field render path
+              is preserved byte-for-byte. */}
           <div
             className={cn('flex flex-col', compact ? 'mt-3 gap-3' : 'mt-5 gap-5')}
           >
-            <AuthorField author={current.author} />
-            <CategoryField category={current.category} />
-            <SlugField
-              slug={current.slug}
-              onChange={(slug) => update({ slug })}
-            />
-            <TagsField
-              tags={current.tags ?? []}
-              onChange={(tags) => update({ tags })}
-            />
-            <PublishDateField date={current.publishDate} />
-            <SeoTitleField
-              seoTitle={current.seoTitle}
-              onChange={(seoTitle) => update({ seoTitle })}
-            />
-            <VisibilityField visibility={current.visibility} />
-            <ReviewersField
-              reviewers={current.reviewers ?? []}
-              onAdd={() =>
-                update({
-                  reviewers: [
-                    ...(current.reviewers ?? []),
-                    { name: 'New User', initials: 'NU' },
-                  ],
-                })
-              }
-            />
+            {sections ? (
+              sections.map((s) => (
+                <div key={s.id} className="flex flex-col gap-1.5">
+                  <FieldLabel>{s.label}</FieldLabel>
+                  {s.content}
+                </div>
+              ))
+            ) : (
+              <>
+                <AuthorField author={current.author} />
+                <CategoryField category={current.category} />
+                <SlugField
+                  slug={current.slug}
+                  onChange={(slug) => update({ slug })}
+                />
+                <TagsField
+                  tags={current.tags ?? []}
+                  onChange={(tags) => update({ tags })}
+                />
+                <PublishDateField date={current.publishDate} />
+                <SeoTitleField
+                  seoTitle={current.seoTitle}
+                  onChange={(seoTitle) => update({ seoTitle })}
+                />
+                <VisibilityField visibility={current.visibility} />
+                <ReviewersField
+                  reviewers={current.reviewers ?? []}
+                  onAdd={() =>
+                    update({
+                      reviewers: [
+                        ...(current.reviewers ?? []),
+                        { name: 'New User', initials: 'NU' },
+                      ],
+                    })
+                  }
+                />
+              </>
+            )}
+            {footerSlot ? (
+              <>
+                <div aria-hidden="true" className="h-px w-full bg-[#e5e5e5]" />
+                {footerSlot}
+              </>
+            ) : null}
           </div>
         </div>
       )}

@@ -48,6 +48,16 @@ export type ArticleSettings = {
   visibility: ArticleVisibility;
   /** Reviewer user IDs — never includes the article's author. */
   reviewerIds: string[];
+  /**
+   * Free-text meta description (≤160 chars). Empty/undefined falls back
+   * to the search-engine auto-generated snippet.
+   */
+  metaDescription?: string;
+  /**
+   * Admin-only override for the article's canonical URL. When unset, the
+   * canonical URL is auto-generated from the primary domain + slug.
+   */
+  canonicalUrlOverride?: string;
 };
 
 export type ArticleStatus = 'draft' | 'published';

@@ -1,6 +1,6 @@
 {
   "name": "@test-kb-ui/kb-ui",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Hiver KB component library — pixel-perfect React components for app.hiverkb.com",
   "license": "MIT",
   "author": "Hiver",
@@ -50,7 +50,7 @@
     "build": "tsup && node scripts/emit-styles-dts.mjs",
     "dev": "tsup --watch",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
+    "build-storybook": "storybook build --stats-json",
     "typecheck": "tsc --noEmit",
     "chromatic": "chromatic"
   },
