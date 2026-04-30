@@ -8,6 +8,7 @@ export type AvatarProps = {
   name?: string;
   /** Accessible label for the avatar. Overrides `name`-derived label. */
   ariaLabel?: string;
+  src?: string;
 };
 
 export function Avatar({
@@ -16,10 +17,38 @@ export function Avatar({
   className,
   name,
   ariaLabel,
+  src,
 }: AvatarProps) {
   const derivedLabel =
     ariaLabel ??
     (name ? (showStatus ? `${name}, online` : name) : 'User avatar');
+
+  if (typeof src === 'string' && src.length > 0) {
+    return (
+      <div
+        role="img"
+        aria-label={derivedLabel}
+        className={cn(
+          'relative inline-flex size-6 shrink-0 items-center justify-center rounded-full select-none',
+          className,
+        )}
+      >
+        <img
+          src={src}
+          alt={name ?? ''}
+          className="size-6 rounded-full object-cover"
+        />
+        {showStatus && (
+          <span
+            aria-hidden="true"
+            className="absolute -bottom-[1px] -right-[1px] flex size-[8px] items-center justify-center rounded-full bg-white"
+          >
+            <span className="size-[6px] rounded-full bg-[#42cd83]" />
+          </span>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div
