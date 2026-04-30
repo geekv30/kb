@@ -61,6 +61,7 @@ export type KBBreadcrumbBarProps = {
    */
   saveDisabled?: boolean;
   className?: string;
+  actions?: React.ReactNode;
 };
 
 /**
@@ -80,6 +81,7 @@ export function KBBreadcrumbBar({
   publishDisabled = false,
   saveDisabled,
   className,
+  actions,
 }: KBBreadcrumbBarProps) {
   // Save-as-draft falls back to `publishDisabled` when `saveDisabled` is
   // not supplied — preserves the AI Gaps "lockstep" behaviour where both
@@ -160,51 +162,57 @@ export function KBBreadcrumbBar({
         </nav>
       </div>
 
-      {variant === 'editor' && (
+      {actions !== undefined ? (
         <div className="flex items-center gap-2 ml-auto pl-4 shrink-0">
-          {/*
-            "Save as draft" mutes whenever Publish is disabled — i.e. no
-            suggestions accepted yet, so there is nothing meaningful to
-            persist as a draft. Default ( publishDisabled === false ) keeps
-            the original Phase 5 editor styling and click behaviour.
-          */}
-          <button
-            type="button"
-            onClick={onSaveAsDraft}
-            disabled={effectiveSaveDisabled}
-            className={cn(
-              'inline-flex items-center h-8 px-3 py-1.5 rounded-[6px] text-[14px] font-normal',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
-              effectiveSaveDisabled
-                ? 'text-[#94a3b8] cursor-not-allowed'
-                : 'text-[#475569] hover:bg-[#f8fafc]',
-            )}
-          >
-            Save as draft
-          </button>
-          {/*
-            Publish — Figma `53:8464` uses `bg-black` + `text-white` with a
-            white send-plane icon (14 px). Match the `Button` primary variant
-            (bg-black, text-white, rounded-6, px-3 py-1.5, text-14/medium).
-            Icon color inherits from text via `currentColor`.
-          */}
-          <Button
-            variant="primary"
-            onClick={onPublish}
-            disabled={publishDisabled}
-            icon={<RiSendPlaneLine size={14} />}
-          >
-            Publish
-          </Button>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="inline-flex size-8 items-center justify-center rounded-[6px] text-[#64758b] hover:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]"
-          >
-            <RiCloseLine size={16} />
-          </button>
+          {actions}
         </div>
+      ) : (
+        variant === 'editor' && (
+          <div className="flex items-center gap-2 ml-auto pl-4 shrink-0">
+            {/*
+              "Save as draft" mutes whenever Publish is disabled — i.e. no
+              suggestions accepted yet, so there is nothing meaningful to
+              persist as a draft. Default ( publishDisabled === false ) keeps
+              the original Phase 5 editor styling and click behaviour.
+            */}
+            <button
+              type="button"
+              onClick={onSaveAsDraft}
+              disabled={effectiveSaveDisabled}
+              className={cn(
+                'inline-flex items-center h-8 px-3 py-1.5 rounded-[6px] text-[14px] font-normal',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
+                effectiveSaveDisabled
+                  ? 'text-[#94a3b8] cursor-not-allowed'
+                  : 'text-[#475569] hover:bg-[#f8fafc]',
+              )}
+            >
+              Save as draft
+            </button>
+            {/*
+              Publish — Figma `53:8464` uses `bg-black` + `text-white` with a
+              white send-plane icon (14 px). Match the `Button` primary variant
+              (bg-black, text-white, rounded-6, px-3 py-1.5, text-14/medium).
+              Icon color inherits from text via `currentColor`.
+            */}
+            <Button
+              variant="primary"
+              onClick={onPublish}
+              disabled={publishDisabled}
+              icon={<RiSendPlaneLine size={14} />}
+            >
+              Publish
+            </Button>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              className="inline-flex size-8 items-center justify-center rounded-[6px] text-[#64758b] hover:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]"
+            >
+              <RiCloseLine size={16} />
+            </button>
+          </div>
+        )
       )}
     </div>
   );
