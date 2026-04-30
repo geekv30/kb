@@ -1,32 +1,22 @@
+import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../../tokens.css';
-import { DateRangePill } from './DateRangePill';
+import { DateRangePill, type DateRange } from './DateRangePill';
 
 const meta: Meta<typeof DateRangePill> = {
   title: 'Components/Layout/Date Range Pill',
   component: DateRangePill,
   parameters: { layout: 'centered' },
-  args: {
-    value: '7d',
-  },
-  render: (args) => (
-    <div className="bg-white p-6">
-      <DateRangePill {...args} />
-    </div>
-  ),
+  globals: { backgrounds: { value: 'canvas' } },
 };
 export default meta;
 
-export const Default: StoryObj<typeof DateRangePill> = {};
+function DateRangePillPlayground() {
+  const [value, setValue] = React.useState<DateRange>('7d');
 
-export const CustomPresets: StoryObj<typeof DateRangePill> = {
-  name: 'Custom Presets',
-  args: {
-    value: 'today' as never,
-    presets: [
-      { value: 'today', label: 'Today' },
-      { value: 'yesterday', label: 'Yesterday' },
-      { value: 'this-quarter', label: 'This Quarter' },
-    ],
-  },
+  return <DateRangePill value={value} onChange={(v) => setValue(v)} />;
+}
+
+export const Playground: StoryObj<typeof DateRangePill> = {
+  render: () => <DateRangePillPlayground />,
 };
