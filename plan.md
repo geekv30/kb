@@ -33,8 +33,11 @@ Do NOT flip this order. Ship the npm package first.
 | 6 | AI Gaps / AI Optimise (AISubNav, SuggestionCard, AISuggestionsCard, AIGapSuggestionCard, SuggestionBlock, ArticleBody, SourcesSideSheet, KB AI Optimise Hub pattern, KB AI Gaps Experience pattern) | ✅ Done 2026-04-21 |
 | 7 | Analytics (StatCard/Grid, DateRangePill, AnalyticsAreaChart/DonutChart/ChartCard, AnalyticsSideNav, ArticlesNeedsAttentionTable, ArticlePerformanceTable, SearchKeywordsTable, ContentGapsTable, AIConversationLogsCard/Entry, MostCitedArticlesTable, HelpfulnessTag, Card primitive + 3 page patterns) | ✅ Done 2026-04-25 |
 | 7.5 | Demo app (apps/demo) — full Journey A/B/C harness consuming @hiver/kb-ui via workspace | ✅ Done 2026-04-26 |
-| 8 | Package + Ship (barrel export, Storybook stories, tsup build) | ⬜ |
-| 9 | MCP companion server | ⬜ |
+| 8 | Package + Ship — `@test-kb-ui/kb-ui` v1.0.0 published to npm | ✅ Done 2026-04-29 |
+| 9 | MCP companion server — `@test-kb-ui/kb-mcp` v1.0.0 published to npm | ✅ Done 2026-04-29 |
+| 11 | kb-mcp product-context surface (`kb://product/overview` + `get_product_context`) | ✅ Done 2026-04-29 |
+| 13 | Extensibility refactor across all 36 components — composition APIs (slots / items[] / sections[] / render-props / registries). Breaking: `KBBreadcrumbBar.actions` slot. v2.0.0. | ✅ Done 2026-04-30 |
+| 14 | Storybook polish — every story is an interactive `Playground` with realistic data; live at `https://main--69f2245c14966163bdac61ca.chromatic.com/` | ✅ Done 2026-04-30 |
 
 **Phase 7.5 (demo app)** was added as an integration-test surface between component completion and npm publish. The contract lives in [`demo-app-prd.md`](./demo-app-prd.md) (PRD — user journeys, edge cases, acceptance criteria) and [`demo-app-trd.md`](./demo-app-trd.md) (TRD — file structure, routing, state, component composition, dispatch breakdown). The result is a Vite + React 18 SPA at `apps/demo/` that consumes `@hiver/kb-ui` exactly as an external engineer would (`import { ... } from '@hiver/kb-ui'`), stitched into a navigable product covering the three primary journeys end-to-end against an in-memory mock store. The sign-off harness at `apps/demo/scripts/phase-7-5-9-signoff.mjs` is the canonical journey QA script — it spawns a dev server, walks all three PRD §6 journeys cold, and asserts every step. Phase 8 is unblocked because the demo proves every public export already resolves through the published barrel.
 

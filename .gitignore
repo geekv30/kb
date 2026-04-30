@@ -29,6 +29,7 @@ npm-debug.log*
 /*.png
 /screenshots/
 
-# Per-user .claude state — installed skills and agent memory are per-developer, not project-shared
+# Per-user .claude state — installed skills, agent memory, and scheduler locks are per-developer, not project-shared
 .claude/skills/
+.claude/scheduled_tasks.lock
 **/.claude/agent-memory/
