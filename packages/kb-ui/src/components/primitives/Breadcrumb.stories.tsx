@@ -1,37 +1,30 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { RiBookmarkLine } from '@remixicon/react';
 import '../../tokens.css';
 import { Breadcrumb } from './Breadcrumb';
 
 const meta: Meta<typeof Breadcrumb> = {
   title: 'Components/Primitives/Breadcrumb',
   component: Breadcrumb,
-  parameters: { layout: 'centered' },
+  parameters: { layout: 'padded' },
   globals: { backgrounds: { value: 'white' } },
-  args: {
-    items: [
-      { id: 'home', label: 'Home', onClick: () => {} },
-      { id: 'gs', label: 'Getting Started', onClick: () => {} },
-      { id: 'inst', label: 'Installation', onClick: () => {} },
-      { id: 'qs', label: 'Quick Start' },
-    ],
-  },
-  render: (args) => <Breadcrumb {...args} />,
 };
 export default meta;
 
-export const Default: StoryObj<typeof Breadcrumb> = {};
+function BreadcrumbPlayground() {
+  return (
+    <div className="font-sans">
+      <Breadcrumb
+        items={[
+          { id: 'home', label: 'Home', onClick: () => {} },
+          { id: 'help', label: 'Help center', onClick: () => {} },
+          { id: 'gs', label: 'Getting started', onClick: () => {} },
+          { id: 'qs', label: 'Quick start' },
+        ]}
+      />
+    </div>
+  );
+}
 
-export const CustomHomeIconAndSeparator: StoryObj<typeof Breadcrumb> = {
-  name: 'Custom Home Icon and Separator',
-  args: {
-    items: [
-      { id: 'home', label: 'Home', onClick: () => {} },
-      { id: 'gs', label: 'Getting Started', onClick: () => {} },
-      { id: 'inst', label: 'Installation', onClick: () => {} },
-      { id: 'qs', label: 'Quick Start' },
-    ],
-    homeIcon: <RiBookmarkLine className="h-4 w-4" />,
-    separator: <span className="text-[#94a3b8]">{'>'}</span>,
-  },
+export const Playground: StoryObj<typeof Breadcrumb> = {
+  render: () => <BreadcrumbPlayground />,
 };
