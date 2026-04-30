@@ -2,8 +2,8 @@ export { DataTable } from './DataTable';
 export type { DataTableProps, DataTableColumn } from './DataTable';
 export { PageHeader } from './PageHeader';
 export type { PageHeaderProps, PageHeaderSize } from './PageHeader';
-export { ContentEditor } from './ContentEditor';
-export type { ContentEditorProps } from './ContentEditor';
+export { ContentEditor, DEFAULT_TOOLBAR_ITEMS } from './ContentEditor';
+export type { ContentEditorProps, ToolbarItemDef } from './ContentEditor';
 export { ArticleSettingsPanel } from './ArticleSettingsPanel';
 export type {
   ArticleSettings,

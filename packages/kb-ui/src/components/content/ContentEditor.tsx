@@ -40,6 +40,18 @@ const lowlight = createLowlight(common);
  * Types
  * ───────────────────────────────────────────────────────────── */
 
+export type ToolbarItemDef = {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  /** True when this item should appear pressed for the current editor selection. */
+  isActive?: (editor: import('@tiptap/react').Editor) => boolean;
+  /** Called when the toolbar button is clicked. */
+  onClick: (editor: import('@tiptap/react').Editor) => void;
+  /** Optional separator before this item (renders a vertical divider). */
+  separatorBefore?: boolean;
+};
+
 export type ContentEditorProps = {
   /** Initial content as HTML string or Tiptap JSON */
   initialContent?: string | object;
@@ -53,7 +65,125 @@ export type ContentEditorProps = {
   className?: string;
   /** Read-only mode (e.g. preview). Default: false */
   readOnly?: boolean;
+  /**
+   * Override the BubbleMenu toolbar's button items. When omitted, the
+   * built-in `DEFAULT_TOOLBAR_ITEMS` set is rendered. Only affects the
+   * mapped button row between the paragraph dropdown and the overflow
+   * menu — the dropdowns themselves are not configurable here.
+   */
+  toolbarItems?: ToolbarItemDef[];
 };
+
+/* ─────────────────────────────────────────────────────────────
+ * Default toolbar items
+ *
+ * Each entry below mirrors a button that previously lived inline
+ * inside `ContentEditorToolbar`. Order, click handlers, and active-
+ * state checks are byte-for-byte identical to the prior inline JSX.
+ * ───────────────────────────────────────────────────────────── */
+
+export const DEFAULT_TOOLBAR_ITEMS: ToolbarItemDef[] = [
+  {
+    id: 'bold',
+    label: 'Bold',
+    icon: <RiBold />,
+    isActive: (editor) => editor.isActive('bold'),
+    onClick: (editor) => editor.chain().focus().toggleBold().run(),
+  },
+  {
+    id: 'italic',
+    label: 'Italic',
+    icon: <RiItalic />,
+    isActive: (editor) => editor.isActive('italic'),
+    onClick: (editor) => editor.chain().focus().toggleItalic().run(),
+  },
+  {
+    id: 'underline',
+    label: 'Underline',
+    icon: <RiUnderline />,
+    isActive: (editor) => editor.isActive('underline'),
+    onClick: (editor) => editor.chain().focus().toggleUnderline().run(),
+  },
+  {
+    id: 'strike',
+    label: 'Strikethrough',
+    icon: <RiStrikethrough />,
+    isActive: (editor) => editor.isActive('strike'),
+    onClick: (editor) => editor.chain().focus().toggleStrike().run(),
+  },
+  {
+    id: 'bulletList',
+    label: 'Bulleted list',
+    icon: <RiListUnordered />,
+    isActive: (editor) => editor.isActive('bulletList'),
+    onClick: (editor) => editor.chain().focus().toggleBulletList().run(),
+    separatorBefore: true,
+  },
+  {
+    id: 'orderedList',
+    label: 'Numbered list',
+    icon: <RiListOrdered />,
+    isActive: (editor) => editor.isActive('orderedList'),
+    onClick: (editor) => editor.chain().focus().toggleOrderedList().run(),
+  },
+  {
+    id: 'link',
+    label: 'Insert link',
+    icon: <RiLinkM />,
+    isActive: (editor) => editor.isActive('link'),
+    onClick: (editor) => {
+      const active = editor.isActive('link');
+      if (active) {
+        editor.chain().focus().unsetLink().run();
+        return;
+      }
+      const previousUrl = editor.getAttributes('link').href as string | undefined;
+      const url =
+        typeof window !== 'undefined' ? window.prompt('Enter URL', previousUrl ?? 'https://') : null;
+      if (url === null) return;
+      if (url === '') {
+        editor.chain().focus().unsetLink().run();
+        return;
+      }
+      editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+    },
+    separatorBefore: true,
+  },
+  {
+    id: 'code',
+    label: 'Inline code',
+    icon: <RiCodeLine />,
+    isActive: (editor) => editor.isActive('code'),
+    onClick: (editor) => editor.chain().focus().toggleCode().run(),
+  },
+  {
+    id: 'codeBlock',
+    label: 'Code block',
+    icon: <RiCodeBoxLine />,
+    isActive: (editor) => editor.isActive('codeBlock'),
+    onClick: (editor) => editor.chain().focus().toggleCodeBlock().run(),
+  },
+  {
+    id: 'table',
+    label: 'Insert table',
+    icon: <RiTable2 />,
+    isActive: (editor) => editor.isActive('table'),
+    onClick: (editor) =>
+      editor
+        .chain()
+        .focus()
+        .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+        .run(),
+  },
+  {
+    id: 'aiHighlight',
+    label: 'AI highlight',
+    icon: <RiSparkling2Line />,
+    isActive: (editor) => editor.isActive('highlight', { color: 'ai' }),
+    onClick: (editor) => editor.chain().focus().toggleHighlight({ color: 'ai' }).run(),
+    separatorBefore: true,
+  },
+];
 
 type ParagraphType = 'paragraph' | 'heading1' | 'heading2' | 'heading3';
 
@@ -339,7 +469,13 @@ function OverflowMenu({ editor }: { editor: Editor }) {
  * See design/editor.md for the full decision record.
  * ───────────────────────────────────────────────────────────── */
 
-function ContentEditorToolbar({ editor }: { editor: Editor }) {
+function ContentEditorToolbar({
+  editor,
+  items,
+}: {
+  editor: Editor;
+  items: ToolbarItemDef[];
+}) {
   return (
     <div
       role="toolbar"
@@ -354,92 +490,18 @@ function ContentEditorToolbar({ editor }: { editor: Editor }) {
 
       <ToolbarDivider />
 
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        active={editor.isActive('bold')}
-        label="Bold"
-      >
-        <RiBold />
-      </ToolbarButton>
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-        active={editor.isActive('italic')}
-        label="Italic"
-      >
-        <RiItalic />
-      </ToolbarButton>
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleUnderline().run()}
-        active={editor.isActive('underline')}
-        label="Underline"
-      >
-        <RiUnderline />
-      </ToolbarButton>
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleStrike().run()}
-        active={editor.isActive('strike')}
-        label="Strikethrough"
-      >
-        <RiStrikethrough />
-      </ToolbarButton>
-
-      <ToolbarDivider />
-
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        active={editor.isActive('bulletList')}
-        label="Bulleted list"
-      >
-        <RiListUnordered />
-      </ToolbarButton>
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        active={editor.isActive('orderedList')}
-        label="Numbered list"
-      >
-        <RiListOrdered />
-      </ToolbarButton>
-
-      <ToolbarDivider />
-
-      <LinkButton editor={editor} />
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleCode().run()}
-        active={editor.isActive('code')}
-        label="Inline code"
-      >
-        <RiCodeLine />
-      </ToolbarButton>
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-        active={editor.isActive('codeBlock')}
-        label="Code block"
-      >
-        <RiCodeBoxLine />
-      </ToolbarButton>
-      <ToolbarButton
-        onClick={() =>
-          editor
-            .chain()
-            .focus()
-            .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-            .run()
-        }
-        active={editor.isActive('table')}
-        label="Insert table"
-      >
-        <RiTable2 />
-      </ToolbarButton>
-
-      <ToolbarDivider />
-
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleHighlight({ color: 'ai' }).run()}
-        active={editor.isActive('highlight', { color: 'ai' })}
-        label="AI highlight"
-      >
-        <RiSparkling2Line />
-      </ToolbarButton>
+      {items.map((item) => (
+        <React.Fragment key={item.id}>
+          {item.separatorBefore && <ToolbarDivider />}
+          <ToolbarButton
+            onClick={() => item.onClick(editor)}
+            active={item.isActive ? item.isActive(editor) : false}
+            label={item.label}
+          >
+            {item.icon}
+          </ToolbarButton>
+        </React.Fragment>
+      ))}
 
       <OverflowMenu editor={editor} />
     </div>
@@ -457,7 +519,9 @@ export function ContentEditor({
   placeholder = 'Start writing…',
   className,
   readOnly = false,
+  toolbarItems,
 }: ContentEditorProps) {
+  const resolvedToolbarItems = toolbarItems ?? DEFAULT_TOOLBAR_ITEMS;
   const editor = useEditor({
     editable: !readOnly,
     extensions: [
@@ -541,7 +605,7 @@ export function ContentEditor({
             appendTo={() => document.body}
             options={{ placement: 'top', offset: 8 }}
           >
-            <ContentEditorToolbar editor={editor} />
+            <ContentEditorToolbar editor={editor} items={resolvedToolbarItems} />
           </BubbleMenu>
           {/*
             Slash command popup is rendered imperatively by the
