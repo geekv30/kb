@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import * as React from "react";
 import "../../tokens.css";
 import {
   RiQuillPenLine,
@@ -17,25 +18,39 @@ const items = [
   { id: "settings", icon: <RiSettings5Line size={16} />, label: "Settings" },
 ];
 
+const labelFor = (id: string) =>
+  items.find((it) => it.id === id)?.label ?? id;
+
+function SideNavRailPlayground() {
+  const [activeId, setActiveId] = React.useState<string>("editor");
+
+  return (
+    <div className="flex h-screen">
+      <SideNavRail
+        theme="light"
+        items={items}
+        activeId={activeId}
+        onItemClick={(id) => setActiveId(id)}
+        brandLogo={<CompanyLogo size={24} />}
+        bottomSlot={<Avatar initials="VK" />}
+      />
+      <div className="flex-1 bg-[#f5f5f5] flex items-center justify-center">
+        <span className="text-[14px] text-[#64758b]">
+          Active section: {labelFor(activeId)}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 const meta: Meta<typeof SideNavRail> = {
   title: "Components/Navigation/SideNavRail",
   component: SideNavRail,
   parameters: { layout: "fullscreen" },
-  args: {
-    theme: "light",
-    items,
-    activeId: "editor",
-  },
-  render: (args) => (
-    <div style={{ height: "100vh", display: "flex" }}>
-      <SideNavRail
-        {...args}
-        brandLogo={<CompanyLogo size={24} />}
-        bottomSlot={<Avatar initials="VK" />}
-      />
-    </div>
-  ),
+  globals: { backgrounds: { value: "canvas" } },
 };
 export default meta;
 
-export const Default: StoryObj<typeof SideNavRail> = {};
+export const Playground: StoryObj<typeof SideNavRail> = {
+  render: () => <SideNavRailPlayground />,
+};
