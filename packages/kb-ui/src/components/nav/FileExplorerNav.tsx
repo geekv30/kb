@@ -67,6 +67,7 @@ export type FileExplorerNavProps = {
    */
   showSearch?: boolean;
   className?: string;
+  renderItem?: (item: NavItem, depth: number) => React.ReactNode;
 };
 
 // Depth → content left-padding (inside the inner container)
@@ -400,6 +401,7 @@ export function FileExplorerNav({
   variant = 'tree',
   showSearch,
   className,
+  renderItem,
 }: FileExplorerNavProps) {
   const isDark = theme === 'dark';
   const isFlat = variant === 'flat';
@@ -470,20 +472,27 @@ export function FileExplorerNav({
         const isExpanded = expanded.has(item.id) || isActiveSub;
         return (
           <div key={item.id} className="flex flex-col gap-[2px]">
-            <FolderRow
-              item={item}
-              depth={depth}
-              isActive={isActive}
-              isActiveSub={isActiveSub && !isActive}
-              isExpanded={isExpanded}
-              isDark={isDark}
-              onToggle={() => toggleFolder(item.id)}
-            />
+            {renderItem ? (
+              renderItem(item, depth)
+            ) : (
+              <FolderRow
+                item={item}
+                depth={depth}
+                isActive={isActive}
+                isActiveSub={isActiveSub && !isActive}
+                isExpanded={isExpanded}
+                isDark={isDark}
+                onToggle={() => toggleFolder(item.id)}
+              />
+            )}
             {isExpanded && item.children && item.children.length > 0 && (
               <div className="flex flex-col gap-[2px]">{renderItems(item.children, depth + 1)}</div>
             )}
           </div>
         );
+      }
+      if (renderItem) {
+        return <React.Fragment key={item.id}>{renderItem(item, depth)}</React.Fragment>;
       }
       return (
         <ArticleRow

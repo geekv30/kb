@@ -102,3 +102,18 @@ const meta: Meta<typeof FileExplorerNav> = {
 export default meta;
 
 export const Default: StoryObj<typeof FileExplorerNav> = {};
+
+export const CustomRowRenderer: StoryObj<typeof FileExplorerNav> = {
+  name: 'Custom Row Renderer',
+  args: {
+    items: tree,
+    renderItem: (item, depth) => (
+      <div
+        className="px-2 py-1 text-[12px]"
+        style={{ paddingLeft: 8 + depth * 12 }}
+      >
+        {item.title} (custom)
+      </div>
+    ),
+  },
+};
