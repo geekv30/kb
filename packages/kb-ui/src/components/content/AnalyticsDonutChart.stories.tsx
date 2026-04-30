@@ -1,31 +1,36 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../../tokens.css';
 import { AnalyticsDonutChart } from './AnalyticsDonutChart';
+import { Card } from '../primitives/Card';
 
-// 6 segments — matches Figma Views-by-Category 1974:53988 (verified via get_variable_defs).
 const categoryData = [
-  { label: 'Category 1', value: 28 },
-  { label: 'Category 2', value: 22 },
-  { label: 'Category 3', value: 18 },
-  { label: 'Category 4', value: 14 },
-  { label: 'Category 5', value: 10 },
-  { label: 'Category 6', value: 8 },
+  { label: 'Getting Started', value: 28 },
+  { label: 'Account & Billing', value: 22 },
+  { label: 'Integrations', value: 18 },
+  { label: 'Email Workflow', value: 14 },
+  { label: 'Reporting & Analytics', value: 10 },
+  { label: 'Other', value: 8 },
 ];
 
 const meta: Meta<typeof AnalyticsDonutChart> = {
   title: 'Components/Charts & Stats/Analytics Donut Chart',
   component: AnalyticsDonutChart,
   parameters: { layout: 'padded' },
-  args: {
-    data: categoryData,
-    showLegend: true,
-  },
-  render: (args) => (
-    <div className="bg-white p-6">
-      <AnalyticsDonutChart {...args} />
-    </div>
-  ),
+  globals: { backgrounds: { value: 'canvas' } },
 };
 export default meta;
 
-export const Default: StoryObj<typeof AnalyticsDonutChart> = {};
+function AnalyticsDonutChartPlayground() {
+  return (
+    <Card padding="md" style={{ width: 560 }}>
+      <h3 className="text-[14px] font-semibold text-[#0f172a] mb-3">
+        Views by Category — last 30 days
+      </h3>
+      <AnalyticsDonutChart data={categoryData} showLegend={true} />
+    </Card>
+  );
+}
+
+export const Playground: StoryObj<typeof AnalyticsDonutChart> = {
+  render: () => <AnalyticsDonutChartPlayground />,
+};

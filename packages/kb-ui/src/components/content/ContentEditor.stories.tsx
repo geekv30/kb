@@ -4,6 +4,14 @@ import '../../tokens.css';
 import { ContentEditor, DEFAULT_TOOLBAR_ITEMS, type ToolbarItemDef } from './ContentEditor';
 import type { SlashCommand } from './SlashCommandMenu';
 
+/* ─────────────────────────────────────────────────────────────
+ * ContentEditor Playground — single richest demo of the editor:
+ * a fully-populated Tiptap article (SAMPLE_HTML) PLUS a custom
+ * toolbar (bold/italic/link + an "uppercase selection" magic
+ * action) PLUS a custom slash command (Callout). Demonstrates
+ * the editor with content AND extension hooks on one screen.
+ * ───────────────────────────────────────────────────────────── */
+
 const SAMPLE_HTML = `
 <h1>How to Reset Your Password</h1>
 <p>Your Hiver account password can be reset through several methods depending on how you access the platform. This guide covers all available reset options for both standard accounts and SSO-managed accounts.</p>
@@ -56,25 +64,6 @@ console.log(status.expiresAt);</code></pre>
 <blockquote>Passwords must be at least 12 characters and include uppercase, lowercase, a number, and a symbol.</blockquote>
 `.trim();
 
-const meta: Meta<typeof ContentEditor> = {
-  title: 'Components/Article/Content Editor',
-  component: ContentEditor,
-  parameters: { layout: 'padded' },
-  args: {
-    initialContent: SAMPLE_HTML,
-    placeholder: 'Start writing your article…',
-    readOnly: false,
-  },
-  render: (args) => (
-    <div style={{ background: '#f5f5f5', padding: 32, minHeight: 900 }}>
-      <ContentEditor {...args} />
-    </div>
-  ),
-};
-export default meta;
-
-export const Default: StoryObj<typeof ContentEditor> = {};
-
 const customToolbar: ToolbarItemDef[] = [
   ...DEFAULT_TOOLBAR_ITEMS.filter((i) => ['bold', 'italic', 'link'].includes(i.id)),
   {
@@ -113,13 +102,28 @@ const customSlash: SlashCommand[] = [
   },
 ];
 
-export const CustomToolbarAndSlash: StoryObj<typeof ContentEditor> = {
-  name: 'Custom Toolbar and Slash',
-  args: {
-    initialContent: SAMPLE_HTML,
-    placeholder: 'Start writing your article…',
-    readOnly: false,
-    toolbarItems: customToolbar,
-    slashCommands: customSlash,
-  },
+const meta: Meta<typeof ContentEditor> = {
+  title: 'Components/Article/Content Editor',
+  component: ContentEditor,
+  parameters: { layout: 'padded' },
+  globals: { backgrounds: { value: 'canvas' } },
+};
+export default meta;
+
+function ContentEditorPlayground() {
+  return (
+    <div className="min-h-[900px]">
+      <ContentEditor
+        initialContent={SAMPLE_HTML}
+        placeholder="Start writing your article…"
+        readOnly={false}
+        toolbarItems={customToolbar}
+        slashCommands={customSlash}
+      />
+    </div>
+  );
+}
+
+export const Playground: StoryObj<typeof ContentEditor> = {
+  render: () => <ContentEditorPlayground />,
 };

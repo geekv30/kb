@@ -11,7 +11,7 @@ import { SuggestionBlock } from './SuggestionBlock';
 const CANVAS: React.CSSProperties = {
   background: '#ffffff',
   padding: 32,
-  maxWidth: 620,
+  width: 620,
 };
 
 const BODY_TYPE: React.CSSProperties = {
@@ -40,6 +40,11 @@ const H3: React.CSSProperties = {
 const PARA: React.CSSProperties = {
   ...BODY_TYPE,
   margin: '8px 0 0 0',
+};
+
+const ARTICLE_PARA: React.CSSProperties = {
+  ...BODY_TYPE,
+  margin: '12px 0 0 0',
 };
 
 const LIST: React.CSSProperties = {
@@ -89,21 +94,35 @@ const meta: Meta<typeof SuggestionBlock> = {
   title: 'Components/AI/Suggestion Block',
   component: SuggestionBlock,
   parameters: { layout: 'padded' },
-  args: {
-    type: 'addition',
-  },
-  render: (args) => (
-    <div style={CANVAS}>
-      <SuggestionBlock
-        {...args}
-        oldContent={OLD_CONTENT}
-        newContent={NEW_CONTENT}
-      >
-        {args.type === 'removal' ? REMOVAL_CONTENT : ADDITION_CONTENT}
-      </SuggestionBlock>
-    </div>
-  ),
+  globals: { backgrounds: { value: 'white' } },
 };
 export default meta;
 
-export const Default: StoryObj<typeof SuggestionBlock> = {};
+function SuggestionBlockPlayground() {
+  return (
+    <div style={CANVAS}>
+      <h2 style={H2}>Reset Your Password</h2>
+      <p style={ARTICLE_PARA}>
+        If you&apos;ve forgotten your Hiver password, you can reset it in a few
+        steps. The process below covers the standard web flow — additional
+        guidance for our mobile and extension surfaces is included where
+        relevant.
+      </p>
+      <SuggestionBlock type="addition" oldContent={OLD_CONTENT} newContent={NEW_CONTENT}>
+        {ADDITION_CONTENT}
+      </SuggestionBlock>
+      <p style={ARTICLE_PARA}>
+        Once your password is reset, you&apos;ll be signed out of all active
+        sessions across web, mobile, and the Chrome extension. Sign back in with
+        your new credentials to resume.
+      </p>
+      <SuggestionBlock type="removal" oldContent={OLD_CONTENT} newContent={NEW_CONTENT}>
+        {REMOVAL_CONTENT}
+      </SuggestionBlock>
+    </div>
+  );
+}
+
+export const Playground: StoryObj<typeof SuggestionBlock> = {
+  render: () => <SuggestionBlockPlayground />,
+};

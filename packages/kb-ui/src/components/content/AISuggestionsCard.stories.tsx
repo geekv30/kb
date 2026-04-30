@@ -1,78 +1,67 @@
-import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../../tokens.css';
 import { AISuggestionsCard } from './AISuggestionsCard';
 import { Button } from '../primitives/Button';
 
-/**
- * The rail is intended to live in a 320–380px column. The preview
- * canvas mimics the editor's right rail to keep widths realistic.
- */
-const CANVAS: React.CSSProperties = {
-  background: '#f5f5f5',
-  padding: 32,
-  minHeight: 420,
-};
-
-const RAIL: React.CSSProperties = {
-  width: 354,
-};
+/* ─────────────────────────────────────────────────────────────
+ * AISuggestionsCard Playground — full sidebar rail demo.
+ *
+ * Renders all three modes the rail actually ships in:
+ *   1. `pre-review` (default title)        — 5 pending suggestions
+ *   2. `terminal`   (custom terminal label) — count 0, all caught up
+ *   3. `pre-review` with custom title + cta — compliance review
+ *
+ * Stacked in a 354px-wide rail container — the same width the
+ * editor's right rail uses in production.
+ * ───────────────────────────────────────────────────────────── */
 
 const SUMMARY =
-  'Refining the article with updated instruction set, updating link and by removing legacy instructions';
+  'Refining the article with an updated instruction set, replacing the legacy mobile-app URL, and removing outdated recovery-email steps.';
 
 const meta: Meta<typeof AISuggestionsCard> = {
   title: 'Components/AI/AI Suggestions Card',
   component: AISuggestionsCard,
   parameters: { layout: 'padded' },
-  args: {
-    mode: 'pre-review',
-    count: 3,
-    summary: SUMMARY,
-    onReview: () => {},
-    onPrev: () => {},
-    onNext: () => {},
-  },
-  render: (args) => (
-    <div style={CANVAS}>
-      <div style={RAIL}>
-        <AISuggestionsCard {...args} />
-      </div>
-    </div>
-  ),
+  globals: { backgrounds: { value: 'canvas' } },
 };
 export default meta;
 
-export const Default: StoryObj<typeof AISuggestionsCard> = {};
-
-export const CustomTitleAndCta: StoryObj<typeof AISuggestionsCard> = {
-  name: 'Custom Title & CTA',
-  render: () => (
-    <div style={CANVAS}>
-      <div style={{ ...RAIL, display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <AISuggestionsCard
-          mode="pre-review"
-          count={3}
-          summary={SUMMARY}
-          onPrev={() => {}}
-          onNext={() => {}}
-          title="Compliance Suggestions"
-          cta={
-            <Button variant="ghost" onClick={() => {}}>
-              Open compliance review
-            </Button>
-          }
-        />
-        <AISuggestionsCard
-          mode="terminal"
-          count={3}
-          summary={SUMMARY}
-          onPrev={() => {}}
-          onNext={() => {}}
-          title="Compliance Suggestions"
-          terminalLabel="All checked"
-        />
-      </div>
+function AISuggestionsCardPlayground() {
+  return (
+    <div className="w-[354px] flex flex-col gap-4">
+      <AISuggestionsCard
+        mode="pre-review"
+        count={5}
+        summary={SUMMARY}
+        onReview={() => {}}
+        onPrev={() => {}}
+        onNext={() => {}}
+      />
+      <AISuggestionsCard
+        mode="terminal"
+        count={0}
+        summary={SUMMARY}
+        terminalLabel="All caught up"
+        onPrev={() => {}}
+        onNext={() => {}}
+      />
+      <AISuggestionsCard
+        mode="pre-review"
+        count={3}
+        summary={SUMMARY}
+        title="Compliance Suggestions"
+        cta={
+          <Button variant="ghost" onClick={() => {}}>
+            Open compliance review
+          </Button>
+        }
+        onPrev={() => {}}
+        onNext={() => {}}
+      />
     </div>
-  ),
+  );
+}
+
+export const Playground: StoryObj<typeof AISuggestionsCard> = {
+  render: () => <AISuggestionsCardPlayground />,
 };

@@ -6,18 +6,23 @@ const meta: Meta<typeof StatCard> = {
   title: 'Components/Charts & Stats/Stat Card',
   component: StatCard,
   parameters: { layout: 'padded' },
-  args: {
-    label: 'Total Views',
-    value: '112,678',
-    trendDelta: '+15%',
-    trendDirection: 'up',
-  },
-  render: (args) => (
-    <div className="bg-white p-6">
-      <StatCard {...args} />
-    </div>
-  ),
+  globals: { backgrounds: { value: 'canvas' } },
 };
 export default meta;
 
-export const Default: StoryObj<typeof StatCard> = {};
+function StatCardPlayground() {
+  return (
+    <div className="mx-auto w-full max-w-[320px]">
+      <StatCard
+        label="Total Views"
+        value="112,678"
+        trendDelta="+15.2%"
+        trendDirection="up"
+      />
+    </div>
+  );
+}
+
+export const Playground: StoryObj<typeof StatCard> = {
+  render: () => <StatCardPlayground />,
+};

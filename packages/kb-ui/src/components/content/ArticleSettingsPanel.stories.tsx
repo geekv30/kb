@@ -17,11 +17,22 @@ import {
 } from './ArticleSettingsPanelAtoms';
 import { Avatar } from '../primitives/Avatar';
 
-const CANVAS: React.CSSProperties = {
-  background: '#f5f5f5',
-  padding: 32,
-  minHeight: 820,
-};
+/* ─────────────────────────────────────────────────────────────
+ * ArticleSettingsPanel Playground — exercises the full new
+ * composition API on `ArticleSettingsPanel`:
+ *   1. `sections`   — replace the 8 built-in fields with a hand-
+ *                     composed list using lifted atoms (FieldBox,
+ *                     ChevronSuffix, Placeholder, CharCounter,
+ *                     TagChip, AddChipButton). Eight match the
+ *                     built-in defaults; the ninth adds an "SEO
+ *                     Description" textarea section the panel has
+ *                     no built-in equivalent for.
+ *   2. `headerSlot` — a "Custom layout" pill on the right of the
+ *                     panel header.
+ *   3. `footerSlot` — a single muted line below the divider.
+ * Multiple fields are wired to React.useState so the editing
+ * affordances (slug/seoTitle counters, tag chips) are live.
+ * ───────────────────────────────────────────────────────────── */
 
 const populatedSettings: ArticleSettings = {
   author: { name: 'Varun Kelkar', initials: 'VK' },
@@ -38,42 +49,15 @@ const populatedSettings: ArticleSettings = {
   ],
 };
 
+const customSettings: ArticleSettings = populatedSettings;
+
 const meta: Meta<typeof ArticleSettingsPanel> = {
   title: 'Components/Article/Article Settings Panel',
   component: ArticleSettingsPanel,
   parameters: { layout: 'padded' },
-  args: {
-    value: populatedSettings,
-    defaultCollapsed: false,
-  },
-  render: (args) => (
-    <div style={CANVAS}>
-      <ArticleSettingsPanel {...args} />
-    </div>
-  ),
+  globals: { backgrounds: { value: 'canvas' } },
 };
 export default meta;
-
-export const Default: StoryObj<typeof ArticleSettingsPanel> = {};
-
-/* ─────────────────────────────────────────────────────────────
- * Custom SEO Section
- *
- * Demonstrates the full new composition API on `ArticleSettingsPanel`:
- *   1. `sections`  — replace the 8 built-in fields with a hand-composed list
- *                    that uses the lifted atoms (FieldBox, ChevronSuffix,
- *                    Placeholder, CharCounter, TagChip, AddChipButton). Eight
- *                    of these match the built-in defaults; the ninth adds a
- *                    new "SEO Description" textarea section that the panel
- *                    has no built-in equivalent for.
- *   2. `headerSlot` — a small text-only "Custom layout" pill rendered on the
- *                     right side of the panel header.
- *   3. `footerSlot` — a single muted line below the divider explaining that
- *                     SEO fields are auto-checked on publish.
- *
- * The panel chrome (border, shadow, padding, header, divider) is rendered by
- * the panel itself and is byte-identical to the Default story.
- * ───────────────────────────────────────────────────────────── */
 
 function CustomSeoDescriptionSection({
   value,
@@ -96,9 +80,7 @@ function CustomSeoDescriptionSection({
   );
 }
 
-const customSettings: ArticleSettings = populatedSettings;
-
-function CustomSeoSectionRender() {
+function ArticleSettingsPanelPlayground() {
   const [seoDescription, setSeoDescription] = React.useState('');
   const [tags, setTags] = React.useState<string[]>(customSettings.tags ?? []);
   const [slug, setSlug] = React.useState<string>(customSettings.slug ?? '');
@@ -280,19 +262,16 @@ function CustomSeoSectionRender() {
   );
 
   return (
-    <div style={CANVAS}>
-      <ArticleSettingsPanel
-        value={customSettings}
-        defaultCollapsed={false}
-        sections={sections}
-        headerSlot={headerPill}
-        footerSlot={footerNote}
-      />
-    </div>
+    <ArticleSettingsPanel
+      value={customSettings}
+      defaultCollapsed={false}
+      sections={sections}
+      headerSlot={headerPill}
+      footerSlot={footerNote}
+    />
   );
 }
 
-export const CustomSEOSection: StoryObj<typeof ArticleSettingsPanel> = {
-  name: 'Custom SEO Section',
-  render: () => <CustomSeoSectionRender />,
+export const Playground: StoryObj<typeof ArticleSettingsPanel> = {
+  render: () => <ArticleSettingsPanelPlayground />,
 };
