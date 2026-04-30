@@ -3,6 +3,7 @@ import '../../tokens.css';
 import { RiQuillPenLine, RiBarChartBoxLine, RiSettings5Line } from '@remixicon/react';
 import { AppShell } from './AppShell';
 import { KBBreadcrumbBar } from './KBBreadcrumbBar';
+import { EditorBreadcrumbActions } from './EditorBreadcrumbActions';
 import { SideNavRail } from '../nav/SideNavRail';
 import { FileExplorerNav, type NavItem } from '../nav/FileExplorerNav';
 import { Avatar } from '../primitives/Avatar';
@@ -104,13 +105,13 @@ const meta: Meta<typeof AppShell> = {
       }
       breadcrumb={
         <KBBreadcrumbBar
-          variant="editor"
           sidebarCollapsed={args.sidebarCollapsed}
           items={[
             { id: '1', label: 'Offer Multi-channel Support' },
             { id: '2', label: 'Managing emails' },
             { id: '3', label: 'Search, filter, and create email views' },
           ]}
+          actions={<EditorBreadcrumbActions />}
         />
       }
     >

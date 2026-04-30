@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../tokens.css';
 import { AppShell } from '../components/shell/AppShell';
 import { KBBreadcrumbBar } from '../components/shell/KBBreadcrumbBar';
+import { EditorBreadcrumbActions } from '../components/shell/EditorBreadcrumbActions';
 import { ArticleBody } from '../components/content/ArticleBody';
 import type {
   ArticleBodyDecisions,
@@ -296,22 +297,25 @@ function FrameShell({ decisions, rail, publishDisabled }: FrameShellProps) {
       sidebarCollapsed={true}
       breadcrumb={
         <KBBreadcrumbBar
-          variant="editor"
           sidebarCollapsed={true}
           items={breadcrumbItems}
-          publishDisabled={publishDisabled}
-          onSaveAsDraft={() => {
-            // eslint-disable-next-line no-console
-            console.log('[ai-gaps] save as draft');
-          }}
-          onPublish={() => {
-            // eslint-disable-next-line no-console
-            console.log('[ai-gaps] publish');
-          }}
-          onClose={() => {
-            // eslint-disable-next-line no-console
-            console.log('[ai-gaps] close');
-          }}
+          actions={
+            <EditorBreadcrumbActions
+              publishDisabled={publishDisabled}
+              onSaveAsDraft={() => {
+                // eslint-disable-next-line no-console
+                console.log('[ai-gaps] save as draft');
+              }}
+              onPublish={() => {
+                // eslint-disable-next-line no-console
+                console.log('[ai-gaps] publish');
+              }}
+              onClose={() => {
+                // eslint-disable-next-line no-console
+                console.log('[ai-gaps] close');
+              }}
+            />
+          }
         />
       }
     >
@@ -816,19 +820,22 @@ function InteractiveRender({ enableKeyboard }: { enableKeyboard: boolean }) {
         sidebarCollapsed={true}
         breadcrumb={
           <KBBreadcrumbBar
-            variant="editor"
             sidebarCollapsed={true}
             items={breadcrumbItems}
-            publishDisabled={!publishEnabled}
-            onSaveAsDraft={() => {
-              // eslint-disable-next-line no-console
-              console.log('[ai-gaps/interactive] save as draft');
-            }}
-            onPublish={() => {
-              // eslint-disable-next-line no-console
-              console.log('[ai-gaps/interactive] publish');
-            }}
-            onClose={() => dispatch({ type: 'reset' })}
+            actions={
+              <EditorBreadcrumbActions
+                publishDisabled={!publishEnabled}
+                onSaveAsDraft={() => {
+                  // eslint-disable-next-line no-console
+                  console.log('[ai-gaps/interactive] save as draft');
+                }}
+                onPublish={() => {
+                  // eslint-disable-next-line no-console
+                  console.log('[ai-gaps/interactive] publish');
+                }}
+                onClose={() => dispatch({ type: 'reset' })}
+              />
+            }
           />
         }
       >

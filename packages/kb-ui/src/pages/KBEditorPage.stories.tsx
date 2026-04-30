@@ -8,6 +8,7 @@ import {
 } from '@remixicon/react';
 import { AppShell } from '../components/shell/AppShell';
 import { KBBreadcrumbBar } from '../components/shell/KBBreadcrumbBar';
+import { EditorBreadcrumbActions } from '../components/shell/EditorBreadcrumbActions';
 import { SideNavRail } from '../components/nav/SideNavRail';
 import { FileExplorerNav, type NavItem } from '../components/nav/FileExplorerNav';
 import { ContentEditor } from '../components/content/ContentEditor';
@@ -275,24 +276,27 @@ function EditorPage({ sidebarCollapsed, populated }: EditorPageProps) {
       }
       breadcrumb={
         <KBBreadcrumbBar
-          variant="editor"
           items={breadcrumbItems}
           sidebarCollapsed={collapsed}
           onToggleSidebar={handleToggleSidebar}
-          onSaveAsDraft={() => {
-            // eslint-disable-next-line no-console
-            console.log('save as draft');
-            dispatchSave();
-          }}
-          onPublish={() => {
-            // eslint-disable-next-line no-console
-            console.log('publish');
-            dispatchSave();
-          }}
-          onClose={() => {
-            // eslint-disable-next-line no-console
-            console.log('close');
-          }}
+          actions={
+            <EditorBreadcrumbActions
+              onSaveAsDraft={() => {
+                // eslint-disable-next-line no-console
+                console.log('save as draft');
+                dispatchSave();
+              }}
+              onPublish={() => {
+                // eslint-disable-next-line no-console
+                console.log('publish');
+                dispatchSave();
+              }}
+              onClose={() => {
+                // eslint-disable-next-line no-console
+                console.log('close');
+              }}
+            />
+          }
         />
       }
     >
