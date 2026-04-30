@@ -88,6 +88,8 @@ export type {
   AIConversationFollowUp,
   AIConversationTail,
 } from './AIConversationLogEntry';
+export { ConversationRow } from './AIConversationLogEntryAtoms';
+export type { ConversationRowProps } from './AIConversationLogEntryAtoms';
 export { AIConversationLogsCard } from './AIConversationLogsCard';
 export type {
   AIConversationLogsCardProps,
