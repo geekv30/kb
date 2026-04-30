@@ -50,7 +50,7 @@
     "build": "tsup && node scripts/emit-styles-dts.mjs",
     "dev": "tsup --watch",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
+    "build-storybook": "storybook build --stats-json",
     "typecheck": "tsc --noEmit",
     "chromatic": "chromatic"
   },
