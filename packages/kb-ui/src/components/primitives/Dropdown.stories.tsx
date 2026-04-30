@@ -21,3 +21,16 @@ const meta: Meta<typeof Dropdown> = {
 export default meta;
 
 export const Default: StoryObj<typeof Dropdown> = {};
+
+export const WithMenu: StoryObj<typeof Dropdown> = {
+  name: 'With Menu',
+  args: {
+    label: 'Sort by',
+    options: [
+      { value: 'newest', label: 'Newest first' },
+      { value: 'oldest', label: 'Oldest first' },
+      { value: 'popular', label: 'Most popular' },
+    ],
+    onSelect: (v: string) => console.log(v),
+  },
+};
