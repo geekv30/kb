@@ -39,8 +39,8 @@ export type {
   AISuggestionsCardProps,
   AISuggestionsCardMode,
 } from './AISuggestionsCard';
-export { AIGapSuggestionCard } from './AIGapSuggestionCard';
-export type { AIGapSuggestionCardProps } from './AIGapSuggestionCard';
+export { AIGapSuggestionCard, DEFAULT_GAP_TYPES } from './AIGapSuggestionCard';
+export type { AIGapSuggestionCardProps, SuggestionTypeMeta } from './AIGapSuggestionCard';
 export { AICard } from './AICard';
 export type { AICardProps, AICardMode } from './AICard';
 export { NavArrow } from './NavArrow';
