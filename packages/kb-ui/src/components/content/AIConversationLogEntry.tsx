@@ -61,6 +61,7 @@ export type AIConversationLogEntryProps = {
   showViewAll?: boolean;
   onViewAll?: () => void;
   className?: string;
+  rows?: React.ReactNode[];
 };
 
 /* ─────────────────────────────────────────────────────────────
@@ -231,6 +232,7 @@ export function AIConversationLogEntry({
   showViewAll,
   onViewAll,
   className,
+  rows,
 }: AIConversationLogEntryProps) {
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const [activeSources, setActiveSources] = React.useState<ConversationSource[]>(
@@ -258,6 +260,10 @@ export function AIConversationLogEntry({
         className="pointer-events-none absolute inset-y-5 left-[7.5px] border-l border-dashed border-[#cbd5e1]"
       />
 
+      {rows !== undefined ? (
+        <div className="flex flex-col gap-3">{rows}</div>
+      ) : (
+        <>
       {/* Row 1 — Question + (feedback | timestamp) */}
       <ConversationRow
         hideConnectorAbove
@@ -394,6 +400,8 @@ export function AIConversationLogEntry({
 
       {/* Tail row at end of entry (when no follow-up wraps it) */}
       {tail ? <TailRow tail={tail} /> : null}
+        </>
+      )}
 
       {/* "view all" link — outside the rail, sits below the entry */}
       {showViewAll ? (
