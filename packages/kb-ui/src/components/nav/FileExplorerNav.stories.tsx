@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import * as React from 'react';
 import '../../tokens.css';
 import { FileExplorerNav, type NavItem } from './FileExplorerNav';
 
@@ -81,39 +82,50 @@ const tree: NavItem[] = [
   },
 ];
 
+// Walk the tree to resolve the active item's title for the right-pane label.
+function findTitle(items: NavItem[], id: string): string | null {
+  for (const item of items) {
+    if (item.id === id) return item.title;
+    if (item.children && item.children.length > 0) {
+      const sub = findTitle(item.children, id);
+      if (sub) return sub;
+    }
+  }
+  return null;
+}
+
+function FileExplorerNavPlayground() {
+  const [activeId, setActiveId] = React.useState<string>('tut-organize');
+  const activeTitle = findTitle(tree, activeId) ?? activeId;
+
+  return (
+    <div className="flex h-screen">
+      <FileExplorerNav
+        theme="light"
+        title="Editor"
+        items={tree}
+        activeId={activeId}
+        onItemClick={(id) => setActiveId(id)}
+        variant="tree"
+        showSearch={true}
+      />
+      <div className="flex-1 bg-[#f5f5f5] flex items-center justify-center">
+        <span className="text-[14px] text-[#64758b]">
+          Editing: {activeTitle}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 const meta: Meta<typeof FileExplorerNav> = {
   title: 'Components/Navigation/FileExplorerNav',
   component: FileExplorerNav,
   parameters: { layout: 'fullscreen' },
-  args: {
-    theme: 'light',
-    title: 'Editor',
-    items: tree,
-    activeId: 'tut-organize',
-    variant: 'tree',
-    showSearch: true,
-  },
-  render: (args) => (
-    <div style={{ height: '100vh', display: 'flex' }}>
-      <FileExplorerNav {...args} />
-    </div>
-  ),
+  globals: { backgrounds: { value: 'canvas' } },
 };
 export default meta;
 
-export const Default: StoryObj<typeof FileExplorerNav> = {};
-
-export const CustomRowRenderer: StoryObj<typeof FileExplorerNav> = {
-  name: 'Custom Row Renderer',
-  args: {
-    items: tree,
-    renderItem: (item, depth) => (
-      <div
-        className="px-2 py-1 text-[12px]"
-        style={{ paddingLeft: 8 + depth * 12 }}
-      >
-        {item.title} (custom)
-      </div>
-    ),
-  },
+export const Playground: StoryObj<typeof FileExplorerNav> = {
+  render: () => <FileExplorerNavPlayground />,
 };
