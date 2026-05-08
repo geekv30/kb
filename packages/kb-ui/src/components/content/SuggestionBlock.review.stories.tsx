@@ -255,11 +255,49 @@ const REMOVAL_SENTENCES = [
   </span>,
 ];
 
-/* For removal, the article shell shows the SSO section with the legacy
- * paragraph swapped in as the highlighted removal block. We render a
- * trimmed shell here so the in-context paragraph is the only one
- * matching Figma's removed-content target. */
-function RemovalArticleShell() {
+const REPLACE_OLD_SENTENCES = [
+  <span
+    key="repl-old-1"
+    className="block text-[16px] leading-[24px] text-[#0f172a]"
+  >
+    <SuggestionHighlight>
+      Navigate to the admin panel at{' '}
+      <strong>admin.hiver.com/legacy/users</strong>
+      {' '}and select the user whose password needs to be reset.
+    </SuggestionHighlight>
+  </span>,
+];
+
+const REPLACE_NEW_SENTENCES = [
+  <span
+    key="repl-new-1"
+    className="block text-[16px] leading-[24px] text-[#0f172a]"
+  >
+    <SuggestionHighlight>
+      Navigate to the admin panel at{' '}
+      <strong>admin.hiver.com/settings/users</strong>
+      {' '}and select the user whose password needs to be reset. You
+      can also use the search bar to quickly find users by name or
+      email.
+    </SuggestionHighlight>
+  </span>,
+];
+
+/* Article shell that swaps in either the removal or replace block
+ * inside the SSO section. The Removal story replaces the legacy
+ * paragraph; the Replace story replaces both the legacy AND the
+ * settings paragraph with a single per-sentence replace block. */
+function SsoSwapArticleShell({
+  replacement,
+}: {
+  /** What to render in place of the legacy admin URL paragraph(s). */
+  replacement: React.ReactNode;
+  /**
+   * When true, the trailing settings-admin paragraph is also dropped
+   * — used by the Replace variant where both the legacy and settings
+   * paragraphs collapse into a single replace block.
+   */
+}) {
   return (
     <div
       className="border border-[#f1f5f9] bg-white p-10 rounded-[12px]"
@@ -307,17 +345,10 @@ function RemovalArticleShell() {
         or the Hiver admin panel.
       </ArticleP>
 
-      {/* Highlighted removal target */}
-      <div className="mb-8">
-        <SuggestionBlock type="removal" sentences={REMOVAL_SENTENCES} />
-      </div>
-
-      <ArticleP>
-        Navigate to the admin panel at{' '}
-        <strong>admin.hiver.com/settings/users</strong> and select the
-        user whose password needs to be reset. You can also use the
-        search bar to quickly find users by name or email.
-      </ArticleP>
+      {/* Either the highlighted removal block (legacy paragraph) plus
+       * the trailing settings paragraph, OR the replace block alone
+       * (which swaps both paragraphs into one per-sentence pair). */}
+      {replacement}
 
       <ArticleH2>Password Requirements</ArticleH2>
       <ArticleP>Your new password must meet the following requirements:</ArticleP>
@@ -350,7 +381,54 @@ export const Removal: StoryObj<typeof SuggestionBlock> = {
       frameLabel="Figma · type=removal, per-sentence highlights"
       figmaNodeUrl={makeFigmaUrl(removalFigma)}
     >
-      <RemovalArticleShell />
+      <SsoSwapArticleShell
+        replacement={
+          <>
+            <div className="mb-8">
+              <SuggestionBlock type="removal" sentences={REMOVAL_SENTENCES} />
+            </div>
+            <ArticleP>
+              Navigate to the admin panel at{' '}
+              <strong>admin.hiver.com/settings/users</strong> and select
+              the user whose password needs to be reset. You can also
+              use the search bar to quickly find users by name or
+              email.
+            </ArticleP>
+          </>
+        }
+      />
     </FigmaCompare>
+  ),
+};
+
+/* ─────────────────────────────────────────────────────────────
+ * Replace — addition + removal combined.
+ *
+ * NOTE: there is intentionally NO FigmaCompare canvas for this story.
+ * The replace variant is purely the visual sum of the addition and
+ * removal frames stacked — there is no separate Figma raster, so the
+ * review story renders the article shell directly without a
+ * side-by-side comparison.
+ *
+ * The block sits in the SSO section in place of BOTH the legacy and
+ * settings admin URL paragraphs: the old (red) sentence on top and
+ * the new (green) sentence below, separated by the component's own
+ * `gap-2` spacer. Per-sentence highlights wrap tight to wrapped lines
+ * via `box-decoration-break: clone`.
+ * ───────────────────────────────────────────────────────────── */
+
+export const Replace: StoryObj<typeof SuggestionBlock> = {
+  render: () => (
+    <SsoSwapArticleShell
+      replacement={
+        <div className="mb-8">
+          <SuggestionBlock
+            type="replace"
+            oldSentences={REPLACE_OLD_SENTENCES}
+            newSentences={REPLACE_NEW_SENTENCES}
+          />
+        </div>
+      }
+    />
   ),
 };
