@@ -76,7 +76,16 @@ export function KBBreadcrumbBar({
           <LeadingIcon size={14} />
         </button>
 
-        <span aria-hidden="true" className="h-5 w-px shrink-0 bg-[#e2e8f0]" />
+        {/*
+          Figma `50:8395` (sidebar-collapsed shell, home glyph) renders the
+          breadcrumb path immediately after the home icon — no vertical
+          divider. The divider is only present in the expanded shell where
+          the side-panel toggle needs separation from the path. Suppress it
+          when `sidebarCollapsed` is true to match both Figma states.
+        */}
+        {!sidebarCollapsed && (
+          <span aria-hidden="true" className="h-5 w-px shrink-0 bg-[#e2e8f0]" />
+        )}
 
         <nav aria-label="Breadcrumb" className="flex items-center min-w-0">
           <ol className="flex items-center min-w-0 list-none p-0 m-0">
