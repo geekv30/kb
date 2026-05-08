@@ -13,6 +13,7 @@
     "kb-ui:storybook": "npm run storybook --workspace=packages/kb-ui",
     "kb-ui:build": "npm run build --workspace=packages/kb-ui",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "build": "npm run build --workspaces --if-present"
+    "build": "npm run build --workspaces --if-present",
+    "figma:sync": "node packages/kb-ui/scripts/figma-sync.mjs"
   }
 }

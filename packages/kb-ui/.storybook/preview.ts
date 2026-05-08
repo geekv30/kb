@@ -34,6 +34,7 @@ const preview: Preview = {
           ],
           'Patterns',
           ['Knowledge Base', 'AI Optimisation', 'Analytics'],
+          'Review',
         ],
       },
     },

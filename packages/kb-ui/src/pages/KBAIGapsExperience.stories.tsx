@@ -12,6 +12,7 @@ import type {
 } from '../components/content/ArticleBody';
 import { AISuggestionsCard } from '../components/content/AISuggestionsCard';
 import { AIGapSuggestionCard } from '../components/content/AIGapSuggestionCard';
+import { SuggestionHighlight } from '../components/content/SuggestionBlock';
 import { ArticleSettingsPanel } from '../components/content/ArticleSettingsPanel';
 import type { ArticleSettings } from '../components/content/ArticleSettingsPanel';
 import type { AISuggestion } from '../components/content/ai-suggestion-types';
@@ -174,6 +175,29 @@ function Strong({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * Numbered list item where the numeral renders OUTSIDE the highlight.
+ * Matches Figma 137:4022 / 137:4132 — only the text after the numeral
+ * receives the green/red wash, the numeral sits on the white page.
+ *
+ * Rendered as a flex row so the highlight clips to the text width,
+ * leaving white space to the right of the wrapped text.
+ */
+function NumberedItem({
+  index,
+  children,
+}: {
+  index: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <span className="flex items-start text-[16px] leading-[24px] text-[#0f172a]">
+      <span className="shrink-0 pr-2 tabular-nums">{index}.</span>
+      <SuggestionHighlight>{children}</SuggestionHighlight>
+    </span>
+  );
+}
+
 const passwordResetRegions: ArticleBodyRegions = {
   header: (
     <>
@@ -188,23 +212,38 @@ const passwordResetRegions: ArticleBodyRegions = {
       or use the password recovery flow if you&rsquo;ve forgotten it.
     </P>
   ),
-  s1: (
-    <>
-      <H2>Resetting Your Password via Mobile App</H2>
-      <P>
-        If you&rsquo;re using the Hiver mobile app, follow these steps to
-        reset your password:
-      </P>
-      <OL>
-        <li>Open the Hiver mobile app on your device</li>
-        <li>Tap on &ldquo;Forgot Password&rdquo; on the login screen</li>
-        <li>Enter your registered email address</li>
-        <li>Check your email for a password reset link</li>
-        <li>Tap the link and follow the instructions to set a new password</li>
-        <li>Log in with your new password</li>
-      </OL>
-    </>
-  ),
+  /* Per-sentence sentence array. Each entry highlights independently with a
+   * 4px gap between entries — matches Figma 137:4022. The H2 entry is JSX
+   * so it keeps its 20px / 28px semibold typography; numbered list entries
+   * place the "1. ", "2. ", etc. prefixes outside the highlighted span so
+   * the numerals stay on the white background (per Figma). */
+  s1: [
+    <span
+      key="h2"
+      className="block text-[20px] font-semibold leading-[28px] text-[#0f172a]"
+    >
+      <SuggestionHighlight>Resetting Your Password via Mobile App</SuggestionHighlight>
+    </span>,
+    'If you’re using the Hiver mobile app, follow these steps to reset your password:',
+    <NumberedItem key="li-1" index={1}>
+      Open the Hiver mobile app on your device
+    </NumberedItem>,
+    <NumberedItem key="li-2" index={2}>
+      Tap on “Forgot Password” on the login screen
+    </NumberedItem>,
+    <NumberedItem key="li-3" index={3}>
+      Enter your registered email address
+    </NumberedItem>,
+    <NumberedItem key="li-4" index={4}>
+      Check your email for a password reset link
+    </NumberedItem>,
+    <NumberedItem key="li-5" index={5}>
+      Tap the link and follow the instructions to set a new password
+    </NumberedItem>,
+    <NumberedItem key="li-6" index={6}>
+      Log in with your new password
+    </NumberedItem>,
+  ],
   betweenS1AndS2: (
     <>
       <H2>Resetting Password via Admin Panel</H2>
@@ -214,36 +253,53 @@ const passwordResetRegions: ArticleBodyRegions = {
       </P>
     </>
   ),
+  /* Replace s2 — each half is a single sentence containing inline emphasis
+   * (the admin URL). Rendered as one JSX entry per half so the
+   * <SuggestionHighlight> wraps the whole sentence including the bolded
+   * URL inside it. */
   s2: {
-    before: (
-      <P>
-        Navigate to the admin panel at{' '}
-        <Strong>admin.hiver.com/legacy/users</Strong> and select the user
-        whose password needs to be reset.
-      </P>
-    ),
-    after: (
-      <P>
-        Navigate to the admin panel at{' '}
-        <Strong>admin.hiver.com/settings/users</Strong> and select the user
-        whose password needs to be reset. You can also use the search bar
-        to quickly find users by name or email.
-      </P>
-    ),
+    before: [
+      <span key="s2-before" className="text-[16px] leading-[24px] text-[#0f172a]">
+        <SuggestionHighlight>
+          Navigate to the admin panel at{' '}
+          <Strong>admin.hiver.com/legacy/users</Strong>
+          {' '}and select the user whose password needs to be reset.
+        </SuggestionHighlight>
+      </span>,
+    ],
+    after: [
+      <span key="s2-after" className="text-[16px] leading-[24px] text-[#0f172a]">
+        <SuggestionHighlight>
+          Navigate to the admin panel at{' '}
+          <Strong>admin.hiver.com/settings/users</Strong>
+          {' '}and select the user whose password needs to be reset. You can
+          also use the search bar to quickly find users by name or email.
+        </SuggestionHighlight>
+      </span>,
+    ],
   },
   betweenS2AndS3: null,
-  s3: (
-    <>
-      <H2>Troubleshooting</H2>
-      <H3>Resetting via Chrome Extension</H3>
-      <P>
-        If you&rsquo;re using the Hiver Chrome Extension and experiencing
-        issues resetting your password, try clearing your browser cache,
-        restarting Chrome, and attempting the reset flow again. If issues
-        persist, contact support.
-      </P>
-    </>
-  ),
+  /* Removal s3 — each entry is one highlighted block, separated by 4px
+   * gaps so the white background reads through between entries. The H2
+   * and H3 keep their heading typography via JSX entries; the body
+   * paragraph is split into two sentences (matches the natural sentence
+   * breaks in the source text). */
+  s3: [
+    <span
+      key="s3-h2"
+      className="block text-[20px] font-semibold leading-[28px] text-[#0f172a]"
+    >
+      <SuggestionHighlight>Troubleshooting</SuggestionHighlight>
+    </span>,
+    <span
+      key="s3-h3"
+      className="block text-[16px] font-semibold leading-[24px] text-[#0f172a]"
+    >
+      <SuggestionHighlight>Resetting via Chrome Extension</SuggestionHighlight>
+    </span>,
+    'If you’re using the Hiver Chrome Extension and experiencing issues resetting your password, try clearing your browser cache, restarting Chrome, and attempting the reset flow again.',
+    'If issues persist, contact support.',
+  ],
   afterS3: (
     <>
       <H2>Password Requirements</H2>

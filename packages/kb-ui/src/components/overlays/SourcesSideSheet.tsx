@@ -34,6 +34,12 @@ export type SourcesSideSheetProps = {
    * inter-row gap as the default sources path; `sources` is ignored.
    */
   items?: React.ReactNode[];
+  /**
+   * Forwarded to `SideSheet`. When `true`, the sheet renders inline
+   * (no Radix Portal) so it can sit inside another layout tree like
+   * the FigmaCompare review pane. Defaults to `false`.
+   */
+  inline?: boolean;
 };
 
 /* ─────────────────────────────────────────────────────────────
@@ -149,6 +155,7 @@ export function SourcesSideSheet({
   count,
   className,
   items,
+  inline,
 }: SourcesSideSheetProps) {
   const displayCount = count ?? (items ? items.length : sources.length);
 
@@ -159,6 +166,7 @@ export function SourcesSideSheet({
       title="Sources"
       count={displayCount}
       className={className}
+      inline={inline}
     >
       {/* gap-3 mirrors today's inter-card spacing on the default path
        * and is preserved for the `items` path so consumer rows stack

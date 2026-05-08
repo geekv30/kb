@@ -1,5 +1,7 @@
 // Figma: 9aGp5t9fH1d0PXi4LMhOdb#74:10788 (AI Gaps review flow)
 //        frames 2/3/5/6/8/10 — varying per-suggestion state
+//        137:4022 (per-sentence addition highlights)
+//        137:4132 (per-sentence removal highlights)
 //
 // Read-mode article body used by the AI Gaps review experience.
 //
@@ -7,8 +9,9 @@
 // suggestion regions (s1 addition, s2 replace, s3 removal):
 //
 //   - `inactive` / `active` → the region content is wrapped in a
-//     `SuggestionBlock` of the matching variant (green addition wash for
-//     s1, red+green stacked diff for s2, red removal wash for s3).
+//     `SuggestionBlock` of the matching variant. Per-sentence highlights
+//     are applied (each `sentences[]` entry gets its own green/red block
+//     with a 4px gap between blocks — matches Figma 137:4022 / 137:4132).
 //   - `accepted` (s1 addition)  → region rendered as plain body text.
 //   - `accepted` (s2 replace)   → only the `after` half rendered, plain.
 //   - `accepted` (s3 removal)   → region hidden.
@@ -18,20 +21,19 @@
 //
 // **The article copy itself lives in the consumer.** ArticleBody no longer
 // hardcodes any specific article — it accepts a `regions` object whose
-// fields carry the surrounding-article markup AND the per-region content.
-// The consumer chooses which markup to render between/around the
-// suggestion slots; ArticleBody only handles the SuggestionBlock wrapping
-// per the decision state above.
+// fields carry the surrounding-article markup AND the per-region content
+// as **sentence arrays** (one entry per highlighted line / list-item /
+// heading). The consumer chooses which markup to render between/around
+// the suggestion slots; ArticleBody only handles the SuggestionBlock
+// wrapping per the decision state above.
 //
-// Typography helpers are deliberately NOT exported. Consumers should
-// either author plain HTML/JSX inside the region slots (the SuggestionBlock
-// chrome will apply automatic background tints) or co-locate their own
-// typography components matching their article's style. The stories file
-// at `src/pages/KBAIGapsExperience.stories.tsx` shows the canonical
-// example consumer.
+// Sentence entries can be plain strings (rendered as 16px body text) or
+// JSX nodes (preserves heading/list-item typography). See
+// `KBAIGapsExperience.stories.tsx` for the canonical example.
 import * as React from 'react';
 import { cn } from '../../utils/cn';
 import { SuggestionBlock } from './SuggestionBlock';
+import type { SuggestionSentence } from './SuggestionBlock';
 
 /* ─────────────────────────────────────────────────────────────
  * Types
@@ -63,6 +65,11 @@ export type ArticleBodyDecisions = {
  *
  * The s1/s2/s3 regions are wrapped per the decision state — see the
  * file-top JSDoc for the full table.
+ *
+ * The s1/s3 slots and the s2 before/after halves accept **sentence arrays**:
+ * each entry renders as one highlighted block (per-sentence highlights
+ * with gaps). Strings → body text. JSX nodes → preserve typography
+ * (e.g. headings, list items with their numerals).
  */
 export type ArticleBodyRegions = {
   /** Top of the article — typically heading + subtitle/byline. */
@@ -70,29 +77,29 @@ export type ArticleBodyRegions = {
   /** Body content between the header and the s1 region. */
   beforeS1: React.ReactNode;
   /**
-   * s1 — addition. Rendered as plain body text when `accepted`; wrapped
-   * in a green addition `SuggestionBlock` when `inactive`/`active`;
-   * hidden when `dismissed`.
+   * s1 — addition. Each entry renders as one highlighted block when
+   * `inactive`/`active`. When `accepted`, entries flow back as plain
+   * body content. Hidden when `dismissed`.
    */
-  s1: React.ReactNode;
+  s1: SuggestionSentence[];
   /** Body content between the s1 and s2 regions. */
   betweenS1AndS2: React.ReactNode;
   /**
    * s2 — replace. The `before` half is the existing content; the `after`
    * half is the proposed replacement. When `inactive`/`active`, both are
-   * shown stacked inside a `SuggestionBlock` of type `replace`. When
-   * `accepted`, only `after` renders as plain body text. When
-   * `dismissed`, only `before` renders as plain body text.
+   * shown as per-sentence diff (red `before` then green `after`). When
+   * `accepted`, only `after` renders as plain text. When `dismissed`,
+   * only `before` renders as plain text.
    */
-  s2: { before: React.ReactNode; after: React.ReactNode };
+  s2: { before: SuggestionSentence[]; after: SuggestionSentence[] };
   /** Body content between the s2 and s3 regions. */
   betweenS2AndS3: React.ReactNode;
   /**
-   * s3 — removal. Rendered as plain body text when `dismissed`; wrapped
-   * in a red removal `SuggestionBlock` when `inactive`/`active`; hidden
-   * when `accepted`.
+   * s3 — removal. Each entry renders as one highlighted block when
+   * `inactive`/`active`. When `dismissed`, entries flow back as plain
+   * body content. Hidden when `accepted`.
    */
-  s3: React.ReactNode;
+  s3: SuggestionSentence[];
   /** Trailing body content after the s3 region. Optional. */
   afterS3?: React.ReactNode;
 };
@@ -123,6 +130,35 @@ export type ArticleBodyProps = {
 };
 
 /* ─────────────────────────────────────────────────────────────
+ * Plain-flow renderer — used when a region is `accepted`/`dismissed`
+ * and the highlights drop, leaving the underlying content rendered
+ * inline as part of the article body.
+ *
+ * Strings stack as paragraphs; JSX entries render as-is. Each entry
+ * is wrapped in its own block so list items / headings retain their
+ * intended layout once the highlight chrome is gone.
+ * ───────────────────────────────────────────────────────────── */
+
+function PlainSentences({ sentences }: { sentences: SuggestionSentence[] }) {
+  return (
+    <>
+      {sentences.map((s, i) =>
+        typeof s === 'string' ? (
+          <p
+            key={i}
+            className="mb-2 text-[16px] leading-[24px] text-[#0f172a] last:mb-0"
+          >
+            {s}
+          </p>
+        ) : (
+          <React.Fragment key={i}>{s}</React.Fragment>
+        ),
+      )}
+    </>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
  * Per-suggestion renderers — encode the accept/dismiss semantics
  * ───────────────────────────────────────────────────────────── */
 
@@ -131,21 +167,24 @@ function S1Region({
   content,
 }: {
   decision: ArticleSuggestionDecision;
-  content: React.ReactNode;
+  content: SuggestionSentence[];
 }) {
   if (decision === 'accepted') {
     // Addition accepted → content kept as plain body text.
-    return <>{content}</>;
+    return <PlainSentences sentences={content} />;
   }
   if (decision === 'dismissed') {
     // Addition dismissed → content never added.
     return null;
   }
-  // inactive | active → highlight block.
+  // inactive | active → per-sentence highlight block.
   return (
-    <SuggestionBlock type="addition" id="s1" className="mb-4">
-      {content}
-    </SuggestionBlock>
+    <SuggestionBlock
+      type="addition"
+      id="s1"
+      className="mb-4"
+      sentences={content}
+    />
   );
 }
 
@@ -155,25 +194,25 @@ function S2Region({
   after,
 }: {
   decision: ArticleSuggestionDecision;
-  before: React.ReactNode;
-  after: React.ReactNode;
+  before: SuggestionSentence[];
+  after: SuggestionSentence[];
 }) {
   if (decision === 'accepted') {
     // Replace accepted → new content remains as plain text.
-    return <>{after}</>;
+    return <PlainSentences sentences={after} />;
   }
   if (decision === 'dismissed') {
     // Replace dismissed → old content remains.
-    return <>{before}</>;
+    return <PlainSentences sentences={before} />;
   }
-  // inactive | active → red (old) + green (new) stacked pair.
+  // inactive | active → per-sentence red (old) + green (new) stacked pair.
   return (
     <SuggestionBlock
       type="replace"
       id="s2"
       className="mb-4"
-      oldContent={before}
-      newContent={after}
+      oldSentences={before}
+      newSentences={after}
     />
   );
 }
@@ -183,7 +222,7 @@ function S3Region({
   content,
 }: {
   decision: ArticleSuggestionDecision;
-  content: React.ReactNode;
+  content: SuggestionSentence[];
 }) {
   if (decision === 'accepted') {
     // Removal accepted → content deleted.
@@ -191,13 +230,16 @@ function S3Region({
   }
   if (decision === 'dismissed') {
     // Removal dismissed → existing content stays as plain body.
-    return <>{content}</>;
+    return <PlainSentences sentences={content} />;
   }
-  // inactive | active → red wash over the existing content.
+  // inactive | active → per-sentence red wash over the existing content.
   return (
-    <SuggestionBlock type="removal" id="s3" className="mb-4">
-      {content}
-    </SuggestionBlock>
+    <SuggestionBlock
+      type="removal"
+      id="s3"
+      className="mb-4"
+      sentences={content}
+    />
   );
 }
 
