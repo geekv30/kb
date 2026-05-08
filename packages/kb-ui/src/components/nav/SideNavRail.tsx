@@ -82,8 +82,11 @@ export function SideNavRail({
                     ? 'bg-[rgba(255,255,255,0.10)] text-white'
                     : 'text-white/50 hover:bg-[rgba(255,255,255,0.06)] hover:text-white/80'
                   : isActive
-                    ? 'bg-[#f8fafc] text-[#0f172a]'
-                    : 'text-[#475569] hover:bg-[#f8fafc] hover:text-[#0f172a]',
+                    ? // Active pill matches Figma `1:4350` (.menu-items active):
+                      // bg-[rgba(230,230,230,0.44)]. Previously used #f8fafc
+                      // which was nearly invisible against white rail bg.
+                      'bg-[rgba(230,230,230,0.44)] text-[#0f172a]'
+                    : 'text-[#475569] hover:bg-[rgba(230,230,230,0.32)] hover:text-[#0f172a]',
               )}
             >
               {/* Enforce 16×16 glyph in-component so size is not caller-dependent.

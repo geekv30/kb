@@ -412,7 +412,9 @@ export function ArticleSettingsPanel({
       data-kb-part="article-settings-panel"
       data-kb-variant={compact ? 'compact' : 'default'}
       className={cn(
-        'flex flex-col rounded-[12px] border border-[#e2e8f0] bg-white',
+        // Figma `53:8384` ships card border `#f1f5f9` (color-border).
+        // Aligns with ContentEditor; replaces the prior `#e2e8f0` drift.
+        'flex flex-col rounded-[12px] border border-[#f1f5f9] bg-white',
         'shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05),0px_2px_4px_-2px_rgba(0,0,0,0.10)]',
         // Width + outer padding swap on the compact variant.
         // Default 452 / py-6 px-[22px] (24/22)  ─  Compact 380 / px-4 py-4 (16/16).

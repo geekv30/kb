@@ -554,7 +554,10 @@ export function ContentEditor({
     <div
       data-kb-part="content-editor"
       className={cn(
-        'w-[720px] rounded-[12px] border border-[#e2e8f0] bg-white p-10',
+        // Figma `53:2316` ships card border `#f1f5f9` (color-border), not the
+        // generic `#e2e8f0` used elsewhere — keeps Source / Editor / Settings
+        // cards visually consistent on the same canvas.
+        'w-[720px] rounded-[12px] border border-[#f1f5f9] bg-white p-10',
         'shadow-[0px_8px_12px_-4px_rgba(0,0,0,0.05),0px_4px_6px_-2px_rgba(0,0,0,0.10)]',
         className,
       )}
