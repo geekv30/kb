@@ -141,9 +141,13 @@ function AcceptButton({ onClick }: { onClick?: () => void }) {
       onClick={onClick}
       aria-label="Accept suggestion"
       className={cn(
-        'inline-flex size-6 items-center justify-center rounded-full bg-[#0f172a]',
-        'text-white transition-colors hover:bg-[#1e293b]',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
+        // Figma 74:10490 — bg=background/neutral/subtle (#f1f5f9),
+        // icon=icon/neutral/default (#0f172a). Same pill shape as
+        // the reject button (rounded-full). Hover deepens the bg one
+        // step to keep affordance visible on the light fill.
+        'inline-flex size-6 items-center justify-center rounded-full bg-[#f1f5f9]',
+        'text-[#0f172a] transition-colors hover:bg-[#e2e8f0]',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
       )}
     >
       <RiCheckLine aria-hidden="true" className="h-[14px] w-[14px]" />
@@ -215,13 +219,13 @@ export function AIGapSuggestionCard({
           {meta}
           <h3
             data-kb-part="ai-gap-title"
-            className="mt-2 text-[14px] font-semibold leading-[20px] text-[#0f172a]"
+            className="mt-2 text-[14px] font-medium leading-[20px] text-[#0f172a]"
           >
             {suggestion.title}
           </h3>
           <p
             data-kb-part="ai-gap-description"
-            className="mt-1 text-[14px] font-normal leading-[20px] text-[#475569]"
+            className="mt-1 text-[14px] font-normal leading-[20px] text-[#64758b]"
           >
             {suggestion.description}
           </p>

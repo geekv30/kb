@@ -47,8 +47,11 @@ export { AICard } from './AICard';
 export type { AICardProps, AICardMode } from './AICard';
 export { NavArrow } from './NavArrow';
 export type { NavArrowProps } from './NavArrow';
-export { SuggestionBlock } from './SuggestionBlock';
-export type { SuggestionBlockProps } from './SuggestionBlock';
+export { SuggestionBlock, SuggestionHighlight } from './SuggestionBlock';
+export type {
+  SuggestionBlockProps,
+  SuggestionSentence,
+} from './SuggestionBlock';
 export { ArticleBody } from './ArticleBody';
 export type {
   ArticleBodyProps,

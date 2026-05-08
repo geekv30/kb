@@ -25,8 +25,20 @@ function ButtonPlayground() {
         <Button variant="subtle" onClick={() => {}}>
           Cancel
         </Button>
+        <Button variant="outline" onClick={() => {}}>
+          Outline
+        </Button>
         <Button variant="ghost" onClick={() => {}}>
           Learn more
+        </Button>
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+        <Button variant="danger" onClick={() => {}}>
+          Delete
+        </Button>
+        <Button variant="danger-outline" onClick={() => {}}>
+          Cancel
         </Button>
       </div>
 

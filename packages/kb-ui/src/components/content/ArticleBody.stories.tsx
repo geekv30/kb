@@ -40,13 +40,9 @@ function ArticleBodyPlayground() {
             the group without forwarding threads back and forth.
           </p>
         ),
-        s1: (
-          <p>
-            Hiver also supports nested shared inboxes, so larger teams can split a
-            parent inbox (e.g. support@) into focused sub-queues like
-            billing-support@ or onboarding@ without leaving Gmail.
-          </p>
-        ),
+        s1: [
+          'Hiver also supports nested shared inboxes, so larger teams can split a parent inbox (e.g. support@) into focused sub-queues like billing-support@ or onboarding@ without leaving Gmail.',
+        ],
         betweenS1AndS2: (
           <p>
             To create a shared inbox, open the Hiver sidebar and click the plus
@@ -55,18 +51,12 @@ function ArticleBodyPlayground() {
           </p>
         ),
         s2: {
-          before: (
-            <p>
-              Once the inbox is created, only the admin who set it up can see
-              incoming conversations until teammates are added manually.
-            </p>
-          ),
-          after: (
-            <p>
-              Once the inbox is created, every teammate you invite gets immediate
-              access to incoming conversations — no manual sync step required.
-            </p>
-          ),
+          before: [
+            'Once the inbox is created, only the admin who set it up can see incoming conversations until teammates are added manually.',
+          ],
+          after: [
+            'Once the inbox is created, every teammate you invite gets immediate access to incoming conversations — no manual sync step required.',
+          ],
         },
         betweenS2AndS3: (
           <p>
@@ -75,13 +65,9 @@ function ArticleBodyPlayground() {
             their Gmail sidebar alongside their personal mail.
           </p>
         ),
-        s3: (
-          <p>
-            Note: shared inboxes created before March 2024 used a legacy
-            permissions model and may need to be migrated manually from the admin
-            console before new teammates can be added.
-          </p>
-        ),
+        s3: [
+          'Note: shared inboxes created before March 2024 used a legacy permissions model and may need to be migrated manually from the admin console before new teammates can be added.',
+        ],
         afterS3: (
           <p>
             That's it — your team is ready to triage email together. For more on

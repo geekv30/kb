@@ -16,7 +16,37 @@ export type SideSheetProps = {
   width?: number;
   children: React.ReactNode;
   className?: string;
+  /**
+   * When `true`, render the sheet chrome inline (no Radix Dialog,
+   * no Portal, no overlay) so the sheet can sit inside another
+   * layout tree such as the FigmaCompare review pane. The `open`
+   * prop is ignored in inline mode (the sheet always renders) and
+   * `onOpenChange` is invoked from the close button so consumers
+   * can still observe close intent.
+   *
+   * Existing portal-mode usage is unaffected — this prop defaults
+   * to `false`.
+   */
+  inline?: boolean;
 };
+
+/* ─────────────────────────────────────────────────────────────
+ * Header chrome — shared between portal and inline modes.
+ *
+ * Lives outside the main component so portal mode can wrap the
+ * close button in `Dialog.Close` (Radix-managed) while inline
+ * mode wires it directly to `onOpenChange`.
+ * ───────────────────────────────────────────────────────────── */
+
+const headerClass =
+  'flex h-[56px] shrink-0 items-center gap-2 border-b border-card-border bg-[#f8fafc] px-5';
+const titleClass =
+  'text-[16px] font-semibold leading-[24px] text-[#0f172a]';
+const countClass =
+  'inline-flex h-[20px] min-w-[20px] items-center justify-center rounded-full px-2 bg-[#0f172a] text-[12px] font-medium leading-[18px] text-white tabular-nums';
+const closeBtnClass =
+  'inline-flex h-8 w-8 items-center justify-center rounded-[6px] text-[#64758b] transition-colors hover:bg-[#f1f5f9] hover:text-[#0f172a] focus:outline-none focus:ring-2 focus:ring-black/10';
+const bodyClass = 'flex flex-1 flex-col overflow-y-auto px-5 py-4';
 
 /* ─────────────────────────────────────────────────────────────
  * Main component — generic right-docked overlay primitive.
@@ -35,7 +65,63 @@ export function SideSheet({
   width = 400,
   children,
   className,
+  inline = false,
 }: SideSheetProps) {
+  /* Inline mode — render chrome directly into the React tree
+   * without Radix's Portal/Overlay. Used by the FigmaCompare
+   * review canvas, which needs the sheet to live inside the
+   * pane rather than escape to document.body. */
+  if (inline) {
+    return (
+      <div
+        data-kb-component="side-sheet"
+        data-kb-mode="inline"
+        style={{ width: `${width}px` }}
+        className={cn(
+          'flex flex-col bg-white h-full',
+          'border-l border-card-border',
+          'shadow-[-4px_0_16px_rgba(15,23,42,0.08)]',
+          'focus:outline-none',
+          className,
+        )}
+      >
+        <div data-kb-part="side-sheet-header" className={headerClass}>
+          {title !== undefined ? (
+            <div data-kb-part="side-sheet-title" className={titleClass}>
+              {title}
+            </div>
+          ) : null}
+
+          {typeof count === 'number' ? (
+            <span
+              data-kb-part="side-sheet-count"
+              className={countClass}
+              aria-label={`${count} items`}
+            >
+              {count}
+            </span>
+          ) : null}
+
+          <div className="flex-1" />
+
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={() => onOpenChange(false)}
+            className={closeBtnClass}
+          >
+            <RiCloseLine aria-hidden="true" className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div data-kb-part="side-sheet-body" className={bodyClass}>
+          {children}
+        </div>
+      </div>
+    );
+  }
+
+  /* Portal mode — original behavior, unchanged. */
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -72,16 +158,11 @@ export function SideSheet({
           {/* Header — chrome tokens mirror SourcesSideSheet so a future
            * refactor that has SourcesSideSheet compose on top of this
            * does not cause any visual drift. */}
-          <div
-            data-kb-part="side-sheet-header"
-            className={cn(
-              'flex h-[56px] shrink-0 items-center gap-2 border-b border-card-border bg-[#f8fafc] px-5',
-            )}
-          >
+          <div data-kb-part="side-sheet-header" className={headerClass}>
             {title !== undefined ? (
               <Dialog.Title
                 data-kb-part="side-sheet-title"
-                className="text-[16px] font-semibold leading-[24px] text-[#0f172a]"
+                className={titleClass}
               >
                 {title}
               </Dialog.Title>
@@ -90,10 +171,7 @@ export function SideSheet({
             {typeof count === 'number' ? (
               <span
                 data-kb-part="side-sheet-count"
-                className={cn(
-                  'inline-flex h-[20px] min-w-[20px] items-center justify-center rounded-full px-2',
-                  'bg-[#0f172a] text-[12px] font-medium leading-[18px] text-white tabular-nums',
-                )}
+                className={countClass}
                 aria-label={`${count} items`}
               >
                 {count}
@@ -103,15 +181,7 @@ export function SideSheet({
             <div className="flex-1" />
 
             <Dialog.Close asChild>
-              <button
-                type="button"
-                aria-label="Close"
-                className={cn(
-                  'inline-flex h-8 w-8 items-center justify-center rounded-[6px]',
-                  'text-[#64758b] transition-colors hover:bg-[#f1f5f9] hover:text-[#0f172a]',
-                  'focus:outline-none focus:ring-2 focus:ring-black/10',
-                )}
-              >
+              <button type="button" aria-label="Close" className={closeBtnClass}>
                 <RiCloseLine aria-hidden="true" className="h-4 w-4" />
               </button>
             </Dialog.Close>
@@ -119,10 +189,7 @@ export function SideSheet({
 
           {/* Body — scrollable region. Padding mirrors SourcesSideSheet
            * (px-5 py-4) so composed sheets keep consistent gutters. */}
-          <div
-            data-kb-part="side-sheet-body"
-            className="flex flex-1 flex-col overflow-y-auto px-5 py-4"
-          >
+          <div data-kb-part="side-sheet-body" className={bodyClass}>
             {children}
           </div>
         </Dialog.Content>
