@@ -11,6 +11,10 @@ export type TextInputProps = {
   id?: string;
   name?: string;
   className?: string;
+  /** Override classes applied to the inner <input> — use to swap placeholder
+   *  color or text tone when the default `text-[#0f172a]` /
+   *  `placeholder:text-[#94a3b8]` doesn't match the spec. */
+  inputClassName?: string;
 };
 
 export function TextInput({
@@ -24,6 +28,7 @@ export function TextInput({
   id,
   name,
   className,
+  inputClassName,
 }: TextInputProps) {
   return (
     <div
@@ -42,7 +47,10 @@ export function TextInput({
         onChange={onChange}
         placeholder={placeholder}
         disabled={disabled}
-        className="min-w-0 flex-1 border-0 bg-transparent p-0 text-[14px] font-normal leading-5 text-[#0f172a] outline-none placeholder:text-[#94a3b8] disabled:cursor-not-allowed"
+        className={cn(
+          'min-w-0 flex-1 border-0 bg-transparent p-0 text-[14px] font-normal leading-5 text-[#0f172a] outline-none placeholder:text-[#94a3b8] disabled:cursor-not-allowed',
+          inputClassName,
+        )}
       />
       {charCount && (
         <span className="shrink-0 text-[12px] font-normal leading-[18px] text-[#64758b] tabular-nums">
