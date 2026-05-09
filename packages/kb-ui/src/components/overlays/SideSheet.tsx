@@ -43,7 +43,7 @@ const headerClass =
 const titleClass =
   'text-[16px] font-semibold leading-[24px] text-[#0f172a]';
 const countClass =
-  'inline-flex h-[20px] min-w-[20px] items-center justify-center rounded-full px-2 bg-[#0f172a] text-[12px] font-medium leading-[18px] text-white tabular-nums';
+  'inline-flex h-[20px] min-w-[20px] items-center justify-center rounded-full px-2 bg-[#f1f5f9] text-[12px] font-medium leading-[18px] text-[#475569] tabular-nums';
 const closeBtnClass =
   'inline-flex h-8 w-8 items-center justify-center rounded-[6px] text-[#64758b] transition-colors hover:bg-[#f1f5f9] hover:text-[#0f172a] focus:outline-none focus:ring-2 focus:ring-black/10';
 const bodyClass = 'flex flex-1 flex-col overflow-y-auto px-5 py-4';
