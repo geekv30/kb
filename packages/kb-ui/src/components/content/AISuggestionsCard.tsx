@@ -5,6 +5,7 @@ import * as React from 'react';
 import { RiCheckLine } from '@remixicon/react';
 import { cn } from '../../utils/cn';
 import { AiIcon } from '../brand/AiIcon';
+import { Button } from '../primitives/Button';
 import { AICard } from './AICard';
 import { NavArrow } from './NavArrow';
 
@@ -115,18 +116,9 @@ export function AISuggestionsCard({
           ) : cta !== undefined ? (
             cta
           ) : (
-            <button
-              type="button"
-              onClick={onReview}
-              className={cn(
-                'inline-flex items-center justify-center rounded-[8px] bg-[#0f172a] px-3 py-2',
-                'text-[14px] font-medium leading-[20px] text-white',
-                'transition-colors hover:bg-[#1e293b]',
-                'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
-              )}
-            >
+            <Button variant="subtle" onClick={onReview}>
               Review Suggestions ({count})
-            </button>
+            </Button>
           )}
         </>
       }
