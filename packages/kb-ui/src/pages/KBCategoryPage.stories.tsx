@@ -7,7 +7,6 @@ import {
   RiBarChartBoxLine,
   RiSettings5Line,
   RiFolderLine,
-  RiArrowRightSLine,
   RiFile3Line,
   RiMore2Line,
 } from '@remixicon/react';
@@ -143,23 +142,6 @@ const subCategoryColumns: DataTableColumn<SubCategory>[] = [
         <span className="text-[14px] font-normal leading-[20px] text-[#0f172a]">
           {item.title}
         </span>
-      </div>
-    ),
-  },
-  {
-    id: 'chev',
-    header: '',
-    align: 'right',
-    width: 48,
-    headerClassName: 'pl-0 pr-4 py-0',
-    className: 'pl-0 pr-4',
-    render: () => (
-      <div className="flex items-center justify-end">
-        <RiArrowRightSLine
-          size={16}
-          className="text-[#64758b]"
-          aria-hidden="true"
-        />
       </div>
     ),
   },
