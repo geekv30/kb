@@ -105,7 +105,11 @@ function SourcesButton({
       onClick={onClick}
       className={cn(
         'inline-flex items-center gap-1 rounded-[4px] px-1.5 py-1',
-        'text-[14px] font-medium leading-[20px] text-[#475569]',
+        // Per Figma `ai-gap-active-addition.png` — '4 Sources' is
+        // weight=normal, not medium. Lighter weight also improves
+        // visual baseline alignment with the icon + adjacent NavArrow
+        // / accept-reject pills (medium gave a heavier optical feel).
+        'text-[14px] font-normal leading-[20px] text-[#475569]',
         'transition-colors hover:bg-[#f1f5f9] hover:text-[#0f172a]',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
       )}

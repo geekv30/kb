@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { RiCursorAiLine, RiFileTextLine } from '@remixicon/react';
+import { RiCursorLine, RiFileTextLine } from '@remixicon/react';
 import '../../tokens.css';
 import { ConversationRow } from './AIConversationLogEntryAtoms';
 import { FigmaCompare } from '../../_review/FigmaCompare';
@@ -36,7 +36,7 @@ function TailSearchResultClickedReview() {
           hideConnectorAbove
           hideConnectorBelow
           icon={
-            <RiCursorAiLine
+            <RiCursorLine
               aria-hidden="true"
               className="h-4 w-4 text-[#64758b]"
             />

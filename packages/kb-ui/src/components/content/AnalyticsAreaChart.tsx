@@ -175,7 +175,15 @@ export function AnalyticsAreaChart({
       data-kb-component="analytics-area-chart"
       className={cn('flex w-full flex-col', className)}
     >
-      <div style={{ width: '100%', height }}>
+      {/* Negative left margin (-16 px) outdents JUST the SVG plot so the
+       * y-axis label column (12k / 9k / 6k / 3k / 0) lines up with the
+       * parent card's title left edge instead of jutting in past it.
+       * Sampled from Figma `chart-article-views-over-time.png` — labels
+       * and title share the same x. Card padding ('lg' = 32 px) absorbs
+       * the outdent so the chart still sits inside the card. The legend
+       * below stays inside the wrapper (no outdent) so it aligns with
+       * the title at the card's normal padding edge. */}
+      <div className="-ml-4" style={{ width: 'calc(100% + 16px)', height }}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}
