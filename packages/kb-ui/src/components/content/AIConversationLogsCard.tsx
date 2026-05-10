@@ -18,18 +18,29 @@ export type AIConversationLogsCardProps = {
   /** Subtitle — default "Anonymised AI conversations". */
   subtitle?: string;
   infoTooltip?: string;
-  /** Sort options for the "Sort by" dropdown. */
-  sortOptions: SortOption[];
-  /** Currently-selected sort option. */
-  sortBy: string;
+  /** Sort options for the "Sort by" dropdown. Required when default header is rendered. */
+  sortOptions?: SortOption[];
+  /** Currently-selected sort option. Required when default header is rendered. */
+  sortBy?: string;
   onSortChange?: (id: string) => void;
-  /** "Ticket Created" toggle state. */
-  ticketCreatedFilter: boolean;
+  /** "Ticket Created" toggle state. Required when default header is rendered. */
+  ticketCreatedFilter?: boolean;
   onTicketCreatedToggle?: (next: boolean) => void;
   /** Conversation entries — order matters. */
   children: React.ReactNode;
   className?: string;
   toolbar?: React.ReactNode;
+  /**
+   * Header slot.
+   * - `undefined` (default) — render the canonical title + subtitle + toolbar
+   *   block with the divider below it.
+   * - `null` — suppress the entire chrome above the entries (no title, no
+   *   toolbar, no divider). Used for surfaces where the header lives
+   *   outside the card (e.g. the library-check / Figma `156:3987` frame).
+   * - `ReactNode` — replace the default header with custom content. The
+   *   bottom divider is still rendered to separate header from entries.
+   */
+  header?: React.ReactNode | null;
 };
 
 /* ─────────────────────────────────────────────────────────────
@@ -113,81 +124,101 @@ export function AIConversationLogsCard({
   children,
   className,
   toolbar,
+  header,
 }: AIConversationLogsCardProps) {
+  // Resolve which header chrome to render.
+  // - `undefined` → default (title + subtitle + toolbar).
+  // - `null`      → none (entries paint to the card's padded edge, used by
+  //                 the library-check `156:3987` review surface).
+  // - ReactNode   → caller-supplied header in place of default.
+  const renderHeader = header !== null;
+  const headerContent = header === undefined ? null : header; // ReactNode | null
+
   return (
     <Card
       padding="none"
       data-kb-component="ai-conversation-logs-card"
-      className={cn('p-5', className)}
+      // Outer border colour matches Figma library-check `156:3987` (#e2e8f0)
+      // rather than the global `--color-card-border` (#e5e5e5). Per Phase 15
+      // calibration: drift fixed in-place on this card only.
+      className={cn('border-[#e2e8f0] p-5', className)}
     >
-      {/* Header block */}
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-1.5">
-          <h3 className="text-[14px] font-medium leading-5 text-[#0f172a]">
-            {title}
-          </h3>
-          <span
-            className="inline-flex"
-            title={infoTooltip}
-            aria-label={infoTooltip ?? 'More info'}
-          >
-            <RiInformationLine
-              size={16}
-              aria-hidden="true"
-              className="text-[#64758b]"
-            />
-          </span>
-        </div>
-        <p className="text-[13px] font-normal leading-[19px] text-[#475569]">
-          {subtitle}
-        </p>
-      </div>
+      {renderHeader ? (
+        <>
+          {headerContent === null ? (
+            <>
+              {/* Default header block */}
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-1.5">
+                  <h3 className="text-[14px] font-medium leading-5 text-[#0f172a]">
+                    {title}
+                  </h3>
+                  <span
+                    className="inline-flex"
+                    title={infoTooltip}
+                    aria-label={infoTooltip ?? 'More info'}
+                  >
+                    <RiInformationLine
+                      size={16}
+                      aria-hidden="true"
+                      className="text-[#64758b]"
+                    />
+                  </span>
+                </div>
+                <p className="text-[13px] font-normal leading-[19px] text-[#475569]">
+                  {subtitle}
+                </p>
+              </div>
 
-      {/* Toolbar row — Sort by dropdown + Ticket Created switch (default),
-       * or caller-provided `toolbar` content. The wrapping container's
-       * flex layout, padding, and divider below remain intact — only the
-       * internal content swaps. */}
-      <div className="mt-3 flex items-center gap-3 pb-4">
-        {toolbar === undefined ? (
-          <>
-            <SortDropdown
-              options={sortOptions}
-              value={sortBy}
-              onChange={onSortChange}
-            />
-            <div className="flex items-center gap-2">
-              <Switch.Root
-                checked={ticketCreatedFilter}
-                onCheckedChange={onTicketCreatedToggle}
-                data-kb-part="ai-conversation-logs-ticket-toggle"
-                className={cn(
-                  'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors',
-                  'data-[state=unchecked]:bg-[#e2e8f0] data-[state=checked]:bg-[#0f172a]',
-                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
+              {/* Toolbar row — Sort by dropdown + Ticket Created switch
+               * (default), or caller-provided `toolbar` content. */}
+              <div className="mt-3 flex items-center gap-3 pb-4">
+                {toolbar === undefined ? (
+                  <>
+                    <SortDropdown
+                      options={sortOptions ?? []}
+                      value={sortBy ?? ''}
+                      onChange={onSortChange}
+                    />
+                    <div className="flex items-center gap-2">
+                      <Switch.Root
+                        checked={ticketCreatedFilter ?? false}
+                        onCheckedChange={onTicketCreatedToggle}
+                        data-kb-part="ai-conversation-logs-ticket-toggle"
+                        className={cn(
+                          'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors',
+                          'data-[state=unchecked]:bg-[#e2e8f0] data-[state=checked]:bg-[#0f172a]',
+                          'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
+                        )}
+                      >
+                        <Switch.Thumb className="block size-4 translate-x-0.5 rounded-full bg-white shadow transition-transform data-[state=checked]:translate-x-[18px]" />
+                      </Switch.Root>
+                      <span className="text-[14px] font-normal leading-5 text-[#475569]">
+                        Ticket Created
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  toolbar
                 )}
-              >
-                <Switch.Thumb className="block size-4 translate-x-0.5 rounded-full bg-white shadow transition-transform data-[state=checked]:translate-x-[18px]" />
-              </Switch.Root>
-              <span className="text-[14px] font-normal leading-5 text-[#475569]">
-                Ticket Created
-              </span>
-            </div>
-          </>
-        ) : (
-          toolbar
-        )}
-      </div>
+              </div>
+            </>
+          ) : (
+            headerContent
+          )}
 
-      {/* Header/list divider */}
-      <div className="border-t border-[#e2e8f0]" />
+          {/* Header/list divider */}
+          <div className="border-t border-[#e2e8f0]" />
+        </>
+      ) : null}
 
       {/* Entries — caller passes a list of <AIConversationLogEntry>.
        * The wrapper applies a hairline divider between entries via
-       * `[&>*+*]:border-t [&>*]:border-[#e5e5e5]`. The very last
-       * entry has no bottom border by virtue of the sibling combinator. */}
+       * `[&>*]:border-b [&>*:last-child]:border-b-0`. Divider colour
+       * matches Figma library-check `156:3987` (#e2e8f0). */}
       <div
         data-kb-part="ai-conversation-logs-list"
-        className="flex flex-col [&>*]:border-b [&>*]:border-[#e5e5e5] [&>*:last-child]:border-b-0"
+        className="flex flex-col [&>*]:border-b [&>*]:border-[#e2e8f0] [&>*:last-child]:border-b-0"
       >
         {children}
       </div>
