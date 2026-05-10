@@ -7,12 +7,12 @@ import {
   RiThumbDownLine,
   RiBookOpenLine,
   RiCornerDownRightLine,
-  RiCursorLine,
   RiPriceTag3Line,
   RiFileTextLine,
 } from '@remixicon/react';
 import { cn } from '../../utils/cn';
 import { AiIcon } from '../brand/AiIcon';
+import { CursorClickIcon } from '../brand/CursorClickIcon';
 import {
   SourcesSideSheet,
   type ConversationSource,
@@ -172,9 +172,9 @@ function TailRow({ tail }: TailRowProps) {
         hideConnectorAbove
         hideConnectorBelow
         icon={
-          <RiCursorLine
-            aria-hidden="true"
-            className="h-4 w-4 text-[#64758b]"
+          <CursorClickIcon
+            size={14}
+            className="text-[#64758b]"
           />
         }
       >
@@ -201,9 +201,9 @@ function TailRow({ tail }: TailRowProps) {
         hideConnectorAbove
         hideConnectorBelow
         icon={
-          <RiCursorLine
-            aria-hidden="true"
-            className="h-4 w-4 text-[#64758b]"
+          <CursorClickIcon
+            size={14}
+            className="text-[#64758b]"
           />
         }
       >
@@ -228,9 +228,9 @@ function TailRow({ tail }: TailRowProps) {
       hideConnectorAbove
       hideConnectorBelow
       icon={
-        <RiCursorLine
-          aria-hidden="true"
-          className="h-4 w-4 text-[#64758b]"
+        <CursorClickIcon
+          size={14}
+          className="text-[#64758b]"
         />
       }
     >
