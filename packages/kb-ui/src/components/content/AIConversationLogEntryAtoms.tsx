@@ -6,11 +6,13 @@ import { cn } from '../../utils/cn';
  *
  * Every row in an AI conversation log entry shares the same
  * left-rail layout:
- *   - Reserve a 24 px (pl-6) left rail.
- *   - Place a 16 px icon glyph wrapper at the top-left of the
- *     rail. The wrapper has `bg-white` so when a continuous
- *     dotted vertical connector is drawn behind it, the icon
- *     appears to punch through the connector cleanly.
+ *   - Reserve a 36 px (pl-9) left rail (28 px icon column + 8 px gap).
+ *   - Place an icon glyph wrapper at the top-left of the rail.
+ *     When `iconPill` is set, the wrapper is a 28 × 28 `#f1f5f9`
+ *     rounded pill (used for question rows per Figma library-check
+ *     cells `155:1781` / `155:1793`). Otherwise a bare 16 × 16
+ *     wrapper with `bg-white` so the icon punches through the
+ *     dotted connector behind it.
  *   - Render the row's content to the right of the rail.
  *
  * The connector visuals on this atom are PER-ROW segments: an
@@ -19,13 +21,15 @@ import { cn } from '../../utils/cn';
  * Sibling rows' segments meet at the row gap to form a continuous
  * dotted line when the atom is composed standalone.
  *
+ * The connector axis lives at left-[13.5px] (the 14-px center of
+ * the 28-px icon column, rounded to a half-pixel for crisp dashes
+ * on standard DPI). Color: `#94a3b8`.
+ *
  * Note: AIConversationLogEntry currently draws ONE shared dotted
- * connector on its root that spans all rows (it bisects the icon
- * column at left-[7.5px]). When that parent connector is in use,
- * callers MUST pass `hideConnectorAbove` AND `hideConnectorBelow`
- * for every row so per-row segments do not double-draw. This is
- * the configuration AIConversationLogEntry uses today, and is what
- * keeps its visual output byte-identical after this extraction.
+ * connector on its root that spans all rows. When that parent
+ * connector is in use, callers MUST pass `hideConnectorAbove` AND
+ * `hideConnectorBelow` for every row so per-row segments do not
+ * double-draw.
  * ───────────────────────────────────────────────────────────── */
 
 export type ConversationRowProps = {
@@ -35,6 +39,13 @@ export type ConversationRowProps = {
   hideConnectorAbove?: boolean;
   /** When true, hides the dotted connector segment BELOW this row (use on the last row of an entry). */
   hideConnectorBelow?: boolean;
+  /**
+   * When true, the icon column is rendered as a 28 × 28 `#f1f5f9`
+   * rounded pill containing a centered 16 × 16 icon. Used for
+   * question rows per Figma library-check. Default `false` — bare
+   * 16 × 16 icon.
+   */
+  iconPill?: boolean;
   className?: string;
 };
 
@@ -43,38 +54,46 @@ export function ConversationRow({
   children,
   hideConnectorAbove,
   hideConnectorBelow,
+  iconPill,
   className,
 }: ConversationRowProps): JSX.Element {
+  // Icon-wrapper vertical center within the row (used to anchor
+  // connector segments). Pilled rows have a 28-px wrapper at
+  // top-0 → center y=14. Bare rows have a 16-px wrapper at
+  // top-[2px] → center y=10.
+  const iconCenter = iconPill ? 14 : 10;
+
   return (
-    <div className={cn('relative pl-6', className)}>
-      {/* Per-row connector segment ABOVE the icon center. The icon
-       * glyph wrapper sits at top-[2px] with h-4, so its vertical
-       * center is at y = 2 + 8 = 10 px from the row's top edge.
-       * This segment runs from the row's top (0) down to that
-       * center, painted along the same x-axis (left-[7.5px]) as
-       * the parent connector used by AIConversationLogEntry, with
-       * the same border colour and dash style. */}
+    <div className={cn('relative pl-9', className)}>
+      {/* Per-row connector segment ABOVE the icon center. */}
       {hideConnectorAbove ? null : (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute left-[7.5px] top-0 h-[10px] border-l border-dashed border-[#cbd5e1]"
+          className="pointer-events-none absolute left-[13.5px] top-0 border-l border-dashed border-[#94a3b8]"
+          style={{ height: `${iconCenter}px` }}
         />
       )}
-      {/* Per-row connector segment BELOW the icon center, mirroring
-       * the above segment from the icon center to the row's bottom. */}
+      {/* Per-row connector segment BELOW the icon center. */}
       {hideConnectorBelow ? null : (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute left-[7.5px] top-[10px] bottom-0 border-l border-dashed border-[#cbd5e1]"
+          className="pointer-events-none absolute left-[13.5px] bottom-0 border-l border-dashed border-[#94a3b8]"
+          style={{ top: `${iconCenter}px` }}
         />
       )}
-      {/* Icon column — absolutely positioned so it does not
-       * affect the content cell's flow, and aligns with the
-       * first line of text via `top-[2px]`. White bg makes the
-       * icon "punch through" the dotted connector. */}
+      {/* Icon column. Pilled = 28 × 28 light-grey circle with
+       * centered 16 × 16 icon. Bare = 16 × 16 white-bg wrapper
+       * that "punches through" the dotted connector. The bare
+       * wrapper sits at left-[6px] so the icon centers within
+       * the 28-px reserved rail (matching the pill's center). */}
       <span
         aria-hidden="true"
-        className="absolute left-0 top-[2px] inline-flex h-4 w-4 items-center justify-center bg-white"
+        className={cn(
+          'absolute inline-flex items-center justify-center',
+          iconPill
+            ? 'left-0 top-0 h-7 w-7 rounded-full bg-[#f1f5f9]'
+            : 'left-[6px] top-[2px] h-4 w-4 bg-white',
+        )}
       >
         {icon}
       </span>

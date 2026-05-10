@@ -1,12 +1,15 @@
 // Figma: 251DTRmxl2L6jmXd3FWzHe#2045:9269 (AI Search & Conversation logs card)
+// Atoms (per-row library-check): 9aGp5t9fH1d0PXi4LMhOdb#155:1594
 import * as React from 'react';
 import {
-  RiQuestionLine,
-  RiThumbUpFill,
-  RiThumbDownFill,
+  RiSearchLine,
+  RiThumbUpLine,
+  RiThumbDownLine,
   RiBookOpenLine,
   RiCornerDownRightLine,
+  RiCursorAiLine,
   RiPriceTag3Line,
+  RiFileTextLine,
 } from '@remixicon/react';
 import { cn } from '../../utils/cn';
 import { AiIcon } from '../brand/AiIcon';
@@ -24,7 +27,8 @@ export type AIConversationFeedback = 'positive' | 'negative' | null;
 
 export type AIConversationTail =
   | { kind: 'ticket-created'; actor?: string }
-  | { kind: 'source-clicked'; actor?: string };
+  | { kind: 'source-clicked'; actor?: string }
+  | { kind: 'search-result-clicked'; actor?: string };
 
 export type AIConversationFollowUp = {
   question: string;
@@ -68,11 +72,11 @@ export type AIConversationLogEntryProps = {
  * Layout primitives
  *
  * Each entry is laid out as a vertical column of rows. Every row
- * uses `pl-6` (24 px) to reserve a fixed-width left rail; the
- * row's icon sits absolutely at `left-0` w-4 (16 px) inside the
- * rail. A single absolutely-positioned dotted vertical line on
- * the entry root spans top→bottom of the rail, drawn at
- * `left-[7.5px]` so it bisects the 16 px icon column.
+ * uses `pl-9` (36 px) to reserve a 28 px icon column + 8 px gap;
+ * the row's icon sits absolutely at `left-0` w-7 (28 px) inside
+ * the rail. A single absolutely-positioned dotted vertical line
+ * on the entry root spans top→bottom of the rail, drawn at
+ * `left-[13.5px]` so it bisects the 28 px icon column.
  *
  * This "shared connector" approach is simpler than per-row
  * `:before` pseudo-elements because:
@@ -106,12 +110,12 @@ function FeedbackTimestamp({
   return (
     <div className="flex items-center gap-2">
       {feedback === 'positive' ? (
-        <RiThumbUpFill
+        <RiThumbUpLine
           aria-hidden="true"
           className="h-3.5 w-3.5 text-[#086e3f]"
         />
       ) : feedback === 'negative' ? (
-        <RiThumbDownFill
+        <RiThumbDownLine
           aria-hidden="true"
           className="h-3.5 w-3.5 text-[#d52c1f]"
         />
@@ -145,7 +149,16 @@ function SourcesLink({ count, onClick }: SourcesLinkProps) {
   );
 }
 
-/* Tail row — "↳ <icon> <Underlined> <suffix>" */
+/* Tail row — "(cursor-ai) · <icon> <Underlined> <suffix>"
+ *
+ * Per Figma library-check (`156:3922`, `156:3943`, `156:3965`),
+ * tail rows lead with a cursor-ai icon (clicking/sparkle), a
+ * separator dot `·`, then the secondary icon + text. The
+ * "Ticket" / "Source" / "search result" subject phrase appears
+ * underlined for the actionable tails (ticket-created and
+ * source-clicked) and unstyled for `search-result-clicked`
+ * matching the Figma cell verbatim.
+ */
 type TailRowProps = {
   tail: AIConversationTail;
 };
@@ -159,57 +172,77 @@ function TailRow({ tail }: TailRowProps) {
         hideConnectorAbove
         hideConnectorBelow
         icon={
-          <RiCornerDownRightLine
+          <RiCursorAiLine
             aria-hidden="true"
             className="h-4 w-4 text-[#64758b]"
           />
         }
       >
-        <div className="flex items-start gap-3">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 pt-[1px]">
-              <RiPriceTag3Line
-                aria-hidden="true"
-                className="h-4 w-4 shrink-0 text-[#475569]"
-              />
-              <span className="text-[13px] font-normal leading-[19px] text-[#475569]">
-                <span className="text-[#0f172a] underline underline-offset-2">
-                  Ticket
-                </span>{' '}
-                created by {actor}
-              </span>
-            </div>
-          </div>
+        <div className="flex items-center gap-2 pt-[1px]">
+          <span aria-hidden="true" className="text-[14px] leading-5 text-[#64758b]">·</span>
+          <RiPriceTag3Line
+            aria-hidden="true"
+            className="h-4 w-4 shrink-0 text-[#475569]"
+          />
+          <span className="text-[13px] font-normal leading-[19px] text-[#475569]">
+            <span className="text-[#0f172a] underline underline-offset-2">
+              Ticket
+            </span>{' '}
+            created by {actor}
+          </span>
         </div>
       </ConversationRow>
     );
   }
 
-  // source-clicked
+  if (tail.kind === 'source-clicked') {
+    return (
+      <ConversationRow
+        hideConnectorAbove
+        hideConnectorBelow
+        icon={
+          <RiCursorAiLine
+            aria-hidden="true"
+            className="h-4 w-4 text-[#64758b]"
+          />
+        }
+      >
+        <div className="flex items-center gap-2 pt-[1px]">
+          <span aria-hidden="true" className="text-[14px] leading-5 text-[#64758b]">·</span>
+          <RiBookOpenLine
+            aria-hidden="true"
+            className="h-4 w-4 shrink-0 text-[#475569]"
+          />
+          <span className="text-[13px] font-normal leading-[19px] text-[#475569]">
+            <span className="text-[#0f172a] underline underline-offset-2">Source</span>{' '}
+            clicked by {actor}
+          </span>
+        </div>
+      </ConversationRow>
+    );
+  }
+
+  // search-result-clicked
   return (
     <ConversationRow
       hideConnectorAbove
       hideConnectorBelow
       icon={
-        <RiCornerDownRightLine
+        <RiCursorAiLine
           aria-hidden="true"
           className="h-4 w-4 text-[#64758b]"
         />
       }
     >
-      <div className="flex items-start gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 pt-[1px]">
-            <RiBookOpenLine
-              aria-hidden="true"
-              className="h-4 w-4 shrink-0 text-[#475569]"
-            />
-            <span className="text-[13px] font-normal leading-[19px] text-[#475569]">
-              <span className="text-[#0f172a] underline underline-offset-2">Source</span>{' '}
-              clicked by {actor}
-            </span>
-          </div>
-        </div>
+      <div className="flex items-center gap-2 pt-[1px]">
+        <span aria-hidden="true" className="text-[14px] leading-5 text-[#64758b]">·</span>
+        <RiFileTextLine
+          aria-hidden="true"
+          className="h-4 w-4 shrink-0 text-[#475569]"
+        />
+        <span className="text-[13px] font-normal leading-[19px] text-[#475569]">
+          search result clicked by {actor}
+        </span>
       </div>
     </ConversationRow>
   );
@@ -251,13 +284,14 @@ export function AIConversationLogEntry({
     >
       {/* Shared dotted connector — runs full height of the entry's
        * left rail, behind the icon glyphs. The icon glyph wrappers
-       * are `bg-white` so they appear to break the line cleanly.
-       * `inset-y-5` matches the entry's `py-5` so the line spans
-       * from just below the question icon to just above the last
-       * tail icon. */}
+       * are `bg-white` (or pill-coloured) so they appear to break
+       * the line cleanly. `inset-y-5` matches the entry's `py-5`
+       * so the line spans from just below the question icon to
+       * just above the last tail icon. Axis at `left-[13.5px]`
+       * (center of the 28-px icon column). */}
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-5 left-[7.5px] border-l border-dashed border-[#cbd5e1]"
+        className="pointer-events-none absolute inset-y-5 left-[13.5px] border-l border-dashed border-[#94a3b8]"
       />
 
       {rows !== undefined ? (
@@ -268,8 +302,9 @@ export function AIConversationLogEntry({
       <ConversationRow
         hideConnectorAbove
         hideConnectorBelow
+        iconPill
         icon={
-          <RiQuestionLine
+          <RiSearchLine
             aria-hidden="true"
             className="h-4 w-4 text-[#475569]"
           />
@@ -277,11 +312,11 @@ export function AIConversationLogEntry({
       >
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
-            <p className="pt-[1px] text-[14px] font-medium leading-5 text-[#0f172a]">
+            <p className="pt-[5px] text-[14px] font-medium leading-5 text-[#0f172a]">
               {question}
             </p>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2 pt-[5px]">
             <FeedbackTimestamp feedback={feedback} timestamp={timestamp} />
           </div>
         </div>
@@ -339,21 +374,18 @@ export function AIConversationLogEntry({
               />
             }
           >
-            <div className="flex items-start gap-3">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 pt-[1px]">
-                  <span className="text-[13px] font-normal leading-[19px] text-[#475569]">
-                    follow up :
-                  </span>
-                  <RiQuestionLine
-                    aria-hidden="true"
-                    className="h-4 w-4 shrink-0 text-[#475569]"
-                  />
-                  <span className="text-[14px] font-medium leading-5 text-[#0f172a]">
-                    {followUp.question}
-                  </span>
-                </div>
-              </div>
+            <div className="flex items-center gap-2 pt-[1px]">
+              <span className="text-[13px] font-normal leading-[19px] text-[#475569]">
+                follow up
+              </span>
+              <span aria-hidden="true" className="text-[13px] leading-[19px] text-[#475569]">:</span>
+              <RiSearchLine
+                aria-hidden="true"
+                className="h-4 w-4 shrink-0 text-[#475569]"
+              />
+              <span className="text-[14px] font-medium leading-5 text-[#0f172a]">
+                {followUp.question}
+              </span>
             </div>
           </ConversationRow>
 
@@ -405,7 +437,7 @@ export function AIConversationLogEntry({
 
       {/* "view all" link — outside the rail, sits below the entry */}
       {showViewAll ? (
-        <div className="pl-6">
+        <div className="pl-9">
           <button
             type="button"
             onClick={onViewAll}
