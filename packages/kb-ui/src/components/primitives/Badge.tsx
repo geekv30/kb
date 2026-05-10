@@ -10,9 +10,13 @@ export type BadgeProps = {
 };
 
 const variantStyles: Record<BadgeVariant, string> = {
-  published: 'bg-[#f2fdf6] text-[#086e3f] pl-1 pr-2',
-  draft: 'bg-[#fcfcfc] text-[#0f172a] pl-2 pr-2',
-  neutral: 'bg-[#fcfcfc] text-[#0f172a] pl-2 pr-2',
+  // Padding equalised on both sides per Figma `tag.png` measurement
+  // (~9-10 px each side at 1x render scale → `px-2`).
+  published: 'bg-[#f2fdf6] text-[#086e3f] px-2',
+  // Draft bg sampled from Figma `tag.png` at the pill interior =
+  // #f5f5f5 (was previously #fcfcfc, which read too washed-out).
+  draft: 'bg-[#f5f5f5] text-[#0f172a] px-2',
+  neutral: 'bg-[#f5f5f5] text-[#0f172a] px-2',
 };
 
 export function Badge({ variant = 'neutral', icon, children, className }: BadgeProps) {

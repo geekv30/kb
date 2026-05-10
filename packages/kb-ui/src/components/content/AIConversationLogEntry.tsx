@@ -7,7 +7,7 @@ import {
   RiThumbDownLine,
   RiBookOpenLine,
   RiCornerDownRightLine,
-  RiCursorAiLine,
+  RiCursorLine,
   RiPriceTag3Line,
   RiFileTextLine,
 } from '@remixicon/react';
@@ -172,7 +172,7 @@ function TailRow({ tail }: TailRowProps) {
         hideConnectorAbove
         hideConnectorBelow
         icon={
-          <RiCursorAiLine
+          <RiCursorLine
             aria-hidden="true"
             className="h-4 w-4 text-[#64758b]"
           />
@@ -201,7 +201,7 @@ function TailRow({ tail }: TailRowProps) {
         hideConnectorAbove
         hideConnectorBelow
         icon={
-          <RiCursorAiLine
+          <RiCursorLine
             aria-hidden="true"
             className="h-4 w-4 text-[#64758b]"
           />
@@ -228,7 +228,7 @@ function TailRow({ tail }: TailRowProps) {
       hideConnectorAbove
       hideConnectorBelow
       icon={
-        <RiCursorAiLine
+        <RiCursorLine
           aria-hidden="true"
           className="h-4 w-4 text-[#64758b]"
         />
@@ -280,18 +280,22 @@ export function AIConversationLogEntry({
   return (
     <div
       data-kb-component="ai-conversation-log-entry"
-      className={cn('relative flex flex-col gap-3 py-5', className)}
+      // `py-8` (32 px) gives the rhythm `[entry][32-px gap][divider]
+      // [32-px gap][entry]` per Figma `ai-conversation-logs-card.png`
+      // (~80 px PNG / 2.45x scale = 32 px render). Was `py-5` (20 px)
+      // — divider felt cramped between entries.
+      className={cn('relative flex flex-col gap-3 py-8', className)}
     >
       {/* Shared dotted connector — runs full height of the entry's
        * left rail, behind the icon glyphs. The icon glyph wrappers
        * are `bg-white` (or pill-coloured) so they appear to break
-       * the line cleanly. `inset-y-5` matches the entry's `py-5`
+       * the line cleanly. `inset-y-8` matches the entry's `py-8`
        * so the line spans from just below the question icon to
        * just above the last tail icon. Axis at `left-[13.5px]`
        * (center of the 28-px icon column). */}
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-5 left-[13.5px] border-l border-dashed border-[#94a3b8]"
+        className="pointer-events-none absolute inset-y-8 left-[13.5px] border-l border-dashed border-[#94a3b8]"
       />
 
       {rows !== undefined ? (

@@ -77,11 +77,18 @@ export function EditorBreadcrumbActions({
       >
         {publishLabel}
       </Button>
+      {/*
+        Close button — square subtle pill matching `Button` variant="subtle"
+        coloring (`bg-[#f1f5f9]`, hover `#e2e8f0`). Sampled from Figma
+        `kb-breadcrumb-bar.png` — the close button has a visible idle bg
+        of #f1f5f9 (was previously transparent). Per memory rule:
+        secondary buttons are `bg-[#f1f5f9]`, not `bg-black`.
+      */}
       <button
         type="button"
         onClick={onClose}
         aria-label="Close"
-        className="inline-flex size-8 items-center justify-center rounded-[6px] text-[#64758b] hover:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]"
+        className="inline-flex size-8 items-center justify-center rounded-[6px] bg-[#f1f5f9] text-[#0f172a] hover:bg-[#e2e8f0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]"
       >
         <RiCloseLine size={16} />
       </button>

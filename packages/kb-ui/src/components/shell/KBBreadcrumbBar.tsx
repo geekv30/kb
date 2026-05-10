@@ -77,13 +77,20 @@ export function KBBreadcrumbBar({
         </button>
 
         {/*
-          Figma `50:8395` (sidebar-collapsed shell, home glyph) renders the
-          breadcrumb path immediately after the home icon — no vertical
-          divider. The divider is only present in the expanded shell where
-          the side-panel toggle needs separation from the path. Suppress it
-          when `sidebarCollapsed` is true to match both Figma states.
+          Figma `50:8395` (sidebar-collapsed shell, home glyph) renders a
+          `/` separator (light slate-300) immediately after the home icon
+          — same glyph used between path items below. The expanded shell
+          variant uses a 1-px vertical divider before the side-panel
+          toggle. Pick the right one based on `sidebarCollapsed`.
         */}
-        {!sidebarCollapsed && (
+        {sidebarCollapsed ? (
+          <span
+            aria-hidden="true"
+            className="inline-flex items-center justify-center text-[14px] leading-5 text-[#cbd5e1] px-[6px] shrink-0 select-none"
+          >
+            /
+          </span>
+        ) : (
           <span aria-hidden="true" className="h-5 w-px shrink-0 bg-[#e2e8f0]" />
         )}
 
@@ -107,10 +114,13 @@ export function KBBreadcrumbBar({
                       {item.label}
                     </span>
                   ) : (
+                    // Inactive breadcrumb items: weight=normal + color=#64748b
+                    // (slate-500). Sampled from Figma `kb-breadcrumb-bar.png`
+                    // — anti-aliased dark edges average to slate-500.
                     <a
                       href="#"
                       onClick={(e) => e.preventDefault()}
-                      className="text-[14px] font-medium leading-5 text-[#475569] hover:bg-[#f8fafc] hover:text-[#0f172a] rounded-[4px] px-[6px] py-0 truncate max-w-[260px]"
+                      className="text-[14px] font-normal leading-5 text-[#64748b] hover:bg-[#f8fafc] hover:text-[#0f172a] rounded-[4px] px-[6px] py-0 truncate max-w-[260px]"
                       title={item.label}
                     >
                       {item.label}

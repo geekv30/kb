@@ -82,7 +82,10 @@ export function AISuggestionsCard({
       header={
         <div className="flex items-center gap-2">
           <AiIcon size={16} aria-hidden="true" />
-          <span className="text-[14px] font-semibold leading-[20px] text-[#0f172a]">
+          {/* Per Figma `ai-suggestions-card-pre-review.png` — the title
+           * is weight=medium, not semibold. Semibold read too heavy
+           * compared to surrounding card UI in the live render. */}
+          <span className="text-[14px] font-medium leading-[20px] text-[#0f172a]">
             {resolvedTitle}
           </span>
           {isTerminal && <CountPill count={count} />}
