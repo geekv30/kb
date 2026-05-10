@@ -62,6 +62,10 @@ export type AnalyticsAreaChartProps = {
   yTicks?: number[];
   /** Format y-axis tick. Defaults to `(v) => v >= 1000 ? `${v / 1000}k` : `${v}`. */
   yTickFormat?: (value: number) => string;
+  /** X-axis tick values — caller controls which `xKey` values render a label.
+   *  Use when the data has more points than visible labels (e.g. weekday-only
+   *  axis on a daily series). When omitted, every `xKey` value renders. */
+  xTicks?: string[];
   /** Show legend below chart. Default true. */
   showLegend?: boolean;
   /** Render height in px. Default 280. */
@@ -144,6 +148,7 @@ export function AnalyticsAreaChart({
   goalLine,
   yTicks,
   yTickFormat,
+  xTicks,
   showLegend = true,
   height = 280,
   className,
@@ -186,8 +191,8 @@ export function AnalyticsAreaChart({
                   x2="0"
                   y2="1"
                 >
-                  <stop offset="0%" stopColor={colorFor(s.variant)} stopOpacity={0.12} />
-                  <stop offset="100%" stopColor={colorFor(s.variant)} stopOpacity={0} />
+                  <stop offset="0%" stopColor={colorFor(s.variant)} stopOpacity={0.22} />
+                  <stop offset="100%" stopColor={colorFor(s.variant)} stopOpacity={0.02} />
                 </linearGradient>
               ))}
             </defs>
@@ -201,7 +206,31 @@ export function AnalyticsAreaChart({
               axisLine={false}
               tickLine={false}
               tickMargin={8}
-              tick={{ fill: 'var(--color-chart-body)', fontSize: 12 }}
+              interval={0}
+              tick={
+                xTicks
+                  ? (props: {
+                      x?: number;
+                      y?: number;
+                      payload?: { value?: string };
+                    }) => {
+                      const value = props.payload?.value ?? '';
+                      if (!xTicks.includes(value)) return <g />;
+                      return (
+                        <text
+                          x={props.x}
+                          y={props.y}
+                          dy={12}
+                          textAnchor="middle"
+                          fill="var(--color-chart-body)"
+                          fontSize={12}
+                        >
+                          {value}
+                        </text>
+                      );
+                    }
+                  : { fill: 'var(--color-chart-body)', fontSize: 12 }
+              }
             />
             <YAxis
               axisLine={false}
@@ -238,7 +267,7 @@ export function AnalyticsAreaChart({
               <ReferenceLine
                 y={goalLine.y}
                 stroke="var(--color-chart-goal-line)"
-                strokeDasharray="4 4"
+                strokeDasharray="6 4"
                 label={(props: { viewBox?: GoalLineLabelProps['viewBox'] }) => (
                   <GoalLineLabel
                     value={goalLine.label}
