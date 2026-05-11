@@ -176,8 +176,8 @@ function SlugField({
       </div>
       <div
         className={cn(
-          'flex w-full min-h-[40px] items-center gap-2 rounded-[8px] border border-[#e5e5e5] bg-white px-3',
-          'focus-within:border-[#cbd5e1]',
+          'flex w-full min-h-[40px] items-center gap-2 rounded-[8px] border border-card-border bg-white px-3',
+          'focus-within:border-border-faint',
         )}
       >
         <input
@@ -188,11 +188,11 @@ function SlugField({
           maxLength={SLUG_MAX}
           placeholder="article-url-slug"
           className={cn(
-            'flex-1 bg-transparent text-[14px] leading-[20px] font-normal text-[#0f172a]',
-            'placeholder:text-[#94a3b8] focus:outline-none',
+            'flex-1 bg-transparent text-[14px] leading-[20px] font-normal text-text-primary',
+            'placeholder:text-text-disabled focus:outline-none',
           )}
         />
-        <RiArrowDownSLine aria-hidden="true" className="h-4 w-4 shrink-0 text-[#94a3b8]" />
+        <RiArrowDownSLine aria-hidden="true" className="h-4 w-4 shrink-0 text-text-disabled" />
       </div>
     </div>
   );
@@ -221,7 +221,7 @@ function TagsField({
       <FieldLabel>Tags</FieldLabel>
       <div
         className={cn(
-          'flex w-full min-h-[40px] flex-wrap items-center gap-1.5 rounded-[8px] border border-[#e5e5e5] bg-white',
+          'flex w-full min-h-[40px] flex-wrap items-center gap-1.5 rounded-[8px] border border-card-border bg-white',
           'px-2 py-1.5',
         )}
       >
@@ -250,7 +250,7 @@ function PublishDateField({
     <div className="flex flex-col gap-1.5">
       <FieldLabel>Publish date</FieldLabel>
       <FieldBox onClick={onOpen} ariaLabel="Change publish date">
-        <RiCalendar2Line aria-hidden="true" className="h-4 w-4 shrink-0 text-[#64748b]" />
+        <RiCalendar2Line aria-hidden="true" className="h-4 w-4 shrink-0 text-text-muted" />
         {date ? <span className="truncate">{date}</span> : <Placeholder>Pick a date</Placeholder>}
       </FieldBox>
     </div>
@@ -280,8 +280,8 @@ function SeoTitleField({
       </div>
       <div
         className={cn(
-          'flex w-full min-h-[40px] items-center gap-2 rounded-[8px] border border-[#e5e5e5] bg-white px-3',
-          'focus-within:border-[#cbd5e1]',
+          'flex w-full min-h-[40px] items-center gap-2 rounded-[8px] border border-card-border bg-white px-3',
+          'focus-within:border-border-faint',
         )}
       >
         <input
@@ -292,8 +292,8 @@ function SeoTitleField({
           maxLength={SEO_MAX}
           placeholder="SEO page title"
           className={cn(
-            'flex-1 bg-transparent text-[14px] leading-[20px] font-normal text-[#0f172a]',
-            'placeholder:text-[#94a3b8] focus:outline-none',
+            'flex-1 bg-transparent text-[14px] leading-[20px] font-normal text-text-primary',
+            'placeholder:text-text-disabled focus:outline-none',
           )}
         />
       </div>
@@ -357,10 +357,10 @@ function ReviewersField({
           onClick={onAdd}
           aria-label="Add reviewer"
           className={cn(
-            'inline-flex size-6 items-center justify-center rounded-full border border-dashed border-[#cbd5e1]',
-            'bg-white text-[#64748b] ring-2 ring-white',
+            'inline-flex size-6 items-center justify-center rounded-full border border-dashed border-border-faint',
+            'bg-white text-text-muted ring-2 ring-white',
             reviewers.length > 0 && '-ml-2',
-            'hover:bg-[#f8fafc] focus:outline-none focus:ring-2 focus:ring-black/10',
+            'hover:bg-surface-subtle focus:outline-none focus:ring-2 focus:ring-black/10',
           )}
         >
           <RiAddLine className="h-[14px] w-[14px]" />
@@ -414,7 +414,7 @@ export function ArticleSettingsPanel({
       className={cn(
         // Figma `53:8384` ships card border `#f1f5f9` (color-border).
         // Aligns with ContentEditor; replaces the prior `#e2e8f0` drift.
-        'flex flex-col rounded-[12px] border border-[#f1f5f9] bg-white',
+        'flex flex-col rounded-[12px] border border-surface-muted bg-white',
         'shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05),0px_2px_4px_-2px_rgba(0,0,0,0.10)]',
         // Width + outer padding swap on the compact variant.
         // Default 452 / py-6 px-[22px] (24/22)  ─  Compact 380 / px-4 py-4 (16/16).
@@ -435,12 +435,12 @@ export function ArticleSettingsPanel({
               'focus:outline-none focus:ring-2 focus:ring-black/10 rounded-[4px]',
             )}
           >
-            <RiSettings5Line aria-hidden="true" className="h-4 w-4 shrink-0 text-[#0f172a]" />
-            <span className="flex-1 text-[14px] font-medium leading-[20px] text-[#0f172a]">Settings</span>
+            <RiSettings5Line aria-hidden="true" className="h-4 w-4 shrink-0 text-text-primary" />
+            <span className="flex-1 text-[14px] font-medium leading-[20px] text-text-primary">Settings</span>
             {collapsed ? (
-              <RiArrowDownSLine aria-hidden="true" className="h-4 w-4 shrink-0 text-[#0f172a]" />
+              <RiArrowDownSLine aria-hidden="true" className="h-4 w-4 shrink-0 text-text-primary" />
             ) : (
-              <RiArrowUpSLine aria-hidden="true" className="h-4 w-4 shrink-0 text-[#0f172a]" />
+              <RiArrowUpSLine aria-hidden="true" className="h-4 w-4 shrink-0 text-text-primary" />
             )}
           </button>
           <div className="flex items-center">{headerSlot}</div>
@@ -456,12 +456,12 @@ export function ArticleSettingsPanel({
             'focus:outline-none focus:ring-2 focus:ring-black/10 rounded-[4px]',
           )}
         >
-          <RiSettings5Line aria-hidden="true" className="h-4 w-4 shrink-0 text-[#0f172a]" />
-          <span className="flex-1 text-[14px] font-medium leading-[20px] text-[#0f172a]">Settings</span>
+          <RiSettings5Line aria-hidden="true" className="h-4 w-4 shrink-0 text-text-primary" />
+          <span className="flex-1 text-[14px] font-medium leading-[20px] text-text-primary">Settings</span>
           {collapsed ? (
-            <RiArrowDownSLine aria-hidden="true" className="h-4 w-4 shrink-0 text-[#0f172a]" />
+            <RiArrowDownSLine aria-hidden="true" className="h-4 w-4 shrink-0 text-text-primary" />
           ) : (
-            <RiArrowUpSLine aria-hidden="true" className="h-4 w-4 shrink-0 text-[#0f172a]" />
+            <RiArrowUpSLine aria-hidden="true" className="h-4 w-4 shrink-0 text-text-primary" />
           )}
         </button>
       )}
@@ -472,7 +472,7 @@ export function ArticleSettingsPanel({
               top spacing to match the 12-px field gap. */}
           <div
             aria-hidden="true"
-            className={cn('h-px w-full bg-[#e5e5e5]', compact ? 'mt-3' : 'mt-5')}
+            className={cn('h-px w-full bg-card-border', compact ? 'mt-3' : 'mt-5')}
           />
 
           {/* Field stack — default 20-px gap, compact 12-px gap. Field
@@ -527,7 +527,7 @@ export function ArticleSettingsPanel({
             )}
             {footerSlot ? (
               <>
-                <div aria-hidden="true" className="h-px w-full bg-[#e5e5e5]" />
+                <div aria-hidden="true" className="h-px w-full bg-card-border" />
                 {footerSlot}
               </>
             ) : null}

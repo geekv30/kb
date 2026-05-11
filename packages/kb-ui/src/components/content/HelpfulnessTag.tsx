@@ -36,8 +36,8 @@ export type HelpfulnessTagProps = {
 };
 
 const VARIANT_CLASS: Record<HelpfulnessVariant, string> = {
-  up: 'bg-[#f2fcf6] text-[#086e3f]',
-  down: 'bg-[#fff7f5] text-[#d52c1f]',
+  up: 'bg-success-wash-subtle text-success-text',
+  down: 'bg-[#fff7f5] text-trend-down',
 };
 
 export function HelpfulnessTag({ value, variant, className }: HelpfulnessTagProps) {

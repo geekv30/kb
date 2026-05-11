@@ -47,8 +47,8 @@ function CountPill({ count }: { count: number }) {
     <span
       data-kb-part="ai-suggestions-card-count"
       className={cn(
-        'inline-flex min-w-[20px] items-center justify-center rounded-full border border-card-border bg-[#f1f5f9] px-1.5',
-        'text-[12px] font-medium leading-[18px] text-[#475569] tabular-nums',
+        'inline-flex min-w-[20px] items-center justify-center rounded-full border border-card-border bg-surface-muted px-1.5',
+        'text-[12px] font-medium leading-[18px] text-text-meta tabular-nums',
       )}
     >
       {count}
@@ -85,14 +85,14 @@ export function AISuggestionsCard({
           {/* Per Figma `ai-suggestions-card-pre-review.png` — the title
            * is weight=medium, not semibold. Semibold read too heavy
            * compared to surrounding card UI in the live render. */}
-          <span className="text-[14px] font-medium leading-[20px] text-[#0f172a]">
+          <span className="text-[14px] font-medium leading-[20px] text-text-primary">
             {resolvedTitle}
           </span>
           {isTerminal && <CountPill count={count} />}
         </div>
       }
       body={
-        <p className="mt-2 text-[14px] font-normal leading-[20px] text-[#475569]">
+        <p className="mt-2 text-[14px] font-normal leading-[20px] text-text-meta">
           {summary}
         </p>
       }
@@ -109,7 +109,7 @@ export function AISuggestionsCard({
               aria-label="Reviewed all suggestions"
               className={cn(
                 'inline-flex items-center gap-1.5 px-3 py-2',
-                'text-[14px] font-medium leading-[20px] text-[#475569]',
+                'text-[14px] font-medium leading-[20px] text-text-meta',
                 'cursor-not-allowed',
               )}
             >

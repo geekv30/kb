@@ -146,7 +146,7 @@ function PlainSentences({ sentences }: { sentences: SuggestionSentence[] }) {
         typeof s === 'string' ? (
           <p
             key={i}
-            className="mb-2 text-[16px] leading-[24px] text-[#0f172a] last:mb-0"
+            className="mb-2 text-[16px] leading-[24px] text-text-primary last:mb-0"
           >
             {s}
           </p>

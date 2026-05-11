@@ -8,6 +8,7 @@ import {
   RiMailLine,
 } from '@remixicon/react';
 import { cn } from '../../utils/cn';
+import { tokens } from '../../tokens';
 
 /* ─────────────────────────────────────────────────────────────
  * Types
@@ -52,7 +53,7 @@ export type SuggestionKindMeta = {
  * ───────────────────────────────────────────────────────────── */
 
 // mirror of --color-ai-pink — kept inline so Ri* icons accept color prop
-const PINK = '#D92FFF';
+const PINK = tokens.color.aiPink;
 
 /**
  * Default registry — covers the 3 historical built-in kinds. Custom
@@ -143,11 +144,11 @@ function KindChip({ kind, pathFrom, pathTo, registry }: KindChipProps) {
   // edge case where both path props are undefined.
   if (kind === 'move-article' && entry) {
     return (
-      <span className="flex items-center gap-[6px] text-[14px] font-medium text-[#475569]">
+      <span className="flex items-center gap-[6px] text-[14px] font-medium text-text-meta">
         {entry.icon}
         <span className="inline-flex items-center gap-1">
           {pathFrom ?? ''}
-          <span aria-hidden className="text-[#94a3b8]">
+          <span aria-hidden className="text-text-disabled">
             ›
           </span>
           {pathTo ?? ''}
@@ -159,14 +160,14 @@ function KindChip({ kind, pathFrom, pathTo, registry }: KindChipProps) {
   if (!entry) {
     // Unknown kind — render the raw key as label, no icon. Don't throw.
     return (
-      <span className="flex items-center gap-[6px] text-[14px] font-medium text-[#475569]">
+      <span className="flex items-center gap-[6px] text-[14px] font-medium text-text-meta">
         {kind}
       </span>
     );
   }
 
   return (
-    <span className="flex items-center gap-[6px] text-[14px] font-medium text-[#475569]">
+    <span className="flex items-center gap-[6px] text-[14px] font-medium text-text-meta">
       {entry.icon}
       {entry.label}
     </span>
@@ -181,7 +182,7 @@ function MetaDot() {
   return (
     <span
       aria-hidden
-      className="mx-[8px] text-[14px] font-medium text-[#94a3b8] leading-none select-none"
+      className="mx-[8px] text-[14px] font-medium text-text-disabled leading-none select-none"
     >
       ·
     </span>
@@ -241,8 +242,8 @@ export function SuggestionCard({
         'rounded-[12px] border border-card-border bg-white',
         'px-[20px] py-[20px]',
         'transition-colors duration-150',
-        clickable && 'cursor-pointer hover:bg-[#f8fafc]',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f172a]/20',
+        clickable && 'cursor-pointer hover:bg-surface-subtle',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/20',
         className,
       )}
     >
@@ -254,7 +255,7 @@ export function SuggestionCard({
         <span aria-hidden className="flex size-[20px] items-center justify-center shrink-0">
           {titleIcon}
         </span>
-        <span className="text-[14px] font-semibold leading-5 text-[#0f172a] truncate">
+        <span className="text-[14px] font-semibold leading-5 text-text-primary truncate">
           {title}
         </span>
       </div>
@@ -264,7 +265,7 @@ export function SuggestionCard({
           flush with icon, not indented past it). */}
       <p
         data-kb-part="suggestion-description"
-        className="text-[14px] font-normal leading-5 text-[#64748b]"
+        className="text-[14px] font-normal leading-5 text-text-muted"
       >
         {description}
       </p>
@@ -291,12 +292,12 @@ export function SuggestionCard({
         ) : (
           <>
             <MetaDot />
-            <span className="flex items-center gap-[6px] text-[14px] font-medium text-[#475569]">
+            <span className="flex items-center gap-[6px] text-[14px] font-medium text-text-meta">
               <RiMailLine size={16} />
               {conversationCount} Conversations
             </span>
             <MetaDot />
-            <span className="text-[12px] font-medium leading-5 text-[#475569] tracking-[0.04em]">
+            <span className="text-[12px] font-medium leading-5 text-text-meta tracking-[0.04em]">
               {impact.toUpperCase()} IMPACT
             </span>
           </>
