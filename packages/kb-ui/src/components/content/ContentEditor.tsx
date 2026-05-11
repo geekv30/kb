@@ -605,7 +605,7 @@ function ContentEditorStyles() {
         font-size: 16px;
         line-height: 24px;
         font-weight: 400;
-        color: #0f172a;
+        color: var(--color-text-primary);
       }
 
       [data-kb-part="content-editor"] .kb-editor-prose p {
@@ -618,7 +618,7 @@ function ContentEditorStyles() {
         font-size: 24px;
         line-height: 32px;
         font-weight: 600;
-        color: #0f172a;
+        color: var(--color-text-primary);
         margin: 24px 0 12px 0;
       }
       [data-kb-part="content-editor"] .kb-editor-prose h1:first-child { margin-top: 0; }
@@ -627,7 +627,7 @@ function ContentEditorStyles() {
         font-size: 20px;
         line-height: 28px;
         font-weight: 600;
-        color: #0f172a;
+        color: var(--color-text-primary);
         margin: 20px 0 12px 0;
       }
       [data-kb-part="content-editor"] .kb-editor-prose h2:first-child { margin-top: 0; }
@@ -636,7 +636,7 @@ function ContentEditorStyles() {
         font-size: 18px;
         line-height: 28px;
         font-weight: 600;
-        color: #0f172a;
+        color: var(--color-text-primary);
         margin: 16px 0 8px 0;
       }
       [data-kb-part="content-editor"] .kb-editor-prose h3:first-child { margin-top: 0; }
@@ -657,16 +657,16 @@ function ContentEditorStyles() {
       [data-kb-part="content-editor"] .kb-editor-prose s { text-decoration: line-through; }
 
       [data-kb-part="content-editor"] .kb-editor-prose a {
-        color: #2563eb;
+        color: var(--color-link);
         text-decoration: underline;
         text-underline-offset: 2px;
       }
-      [data-kb-part="content-editor"] .kb-editor-prose a:hover { color: #1d4ed8; }
+      [data-kb-part="content-editor"] .kb-editor-prose a:hover { color: var(--color-link-hover); }
 
       /* Inline code */
       [data-kb-part="content-editor"] .kb-editor-prose code {
-        background-color: #f1f5f9;
-        color: #0f172a;
+        background-color: var(--color-surface-muted);
+        color: var(--color-text-primary);
         padding: 2px 6px;
         border-radius: 4px;
         font-size: 14px;
@@ -675,8 +675,8 @@ function ContentEditorStyles() {
 
       /* Code block (lowlight) */
       [data-kb-part="content-editor"] .kb-editor-prose pre {
-        background-color: #0f172a;
-        color: #e2e8f0;
+        background-color: var(--color-text-primary);
+        color: var(--color-card-border);
         padding: 16px;
         border-radius: 8px;
         margin: 16px 0;
@@ -691,7 +691,7 @@ function ContentEditorStyles() {
         border-radius: 0;
         font-size: 14px;
       }
-      /* Basic lowlight highlighting colors (works on any lowlight class) */
+      /* highlight.js syntax palette — intentionally inline (not system tokens) */
       [data-kb-part="content-editor"] .kb-editor-prose pre .hljs-keyword,
       [data-kb-part="content-editor"] .kb-editor-prose pre .hljs-selector-tag,
       [data-kb-part="content-editor"] .kb-editor-prose pre .hljs-literal { color: #c084fc; }
@@ -706,17 +706,17 @@ function ContentEditorStyles() {
 
       /* Blockquote */
       [data-kb-part="content-editor"] .kb-editor-prose blockquote {
-        border-left: 3px solid #e2e8f0;
+        border-left: 3px solid var(--color-card-border);
         padding: 4px 0 4px 16px;
         margin: 16px 0;
-        color: #475569;
+        color: var(--color-text-meta);
         font-style: italic;
       }
 
       /* Horizontal rule */
       [data-kb-part="content-editor"] .kb-editor-prose hr {
         border: none;
-        border-top: 1px solid #e2e8f0;
+        border-top: 1px solid var(--color-card-border);
         margin: 24px 0;
       }
 
@@ -748,11 +748,11 @@ function ContentEditorStyles() {
         min-width: 60px;
       }
       [data-kb-part="content-editor"] .kb-editor-prose th {
-        background-color: #f8fafc;
+        background-color: var(--color-surface-subtle);
         font-weight: 600;
-        color: #0f172a;
+        color: var(--color-text-primary);
       }
-      [data-kb-part="content-editor"] .kb-editor-prose td { color: #0f172a; }
+      [data-kb-part="content-editor"] .kb-editor-prose td { color: var(--color-text-primary); }
       [data-kb-part="content-editor"] .kb-editor-prose .selectedCell {
         background-color: rgba(231, 249, 238, 0.6);
       }
@@ -761,8 +761,8 @@ function ContentEditorStyles() {
          Configured via Highlight({ color: 'ai' }). */
       [data-kb-part="content-editor"] .kb-editor-prose mark[data-color="ai"],
       [data-kb-part="content-editor"] .kb-editor-prose mark[style*="e7f9ee"] {
-        background-color: #e7f9ee;
-        color: #0f172a;
+        background-color: var(--color-highlight);
+        color: var(--color-text-primary);
         padding: 2px 6px;
         border-radius: 4px;
         box-decoration-break: clone;
@@ -770,7 +770,7 @@ function ContentEditorStyles() {
       }
       /* Placeholder */
       [data-kb-part="content-editor"] .kb-editor-prose p.is-editor-empty:first-child::before {
-        color: #94a3b8;
+        color: var(--color-text-disabled);
         content: attr(data-placeholder);
         float: left;
         height: 0;
@@ -780,7 +780,7 @@ function ContentEditorStyles() {
       /* ProseMirror editing polish */
       [data-kb-part="content-editor"] .ProseMirror { outline: none; }
       [data-kb-part="content-editor"] .ProseMirror-focused { outline: none; }
-      [data-kb-part="content-editor"] .ProseMirror ::selection { background-color: #e7f9ee; }
+      [data-kb-part="content-editor"] .ProseMirror ::selection { background-color: var(--color-highlight); }
     `}</style>
   );
 }
