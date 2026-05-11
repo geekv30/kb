@@ -57,7 +57,7 @@ function counterTone(
   count: number,
 ): { color: string; label: string } {
   if (count === 0) {
-    return { color: '#64758b', label: 'Empty' };
+    return { color: '#64748b', label: 'Empty' };
   }
   if (count >= META_DESC_OPTIMAL_LO && count <= META_DESC_MAX) {
     return { color: '#15803d', label: 'Optimal' };
@@ -68,7 +68,7 @@ function counterTone(
   if (count >= 120) {
     return { color: '#15803d', label: 'Almost optimal' };
   }
-  return { color: '#64758b', label: 'Too short' };
+  return { color: '#64748b', label: 'Too short' };
 }
 
 /**
@@ -165,7 +165,7 @@ export function ArticleSeoCard({
           <h2 className="text-[14px] font-semibold leading-[20px] text-[#0f172a]">
             SEO
           </h2>
-          <p className="text-[12px] font-normal leading-[18px] text-[#64758b]">
+          <p className="text-[12px] font-normal leading-[18px] text-[#64748b]">
             Optimise how this article appears in search results.
           </p>
         </div>
@@ -222,7 +222,7 @@ export function ArticleSeoCard({
 
         <div className="flex items-center justify-between gap-2">
           <p
-            className="text-[12px] font-normal leading-[18px] text-[#64758b]"
+            className="text-[12px] font-normal leading-[18px] text-[#64748b]"
             id="ai-helper-text"
           >
             {aiReady
@@ -260,7 +260,7 @@ export function ArticleSeoCard({
           </button>
         </div>
 
-        <p className="text-[12px] font-normal leading-[18px] text-[#64758b]">
+        <p className="text-[12px] font-normal leading-[18px] text-[#64748b]">
           Auto-generated. Search engines treat this URL as the primary version
           when the same content is reachable via multiple paths.
         </p>
@@ -349,7 +349,7 @@ function SuggestionPanel({
         <span className="text-[12px] font-semibold leading-[18px] text-[#0f172a]">
           AI suggestion
         </span>
-        <span className="text-[12px] font-normal leading-[18px] text-[#64758b]">
+        <span className="text-[12px] font-normal leading-[18px] text-[#64748b]">
           · {suggestion.length}/{META_DESC_MAX} chars
         </span>
       </div>

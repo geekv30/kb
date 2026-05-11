@@ -37,7 +37,7 @@ function FollowupQuestionReview() {
           icon={
             <RiCornerDownRightLine
               aria-hidden="true"
-              className="h-4 w-4 text-[#64758b]"
+              className="h-4 w-4 text-[#64748b]"
             />
           }
         >

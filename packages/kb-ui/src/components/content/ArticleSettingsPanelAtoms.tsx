@@ -101,7 +101,7 @@ export function TagChip({ label, onRemove }: TagChipProps) {
           aria-label={`Remove ${label}`}
           className={cn(
             'inline-flex h-[16px] w-[16px] items-center justify-center rounded-full',
-            'text-[#64758b] hover:bg-[#e2e8f0] hover:text-[#0f172a]',
+            'text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#0f172a]',
             'focus:outline-none focus:ring-2 focus:ring-black/10',
           )}
         >

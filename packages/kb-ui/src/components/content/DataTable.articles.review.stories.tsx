@@ -88,7 +88,7 @@ const articles: Article[] = [
 //   updated → Label 8  px-[24px] (scale/space/4xl), text #0f172a
 //
 // NOTE: the canonical KBCategoryPage uses px-4 (=16) on every cell
-// AND paints "Last Updated" subtle slate (#64758b). Both diverge
+// AND paints "Last Updated" subtle slate (#64748b). Both diverge
 // from Figma — flagged as page-level drift in the report.
 const articleColumns: DataTableColumn<Article>[] = [
   {
@@ -103,7 +103,7 @@ const articleColumns: DataTableColumn<Article>[] = [
           aria-label={`Open ${a.title}`}
           onClick={(e) => e.stopPropagation()}
           className={cn(
-            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#64758b]',
+            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#64748b]',
             'hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
           )}
         >
@@ -171,7 +171,7 @@ const articleColumns: DataTableColumn<Article>[] = [
     className: 'px-6',
     render: (a) => (
       // Figma colors this with the default text color (#0f172a), not
-      // the subtle slate (#64758b) the canonical page uses. Wrap with
+      // the subtle slate (#64748b) the canonical page uses. Wrap with
       // `block truncate` so longer strings ellipsis instead of wrapping
       // to a second line (would push the row past the canonical 48 px).
       <span className="block truncate text-[#0f172a]">{a.lastUpdated}</span>

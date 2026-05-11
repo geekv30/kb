@@ -56,14 +56,14 @@ export function AnalyticsChartCard({
               >
                 <RiInformationLine
                   size={16}
-                  className="text-[#64758b]"
+                  className="text-[#64748b]"
                   aria-hidden="true"
                 />
               </span>
             )}
           </div>
           {subtitle && (
-            <p className="text-[12px] font-normal leading-4 text-[#64758b]">
+            <p className="text-[12px] font-normal leading-4 text-[#64748b]">
               {subtitle}
             </p>
           )}

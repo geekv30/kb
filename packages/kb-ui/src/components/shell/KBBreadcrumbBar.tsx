@@ -71,7 +71,7 @@ export function KBBreadcrumbBar({
           onClick={handleLeadingClick}
           aria-label={leadingLabel}
           data-testid={leadingTestId}
-          className="inline-flex size-[22px] shrink-0 p-[4px] items-center justify-center rounded-[4px] text-[#64758b] hover:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]"
+          className="inline-flex size-[22px] shrink-0 p-[4px] items-center justify-center rounded-[4px] text-[#64748b] hover:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]"
         >
           <LeadingIcon size={14} />
         </button>

@@ -199,7 +199,7 @@ export function AIGapSuggestionCard({
           aria-label={`Undo ${state} for ${suggestion.title}`}
           className={cn(
             'ml-auto inline-flex size-6 items-center justify-center rounded-[4px]',
-            'text-[#64758b] transition-colors',
+            'text-[#64748b] transition-colors',
             'hover:bg-[#f1f5f9] hover:text-[#0f172a]',
             'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
           )}
@@ -229,7 +229,7 @@ export function AIGapSuggestionCard({
           </h3>
           <p
             data-kb-part="ai-gap-description"
-            className="mt-1 text-[14px] font-normal leading-[20px] text-[#64758b]"
+            className="mt-1 text-[14px] font-normal leading-[20px] text-[#64748b]"
           >
             {suggestion.description}
           </p>

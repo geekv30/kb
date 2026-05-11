@@ -65,9 +65,9 @@ export function DateRangePill({ value, onChange, label, className, presets }: Da
             className,
           )}
         >
-          <RiCalendarLine size={14} className="text-[#64758b]" aria-hidden="true" />
+          <RiCalendarLine size={14} className="text-[#64748b]" aria-hidden="true" />
           <span>{displayLabel}</span>
-          <RiArrowDownSLine size={14} className="text-[#64758b]" aria-hidden="true" />
+          <RiArrowDownSLine size={14} className="text-[#64748b]" aria-hidden="true" />
         </button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>

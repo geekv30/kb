@@ -135,7 +135,7 @@ const expandedBreadcrumbItems = [
 
 /**
  * Figma `53:8464` shows, directly under the H1:
- *   "Last updated 9 months ago"   — subtitle, 14/20 #64758b
+ *   "Last updated 9 months ago"   — subtitle, 14/20 #64748b
  *
  * Per spec we are NOT modifying `ContentEditor.tsx`; the subtitle is
  * injected as a first paragraph in the editor content. Tiptap strips most

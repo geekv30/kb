@@ -55,7 +55,7 @@ function SideSheetPlayground() {
               key={citation.senderName}
               className="rounded-[8px] border border-[#e5e5e5] p-3 flex flex-col gap-1"
             >
-              <div className="text-[12px] text-[#64758b] flex items-center gap-2">
+              <div className="text-[12px] text-[#64748b] flex items-center gap-2">
                 <span>{citation.senderName}</span>
                 <span>·</span>
                 <span>{citation.timestamp}</span>

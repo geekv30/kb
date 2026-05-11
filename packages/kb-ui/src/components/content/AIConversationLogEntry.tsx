@@ -174,12 +174,12 @@ function TailRow({ tail }: TailRowProps) {
         icon={
           <CursorClickIcon
             size={14}
-            className="text-[#64758b]"
+            className="text-[#64748b]"
           />
         }
       >
         <div className="flex items-center gap-2 pt-[1px]">
-          <span aria-hidden="true" className="text-[14px] leading-5 text-[#64758b]">·</span>
+          <span aria-hidden="true" className="text-[14px] leading-5 text-[#64748b]">·</span>
           <RiPriceTag3Line
             aria-hidden="true"
             className="h-4 w-4 shrink-0 text-[#475569]"
@@ -203,12 +203,12 @@ function TailRow({ tail }: TailRowProps) {
         icon={
           <CursorClickIcon
             size={14}
-            className="text-[#64758b]"
+            className="text-[#64748b]"
           />
         }
       >
         <div className="flex items-center gap-2 pt-[1px]">
-          <span aria-hidden="true" className="text-[14px] leading-5 text-[#64758b]">·</span>
+          <span aria-hidden="true" className="text-[14px] leading-5 text-[#64748b]">·</span>
           <RiBookOpenLine
             aria-hidden="true"
             className="h-4 w-4 shrink-0 text-[#475569]"
@@ -230,12 +230,12 @@ function TailRow({ tail }: TailRowProps) {
       icon={
         <CursorClickIcon
           size={14}
-          className="text-[#64758b]"
+          className="text-[#64748b]"
         />
       }
     >
       <div className="flex items-center gap-2 pt-[1px]">
-        <span aria-hidden="true" className="text-[14px] leading-5 text-[#64758b]">·</span>
+        <span aria-hidden="true" className="text-[14px] leading-5 text-[#64748b]">·</span>
         <RiFileTextLine
           aria-hidden="true"
           className="h-4 w-4 shrink-0 text-[#475569]"
@@ -374,7 +374,7 @@ export function AIConversationLogEntry({
             icon={
               <RiCornerDownRightLine
                 aria-hidden="true"
-                className="h-4 w-4 text-[#64758b]"
+                className="h-4 w-4 text-[#64748b]"
               />
             }
           >

@@ -58,7 +58,7 @@ const citedColumns: DataTableColumn<MostCitedRow>[] = [
       <span className="inline-flex items-center gap-2">
         <RiFile3Line
           size={16}
-          className="shrink-0 text-[#64758b]"
+          className="shrink-0 text-[#64748b]"
           aria-hidden="true"
         />
         <span>{r.title}</span>

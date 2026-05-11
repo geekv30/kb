@@ -41,7 +41,7 @@ export type SuggestionKindMeta = {
  *   Brand pink   : #D92FFF (start of the AiIcon gradient — used for
  *                  all "suggestion" glyphs so they read as a family)
  *   Title text   : #0f172a
- *   Description  : #64758b (muted body — matches Figma screenshot)
+ *   Description  : #64748b (muted body — matches Figma screenshot)
  *   Divider      : #f1f5f9 (1px, full inner width)
  *   Meta label   : #475569 (meta text — matches kb-ui tokens)
  *   Meta dim     : #94a3b8 (middot separator)
@@ -264,7 +264,7 @@ export function SuggestionCard({
           flush with icon, not indented past it). */}
       <p
         data-kb-part="suggestion-description"
-        className="text-[14px] font-normal leading-5 text-[#64758b]"
+        className="text-[14px] font-normal leading-5 text-[#64748b]"
       >
         {description}
       </p>

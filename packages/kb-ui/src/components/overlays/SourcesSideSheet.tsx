@@ -85,12 +85,12 @@ export function MailItem({
       <div className="flex items-center gap-2">
         <RiMailLine
           aria-hidden="true"
-          className="h-4 w-4 shrink-0 text-[#64758b]"
+          className="h-4 w-4 shrink-0 text-[#64748b]"
         />
         <span className="flex-1 truncate text-[14px] font-semibold leading-[20px] text-[#0f172a]">
           {senderName}
         </span>
-        <span className="shrink-0 text-[12px] font-normal leading-[18px] text-[#64758b]">
+        <span className="shrink-0 text-[12px] font-normal leading-[18px] text-[#64748b]">
           {timestamp}
         </span>
       </div>
@@ -101,7 +101,7 @@ export function MailItem({
       </div>
 
       {/* Row 3: preview snippet (single-line, ellipsized) */}
-      <div className="mt-1 truncate text-[14px] font-normal leading-[20px] text-[#64758b]">
+      <div className="mt-1 truncate text-[14px] font-normal leading-[20px] text-[#64748b]">
         {snippet}
       </div>
     </>

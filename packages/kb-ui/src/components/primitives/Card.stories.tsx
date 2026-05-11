@@ -18,7 +18,7 @@ function CardPlayground() {
         <h3 className="text-[16px] font-semibold leading-6 text-[#0f172a]">
           Reset your password
         </h3>
-        <p className="text-[14px] leading-5 text-[#64758b] mt-2">
+        <p className="text-[14px] leading-5 text-[#64748b] mt-2">
           Step-by-step guide to recover access if you've forgotten your credentials.
           Updated for 2026.
         </p>

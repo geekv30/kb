@@ -23,7 +23,7 @@ function DividerPlayground() {
       {SECTIONS.map((section, index) => (
         <div key={section.label}>
           <div className="py-3">
-            <div className="text-[12px] leading-[18px] text-[#64758b]">
+            <div className="text-[12px] leading-[18px] text-[#64748b]">
               {section.label}
             </div>
             <div className="text-[14px] leading-[20px] text-[#0f172a]">
