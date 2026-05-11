@@ -71,7 +71,7 @@ export function KBBreadcrumbBar({
           onClick={handleLeadingClick}
           aria-label={leadingLabel}
           data-testid={leadingTestId}
-          className="inline-flex size-[22px] shrink-0 p-[4px] items-center justify-center rounded-[4px] text-[#64748b] hover:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]"
+          className="inline-flex size-[22px] shrink-0 p-[4px] items-center justify-center rounded-[4px] text-text-muted hover:bg-surface-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-border-faint"
         >
           <LeadingIcon size={14} />
         </button>
@@ -86,12 +86,12 @@ export function KBBreadcrumbBar({
         {sidebarCollapsed ? (
           <span
             aria-hidden="true"
-            className="inline-flex items-center justify-center text-[14px] leading-5 text-[#cbd5e1] px-[6px] shrink-0 select-none"
+            className="inline-flex items-center justify-center text-[14px] leading-5 text-border-faint px-[6px] shrink-0 select-none"
           >
             /
           </span>
         ) : (
-          <span aria-hidden="true" className="h-5 w-px shrink-0 bg-[#e2e8f0]" />
+          <span aria-hidden="true" className="h-5 w-px shrink-0 bg-card-border" />
         )}
 
         <nav aria-label="Breadcrumb" className="flex items-center min-w-0">
@@ -108,7 +108,7 @@ export function KBBreadcrumbBar({
                     // Current-item pill per spec: bg #f8fafc, radius 4, padding 0/6
                     <span
                       data-kb-part="breadcrumb-current"
-                      className="inline-flex items-center h-5 px-[6px] py-0 rounded-[4px] bg-[#f8fafc] text-[14px] font-medium leading-5 text-[#0f172a] truncate max-w-[320px]"
+                      className="inline-flex items-center h-5 px-[6px] py-0 rounded-[4px] bg-surface-subtle text-[14px] font-medium leading-5 text-text-primary truncate max-w-[320px]"
                       title={item.label}
                     >
                       {item.label}
@@ -120,7 +120,7 @@ export function KBBreadcrumbBar({
                     <a
                       href="#"
                       onClick={(e) => e.preventDefault()}
-                      className="text-[14px] font-normal leading-5 text-[#64748b] hover:bg-[#f8fafc] hover:text-[#0f172a] rounded-[4px] px-[6px] py-0 truncate max-w-[260px]"
+                      className="text-[14px] font-normal leading-5 text-text-muted hover:bg-surface-subtle hover:text-text-primary rounded-[4px] px-[6px] py-0 truncate max-w-[260px]"
                       title={item.label}
                     >
                       {item.label}
@@ -129,7 +129,7 @@ export function KBBreadcrumbBar({
                   {!isLast && (
                     <span
                       aria-hidden="true"
-                      className="inline-flex items-center justify-center text-[14px] leading-5 text-[#cbd5e1] px-[6px] shrink-0 select-none"
+                      className="inline-flex items-center justify-center text-[14px] leading-5 text-border-faint px-[6px] shrink-0 select-none"
                     >
                       /
                     </span>
