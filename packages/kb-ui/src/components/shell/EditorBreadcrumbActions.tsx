@@ -55,10 +55,10 @@ export function EditorBreadcrumbActions({
         disabled={effectiveSaveDisabled}
         className={cn(
           'inline-flex items-center h-8 px-3 py-1.5 rounded-[6px] text-[14px] font-normal',
-          'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-border-faint',
           effectiveSaveDisabled
-            ? 'text-[#94a3b8] cursor-not-allowed'
-            : 'text-[#475569] hover:bg-[#f8fafc]',
+            ? 'text-text-disabled cursor-not-allowed'
+            : 'text-text-meta hover:bg-surface-subtle',
         )}
       >
         {saveLabel}
@@ -88,7 +88,7 @@ export function EditorBreadcrumbActions({
         type="button"
         onClick={onClose}
         aria-label="Close"
-        className="inline-flex size-8 items-center justify-center rounded-[6px] bg-[#f1f5f9] text-[#0f172a] hover:bg-[#e2e8f0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]"
+        className="inline-flex size-8 items-center justify-center rounded-[6px] bg-surface-muted text-text-primary hover:bg-card-border focus:outline-none focus-visible:ring-2 focus-visible:ring-border-faint"
       >
         <RiCloseLine size={16} />
       </button>

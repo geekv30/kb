@@ -85,23 +85,23 @@ export function MailItem({
       <div className="flex items-center gap-2">
         <RiMailLine
           aria-hidden="true"
-          className="h-4 w-4 shrink-0 text-[#64748b]"
+          className="h-4 w-4 shrink-0 text-text-muted"
         />
-        <span className="flex-1 truncate text-[14px] font-semibold leading-[20px] text-[#0f172a]">
+        <span className="flex-1 truncate text-[14px] font-semibold leading-[20px] text-text-primary">
           {senderName}
         </span>
-        <span className="shrink-0 text-[12px] font-normal leading-[18px] text-[#64748b]">
+        <span className="shrink-0 text-[12px] font-normal leading-[18px] text-text-muted">
           {timestamp}
         </span>
       </div>
 
       {/* Row 2: subject */}
-      <div className="mt-2 truncate text-[14px] font-medium leading-[20px] text-[#0f172a]">
+      <div className="mt-2 truncate text-[14px] font-medium leading-[20px] text-text-primary">
         {subject}
       </div>
 
       {/* Row 3: preview snippet (single-line, ellipsized) */}
-      <div className="mt-1 truncate text-[14px] font-normal leading-[20px] text-[#64748b]">
+      <div className="mt-1 truncate text-[14px] font-normal leading-[20px] text-text-muted">
         {snippet}
       </div>
     </>
@@ -121,7 +121,7 @@ export function MailItem({
         data-kb-part="sources-side-sheet-card"
         className={cn(
           baseClass,
-          'transition-colors hover:bg-[#f8fafc] focus:outline-none focus:ring-2 focus:ring-black/10',
+          'transition-colors hover:bg-surface-subtle focus:outline-none focus:ring-2 focus:ring-black/10',
         )}
       >
         {content}

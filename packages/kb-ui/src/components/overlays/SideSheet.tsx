@@ -39,13 +39,13 @@ export type SideSheetProps = {
  * ───────────────────────────────────────────────────────────── */
 
 const headerClass =
-  'flex h-[56px] shrink-0 items-center gap-2 border-b border-card-border bg-[#f8fafc] px-5';
+  'flex h-[56px] shrink-0 items-center gap-2 border-b border-card-border bg-surface-subtle px-5';
 const titleClass =
-  'text-[16px] font-semibold leading-[24px] text-[#0f172a]';
+  'text-[16px] font-semibold leading-[24px] text-text-primary';
 const countClass =
-  'inline-flex h-[20px] min-w-[20px] items-center justify-center rounded-full px-2 bg-[#f1f5f9] text-[12px] font-medium leading-[18px] text-[#475569] tabular-nums';
+  'inline-flex h-[20px] min-w-[20px] items-center justify-center rounded-full px-2 bg-surface-muted text-[12px] font-medium leading-[18px] text-text-meta tabular-nums';
 const closeBtnClass =
-  'inline-flex h-8 w-8 items-center justify-center rounded-[6px] text-[#64748b] transition-colors hover:bg-[#f1f5f9] hover:text-[#0f172a] focus:outline-none focus:ring-2 focus:ring-black/10';
+  'inline-flex h-8 w-8 items-center justify-center rounded-[6px] text-text-muted transition-colors hover:bg-surface-muted hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-black/10';
 const bodyClass = 'flex flex-1 flex-col overflow-y-auto px-5 py-4';
 
 /* ─────────────────────────────────────────────────────────────

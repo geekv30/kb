@@ -67,7 +67,7 @@ export function AppShell({
       data-kb-component="app-shell"
       data-kb-sidebar-collapsed={sidebarCollapsed ? 'true' : 'false'}
       className={cn(
-        'flex h-screen w-full overflow-hidden bg-[#f5f5f5]',
+        'flex h-screen w-full overflow-hidden bg-canvas',
         className,
       )}
     >

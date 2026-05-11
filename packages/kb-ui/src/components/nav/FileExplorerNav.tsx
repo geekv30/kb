@@ -139,16 +139,16 @@ function FlatRow({ item, isActive, isDark, onClick }: FlatRowProps) {
           item.icon && 'gap-2',
           'text-left text-[14px] leading-[20px] transition-colors duration-150',
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
-          isDark ? 'text-white/90' : 'text-[#0f172a]',
+          isDark ? 'text-white/90' : 'text-text-primary',
           isSection
             ? 'cursor-default font-medium'
             : isActive
               ? isDark
                 ? 'bg-white/[0.08] font-medium'
-                : 'bg-[#f8fafc] font-medium'
+                : 'bg-surface-subtle font-medium'
               : isDark
                 ? 'font-normal hover:bg-white/[0.05]'
-                : 'font-normal hover:bg-[#f8fafc]',
+                : 'font-normal hover:bg-surface-subtle',
         )}
       >
         {item.icon && (
@@ -156,7 +156,7 @@ function FlatRow({ item, isActive, isDark, onClick }: FlatRowProps) {
             aria-hidden
             className={cn(
               'inline-flex size-4 shrink-0 items-center justify-center [&>svg]:w-4 [&>svg]:h-4',
-              isDark ? 'text-white/60' : 'text-[#475569]',
+              isDark ? 'text-white/60' : 'text-text-meta',
             )}
           >
             {item.icon}
@@ -216,12 +216,12 @@ function FolderRow({
   const state: RowState = isActive ? 'active' : isActiveSub ? 'active-sub' : 'default';
   const ChevronIcon = isExpanded ? RiArrowDownSLine : RiArrowRightSLine;
 
-  const labelColor = isDark ? 'text-white/90' : 'text-[#0f172a]';
+  const labelColor = isDark ? 'text-white/90' : 'text-text-primary';
   // Per Figma `6:438`: folder/sub-folder rows use font-normal in every state.
   // Only `type=category, state=hover` uses font-medium on the label. Keep regular
   // weight across the board and let background + size carry the emphasis.
   const labelWeight = 'font-normal';
-  const countColor = isDark ? 'text-white/40' : 'text-[#475569]';
+  const countColor = isDark ? 'text-white/40' : 'text-text-meta';
 
   // Figma behavior: on ACTIVE the count stays visible (no kebab — see 6:508, 6:491).
   // On HOVER (non-active) the kebab replaces the count (see 6:493 vs 6:484).
@@ -250,7 +250,7 @@ function FolderRow({
           <span
             className={cn(
               'flex size-6 items-center justify-center rounded-[6px] shrink-0',
-              isDark ? 'text-white/60' : 'text-[#64748b]',
+              isDark ? 'text-white/60' : 'text-text-muted',
             )}
           >
             <ChevronIcon size={16} />
@@ -258,7 +258,7 @@ function FolderRow({
           <span
             className={cn(
               'flex size-6 items-center justify-center rounded-[6px] shrink-0',
-              isDark ? 'text-white/60' : 'text-[#64748b]',
+              isDark ? 'text-white/60' : 'text-text-muted',
             )}
           >
             <RiFolderLine size={16} />
@@ -286,7 +286,7 @@ function FolderRow({
               <span
                 className={cn(
                   'hidden group-hover:flex items-center justify-center',
-                  isDark ? 'text-white/60' : 'text-[#475569]',
+                  isDark ? 'text-white/60' : 'text-text-meta',
                 )}
               >
                 <RiMore2Line size={16} />
@@ -310,8 +310,9 @@ type ArticleRowProps = {
 function ArticleRow({ item, depth, isActive, isDark, onClick }: ArticleRowProps) {
   const state: RowState = isActive ? 'active' : 'default';
 
-  const labelColor = isDark ? 'text-white/80' : 'text-[#0f172a]';
+  const labelColor = isDark ? 'text-white/80' : 'text-text-primary';
   // Spec colors: published = #42cd83, draft = #898989. 4×4 size.
+  // (Status-dot spec hexes are intentionally inline — not in the token system.)
   const statusDotColor =
     item.status === 'published'
       ? 'bg-[#42cd83]'
@@ -349,7 +350,7 @@ function ArticleRow({ item, depth, isActive, isDark, onClick }: ArticleRowProps)
           <span
             className={cn(
               'flex size-6 items-center justify-center rounded-[6px] shrink-0',
-              isDark ? 'text-white/60' : 'text-[#64748b]',
+              isDark ? 'text-white/60' : 'text-text-muted',
             )}
           >
             <RiFile3Line size={16} />
@@ -376,7 +377,7 @@ function ArticleRow({ item, depth, isActive, isDark, onClick }: ArticleRowProps)
               <span
                 className={cn(
                   'hidden group-hover:flex items-center justify-center',
-                  isDark ? 'text-white/60' : 'text-[#475569]',
+                  isDark ? 'text-white/60' : 'text-text-meta',
                 )}
               >
                 <RiMore2Line size={16} />
@@ -416,7 +417,7 @@ export function FileExplorerNav({
     (isFlat ? null : (
       <RiQuillPenLine
         size={16}
-        className={isDark ? 'text-white/60' : 'text-[#64748b]'}
+        className={isDark ? 'text-white/60' : 'text-text-muted'}
       />
     ));
 
@@ -511,7 +512,7 @@ export function FileExplorerNav({
     <aside
       className={cn(
         'flex flex-col w-[288px] h-full',
-        isDark ? 'bg-[#1a1a1a]' : 'bg-white border-r border-[#e2e8f0]',
+        isDark ? 'bg-[#1a1a1a]' : 'bg-white border-r border-card-border',
         className,
       )}
       aria-label="File explorer"
@@ -530,7 +531,7 @@ export function FileExplorerNav({
               aria-hidden
               className={cn(
                 'inline-flex items-center justify-center [&>svg]:w-4 [&>svg]:h-4',
-                isDark ? 'text-white/60' : 'text-[#0f172a]',
+                isDark ? 'text-white/60' : 'text-text-primary',
               )}
             >
               {resolvedHeaderIcon}
@@ -540,7 +541,7 @@ export function FileExplorerNav({
             data-kb-part="explorer-title"
             className={cn(
               'text-[14px] font-semibold',
-              isDark ? 'text-white/90' : 'text-[#0f172a]',
+              isDark ? 'text-white/90' : 'text-text-primary',
             )}
           >
             {title}
@@ -554,7 +555,7 @@ export function FileExplorerNav({
               'flex size-6 items-center justify-center rounded-[6px] cursor-pointer transition-colors duration-150',
               isDark
                 ? 'text-white/60 hover:bg-white/[0.06] hover:text-white/90'
-                : 'text-[#64748b] hover:bg-[#f8fafc] hover:text-[#0f172a]',
+                : 'text-text-muted hover:bg-surface-subtle hover:text-text-primary',
             )}
           >
             <RiSearchLine size={16} />
@@ -567,7 +568,7 @@ export function FileExplorerNav({
         data-kb-part="explorer-divider"
         className={cn(
           'h-px mx-[16px] shrink-0',
-          isDark ? 'bg-white/10' : 'bg-[#e2e8f0]',
+          isDark ? 'bg-white/10' : 'bg-card-border',
         )}
       />
 
@@ -597,7 +598,7 @@ export function FileExplorerNav({
                       data-kb-part="flat-section-divider"
                       className={cn(
                         'h-px mx-[16px]',
-                        isDark ? 'bg-white/10' : 'bg-[#e2e8f0]',
+                        isDark ? 'bg-white/10' : 'bg-card-border',
                       )}
                     />
                   )}

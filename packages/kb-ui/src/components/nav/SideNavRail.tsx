@@ -36,7 +36,7 @@ export function SideNavRail({
     <nav
       className={cn(
         'flex h-full w-[54px] flex-col',
-        isDark ? 'bg-[#1a1a1a]' : 'bg-white border-r border-[#e2e8f0]',
+        isDark ? 'bg-[#1a1a1a]' : 'bg-white border-r border-card-border',
         className,
       )}
       aria-label="Primary"
@@ -56,7 +56,7 @@ export function SideNavRail({
         data-kb-part="rail-divider"
         className={cn(
           'h-px mx-[8px] shrink-0',
-          isDark ? 'bg-white/10' : 'bg-[#e2e8f0]',
+          isDark ? 'bg-white/10' : 'bg-card-border',
         )}
       />
 
@@ -85,8 +85,8 @@ export function SideNavRail({
                     ? // Active pill matches Figma `1:4350` (.menu-items active):
                       // bg-[rgba(230,230,230,0.44)]. Previously used #f8fafc
                       // which was nearly invisible against white rail bg.
-                      'bg-[rgba(230,230,230,0.44)] text-[#0f172a]'
-                    : 'text-[#475569] hover:bg-[rgba(230,230,230,0.32)] hover:text-[#0f172a]',
+                      'bg-[rgba(230,230,230,0.44)] text-text-primary'
+                    : 'text-text-meta hover:bg-[rgba(230,230,230,0.32)] hover:text-text-primary',
               )}
             >
               {/* Enforce 16×16 glyph in-component so size is not caller-dependent.
