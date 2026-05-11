@@ -85,7 +85,8 @@ File key: `9aGp5t9fH1d0PXi4LMhOdb` — **Note: `get_design_context` returns "not
 --color-btn-primary:     #000000
 --color-btn-danger-bg:   #feeeec
 --color-border:          #f1f5f9
---color-border-input:    #e5e5e5
+--color-border-input:    #e2e8f0   /* Phase 15 — unified to slate-200 (was #e5e5e5) */
+--color-border-faint:    #cbd5e1   /* Phase 15 — slate-300, soft hairlines / chevron separators / pressed-state bg */
 
 /* AI Gaps semantic palette */
 --color-ai-addition:       #22c55e
@@ -95,9 +96,12 @@ File key: `9aGp5t9fH1d0PXi4LMhOdb` — **Note: `get_design_context` returns "not
 --color-ai-addition-wash:  rgba(34,197,94,0.12)
 --color-ai-removal-wash:   rgba(239,68,68,0.10)
 
-/* Card semantics (distinct from input borders) */
---color-card-border:       #e5e5e5
---color-card-divider:      #e5e5e5
+/* Semantic washes (Phase 15) */
+--color-success-wash-subtle: #f2fcf6   /* softest success wash — HelpfulnessTag up + Badge published */
+
+/* Card semantics */
+--color-card-border:       #e2e8f0   /* Phase 15 — unified to slate-200 (was #e5e5e5) */
+--color-card-divider:      #e2e8f0   /* Phase 15 — unified to slate-200 (was #e5e5e5) */
 
 /* Analytics — trend indicators (Figma SupportPerformanceCard 1974:53911) */
 --color-trend-up:          #086e3f   /* Figma text/success/default + icon/success/subtle */
@@ -126,9 +130,16 @@ File key: `9aGp5t9fH1d0PXi4LMhOdb` — **Note: `get_design_context` returns "not
 --color-donut-6:           #4b5468   /* Figma NeutralLight/nl700 */
 ```
 
-**Why card-border vs border-input:** `border-input` is for form fields (inputs/dropdowns). `card-border` is for surface cards. Same hex, different semantic — keeps the two from drifting independently.
+**Card + input borders unified to #e2e8f0 (slate-200) in Phase 15.** `--color-border-input` is preserved as an alias for semantic clarity in input components.
 
-*Why trend tokens duplicate ai- hexes:** AI gaps semantics (`addition`/`replace`/`removal`) are about diff direction in an article; analytics trend tokens are about a metric going up or down. Same hex, distinct semantic — don't conflate the two in component code.
+**Why trend tokens duplicate ai- hexes:** AI gaps semantics (`addition`/`replace`/`removal`) are about diff direction in an article; analytics trend tokens are about a metric going up or down. Same hex, distinct semantic — don't conflate the two in component code.
+
+**Phase 15 foundation consolidation:**
+
+- slate-500 typo fixed across 107 lines → `#64748b`
+- card-border family unified to `#e2e8f0` (was `#e5e5e5`): `--color-card-border`, `--color-card-divider`, `--color-border-input`
+- new tokens: `--color-border-faint` (`#cbd5e1`), `--color-success-wash-subtle` (`#f2fcf6`)
+- `--color-text-faint` dropped as duplicate of `--color-text-muted`; components migrated to token classes (`text-text-primary`, `bg-canvas`, `border-card-border`, etc.) — minimal raw inline hex remains in `packages/kb-ui/src/components/**/*.tsx`
 
 ### Typography (all Inter)
 

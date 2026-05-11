@@ -9,7 +9,7 @@
 | Component base | **Radix UI primitives** | Accessible, unstyled — we own the visual layer 100% |
 | Design tokens | **Style Dictionary** | Single source of truth; generates CSS vars, JS tokens, Tailwind config from one JSON |
 | Build | **tsup** | Zero-config, fast, ESM + CJS dual output |
-| Storybook | **Storybook 8** | Component playground, visual regression baseline |
+| Storybook | **Storybook 10** | Component playground, visual regression baseline |
 | Distribution | **npm package** | Consumed via `import { KBSidebar } from '@hiver/kb-ui'` |
 
 ## Distribution — DECIDED
