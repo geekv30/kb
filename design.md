@@ -38,8 +38,8 @@ File key: `9aGp5t9fH1d0PXi4LMhOdb` — **Note: `get_design_context` returns "not
 
 | Component           | Node ID  | Themes            |
 | ------------------- | -------- | ----------------- |
-| SideNavRail         | `0:1`    | dark + light      |
-| FileExplorerNav     | `1:4823` | dark + light      |
+| SideNavRail         | `0:1`    | light only        |
+| FileExplorerNav     | `1:4823` | light only        |
 | Avatar              | `2:388`  | light only        |
 | StatusBadge (tag)   | `2:400`  | published + draft |
 | Table               | `1:5178` | light only        |
@@ -82,6 +82,8 @@ File key: `9aGp5t9fH1d0PXi4LMhOdb` — **Note: `get_design_context` returns "not
 --color-text-disabled:   #94a3b8
 --color-success-text:    #086e3f
 --color-highlight:       #e7f9ee   /* text selection / AI highlight */
+--color-link:            #2563eb   /* Tiptap link mark + interactive blue */
+--color-link-hover:      #1d4ed8   /* Tiptap link hover */
 --color-btn-primary:     #000000
 --color-btn-danger-bg:   #feeeec
 --color-border:          #f1f5f9
@@ -140,6 +142,8 @@ File key: `9aGp5t9fH1d0PXi4LMhOdb` — **Note: `get_design_context` returns "not
 - card-border family unified to `#e2e8f0` (was `#e5e5e5`): `--color-card-border`, `--color-card-divider`, `--color-border-input`
 - new tokens: `--color-border-faint` (`#cbd5e1`), `--color-success-wash-subtle` (`#f2fcf6`)
 - `--color-text-faint` dropped as duplicate of `--color-text-muted`; components migrated to token classes (`text-text-primary`, `bg-canvas`, `border-card-border`, etc.) — minimal raw inline hex remains in `packages/kb-ui/src/components/**/*.tsx`
+- Post-#58: `--color-link` + `--color-link-hover` tokens added for Tiptap link styling (#63). ContentEditor CSS template strings now use `var(--color-X)` references throughout.
+- Post-#58: dark-theme branch removed from `SideNavRail` + `FileExplorerNav` (#64); kb-ui is light-only product-wide.
 
 ### Typography (all Inter)
 
@@ -246,22 +250,16 @@ Heading-row "Actions" column hides its "Link" label but preserves padding. All r
 
 ### SideNavRail (54px wide — from library-check `0:1`)
 
-**Dark theme (default):**
+**Light only** (dark-theme branch removed in #64 — kb-ui is light-only product-wide):
 
-- Background: `#1e1e1e` or near-black (~`#1a1a1a`)
+- Background: white
 - Width: 54px, full viewport height
 - Top: Hiver brand logo icon, 54×54, centered
 - 1px separator below logo
-- Nav items: 54×40px each — icon only, centered, `text-white/60`
-- Active item: icon bg highlight `#2a2a2a` or `rgba(255,255,255,0.1)`, icon `text-white`
+- Nav items: 54×40px each — icon only, centered, icon `text-[#64748b]`
+- Active item: bg `#f1f5f9`, icon `text-[#0f172a]`
 - Icons (top to bottom): AI/star icon, Editor/pen icon (active), folder icon, settings gear icon
 - Bottom: Avatar circle (24px, gray, initials "A")
-
-**Light theme variant:**
-
-- Background: white
-- Nav items: icon `text-[#64748b]`
-- Active: bg `#f1f5f9`, icon `text-[#0f172a]`
 
 ### FileExplorerNav (288px wide in page context — Figma node `206:6837` in `251DTRmxl2L6jmXd3FWzHe`)
 
@@ -298,14 +296,12 @@ type NavItem = { id, title, type: 'folder'|'article', status?, count?, children?
 
 **Article row:** 6px bullet dot (no chevron) + `RiArticleLine` + label (14px) + status dot (right, `#22c55e` published / `#94a3b8` draft). On hover: status dot replaced by `RiMore2Line`.
 
-**State backgrounds (light):**
+**State backgrounds** (light only — dark-theme branch removed in #64):
 
 - default: transparent
 - hover: `rgba(230,230,230,0.32)`
 - active: `rgba(230,230,230,0.44)`
 - active-sub: transparent (expanded ancestor of active, no bg)
-
-**Dark:** hover `white/[0.05]`, active `white/[0.08]`
 
 **Behavior:** Collapsed by default; auto-expands ancestors of `activeId`. Clicking folder toggles + fires `onItemClick`.
 

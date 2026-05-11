@@ -143,6 +143,10 @@ const textColors = [
   { name: 'text/white/adaptive', hex: '#ffffff', onDark: true },
   { name: 'text/accent/green/default', hex: '#086e3f', onDark: false },
   { name: 'text/accent/gray/default', hex: '#525252', onDark: false },
+  // Post-#58 (#63): new tokens for Tiptap link mark + hover. Migrated ContentEditor CSS template
+  // strings from inline hex to `var(--color-link)` / `var(--color-link-hover)`.
+  { name: 'text/interactive/link', hex: '#2563eb', onDark: false },
+  { name: 'text/interactive/link-hover', hex: '#1d4ed8', onDark: false },
 ] as const;
 
 const backgroundColors = [
