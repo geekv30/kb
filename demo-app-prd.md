@@ -9,12 +9,12 @@
 
 ### 1.1 What this is
 
-A standalone web app inside this monorepo (`apps/demo`) that consumes `@hiver/kb-ui` exactly the way an external Hiver engineer would (`import { ... } from '@hiver/kb-ui'`). It stitches every pattern shipped in Phases 3–7 into a single navigable product so a viewer can experience the KB end-to-end without ever opening Storybook.
+A standalone web app inside this monorepo (`apps/demo`) that consumes `@test-kb-ui/kb-ui` exactly the way an external Hiver engineer would (`import { ... } from '@test-kb-ui/kb-ui'`). It stitches every pattern shipped in Phases 3–7 into a single navigable product so a viewer can experience the KB end-to-end without ever opening Storybook.
 
 ### 1.2 Why it exists
 
 1. **Fidelity check.** Storybook frames are isolated. Stitching them surfaces transition gaps, prop holes, and "the whole thing doesn't quite feel right" issues that per-component audits hide.
-2. **Phase 8 integration test.** If the demo can consume `@hiver/kb-ui` cleanly, downstream users will too. Catches barrel-export and peer-dep bugs before npm publish.
+2. **Phase 8 integration test.** If the demo can consume `@test-kb-ui/kb-ui` cleanly, downstream users will too. Catches barrel-export and peer-dep bugs before npm publish.
 3. **Sales / stakeholder asset.** A clickable URL that shows what the library can do beats a Storybook tour.
 4. **Phase 9 fixture seed.** The mock data and route map become the canonical "what does a real KB feature look like" reference for the MCP companion server.
 
@@ -597,8 +597,8 @@ The demo is "done" when ALL of the following are true:
 - All 10 open questions in §10 resolved
 - App boots from `vite dev` and renders the category page on first paint
 - App builds via `vite build` and the static bundle runs from a plain HTTP server
-- All `@hiver/kb-ui` imports resolve from the published barrel (no deep imports into `src/`)
-- No new components built outside `apps/demo/src/` — every visual is composed from `@hiver/kb-ui` exports
+- All `@test-kb-ui/kb-ui` imports resolve from the published barrel (no deep imports into `src/`)
+- No new components built outside `apps/demo/src/` — every visual is composed from `@test-kb-ui/kb-ui` exports
 - Typecheck clean across both packages
 
 ---
