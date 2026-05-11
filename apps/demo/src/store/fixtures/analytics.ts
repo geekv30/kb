@@ -138,6 +138,23 @@ function zipSeries(
   });
 }
 
+/**
+ * Subsample the 30-label series to 6 evenly-spaced labels for the
+ * x-axis. Phase 15d.B exposed `AnalyticsAreaChart.xTicks` so callers
+ * with dense data series can cap the rendered tick set — without it,
+ * Recharts crams 30 labels into the axis and they overlap.
+ *
+ * Indices: 0, 5, 10, 15, 20, 25 → ~5 days apart over the 30-day window.
+ * Concrete values with REFERENCE_DATE_MS = Apr 26, 2026:
+ *   ['Mar 28', 'Apr 2', 'Apr 7', 'Apr 12', 'Apr 17', 'Apr 22']
+ *
+ * Exported so each analytics page can pass the same axis labels.
+ */
+export const ANALYTICS_X_TICKS: string[] = (() => {
+  const labels = dayLabels();
+  return [0, 5, 10, 15, 20, 25].map((i) => labels[i]);
+})();
+
 /* ─────────────────────────────────────────────────────────────
  * Article Performance fixtures (analytics tab 1)
  * ───────────────────────────────────────────────────────────── */
@@ -457,7 +474,21 @@ const deflectionGoal: AnalyticsAreaChartGoalLine = {
   label: 'Goal : 70%',
 };
 
-/* ── Conversation log entries — 5 anonymised AI Q&A items ── */
+/* ── Conversation log entries — 6 anonymised AI Q&A items ──
+ *
+ * `tail` variants supported (kb-ui `AIConversationTail`):
+ *   - 'ticket-created'         — escalation; appended after answer or follow-up
+ *   - 'source-clicked'         — user opened one of the cited sources
+ *   - 'search-result-clicked'  — user fell back to a search result instead
+ *                                (Phase 15d.C variant — shown when the AI
+ *                                answer did not satisfy and the user clicked
+ *                                a non-cited article from the search panel)
+ */
+type ConversationTail =
+  | { kind: 'ticket-created'; actor?: string }
+  | { kind: 'source-clicked'; actor?: string }
+  | { kind: 'search-result-clicked'; actor?: string };
+
 type AnonymisedQA = {
   id: string;
   question: string;
@@ -470,13 +501,9 @@ type AnonymisedQA = {
     question: string;
     answer: string;
     sourceCount: number;
-    tail?:
-      | { kind: 'ticket-created'; actor?: string }
-      | { kind: 'source-clicked'; actor?: string };
+    tail?: ConversationTail;
   };
-  tail?:
-    | { kind: 'ticket-created'; actor?: string }
-    | { kind: 'source-clicked'; actor?: string };
+  tail?: ConversationTail;
 };
 
 const aiConversationLogs: AnonymisedQA[] = [
@@ -533,6 +560,23 @@ const aiConversationLogs: AnonymisedQA[] = [
     answer:
       'There is no built-in bulk-archive UI yet. The supported workaround is to filter by status + date in the conversations list, select all, and use the Archive bulk action from the table toolbar. We are tracking native bulk-archive as an upcoming feature.',
     sourceCount: 2,
+  },
+  {
+    // Phase 15d.C: new 'search-result-clicked' tail variant.
+    // Realistic narrative — the AI couldn't confidently answer a niche
+    // routing question; the user fell back to a search result rather
+    // than opening a cited source. PRD §13.4 source pattern: auto-reply
+    // rules sit on the AI-targeted articles list, so the timezone /
+    // schedule scenarios from §13.4 inspire the question shape here.
+    id: 'log-6',
+    question:
+      'Can I pause SLA timers automatically during company-wide holidays?',
+    timestamp: 'Apr 19, 10:48 AM',
+    feedback: 'negative',
+    answer:
+      "I'm not able to confirm whether SLA timers can be auto-paused on workspace holiday calendars. The closest configurable option I found is per-rule schedule exclusions, but that does not propagate to SLA policies.",
+    sourceCount: 1,
+    tail: { kind: 'search-result-clicked', actor: 'the user' },
   },
 ];
 
