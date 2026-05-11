@@ -34,7 +34,7 @@ export function Breadcrumb({ items, className, homeIcon, separator }: Breadcrumb
         )}
         aria-label={home.label}
       >
-        {homeIcon ?? <RiLayoutLeftLine size={14} className="text-[#94a3b8]" />}
+        {homeIcon ?? <RiLayoutLeftLine size={14} className="text-text-disabled" />}
       </button>
       {rest.map((item, idx) => {
         const isCurrent = idx === lastIdx;
@@ -43,14 +43,14 @@ export function Breadcrumb({ items, className, homeIcon, separator }: Breadcrumb
           <span key={item.id} className="inline-flex items-center gap-1">
             <span
               aria-hidden="true"
-              className="inline-flex items-center justify-center text-[14px] leading-5 text-[#cbd5e1] px-[2px] shrink-0 select-none"
+              className="inline-flex items-center justify-center text-[14px] leading-5 text-border-faint px-[2px] shrink-0 select-none"
             >
               {separator ?? '/'}
             </span>
             {isCurrent ? (
               <span
                 aria-current="page"
-                className="text-[14px] font-medium text-[#0f172a] bg-[#f8fafc] rounded-[4px] px-2 py-0.5"
+                className="text-[14px] font-medium text-text-primary bg-surface-subtle rounded-[4px] px-2 py-0.5"
               >
                 {item.label}
               </span>
@@ -58,12 +58,12 @@ export function Breadcrumb({ items, className, homeIcon, separator }: Breadcrumb
               <button
                 type="button"
                 onClick={item.onClick}
-                className="text-[14px] font-normal text-[#475569] hover:text-[#0f172a] cursor-pointer bg-transparent p-0 border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20 rounded-[4px]"
+                className="text-[14px] font-normal text-text-meta hover:text-text-primary cursor-pointer bg-transparent p-0 border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20 rounded-[4px]"
               >
                 {item.label}
               </button>
             ) : (
-              <span className="text-[14px] font-normal text-[#475569]">
+              <span className="text-[14px] font-normal text-text-meta">
                 {item.label}
               </span>
             )}

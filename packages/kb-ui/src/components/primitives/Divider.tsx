@@ -7,7 +7,7 @@ export function Divider({ subtle = false, className }: DividerProps) {
     <hr
       className={cn(
         'w-full border-0 border-t',
-        subtle ? 'border-t-[#f1f5f9]' : 'border-t-[#e5e5e5]',
+        subtle ? 'border-t-surface-muted' : 'border-t-[#e5e5e5]',
         className,
       )}
     />

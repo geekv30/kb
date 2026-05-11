@@ -19,10 +19,10 @@ export function Dropdown({
 }: DropdownProps) {
   const trigger = (
     <div className={cn('flex flex-col gap-2', className)}>
-      <label className="text-[14px] font-medium leading-5 text-[#0f172a]">{label}</label>
+      <label className="text-[14px] font-medium leading-5 text-text-primary">{label}</label>
       <TextInput
         {...inputProps}
-        suffix={<RiArrowDownSLine size={14} className="text-[#475569]" />}
+        suffix={<RiArrowDownSLine size={14} className="text-text-meta" />}
       />
     </div>
   );
@@ -56,7 +56,7 @@ export function Dropdown({
                 onSelect?.(option.value);
               }}
               className={cn(
-                'mx-1 cursor-pointer rounded-[4px] px-3 py-2 text-[14px] outline-none hover:bg-[#f1f5f9] focus:bg-[#f1f5f9]',
+                'mx-1 cursor-pointer rounded-[4px] px-3 py-2 text-[14px] outline-none hover:bg-surface-muted focus:bg-surface-muted',
                 option.disabled && 'cursor-not-allowed opacity-50 hover:bg-transparent focus:bg-transparent',
               )}
             >
