@@ -58,7 +58,7 @@ const attentionColumns: DataTableColumn<ArticleAttentionRow>[] = [
       <div className="flex items-center gap-2 min-w-0 pr-2">
         <RiFile3Line
           size={16}
-          className="shrink-0 text-[#64748b]"
+          className="shrink-0 text-text-muted"
           aria-hidden="true"
         />
         <span className="truncate">{r.title}</span>
@@ -82,7 +82,7 @@ const performanceColumns: DataTableColumn<ArticlePerformanceRow>[] = [
       <div className="flex items-center gap-2 min-w-0 pr-2">
         <RiFile3Line
           size={16}
-          className="shrink-0 text-[#64748b]"
+          className="shrink-0 text-text-muted"
           aria-hidden="true"
         />
         <span className="truncate">{r.title}</span>
@@ -96,7 +96,7 @@ const performanceColumns: DataTableColumn<ArticlePerformanceRow>[] = [
     headerClassName: 'pl-6',
     className: 'pl-6',
     render: (r) => (
-      <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#f7f7f7] text-[13px] font-normal leading-[19px] text-[#0f172a]">
+      <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#f7f7f7] text-[13px] font-normal leading-[19px] text-text-primary">
         {r.category}
       </span>
     ),
@@ -165,10 +165,10 @@ export default function ArticlePerformancePage() {
       {/* Page header — title + subtitle | DateRangePill */}
       <header className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-[24px] font-semibold leading-[32px] text-[#0f172a]">
+          <h1 className="text-[24px] font-semibold leading-[32px] text-text-primary">
             Article performance
           </h1>
-          <p className="mt-1 text-[14px] font-normal leading-[20px] text-[#475569]">
+          <p className="mt-1 text-[14px] font-normal leading-[20px] text-text-meta">
             How readers find and engage with your content.
           </p>
         </div>
@@ -216,26 +216,26 @@ export default function ArticlePerformancePage() {
             heading={
               <div>
                 <div className="flex items-center">
-                  <h3 className="text-[14px] font-medium leading-[20px] text-[#0f172a]">
+                  <h3 className="text-[14px] font-medium leading-[20px] text-text-primary">
                     Articles needs attention
                   </h3>
                   <RiInformationLine
                     size={16}
-                    className="ml-2 text-[#475569]"
+                    className="ml-2 text-text-meta"
                     aria-hidden="true"
                   />
                   <span className="flex-1" />
                   <span
-                    className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#f7f7f7] text-[12px] font-medium leading-[18px] text-[#0f172a]"
+                    className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#f7f7f7] text-[12px] font-medium leading-[18px] text-text-primary"
                     aria-label={`${needsAttentionRows.length} Articles`}
                   >
                     {`${needsAttentionRows.length} Articles`}
                   </span>
                 </div>
-                <p className="mt-1 text-[13px] font-normal leading-[19px] text-[#475569]">
+                <p className="mt-1 text-[13px] font-normal leading-[19px] text-text-meta">
                   Articles with very low helpfulness index
                 </p>
-                <div className="mt-4 h-px bg-[#e2e8f0]" />
+                <div className="mt-4 h-px bg-card-border" />
               </div>
             }
             headerDivider={false}
@@ -254,16 +254,16 @@ export default function ArticlePerformancePage() {
         heading={
           <div>
             <div className="flex items-center">
-              <h3 className="text-[14px] font-medium leading-[20px] text-[#0f172a]">
+              <h3 className="text-[14px] font-medium leading-[20px] text-text-primary">
                 Article Performance
               </h3>
               <RiInformationLine
                 size={16}
-                className="ml-2 text-[#475569]"
+                className="ml-2 text-text-meta"
                 aria-hidden="true"
               />
             </div>
-            <div className="mt-4 h-px bg-[#e2e8f0]" />
+            <div className="mt-4 h-px bg-card-border" />
           </div>
         }
         headerDivider={false}

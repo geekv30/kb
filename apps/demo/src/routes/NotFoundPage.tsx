@@ -21,22 +21,22 @@ export default function NotFoundPage() {
           Hiver KB even when the URL was wrong. */}
       <div
         aria-hidden="true"
-        className="mb-8 flex h-10 w-10 items-center justify-center text-[#0f172a]"
+        className="mb-8 flex h-10 w-10 items-center justify-center text-text-primary"
       >
         <CompanyLogo size={28} />
       </div>
 
       <div className="flex max-w-[440px] flex-col items-center gap-3 text-center">
-        <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#64748b]">
+        <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-text-muted">
           Error 404
         </p>
         <h1
           tabIndex={-1}
-          className="text-[36px] font-semibold leading-[44px] text-[#0f172a]"
+          className="text-[36px] font-semibold leading-[44px] text-text-primary"
         >
           Page not found
         </h1>
-        <p className="text-[14px] leading-6 text-[#475569]">
+        <p className="text-[14px] leading-6 text-text-meta">
           The page you were looking for doesn't exist or has moved.
           Head back to the knowledge base to find what you need.
         </p>
@@ -56,9 +56,9 @@ export default function NotFoundPage() {
           <Link
             to={routes.aiOptimise.hub()}
             className={cn(
-              'inline-flex h-9 items-center rounded-[6px] border border-[#cbd5e1] bg-white px-4',
-              'text-[14px] font-medium leading-5 text-[#0f172a]',
-              'transition-colors hover:bg-[#f8fafc]',
+              'inline-flex h-9 items-center rounded-[6px] border border-border-faint bg-white px-4',
+              'text-[14px] font-medium leading-5 text-text-primary',
+              'transition-colors hover:bg-surface-subtle',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
             )}
           >

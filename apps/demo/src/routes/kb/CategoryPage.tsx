@@ -75,7 +75,7 @@ const subCategoryColumns: DataTableColumn<SubCategoryRow>[] = [
   {
     id: 'title',
     header: 'Sub-categories',
-    headerClassName: 'pl-4 pr-0 py-0 text-[#475569]',
+    headerClassName: 'pl-4 pr-0 py-0 text-text-meta',
     className: 'pl-4 pr-0',
     render: (item) => (
       <div className="flex items-center gap-1">
@@ -84,13 +84,13 @@ const subCategoryColumns: DataTableColumn<SubCategoryRow>[] = [
           aria-label={`Open ${item.title}`}
           onClick={(e) => e.stopPropagation()}
           className={cn(
-            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#64748b]',
-            'hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
+            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-text-muted',
+            'hover:bg-surface-subtle focus:bg-surface-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-border-faint',
           )}
         >
           <RiFolderLine size={16} aria-hidden="true" />
         </button>
-        <span className="text-[14px] font-normal leading-[20px] text-[#0f172a]">
+        <span className="text-[14px] font-normal leading-[20px] text-text-primary">
           {item.title}
         </span>
       </div>
@@ -107,7 +107,7 @@ const subCategoryColumns: DataTableColumn<SubCategoryRow>[] = [
       <div className="flex items-center justify-end">
         <RiArrowRightSLine
           size={16}
-          className="text-[#64748b]"
+          className="text-text-muted"
           aria-hidden="true"
         />
       </div>
@@ -119,7 +119,7 @@ const articleColumns: DataTableColumn<ArticleRow>[] = [
   {
     id: 'title',
     header: 'Articles',
-    headerClassName: 'pl-4 pr-0 py-0 text-[#475569]',
+    headerClassName: 'pl-4 pr-0 py-0 text-text-meta',
     className: 'px-4',
     render: (a) => (
       <div className="flex items-center gap-1 min-w-0">
@@ -128,13 +128,13 @@ const articleColumns: DataTableColumn<ArticleRow>[] = [
           aria-label={`Open ${a.title}`}
           onClick={(e) => e.stopPropagation()}
           className={cn(
-            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#64748b]',
-            'hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
+            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-text-muted',
+            'hover:bg-surface-subtle focus:bg-surface-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-border-faint',
           )}
         >
           <RiFile3Line size={16} aria-hidden="true" />
         </button>
-        <span className="text-[14px] font-normal leading-[20px] text-[#0f172a] truncate">
+        <span className="text-[14px] font-normal leading-[20px] text-text-primary truncate">
           {a.title}
         </span>
       </div>
@@ -154,8 +154,8 @@ const articleColumns: DataTableColumn<ArticleRow>[] = [
           aria-label={`More actions for ${a.title}`}
           onClick={(e) => e.stopPropagation()}
           className={cn(
-            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#94a3b8]',
-            'hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
+            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-text-disabled',
+            'hover:bg-surface-subtle focus:bg-surface-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-border-faint',
           )}
         >
           <RiMore2Line size={16} aria-hidden="true" />
@@ -167,7 +167,7 @@ const articleColumns: DataTableColumn<ArticleRow>[] = [
     id: 'status',
     header: 'Status',
     width: 127,
-    headerClassName: 'px-4 py-0 text-[#475569]',
+    headerClassName: 'px-4 py-0 text-text-meta',
     className: 'px-4',
     render: (a) => (
       <Badge variant={a.status}>
@@ -180,7 +180,7 @@ const articleColumns: DataTableColumn<ArticleRow>[] = [
     header: 'Author',
     align: 'center',
     width: 94,
-    headerClassName: 'px-4 py-0 text-[#475569]',
+    headerClassName: 'px-4 py-0 text-text-meta',
     className: 'px-4',
     render: (a) => (
       <div className="flex items-center justify-center">
@@ -192,9 +192,9 @@ const articleColumns: DataTableColumn<ArticleRow>[] = [
     id: 'updated',
     header: 'Last Updated',
     width: 251,
-    headerClassName: 'px-4 py-0 text-[#475569]',
+    headerClassName: 'px-4 py-0 text-text-meta',
     className: 'px-4',
-    render: (a) => <span className="text-[#64748b]">{a.lastUpdated}</span>,
+    render: (a) => <span className="text-text-muted">{a.lastUpdated}</span>,
   },
 ];
 
@@ -284,19 +284,19 @@ function CategoryNotFound({
       data-route="kb-category-not-found"
       className="flex flex-col items-start gap-3 py-8"
     >
-      <h1 className="text-[18px] font-semibold leading-[28px] text-[#0f172a]">
+      <h1 className="text-[18px] font-semibold leading-[28px] text-text-primary">
         Category not found
       </h1>
-      <p className="text-[14px] leading-[20px] text-[#475569]">
+      <p className="text-[14px] leading-[20px] text-text-meta">
         No category matches{' '}
-        <code className="rounded bg-[#f1f5f9] px-1 py-0.5 text-[13px] text-[#0f172a]">
+        <code className="rounded bg-surface-muted px-1 py-0.5 text-[13px] text-text-primary">
           {attemptedSlug ?? '(none)'}
         </code>
         .
       </p>
       <Link
         to={routes.kb.category(DEFAULT_KB_CATEGORY_SLUG)}
-        className="text-[14px] font-medium text-[#0f172a] underline underline-offset-2 hover:no-underline"
+        className="text-[14px] font-medium text-text-primary underline underline-offset-2 hover:no-underline"
       >
         Back to Getting Started
       </Link>

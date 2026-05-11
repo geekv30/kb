@@ -12,10 +12,10 @@ export function PageProgressBar() {
       aria-label="Loading"
       aria-busy="true"
       data-kb-part="page-progress-bar"
-      className="relative h-[2px] w-full overflow-hidden bg-[#f1f5f9]"
+      className="relative h-[2px] w-full overflow-hidden bg-surface-muted"
     >
       <div
-        className="absolute top-0 h-full w-[30%] bg-[#0f172a] animate-progress-slide"
+        className="absolute top-0 h-full w-[30%] bg-text-primary animate-progress-slide"
       />
     </div>
   );

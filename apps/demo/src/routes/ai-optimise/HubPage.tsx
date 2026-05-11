@@ -57,10 +57,10 @@ export default function HubPage() {
     return (
       <div data-route="ai-optimise-hub" className="flex flex-col">
         <header data-kb-part="ai-hub-header" className="mb-6">
-          <h1 className="text-[24px] font-semibold leading-[32px] text-[#0f172a]">
+          <h1 className="text-[24px] font-semibold leading-[32px] text-text-primary">
             AI Optimise
           </h1>
-          <p className="mt-[4px] text-[14px] font-normal leading-5 text-[#475569]">
+          <p className="mt-[4px] text-[14px] font-normal leading-5 text-text-meta">
             AI-drafted improvements waiting on your review.
           </p>
         </header>
@@ -83,10 +83,10 @@ export default function HubPage() {
         `Patterns/KB AI Optimise Hub` in kb-ui.
       */}
       <header data-kb-part="ai-hub-header" className="mb-6">
-        <h1 className="text-[24px] font-semibold leading-[32px] text-[#0f172a]">
+        <h1 className="text-[24px] font-semibold leading-[32px] text-text-primary">
           AI Optimise
         </h1>
-        <p className="mt-[4px] text-[14px] font-normal leading-5 text-[#475569]">
+        <p className="mt-[4px] text-[14px] font-normal leading-5 text-text-meta">
           AI-drafted improvements waiting on your review.
         </p>
       </header>

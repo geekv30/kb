@@ -19,14 +19,14 @@ export default function SettingsPlaceholder() {
       <div className="flex max-w-[420px] flex-col items-center gap-3 text-center">
         <div
           aria-hidden="true"
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f1f5f9] text-[#475569]"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-muted text-text-meta"
         >
           <RiSettings5Line className="h-5 w-5" />
         </div>
-        <h1 className="text-[24px] font-semibold leading-8 text-[#0f172a]">
+        <h1 className="text-[24px] font-semibold leading-8 text-text-primary">
           Settings — coming soon.
         </h1>
-        <p className="text-[14px] leading-5 text-[#64748b]">
+        <p className="text-[14px] leading-5 text-text-muted">
           This area is reserved for workspace configuration: members,
           permissions, branding, and billing.
         </p>

@@ -230,12 +230,12 @@ export default function ReviewPage() {
         data-route="ai-optimise-review"
         className="flex flex-col items-center justify-center py-24 text-center"
       >
-        <p className="text-[16px] font-medium leading-[24px] text-[#0f172a]">
+        <p className="text-[16px] font-medium leading-[24px] text-text-primary">
           Article not found.
         </p>
         <Link
           to={routes.aiOptimise.hub()}
-          className="mt-2 text-[14px] font-medium leading-[20px] text-[#0f172a] underline underline-offset-2 hover:text-[#1e293b]"
+          className="mt-2 text-[14px] font-medium leading-[20px] text-text-primary underline underline-offset-2 hover:text-[#1e293b]"
         >
           Back to AI Optimise
         </Link>

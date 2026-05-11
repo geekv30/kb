@@ -80,7 +80,7 @@ export function ShortcutsCheatSheet() {
       <Dialog.Portal>
         <Dialog.Overlay
           className={cn(
-            'fixed inset-0 z-[90] bg-[#0f172a]/40',
+            'fixed inset-0 z-[90] bg-text-primary/40',
             'animate-route-fade-in',
           )}
         />
@@ -88,7 +88,7 @@ export function ShortcutsCheatSheet() {
           className={cn(
             'fixed left-1/2 top-1/2 z-[91] -translate-x-1/2 -translate-y-1/2',
             'w-[480px] max-w-[calc(100vw-32px)] max-h-[calc(100vh-64px)] overflow-y-auto',
-            'rounded-[8px] border border-[#e2e8f0] bg-white',
+            'rounded-[8px] border border-card-border bg-white',
             'shadow-[0_24px_48px_rgba(15,23,42,0.20)]',
             'p-6 flex flex-col gap-5',
             'animate-toast-in',
@@ -97,10 +97,10 @@ export function ShortcutsCheatSheet() {
         >
           <header className="flex items-start justify-between gap-4">
             <div>
-              <Dialog.Title className="text-[16px] font-semibold leading-6 text-[#0f172a]">
+              <Dialog.Title className="text-[16px] font-semibold leading-6 text-text-primary">
                 Keyboard shortcuts
               </Dialog.Title>
-              <Dialog.Description className="mt-1 text-[13px] leading-5 text-[#64748b]">
+              <Dialog.Description className="mt-1 text-[13px] leading-5 text-text-muted">
                 Speed up common actions. Press{' '}
                 <Kbd>?</Kbd> any time to reopen this sheet.
               </Dialog.Description>
@@ -108,8 +108,8 @@ export function ShortcutsCheatSheet() {
             <Dialog.Close
               aria-label="Close shortcuts"
               className={cn(
-                'shrink-0 rounded-[4px] p-1 text-[#64748b]',
-                'hover:bg-[#f1f5f9] hover:text-[#0f172a]',
+                'shrink-0 rounded-[4px] p-1 text-text-muted',
+                'hover:bg-surface-muted hover:text-text-primary',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
               )}
             >
@@ -125,7 +125,7 @@ export function ShortcutsCheatSheet() {
               >
                 <h3
                   id={`shortcut-group-${slug(group.title)}`}
-                  className="text-[11px] font-semibold uppercase tracking-wide text-[#64748b]"
+                  className="text-[11px] font-semibold uppercase tracking-wide text-text-muted"
                 >
                   {group.title}
                 </h3>
@@ -135,7 +135,7 @@ export function ShortcutsCheatSheet() {
                       key={`${group.title}-${i}`}
                       className="flex items-center justify-between"
                     >
-                      <span className="text-[14px] leading-5 text-[#0f172a]">
+                      <span className="text-[14px] leading-5 text-text-primary">
                         {s.label}
                       </span>
                       <span className="flex items-center gap-1">
@@ -164,8 +164,8 @@ function Kbd({ children }: { children: React.ReactNode }) {
     <kbd
       className={cn(
         'inline-flex h-6 min-w-[24px] items-center justify-center px-1.5',
-        'rounded-[4px] border border-[#cbd5e1] bg-[#f8fafc]',
-        'text-[12px] font-medium leading-none text-[#0f172a]',
+        'rounded-[4px] border border-border-faint bg-surface-subtle',
+        'text-[12px] font-medium leading-none text-text-primary',
         // Use system font for kbd so the on-platform mod symbols (⌘ ⏎)
         // render with their native glyph instead of the body font.
         'font-sans',
