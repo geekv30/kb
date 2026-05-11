@@ -45,7 +45,6 @@ export type FileExplorerNavProps = {
   items: NavItem[];
   activeId?: string;
   onItemClick?: (id: string) => void;
-  theme?: 'dark' | 'light';
   /**
    * Tree variant (default): renders chevron, folder/file icon, count/kebab —
    * the canonical Editor explorer.
@@ -90,19 +89,13 @@ function outerPaddingForDepth(depth: number): string {
 
 type RowState = 'default' | 'hover' | 'active' | 'active-sub';
 
-function stateBg(state: RowState, isDark: boolean): string {
-  if (state === 'active') {
-    return isDark ? 'bg-white/[0.08]' : 'bg-[rgba(230,230,230,0.44)]';
-  }
-  if (state === 'hover') {
-    return isDark ? 'bg-white/[0.05]' : 'bg-[rgba(230,230,230,0.32)]';
-  }
+function stateBg(state: RowState): string {
+  if (state === 'active') return 'bg-[rgba(230,230,230,0.44)]';
+  if (state === 'hover') return 'bg-[rgba(230,230,230,0.32)]';
   return '';
 }
 
-function hoverBgClass(isDark: boolean): string {
-  return isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-[rgba(230,230,230,0.32)]';
-}
+const HOVER_BG_CLASS = 'hover:bg-[rgba(230,230,230,0.32)]';
 
 /* ---------------------------- flat row -------------------------------- */
 //
@@ -113,11 +106,10 @@ function hoverBgClass(isDark: boolean): string {
 type FlatRowProps = {
   item: NavItem;
   isActive: boolean;
-  isDark: boolean;
   onClick: () => void;
 };
 
-function FlatRow({ item, isActive, isDark, onClick }: FlatRowProps) {
+function FlatRow({ item, isActive, onClick }: FlatRowProps) {
   const kind = item.kind ?? 'item';
   const isSection = kind === 'section';
 
@@ -139,25 +131,18 @@ function FlatRow({ item, isActive, isDark, onClick }: FlatRowProps) {
           item.icon && 'gap-2',
           'text-left text-[14px] leading-[20px] transition-colors duration-150',
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
-          isDark ? 'text-white/90' : 'text-text-primary',
+          'text-text-primary',
           isSection
             ? 'cursor-default font-medium'
             : isActive
-              ? isDark
-                ? 'bg-white/[0.08] font-medium'
-                : 'bg-surface-subtle font-medium'
-              : isDark
-                ? 'font-normal hover:bg-white/[0.05]'
-                : 'font-normal hover:bg-surface-subtle',
+              ? 'bg-surface-subtle font-medium'
+              : 'font-normal hover:bg-surface-subtle',
         )}
       >
         {item.icon && (
           <span
             aria-hidden
-            className={cn(
-              'inline-flex size-4 shrink-0 items-center justify-center [&>svg]:w-4 [&>svg]:h-4',
-              isDark ? 'text-white/60' : 'text-text-meta',
-            )}
+            className="inline-flex size-4 shrink-0 items-center justify-center text-text-meta [&>svg]:w-4 [&>svg]:h-4"
           >
             {item.icon}
           </span>
@@ -200,7 +185,6 @@ type FolderRowProps = {
   isActive: boolean;
   isActiveSub: boolean;
   isExpanded: boolean;
-  isDark: boolean;
   onToggle: () => void;
 };
 
@@ -210,18 +194,14 @@ function FolderRow({
   isActive,
   isActiveSub,
   isExpanded,
-  isDark,
   onToggle,
 }: FolderRowProps) {
   const state: RowState = isActive ? 'active' : isActiveSub ? 'active-sub' : 'default';
   const ChevronIcon = isExpanded ? RiArrowDownSLine : RiArrowRightSLine;
 
-  const labelColor = isDark ? 'text-white/90' : 'text-text-primary';
   // Per Figma `6:438`: folder/sub-folder rows use font-normal in every state.
   // Only `type=category, state=hover` uses font-medium on the label. Keep regular
   // weight across the board and let background + size carry the emphasis.
-  const labelWeight = 'font-normal';
-  const countColor = isDark ? 'text-white/40' : 'text-text-meta';
 
   // Figma behavior: on ACTIVE the count stays visible (no kebab — see 6:508, 6:491).
   // On HOVER (non-active) the kebab replaces the count (see 6:493 vs 6:484).
@@ -240,55 +220,33 @@ function FolderRow({
         aria-expanded={isExpanded}
         className={cn(
           'flex h-full w-full items-center gap-1 px-[4px] py-[6px] rounded-[8px] cursor-pointer transition-colors duration-150',
-          state === 'default' && hoverBgClass(isDark),
-          state === 'active' && stateBg('active', isDark),
+          state === 'default' && HOVER_BG_CLASS,
+          state === 'active' && stateBg('active'),
         )}
       >
         <div
           className={cn('flex items-center gap-1 flex-1 min-w-0', CONTENT_PL[depth])}
         >
-          <span
-            className={cn(
-              'flex size-6 items-center justify-center rounded-[6px] shrink-0',
-              isDark ? 'text-white/60' : 'text-text-muted',
-            )}
-          >
+          <span className="flex size-6 items-center justify-center rounded-[6px] shrink-0 text-text-muted">
             <ChevronIcon size={16} />
           </span>
-          <span
-            className={cn(
-              'flex size-6 items-center justify-center rounded-[6px] shrink-0',
-              isDark ? 'text-white/60' : 'text-text-muted',
-            )}
-          >
+          <span className="flex size-6 items-center justify-center rounded-[6px] shrink-0 text-text-muted">
             <RiFolderLine size={16} />
           </span>
-          <span
-            className={cn(
-              'flex-1 truncate text-left text-[14px] leading-5',
-              labelColor,
-              labelWeight,
-            )}
-          >
+          <span className="flex-1 truncate text-left text-[14px] leading-5 font-normal text-text-primary">
             {item.title}
           </span>
           <span className="flex size-6 items-center justify-center shrink-0 relative">
             <span
               className={cn(
-                'text-[14px] font-normal',
-                countColor,
+                'text-[14px] font-normal text-text-meta',
                 showHoverSwap && 'group-hover:hidden',
               )}
             >
               {item.count ?? ''}
             </span>
             {showHoverSwap && (
-              <span
-                className={cn(
-                  'hidden group-hover:flex items-center justify-center',
-                  isDark ? 'text-white/60' : 'text-text-meta',
-                )}
-              >
+              <span className="hidden group-hover:flex items-center justify-center text-text-meta">
                 <RiMore2Line size={16} />
               </span>
             )}
@@ -303,14 +261,12 @@ type ArticleRowProps = {
   item: NavItem;
   depth: number;
   isActive: boolean;
-  isDark: boolean;
   onClick: () => void;
 };
 
-function ArticleRow({ item, depth, isActive, isDark, onClick }: ArticleRowProps) {
+function ArticleRow({ item, depth, isActive, onClick }: ArticleRowProps) {
   const state: RowState = isActive ? 'active' : 'default';
 
-  const labelColor = isDark ? 'text-white/80' : 'text-text-primary';
   // Spec colors: published = #42cd83, draft = #898989. 4×4 size.
   // (Status-dot spec hexes are intentionally inline — not in the token system.)
   const statusDotColor =
@@ -335,8 +291,8 @@ function ArticleRow({ item, depth, isActive, isDark, onClick }: ArticleRowProps)
         aria-current={isActive ? 'page' : undefined}
         className={cn(
           'flex h-full w-full items-center gap-1 px-[4px] py-[6px] rounded-[8px] cursor-pointer transition-colors duration-150',
-          state === 'default' && hoverBgClass(isDark),
-          state === 'active' && stateBg('active', isDark),
+          state === 'default' && HOVER_BG_CLASS,
+          state === 'active' && stateBg('active'),
         )}
       >
         <div
@@ -347,20 +303,10 @@ function ArticleRow({ item, depth, isActive, isDark, onClick }: ArticleRowProps)
               depth (see _layout-invariants.md row geometry). */}
           <span aria-hidden className="size-6 shrink-0" />
           {/* Article icon (no leading bullet — spec is icon + label + status-dot) */}
-          <span
-            className={cn(
-              'flex size-6 items-center justify-center rounded-[6px] shrink-0',
-              isDark ? 'text-white/60' : 'text-text-muted',
-            )}
-          >
+          <span className="flex size-6 items-center justify-center rounded-[6px] shrink-0 text-text-muted">
             <RiFile3Line size={16} />
           </span>
-          <span
-            className={cn(
-              'flex-1 truncate text-left text-[14px] font-normal leading-5',
-              labelColor,
-            )}
-          >
+          <span className="flex-1 truncate text-left text-[14px] font-normal leading-5 text-text-primary">
             {item.title}
           </span>
           <span className="flex size-6 items-center justify-center shrink-0 relative">
@@ -374,12 +320,7 @@ function ArticleRow({ item, depth, isActive, isDark, onClick }: ArticleRowProps)
               />
             )}
             {showHoverSwap && (
-              <span
-                className={cn(
-                  'hidden group-hover:flex items-center justify-center',
-                  isDark ? 'text-white/60' : 'text-text-meta',
-                )}
-              >
+              <span className="hidden group-hover:flex items-center justify-center text-text-meta">
                 <RiMore2Line size={16} />
               </span>
             )}
@@ -398,13 +339,11 @@ export function FileExplorerNav({
   items,
   activeId,
   onItemClick,
-  theme = 'light',
   variant = 'tree',
   showSearch,
   className,
   renderItem,
 }: FileExplorerNavProps) {
-  const isDark = theme === 'dark';
   const isFlat = variant === 'flat';
   // Search affordance defaults: ON for tree, OFF for flat. Caller can
   // explicitly override either way.
@@ -414,12 +353,7 @@ export function FileExplorerNav({
   // existing call sites (Editor) keep their glyph without breaking.
   const resolvedHeaderIcon =
     headerIcon ??
-    (isFlat ? null : (
-      <RiQuillPenLine
-        size={16}
-        className={isDark ? 'text-white/60' : 'text-text-muted'}
-      />
-    ));
+    (isFlat ? null : <RiQuillPenLine size={16} className="text-text-muted" />);
 
   const ancestorIds = useMemo(() => {
     if (!activeId) return new Set<string>();
@@ -482,7 +416,6 @@ export function FileExplorerNav({
                 isActive={isActive}
                 isActiveSub={isActiveSub && !isActive}
                 isExpanded={isExpanded}
-                isDark={isDark}
                 onToggle={() => toggleFolder(item.id)}
               />
             )}
@@ -501,7 +434,6 @@ export function FileExplorerNav({
           item={item}
           depth={depth}
           isActive={item.id === activeId}
-          isDark={isDark}
           onClick={() => onItemClick?.(item.id)}
         />
       );
@@ -511,8 +443,7 @@ export function FileExplorerNav({
   return (
     <aside
       className={cn(
-        'flex flex-col w-[288px] h-full',
-        isDark ? 'bg-[#1a1a1a]' : 'bg-white border-r border-card-border',
+        'flex flex-col w-[288px] h-full bg-white border-r border-card-border',
         className,
       )}
       aria-label="File explorer"
@@ -525,24 +456,18 @@ export function FileExplorerNav({
       >
         <div className="flex items-center gap-2">
           {resolvedHeaderIcon ? (
-            // Wrap caller-provided icons so colour stays consistent with the
-            // theme (callers pass un-coloured glyphs).
+            // Wrap caller-provided icons so colour stays consistent (callers
+            // pass un-coloured glyphs).
             <span
               aria-hidden
-              className={cn(
-                'inline-flex items-center justify-center [&>svg]:w-4 [&>svg]:h-4',
-                isDark ? 'text-white/60' : 'text-text-primary',
-              )}
+              className="inline-flex items-center justify-center text-text-primary [&>svg]:w-4 [&>svg]:h-4"
             >
               {resolvedHeaderIcon}
             </span>
           ) : null}
           <span
             data-kb-part="explorer-title"
-            className={cn(
-              'text-[14px] font-semibold',
-              isDark ? 'text-white/90' : 'text-text-primary',
-            )}
+            className="text-[14px] font-semibold text-text-primary"
           >
             {title}
           </span>
@@ -551,12 +476,7 @@ export function FileExplorerNav({
           <button
             type="button"
             aria-label="Search"
-            className={cn(
-              'flex size-6 items-center justify-center rounded-[6px] cursor-pointer transition-colors duration-150',
-              isDark
-                ? 'text-white/60 hover:bg-white/[0.06] hover:text-white/90'
-                : 'text-text-muted hover:bg-surface-subtle hover:text-text-primary',
-            )}
+            className="flex size-6 items-center justify-center rounded-[6px] cursor-pointer transition-colors duration-150 text-text-muted hover:bg-surface-subtle hover:text-text-primary"
           >
             <RiSearchLine size={16} />
           </button>
@@ -566,10 +486,7 @@ export function FileExplorerNav({
       {/* Inset 1px divider at Y=54 — 16L / 16R inset (effective width 256) */}
       <div
         data-kb-part="explorer-divider"
-        className={cn(
-          'h-px mx-[16px] shrink-0',
-          isDark ? 'bg-white/10' : 'bg-card-border',
-        )}
+        className="h-px mx-[16px] shrink-0 bg-card-border"
       />
 
       {/* Body — 12px top gap per invariants, 2px stride between rows.
@@ -589,17 +506,13 @@ export function FileExplorerNav({
                   <FlatRow
                     item={item}
                     isActive={item.id === activeId}
-                    isDark={isDark}
                     onClick={() => onItemClick?.(item.id)}
                   />
                   {isSection && !isLast && (
                     <div
                       aria-hidden
                       data-kb-part="flat-section-divider"
-                      className={cn(
-                        'h-px mx-[16px]',
-                        isDark ? 'bg-white/10' : 'bg-card-border',
-                      )}
+                      className="h-px mx-[16px] bg-card-border"
                     />
                   )}
                 </React.Fragment>

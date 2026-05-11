@@ -101,7 +101,6 @@ function FileExplorerNavPlayground() {
   return (
     <div className="flex h-screen">
       <FileExplorerNav
-        theme="light"
         title="Editor"
         items={tree}
         activeId={activeId}

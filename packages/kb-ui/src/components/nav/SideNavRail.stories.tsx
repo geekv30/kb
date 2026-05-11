@@ -27,7 +27,6 @@ function SideNavRailPlayground() {
   return (
     <div className="flex h-screen">
       <SideNavRail
-        theme="light"
         items={items}
         activeId={activeId}
         onItemClick={(id) => setActiveId(id)}

@@ -70,7 +70,6 @@ export function AppRail() {
 
   return (
     <SideNavRail
-      theme="light"
       items={railItems}
       activeId={activeId}
       brandLogo={<CompanyLogo size={24} />}
