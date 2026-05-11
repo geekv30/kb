@@ -26,6 +26,10 @@ npm run preview --workspace=apps/demo
 npm run typecheck --workspace=apps/demo
 ```
 
+## Deploy
+
+`npm run build --workspace=apps/demo` emits a fully static bundle to `apps/demo/dist/` (`index.html` + `assets/`). Serve that directory from any static host — Vercel, Netlify, GitHub Pages, S3 + CloudFront, or `npx serve dist`. There is no server runtime; the SPA is hash-free, so the host must rewrite unknown paths to `index.html` for client-side routing to work (Vercel/Netlify do this by default; for `serve` use `serve -s dist`).
+
 ## Routes
 
 | Path | Page | Notes |
