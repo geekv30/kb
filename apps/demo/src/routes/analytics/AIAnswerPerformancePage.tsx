@@ -10,7 +10,11 @@
 //   1. Custom <header>: title + subtitle | DateRangePill
 //   2. StatCardGrid "AI Search Performance" — 4 metrics
 //   3. AnalyticsChartCard "AI deflection rate over time" (positive area + Goal:70%)
-//   4. AIConversationLogsCard with 5 anonymised entries
+//   4. AIConversationLogsCard with 6 anonymised entries (default chrome:
+//      title + subtitle + Sort dropdown + Ticket Created toggle). Phase 15d
+//      added a `header` slot (null = no chrome, ReactNode = custom) — the
+//      demo keeps the default chrome for realism, matching the manager-view
+//      story for this card.
 //   5. DataTable "Most Cited KB Articles"
 //
 // Interactions (PRD §7.8):
@@ -39,6 +43,7 @@ import {
 import { useMockStore } from '../../store/MockStoreContext';
 import { selectArticleById } from '../../store/selectors';
 import {
+  ANALYTICS_X_TICKS,
   aiAnswerFixtures,
   type MostCitedRow,
 } from '../../store/fixtures/analytics';
@@ -150,6 +155,7 @@ export default function AIAnswerPerformancePage() {
           xKey="x"
           series={deflectionSeries}
           yTicks={[0, 25, 50, 75, 100]}
+          xTicks={ANALYTICS_X_TICKS}
           goalLine={deflectionGoal}
           showLegend={false}
         />

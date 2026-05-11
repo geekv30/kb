@@ -37,6 +37,7 @@ import {
 import { useMockStore } from '../../store/MockStoreContext';
 import { selectArticleById } from '../../store/selectors';
 import {
+  ANALYTICS_X_TICKS,
   articlePerformanceFixtures,
   type ArticleAttentionRow,
   type ArticlePerformanceRow,
@@ -191,6 +192,7 @@ export default function ArticlePerformancePage() {
           xKey="x"
           series={areaSeries}
           yTicks={[0, 3000, 6000, 9000, 12000]}
+          xTicks={ANALYTICS_X_TICKS}
         />
       </AnalyticsChartCard>
 

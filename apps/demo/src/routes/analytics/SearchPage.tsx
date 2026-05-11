@@ -30,6 +30,7 @@ import {
   type DataTableColumn,
 } from '@test-kb-ui/kb-ui';
 import {
+  ANALYTICS_X_TICKS,
   searchFixtures,
   type ContentGapRow,
   type SearchKeywordRow,
@@ -134,6 +135,7 @@ export default function SearchPage() {
               xKey="x"
               series={searchVolumeSeries}
               yTicks={[0, 500, 1000, 1500, 2000]}
+              xTicks={ANALYTICS_X_TICKS}
               showLegend={false}
             />
           </AnalyticsChartCard>
@@ -149,6 +151,7 @@ export default function SearchPage() {
               xKey="x"
               series={missedSearchSeries}
               yTicks={[0, 25, 50, 75, 100]}
+              xTicks={ANALYTICS_X_TICKS}
               goalLine={missedSearchGoal}
               showLegend={false}
             />
