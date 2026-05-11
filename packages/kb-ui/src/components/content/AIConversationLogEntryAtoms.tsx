@@ -69,7 +69,7 @@ export function ConversationRow({
       {hideConnectorAbove ? null : (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute left-[13.5px] top-0 border-l border-dashed border-[#94a3b8]"
+          className="pointer-events-none absolute left-[13.5px] top-0 border-l border-dashed border-text-disabled"
           style={{ height: `${iconCenter}px` }}
         />
       )}
@@ -77,7 +77,7 @@ export function ConversationRow({
       {hideConnectorBelow ? null : (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute left-[13.5px] bottom-0 border-l border-dashed border-[#94a3b8]"
+          className="pointer-events-none absolute left-[13.5px] bottom-0 border-l border-dashed border-text-disabled"
           style={{ top: `${iconCenter}px` }}
         />
       )}
@@ -91,7 +91,7 @@ export function ConversationRow({
         className={cn(
           'absolute inline-flex items-center justify-center',
           iconPill
-            ? 'left-0 top-0 h-7 w-7 rounded-full bg-[#f1f5f9]'
+            ? 'left-0 top-0 h-7 w-7 rounded-full bg-surface-muted'
             : 'left-[6px] top-[2px] h-4 w-4 bg-white',
         )}
       >

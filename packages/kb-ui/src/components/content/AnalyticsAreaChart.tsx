@@ -10,6 +10,7 @@ import {
   YAxis,
 } from 'recharts';
 import { cn } from '../../utils/cn';
+import { tokens } from '../../tokens';
 
 /* ─────────────────────────────────────────────────────────────
  * AnalyticsAreaChart — Recharts wrapper used by every line/area
@@ -156,7 +157,7 @@ export function AnalyticsAreaChart({
 }: AnalyticsAreaChartProps) {
   const palette = seriesPalette ?? DEFAULT_SERIES_PALETTE;
   const colorFor = (seriesKey: AreaSeriesKey): string =>
-    palette[seriesKey] ?? '#94a3b8';
+    palette[seriesKey] ?? tokens.color.textDisabled;
   // Scope gradient ids per instance to avoid collisions when multiple
   // charts render on the same page (Recharts gradients are pulled by
   // `url(#id)` from the document — duplicate ids = wrong fills).
@@ -251,11 +252,11 @@ export function AnalyticsAreaChart({
             <Tooltip
               contentStyle={{
                 borderRadius: 8,
-                border: '1px solid #e5e5e5',
+                border: `1px solid ${tokens.color.cardBorder}`,
                 boxShadow:
                   '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.10)',
               }}
-              labelStyle={{ color: '#0f172a', fontWeight: 500 }}
+              labelStyle={{ color: tokens.color.textPrimary, fontWeight: 500 }}
             />
             {series.map((s) => (
               <Area

@@ -12,6 +12,7 @@ import {
   RiArrowGoBackLine,
 } from '@remixicon/react';
 import { cn } from '../../utils/cn';
+import { tokens } from '../../tokens';
 import { AICard } from './AICard';
 import { NavArrow } from './NavArrow';
 import type {
@@ -53,9 +54,9 @@ export type AIGapSuggestionCardProps = {
  * ───────────────────────────────────────────────────────────── */
 
 export const DEFAULT_GAP_TYPES: Record<string, SuggestionTypeMeta> = {
-  addition: { label: 'Addition', color: '#086e3f', Icon: RiAddLine },
-  replace: { label: 'Replace', color: '#065b89', Icon: RiRefreshLine },
-  removal: { label: 'Removal', color: '#d52c1f', Icon: RiCloseLine },
+  addition: { label: 'Addition', color: tokens.color.aiAddition, Icon: RiAddLine },
+  replace: { label: 'Replace', color: tokens.color.aiReplace, Icon: RiRefreshLine },
+  removal: { label: 'Removal', color: tokens.color.aiRemoval, Icon: RiCloseLine },
 };
 
 function TypeChip({
@@ -72,7 +73,7 @@ function TypeChip({
         data-kb-part="ai-gap-type-chip"
         data-kb-type={type}
         className="inline-flex items-center gap-1"
-        style={{ color: '#94a3b8' }}
+        style={{ color: tokens.color.textDisabled }}
       >
         <span className="text-[12px] font-medium leading-[18px]">{type}</span>
       </span>
@@ -109,8 +110,8 @@ function SourcesButton({
         // weight=normal, not medium. Lighter weight also improves
         // visual baseline alignment with the icon + adjacent NavArrow
         // / accept-reject pills (medium gave a heavier optical feel).
-        'text-[14px] font-normal leading-[20px] text-[#475569]',
-        'transition-colors hover:bg-[#f1f5f9] hover:text-[#0f172a]',
+        'text-[14px] font-normal leading-[20px] text-text-meta',
+        'transition-colors hover:bg-surface-muted hover:text-text-primary',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
       )}
     >
@@ -149,8 +150,8 @@ function AcceptButton({ onClick }: { onClick?: () => void }) {
         // icon=icon/neutral/default (#0f172a). Same pill shape as
         // the reject button (rounded-full). Hover deepens the bg one
         // step to keep affordance visible on the light fill.
-        'inline-flex size-6 items-center justify-center rounded-full bg-[#f1f5f9]',
-        'text-[#0f172a] transition-colors hover:bg-[#e2e8f0]',
+        'inline-flex size-6 items-center justify-center rounded-full bg-surface-muted',
+        'text-text-primary transition-colors hover:bg-card-border',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
       )}
     >
@@ -190,7 +191,7 @@ export function AIGapSuggestionCard({
       >
         <TypeChip type={suggestion.type} registry={resolvedRegistry} />
         <span aria-hidden className="mx-3 h-4 w-px shrink-0 bg-card-divider" />
-        <span className="text-[12px] font-medium leading-[18px] text-[#475569] tracking-wide">
+        <span className="text-[12px] font-medium leading-[18px] text-text-meta tracking-wide">
           {decisionLabel}
         </span>
         <button
@@ -199,8 +200,8 @@ export function AIGapSuggestionCard({
           aria-label={`Undo ${state} for ${suggestion.title}`}
           className={cn(
             'ml-auto inline-flex size-6 items-center justify-center rounded-[4px]',
-            'text-[#64748b] transition-colors',
-            'hover:bg-[#f1f5f9] hover:text-[#0f172a]',
+            'text-text-muted transition-colors',
+            'hover:bg-surface-muted hover:text-text-primary',
             'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
           )}
         >
@@ -223,13 +224,13 @@ export function AIGapSuggestionCard({
           {meta}
           <h3
             data-kb-part="ai-gap-title"
-            className="mt-2 text-[14px] font-medium leading-[20px] text-[#0f172a]"
+            className="mt-2 text-[14px] font-medium leading-[20px] text-text-primary"
           >
             {suggestion.title}
           </h3>
           <p
             data-kb-part="ai-gap-description"
-            className="mt-1 text-[14px] font-normal leading-[20px] text-[#64748b]"
+            className="mt-1 text-[14px] font-normal leading-[20px] text-text-muted"
           >
             {suggestion.description}
           </p>

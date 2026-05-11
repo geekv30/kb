@@ -18,7 +18,7 @@ import { cn } from '../../utils/cn';
 
 export function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <label className="text-[14px] font-medium leading-[20px] text-[#0f172a]">
+    <label className="text-[14px] font-medium leading-[20px] text-text-primary">
       {children}
     </label>
   );
@@ -35,10 +35,10 @@ export type FieldBoxProps = {
 
 export function FieldBox({ children, className, as = 'button', onClick, ariaLabel }: FieldBoxProps) {
   const baseClass = cn(
-    'flex w-full min-h-[40px] items-center gap-2 rounded-[8px] border border-[#e5e5e5] bg-white px-3',
-    'text-[14px] leading-[20px] font-normal text-[#0f172a]',
-    'transition-colors focus:outline-none focus:border-[#cbd5e1]',
-    'hover:border-[#cbd5e1]',
+    'flex w-full min-h-[40px] items-center gap-2 rounded-[8px] border border-card-border bg-white px-3',
+    'text-[14px] leading-[20px] font-normal text-text-primary',
+    'transition-colors focus:outline-none focus:border-border-faint',
+    'hover:border-border-faint',
     className,
   );
 
@@ -56,21 +56,21 @@ export function ChevronSuffix() {
   return (
     <RiArrowDownSLine
       aria-hidden="true"
-      className="ml-auto h-4 w-4 shrink-0 text-[#94a3b8]"
+      className="ml-auto h-4 w-4 shrink-0 text-text-disabled"
     />
   );
 }
 
 export function CharCounter({ count, max }: { count: number; max: number }) {
   return (
-    <span className="text-[12px] font-normal leading-[18px] text-[#94a3b8] tabular-nums">
+    <span className="text-[12px] font-normal leading-[18px] text-text-disabled tabular-nums">
       {count}/{max}
     </span>
   );
 }
 
 export function Placeholder({ children }: { children: React.ReactNode }) {
-  return <span className="text-[#94a3b8]">{children}</span>;
+  return <span className="text-text-disabled">{children}</span>;
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -89,8 +89,8 @@ export function TagChip({ label, onRemove }: TagChipProps) {
   return (
     <span
       className={cn(
-        'inline-flex h-[22px] items-center gap-1.5 rounded-full bg-[#f1f5f9] pl-2 pr-1',
-        'text-[12px] font-medium leading-[18px] text-[#0f172a]',
+        'inline-flex h-[22px] items-center gap-1.5 rounded-full bg-surface-muted pl-2 pr-1',
+        'text-[12px] font-medium leading-[18px] text-text-primary',
       )}
     >
       <span>{label}</span>
@@ -101,7 +101,7 @@ export function TagChip({ label, onRemove }: TagChipProps) {
           aria-label={`Remove ${label}`}
           className={cn(
             'inline-flex h-[16px] w-[16px] items-center justify-center rounded-full',
-            'text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#0f172a]',
+            'text-text-muted hover:bg-card-border hover:text-text-primary',
             'focus:outline-none focus:ring-2 focus:ring-black/10',
           )}
         >
@@ -118,9 +118,9 @@ export function AddChipButton({ onClick, label = '+ Add' }: { onClick?: () => vo
       type="button"
       onClick={onClick}
       className={cn(
-        'inline-flex h-[22px] items-center rounded-full border border-dashed border-[#cbd5e1] bg-white px-2',
-        'text-[12px] font-medium leading-[18px] text-[#475569]',
-        'hover:bg-[#f8fafc] focus:outline-none focus:ring-2 focus:ring-black/10',
+        'inline-flex h-[22px] items-center rounded-full border border-dashed border-border-faint bg-white px-2',
+        'text-[12px] font-medium leading-[18px] text-text-meta',
+        'hover:bg-surface-subtle focus:outline-none focus:ring-2 focus:ring-black/10',
       )}
     >
       {label}

@@ -209,7 +209,7 @@ export const SlashCommandMenu = React.forwardRef<HTMLDivElement, SlashCommandMen
         role="listbox"
         aria-label="Insert block"
         className={cn(
-          'min-w-[220px] max-w-[320px] rounded-[8px] border border-[#e2e8f0] bg-white',
+          'min-w-[220px] max-w-[320px] rounded-[8px] border border-card-border bg-white',
           'shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.10),0px_2px_4px_-2px_rgba(0,0,0,0.06)]',
           'py-1 overflow-hidden',
           // Prevent the editor from regaining focus when clicking a row; we
@@ -218,7 +218,7 @@ export const SlashCommandMenu = React.forwardRef<HTMLDivElement, SlashCommandMen
         )}
       >
         {items.length === 0 ? (
-          <div className="px-3 py-2 text-[13px] leading-5 text-[#64748b]">No results</div>
+          <div className="px-3 py-2 text-[13px] leading-5 text-text-muted">No results</div>
         ) : (
           <div ref={listRef} className="max-h-[280px] overflow-y-auto">
             {items.map((cmd, i) => {
@@ -239,22 +239,22 @@ export const SlashCommandMenu = React.forwardRef<HTMLDivElement, SlashCommandMen
                   className={cn(
                     'flex w-full items-start gap-2.5 px-2.5 py-1.5 text-left',
                     'focus-visible:outline-none',
-                    isActive ? 'bg-[#f8fafc]' : 'bg-transparent',
+                    isActive ? 'bg-surface-subtle' : 'bg-transparent',
                   )}
                 >
                   <span
                     className={cn(
-                      'mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center text-[#475569]',
+                      'mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center text-text-meta',
                       '[&>svg]:h-4 [&>svg]:w-4',
                     )}
                   >
                     <Icon />
                   </span>
                   <span className="flex min-w-0 flex-col">
-                    <span className="text-[14px] font-medium leading-5 text-[#0f172a]">
+                    <span className="text-[14px] font-medium leading-5 text-text-primary">
                       {cmd.title}
                     </span>
-                    <span className="text-[12px] font-normal leading-[18px] text-[#64748b]">
+                    <span className="text-[12px] font-normal leading-[18px] text-text-muted">
                       {cmd.subtitle}
                     </span>
                   </span>

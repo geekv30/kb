@@ -112,16 +112,16 @@ function FeedbackTimestamp({
       {feedback === 'positive' ? (
         <RiThumbUpLine
           aria-hidden="true"
-          className="h-3.5 w-3.5 text-[#086e3f]"
+          className="h-3.5 w-3.5 text-success-text"
         />
       ) : feedback === 'negative' ? (
         <RiThumbDownLine
           aria-hidden="true"
-          className="h-3.5 w-3.5 text-[#d52c1f]"
+          className="h-3.5 w-3.5 text-ai-removal"
         />
       ) : null}
-      {feedback ? <span className="h-3 w-px bg-[#cbd5e1]" aria-hidden="true" /> : null}
-      <span className="text-[13px] font-normal leading-[19px] text-[#475569]">
+      {feedback ? <span className="h-3 w-px bg-border-faint" aria-hidden="true" /> : null}
+      <span className="text-[13px] font-normal leading-[19px] text-text-meta">
         {timestamp}
       </span>
     </div>
@@ -140,8 +140,8 @@ function SourcesLink({ count, onClick }: SourcesLinkProps) {
       onClick={onClick}
       data-kb-part="ai-conversation-log-sources-link"
       className={cn(
-        'text-left text-[14px] font-normal leading-5 text-[#0f172a] underline underline-offset-2',
-        'hover:text-[#0f172a]/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:rounded-[2px]',
+        'text-left text-[14px] font-normal leading-5 text-text-primary underline underline-offset-2',
+        'hover:text-text-primary/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:rounded-[2px]',
       )}
     >
       {count} Sources
@@ -174,18 +174,18 @@ function TailRow({ tail }: TailRowProps) {
         icon={
           <CursorClickIcon
             size={14}
-            className="text-[#64748b]"
+            className="text-text-muted"
           />
         }
       >
         <div className="flex items-center gap-2 pt-[1px]">
-          <span aria-hidden="true" className="text-[14px] leading-5 text-[#64748b]">·</span>
+          <span aria-hidden="true" className="text-[14px] leading-5 text-text-muted">·</span>
           <RiPriceTag3Line
             aria-hidden="true"
-            className="h-4 w-4 shrink-0 text-[#475569]"
+            className="h-4 w-4 shrink-0 text-text-meta"
           />
-          <span className="text-[13px] font-normal leading-[19px] text-[#475569]">
-            <span className="text-[#0f172a] underline underline-offset-2">
+          <span className="text-[13px] font-normal leading-[19px] text-text-meta">
+            <span className="text-text-primary underline underline-offset-2">
               Ticket
             </span>{' '}
             created by {actor}
@@ -203,18 +203,18 @@ function TailRow({ tail }: TailRowProps) {
         icon={
           <CursorClickIcon
             size={14}
-            className="text-[#64748b]"
+            className="text-text-muted"
           />
         }
       >
         <div className="flex items-center gap-2 pt-[1px]">
-          <span aria-hidden="true" className="text-[14px] leading-5 text-[#64748b]">·</span>
+          <span aria-hidden="true" className="text-[14px] leading-5 text-text-muted">·</span>
           <RiBookOpenLine
             aria-hidden="true"
-            className="h-4 w-4 shrink-0 text-[#475569]"
+            className="h-4 w-4 shrink-0 text-text-meta"
           />
-          <span className="text-[13px] font-normal leading-[19px] text-[#475569]">
-            <span className="text-[#0f172a] underline underline-offset-2">Source</span>{' '}
+          <span className="text-[13px] font-normal leading-[19px] text-text-meta">
+            <span className="text-text-primary underline underline-offset-2">Source</span>{' '}
             clicked by {actor}
           </span>
         </div>
@@ -230,17 +230,17 @@ function TailRow({ tail }: TailRowProps) {
       icon={
         <CursorClickIcon
           size={14}
-          className="text-[#64748b]"
+          className="text-text-muted"
         />
       }
     >
       <div className="flex items-center gap-2 pt-[1px]">
-        <span aria-hidden="true" className="text-[14px] leading-5 text-[#64748b]">·</span>
+        <span aria-hidden="true" className="text-[14px] leading-5 text-text-muted">·</span>
         <RiFileTextLine
           aria-hidden="true"
-          className="h-4 w-4 shrink-0 text-[#475569]"
+          className="h-4 w-4 shrink-0 text-text-meta"
         />
-        <span className="text-[13px] font-normal leading-[19px] text-[#475569]">
+        <span className="text-[13px] font-normal leading-[19px] text-text-meta">
           search result clicked by {actor}
         </span>
       </div>
@@ -295,7 +295,7 @@ export function AIConversationLogEntry({
        * (center of the 28-px icon column). */}
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-8 left-[13.5px] border-l border-dashed border-[#94a3b8]"
+        className="pointer-events-none absolute inset-y-8 left-[13.5px] border-l border-dashed border-text-disabled"
       />
 
       {rows !== undefined ? (
@@ -310,13 +310,13 @@ export function AIConversationLogEntry({
         icon={
           <RiSearchLine
             aria-hidden="true"
-            className="h-4 w-4 text-[#475569]"
+            className="h-4 w-4 text-text-meta"
           />
         }
       >
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
-            <p className="pt-[5px] text-[14px] font-medium leading-5 text-[#0f172a]">
+            <p className="pt-[5px] text-[14px] font-medium leading-5 text-text-primary">
               {question}
             </p>
           </div>
@@ -333,7 +333,7 @@ export function AIConversationLogEntry({
             <p
               className={cn(
                 'pt-[1px] text-[14px] font-normal leading-5',
-                answerDisabled ? 'text-[#94a3b8]' : 'text-[#0f172a]',
+                answerDisabled ? 'text-text-disabled' : 'text-text-primary',
               )}
             >
               {answer}
@@ -350,7 +350,7 @@ export function AIConversationLogEntry({
           icon={
             <RiBookOpenLine
               aria-hidden="true"
-              className="h-4 w-4 text-[#475569]"
+              className="h-4 w-4 text-text-meta"
             />
           }
         >
@@ -374,20 +374,20 @@ export function AIConversationLogEntry({
             icon={
               <RiCornerDownRightLine
                 aria-hidden="true"
-                className="h-4 w-4 text-[#64748b]"
+                className="h-4 w-4 text-text-muted"
               />
             }
           >
             <div className="flex items-center gap-2 pt-[1px]">
-              <span className="text-[13px] font-normal leading-[19px] text-[#475569]">
+              <span className="text-[13px] font-normal leading-[19px] text-text-meta">
                 follow up
               </span>
-              <span aria-hidden="true" className="text-[13px] leading-[19px] text-[#475569]">:</span>
+              <span aria-hidden="true" className="text-[13px] leading-[19px] text-text-meta">:</span>
               <RiSearchLine
                 aria-hidden="true"
-                className="h-4 w-4 shrink-0 text-[#475569]"
+                className="h-4 w-4 shrink-0 text-text-meta"
               />
-              <span className="text-[14px] font-medium leading-5 text-[#0f172a]">
+              <span className="text-[14px] font-medium leading-5 text-text-primary">
                 {followUp.question}
               </span>
             </div>
@@ -397,7 +397,7 @@ export function AIConversationLogEntry({
           <ConversationRow hideConnectorAbove hideConnectorBelow icon={<AiIcon size={16} />}>
             <div className="flex items-start gap-3">
               <div className="min-w-0 flex-1">
-                <p className="pt-[1px] text-[14px] font-normal leading-5 text-[#0f172a]">
+                <p className="pt-[1px] text-[14px] font-normal leading-5 text-text-primary">
                   {followUp.answer}
                 </p>
               </div>
@@ -412,7 +412,7 @@ export function AIConversationLogEntry({
               icon={
                 <RiBookOpenLine
                   aria-hidden="true"
-                  className="h-4 w-4 text-[#475569]"
+                  className="h-4 w-4 text-text-meta"
                 />
               }
             >
@@ -446,8 +446,8 @@ export function AIConversationLogEntry({
             type="button"
             onClick={onViewAll}
             className={cn(
-              'text-[14px] font-normal leading-5 text-[#0f172a] underline underline-offset-2',
-              'hover:text-[#0f172a]/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:rounded-[2px]',
+              'text-[14px] font-normal leading-5 text-text-primary underline underline-offset-2',
+              'hover:text-text-primary/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:rounded-[2px]',
             )}
           >
             view all

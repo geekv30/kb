@@ -57,17 +57,17 @@ export function DateRangePill({ value, onChange, label, className, presets }: Da
           type="button"
           data-kb-component="date-range-pill"
           className={cn(
-            'inline-flex items-center gap-2 rounded-[8px] bg-[#f1f5f9] px-3 py-1.5',
-            'text-[14px] font-normal leading-5 text-[#0f172a]',
-            'hover:bg-[#e2e8f0]',
+            'inline-flex items-center gap-2 rounded-[8px] bg-surface-muted px-3 py-1.5',
+            'text-[14px] font-normal leading-5 text-text-primary',
+            'hover:bg-card-border',
             'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
-            'data-[state=open]:bg-[#e2e8f0]',
+            'data-[state=open]:bg-card-border',
             className,
           )}
         >
-          <RiCalendarLine size={14} className="text-[#64748b]" aria-hidden="true" />
+          <RiCalendarLine size={14} className="text-text-muted" aria-hidden="true" />
           <span>{displayLabel}</span>
-          <RiArrowDownSLine size={14} className="text-[#64748b]" aria-hidden="true" />
+          <RiArrowDownSLine size={14} className="text-text-muted" aria-hidden="true" />
         </button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
@@ -85,8 +85,8 @@ export function DateRangePill({ value, onChange, label, className, presets }: Da
               onSelect={handleSelect(preset.value as DateRange)}
               className={cn(
                 'flex cursor-pointer items-center rounded-[6px] px-2 py-1.5',
-                'text-[14px] leading-5 text-[#0f172a]',
-                'data-[highlighted]:bg-[#f8fafc] focus:outline-none',
+                'text-[14px] leading-5 text-text-primary',
+                'data-[highlighted]:bg-surface-subtle focus:outline-none',
               )}
             >
               {preset.label}
@@ -97,8 +97,8 @@ export function DateRangePill({ value, onChange, label, className, presets }: Da
             onSelect={handleSelect('custom')}
             className={cn(
               'flex cursor-pointer items-center rounded-[6px] px-2 py-1.5',
-              'text-[14px] leading-5 text-[#0f172a]',
-              'data-[highlighted]:bg-[#f8fafc] focus:outline-none',
+              'text-[14px] leading-5 text-text-primary',
+              'data-[highlighted]:bg-surface-subtle focus:outline-none',
             )}
           >
             Custom…

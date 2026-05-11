@@ -220,9 +220,9 @@ function ToolbarButton({ onClick, active, disabled, label, children }: ToolbarBu
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
         '[&>svg]:h-[14px] [&>svg]:w-[14px]',
         active
-          ? 'bg-[#f8fafc] text-[#0f172a]'
-          : 'bg-transparent text-[#475569] hover:bg-[#f8fafc] hover:text-[#0f172a]',
-        disabled && 'opacity-40 cursor-not-allowed hover:bg-transparent hover:text-[#475569]',
+          ? 'bg-surface-subtle text-text-primary'
+          : 'bg-transparent text-text-meta hover:bg-surface-subtle hover:text-text-primary',
+        disabled && 'opacity-40 cursor-not-allowed hover:bg-transparent hover:text-text-meta',
       )}
     >
       {children}
@@ -231,7 +231,7 @@ function ToolbarButton({ onClick, active, disabled, label, children }: ToolbarBu
 }
 
 function ToolbarDivider() {
-  return <span aria-hidden="true" className="mx-1 h-4 w-px bg-[#e2e8f0] shrink-0" />;
+  return <span aria-hidden="true" className="mx-1 h-4 w-px bg-card-border shrink-0" />;
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -287,7 +287,7 @@ function ParagraphDropdown({ editor }: { editor: Editor }) {
         className={cn(
           'inline-flex h-6 items-center gap-0.5 pl-1.5 pr-0.5 rounded-[6px] transition-colors',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
-          open ? 'bg-[#f8fafc] text-[#0f172a]' : 'bg-transparent text-[#475569] hover:bg-[#f8fafc] hover:text-[#0f172a]',
+          open ? 'bg-surface-subtle text-text-primary' : 'bg-transparent text-text-meta hover:bg-surface-subtle hover:text-text-primary',
         )}
       >
         <span className="text-[14px] font-medium leading-5">{currentOpt.shortLabel}</span>
@@ -296,7 +296,7 @@ function ParagraphDropdown({ editor }: { editor: Editor }) {
       {open && (
         <div
           role="listbox"
-          className="absolute left-0 top-full z-50 mt-1 min-w-[160px] rounded-[8px] border border-[#e5e5e5] bg-white py-1 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05),0px_2px_4px_-2px_rgba(0,0,0,0.10)]"
+          className="absolute left-0 top-full z-50 mt-1 min-w-[160px] rounded-[8px] border border-card-border bg-white py-1 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05),0px_2px_4px_-2px_rgba(0,0,0,0.10)]"
         >
           {PARAGRAPH_OPTIONS.map((opt) => {
             const isActive = opt.value === current;
@@ -308,8 +308,8 @@ function ParagraphDropdown({ editor }: { editor: Editor }) {
                 aria-selected={isActive}
                 onClick={() => apply(opt.value)}
                 className={cn(
-                  'flex w-full items-center justify-between gap-3 px-3 py-1.5 text-left text-[14px] leading-5 text-[#0f172a]',
-                  'hover:bg-[#f8fafc] focus-visible:outline-none focus-visible:bg-[#f8fafc]',
+                  'flex w-full items-center justify-between gap-3 px-3 py-1.5 text-left text-[14px] leading-5 text-text-primary',
+                  'hover:bg-surface-subtle focus-visible:outline-none focus-visible:bg-surface-subtle',
                 )}
               >
                 <span
@@ -322,7 +322,7 @@ function ParagraphDropdown({ editor }: { editor: Editor }) {
                 >
                   {opt.label}
                 </span>
-                {isActive && <RiCheckLine className="h-[14px] w-[14px] text-[#0f172a]" />}
+                {isActive && <RiCheckLine className="h-[14px] w-[14px] text-text-primary" />}
               </button>
             );
           })}
@@ -380,7 +380,7 @@ function OverflowMenu({ editor }: { editor: Editor }) {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-full z-50 mt-1 min-w-[180px] rounded-[8px] border border-[#e5e5e5] bg-white py-1 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05),0px_2px_4px_-2px_rgba(0,0,0,0.10)]"
+          className="absolute right-0 top-full z-50 mt-1 min-w-[180px] rounded-[8px] border border-card-border bg-white py-1 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05),0px_2px_4px_-2px_rgba(0,0,0,0.10)]"
         >
           {items.map((item) => (
             <button
@@ -392,12 +392,12 @@ function OverflowMenu({ editor }: { editor: Editor }) {
                 setOpen(false);
               }}
               className={cn(
-                'flex w-full items-center gap-2 px-3 py-1.5 text-left text-[14px] leading-5 text-[#0f172a]',
-                'hover:bg-[#f8fafc] focus-visible:outline-none focus-visible:bg-[#f8fafc]',
-                item.active && 'bg-[#f8fafc]',
+                'flex w-full items-center gap-2 px-3 py-1.5 text-left text-[14px] leading-5 text-text-primary',
+                'hover:bg-surface-subtle focus-visible:outline-none focus-visible:bg-surface-subtle',
+                item.active && 'bg-surface-subtle',
               )}
             >
-              <span className="text-[#475569]">{item.icon}</span>
+              <span className="text-text-meta">{item.icon}</span>
               <span>{item.label}</span>
             </button>
           ))}
@@ -447,7 +447,7 @@ function ContentEditorToolbar({
       aria-label="Formatting toolbar"
       data-kb-part="content-editor-toolbar"
       className={cn(
-        'inline-flex w-max items-center gap-0.5 rounded-[8px] border border-[#e2e8f0]',
+        'inline-flex w-max items-center gap-0.5 rounded-[8px] border border-card-border',
         'bg-white p-1 shadow-md',
       )}
     >
@@ -557,7 +557,7 @@ export function ContentEditor({
         // Figma `53:2316` ships card border `#f1f5f9` (color-border), not the
         // generic `#e2e8f0` used elsewhere — keeps Source / Editor / Settings
         // cards visually consistent on the same canvas.
-        'w-[720px] rounded-[12px] border border-[#f1f5f9] bg-white p-10',
+        'w-[720px] rounded-[12px] border border-surface-muted bg-white p-10',
         'shadow-[0px_8px_12px_-4px_rgba(0,0,0,0.05),0px_4px_6px_-2px_rgba(0,0,0,0.10)]',
         className,
       )}

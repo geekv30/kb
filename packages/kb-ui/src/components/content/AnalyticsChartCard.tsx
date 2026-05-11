@@ -45,7 +45,7 @@ export function AnalyticsChartCard({
       <div className="mb-4 flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-1.5">
-            <h3 className="text-[14px] font-medium leading-5 text-[#0f172a]">
+            <h3 className="text-[14px] font-medium leading-5 text-text-primary">
               {title}
             </h3>
             {infoTooltip && (
@@ -56,14 +56,14 @@ export function AnalyticsChartCard({
               >
                 <RiInformationLine
                   size={16}
-                  className="text-[#64748b]"
+                  className="text-text-muted"
                   aria-hidden="true"
                 />
               </span>
             )}
           </div>
           {subtitle && (
-            <p className="text-[12px] font-normal leading-4 text-[#64748b]">
+            <p className="text-[12px] font-normal leading-4 text-text-muted">
               {subtitle}
             </p>
           )}

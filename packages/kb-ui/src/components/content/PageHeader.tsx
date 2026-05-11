@@ -66,11 +66,11 @@ export function PageHeader({
         )}
       >
         <div>
-          <h1 className="text-[24px] font-semibold leading-[32px] text-[#0f172a]">
+          <h1 className="text-[24px] font-semibold leading-[32px] text-text-primary">
             {title}
           </h1>
           {subtitle && (
-            <p className="mt-1 text-[14px] font-normal leading-[20px] text-[#475569]">
+            <p className="mt-1 text-[14px] font-normal leading-[20px] text-text-meta">
               {subtitle}
             </p>
           )}
@@ -90,17 +90,17 @@ export function PageHeader({
         {icon && (
           <span
             aria-hidden="true"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[6.6px] border border-dashed border-[#cbd5e1] bg-[#f8fafc] [&>svg]:h-[22px] [&>svg]:w-[22px]"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[6.6px] border border-dashed border-border-faint bg-surface-subtle [&>svg]:h-[22px] [&>svg]:w-[22px]"
           >
             {icon}
           </span>
         )}
         <div className="flex flex-col gap-0.5">
-          <h1 className="text-[18px] font-semibold leading-[28px] text-[#0f172a]">
+          <h1 className="text-[18px] font-semibold leading-[28px] text-text-primary">
             {title}
           </h1>
           {subtitle && (
-            <p className="text-[14px] font-medium leading-[20px] text-[#475569]">
+            <p className="text-[14px] font-medium leading-[20px] text-text-meta">
               {subtitle}
             </p>
           )}

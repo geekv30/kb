@@ -65,18 +65,18 @@ function SortDropdown({ options, value, onChange }: SortDropdownProps) {
           data-kb-part="ai-conversation-logs-sort"
           aria-label={`Sort by, current: ${currentLabel}`}
           className={cn(
-            'inline-flex items-center gap-2 rounded-[6px] bg-[#f1f5f9] px-3 py-1.5',
-            'text-[14px] font-medium leading-5 text-[#0f172a]',
-            'hover:bg-[#e2e8f0]',
+            'inline-flex items-center gap-2 rounded-[6px] bg-surface-muted px-3 py-1.5',
+            'text-[14px] font-medium leading-5 text-text-primary',
+            'hover:bg-card-border',
             'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
-            'data-[state=open]:bg-[#e2e8f0]',
+            'data-[state=open]:bg-card-border',
           )}
         >
           Sort by
           <RiArrowDownSLine
             size={14}
             aria-hidden="true"
-            className="text-[#64748b]"
+            className="text-text-muted"
           />
         </button>
       </DropdownMenu.Trigger>
@@ -95,8 +95,8 @@ function SortDropdown({ options, value, onChange }: SortDropdownProps) {
               onSelect={() => onChange?.(opt.id)}
               className={cn(
                 'flex cursor-pointer items-center rounded-[6px] px-2 py-1.5',
-                'text-[14px] leading-5 text-[#0f172a]',
-                'data-[highlighted]:bg-[#f8fafc] focus:outline-none',
+                'text-[14px] leading-5 text-text-primary',
+                'data-[highlighted]:bg-surface-subtle focus:outline-none',
               )}
             >
               {opt.label}
@@ -141,7 +141,7 @@ export function AIConversationLogsCard({
       // Outer border colour matches Figma library-check `156:3987` (#e2e8f0)
       // rather than the global `--color-card-border` (#e5e5e5). Per Phase 15
       // calibration: drift fixed in-place on this card only.
-      className={cn('border-[#e2e8f0] p-5', className)}
+      className={cn('border-card-border p-5', className)}
     >
       {renderHeader ? (
         <>
@@ -150,7 +150,7 @@ export function AIConversationLogsCard({
               {/* Default header block */}
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-1.5">
-                  <h3 className="text-[14px] font-medium leading-5 text-[#0f172a]">
+                  <h3 className="text-[14px] font-medium leading-5 text-text-primary">
                     {title}
                   </h3>
                   <span
@@ -161,11 +161,11 @@ export function AIConversationLogsCard({
                     <RiInformationLine
                       size={16}
                       aria-hidden="true"
-                      className="text-[#64748b]"
+                      className="text-text-muted"
                     />
                   </span>
                 </div>
-                <p className="text-[13px] font-normal leading-[19px] text-[#475569]">
+                <p className="text-[13px] font-normal leading-[19px] text-text-meta">
                   {subtitle}
                 </p>
               </div>
@@ -187,13 +187,13 @@ export function AIConversationLogsCard({
                         data-kb-part="ai-conversation-logs-ticket-toggle"
                         className={cn(
                           'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors',
-                          'data-[state=unchecked]:bg-[#e2e8f0] data-[state=checked]:bg-[#0f172a]',
+                          'data-[state=unchecked]:bg-card-border data-[state=checked]:bg-text-primary',
                           'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
                         )}
                       >
                         <Switch.Thumb className="block size-4 translate-x-0.5 rounded-full bg-white shadow transition-transform data-[state=checked]:translate-x-[18px]" />
                       </Switch.Root>
-                      <span className="text-[14px] font-normal leading-5 text-[#475569]">
+                      <span className="text-[14px] font-normal leading-5 text-text-meta">
                         Ticket Created
                       </span>
                     </div>
@@ -208,7 +208,7 @@ export function AIConversationLogsCard({
           )}
 
           {/* Header/list divider */}
-          <div className="border-t border-[#e2e8f0]" />
+          <div className="border-t border-card-border" />
         </>
       ) : null}
 
@@ -218,7 +218,7 @@ export function AIConversationLogsCard({
        * matches Figma library-check `156:3987` (#e2e8f0). */}
       <div
         data-kb-part="ai-conversation-logs-list"
-        className="flex flex-col [&>*]:border-b [&>*]:border-[#e2e8f0] [&>*:last-child]:border-b-0"
+        className="flex flex-col [&>*]:border-b [&>*]:border-card-border [&>*:last-child]:border-b-0"
       >
         {children}
       </div>

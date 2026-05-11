@@ -11,7 +11,7 @@ import { Card } from '../primitives/Card';
  * 7 hand-rolled `*Table.tsx` files:
  *
  *   - row + header height           h-12
- *   - row divider                   border-b border-[#e5e5e5]
+ *   - row divider                   border-b border-card-border
  *   - hover state (interactive)     hover:bg-[#fafafa] + transition
  *   - card chrome                   rounded-[12px], 1px slate border, p-5
  *
@@ -81,7 +81,7 @@ export type DataTableProps<T> = {
   /**
    * When `wrapped=false`, the wrapper acquires the legacy
    * "ArticlesTable / SubCategoriesTable" chrome:
-   * `bg-white rounded-[8px] border border-[#e5e5e5] overflow-hidden`.
+   * `bg-white rounded-[8px] border border-card-border overflow-hidden`.
    */
   unwrappedChrome?: boolean;
   /**
@@ -120,7 +120,7 @@ export function DataTable<T>({
   // hold the legacy 48-px tall column-header.
   const headerTrClass = cn(
     'h-12',
-    headerDivider && 'border-b border-[#e5e5e5]',
+    headerDivider && 'border-b border-card-border',
   );
 
   const padY = `${cellPaddingY}px`;
@@ -150,7 +150,7 @@ export function DataTable<T>({
               key={c.id}
               scope="col"
               className={cn(
-                'align-middle text-[14px] font-medium leading-[20px] text-[#0f172a]',
+                'align-middle text-[14px] font-medium leading-[20px] text-text-primary',
                 alignClass(c.align),
                 // Header padding mirrors the Figma reference: legacy
                 // ArticlesTable / SubCategoriesTable use `pl-4 pr-0 py-0`
@@ -172,7 +172,7 @@ export function DataTable<T>({
           <tr>
             <td
               colSpan={columns.length}
-              className="py-3 text-[14px] text-[#94a3b8]"
+              className="py-3 text-[14px] text-text-disabled"
               style={{ paddingTop: padY, paddingBottom: padY }}
             >
               {emptyMessage}
@@ -190,7 +190,7 @@ export function DataTable<T>({
                 onClick={interactive ? () => onRowClick?.(row, idx) : undefined}
                 className={cn(
                   'h-12 align-middle',
-                  idx < rows.length - 1 && 'border-b border-[#e5e5e5]',
+                  idx < rows.length - 1 && 'border-b border-card-border',
                   interactive &&
                     'cursor-pointer transition-colors duration-150 hover:bg-[#fafafa]',
                 )}
@@ -199,7 +199,7 @@ export function DataTable<T>({
                   <td
                     key={c.id}
                     className={cn(
-                      'align-middle text-[14px] font-normal leading-[20px] text-[#0f172a]',
+                      'align-middle text-[14px] font-normal leading-[20px] text-text-primary',
                       alignClass(c.align),
                       c.className,
                     )}
@@ -234,7 +234,7 @@ export function DataTable<T>({
       <div
         data-kb-component={dataKbComponent ?? 'data-table'}
         className={cn(
-          'bg-white rounded-[8px] border border-[#e5e5e5] overflow-hidden',
+          'bg-white rounded-[8px] border border-card-border overflow-hidden',
           className,
         )}
       >

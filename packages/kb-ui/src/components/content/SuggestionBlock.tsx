@@ -3,6 +3,7 @@
 //        9aGp5t9fH1d0PXi4LMhOdb#74:10788 (AI Gaps editor — inline review flow)
 import * as React from 'react';
 import { cn } from '../../utils/cn';
+import { tokens } from '../../tokens';
 import type { AISuggestionType } from './ai-suggestion-types';
 
 /* ─────────────────────────────────────────────────────────────
@@ -63,7 +64,8 @@ export type SuggestionBlockProps = {
 type VariantKey = 'addition' | 'removal';
 
 const SENTENCE_BG: Record<VariantKey, string> = {
-  addition: '#e7f9ee',
+  addition: tokens.color.highlight,
+  // #fce8e8 — pastel removal wash; not yet in design tokens. TODO: tokenize in Chunk 4.
   removal: '#fce8e8',
 };
 
@@ -145,7 +147,7 @@ function SentenceList({
           return (
             <div
               key={i}
-              className="text-[16px] leading-[24px] text-[#0f172a]"
+              className="text-[16px] leading-[24px] text-text-primary"
             >
               <SuggestionHighlight>{sentence}</SuggestionHighlight>
             </div>
