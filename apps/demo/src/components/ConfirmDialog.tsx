@@ -99,19 +99,14 @@ export function ConfirmDialog({
               {cancelLabel}
             </Button>
             {confirmVariant === 'destructive' ? (
-              <button
-                type="button"
-                onClick={onConfirm}
-                className={cn(
-                  'inline-flex items-center justify-center rounded-[6px] px-3 py-1.5',
-                  'text-[14px] font-medium leading-5 text-white',
-                  'bg-[#dc2626] hover:bg-[#b91c1c]',
-                  'transition-colors',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#dc2626]/30',
-                )}
-              >
+              // Phase 15a — adopted Button's `variant="danger"` (introduced
+              // alongside `outline` / `danger-outline` with uniform 32 px
+              // height). Replaces an inline `<button>` styled with raw red
+              // hex values so destructive confirmations match the kb-ui
+              // canonical danger color (#f03f33) instead of red-600.
+              <Button variant="danger" onClick={onConfirm}>
                 {confirmLabel}
-              </button>
+              </Button>
             ) : (
               <Button variant="primary" onClick={onConfirm}>
                 {confirmLabel}
