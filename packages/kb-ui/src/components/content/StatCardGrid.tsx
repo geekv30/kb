@@ -39,7 +39,7 @@ export function StatCardGrid({ title, infoTooltip, stats, className, headerRight
           className="inline-flex"
           {...(infoTooltip ? { title: infoTooltip, 'aria-label': infoTooltip } : {})}
         >
-          <RiInformationLine size={16} className="text-[#64758b]" aria-hidden="true" />
+          <RiInformationLine size={16} className="text-[#64748b]" aria-hidden="true" />
         </span>
         {headerRight !== undefined ? <div className="ml-auto flex items-center">{headerRight}</div> : null}
       </div>

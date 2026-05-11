@@ -48,7 +48,7 @@ const articleColumns: DataTableColumn<Article>[] = [
     header: 'Article Title',
     render: (a) => (
       <div className="flex items-center gap-2 min-w-0 pr-2">
-        <RiFile3Line size={16} className="shrink-0 text-[#64758b]" aria-hidden="true" />
+        <RiFile3Line size={16} className="shrink-0 text-[#64748b]" aria-hidden="true" />
         <span className="truncate">{a.title}</span>
       </div>
     ),
@@ -79,7 +79,7 @@ const articleColumns: DataTableColumn<Article>[] = [
     header: 'Last Updated',
     width: 251,
     render: (a) => (
-      <span className="text-[#64758b]">{a.lastUpdated}</span>
+      <span className="text-[#64748b]">{a.lastUpdated}</span>
     ),
   },
 ];

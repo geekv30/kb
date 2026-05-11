@@ -133,7 +133,7 @@ const subCategoryColumns: DataTableColumn<SubCategory>[] = [
           aria-label={`Open ${item.title}`}
           onClick={(e) => e.stopPropagation()}
           className={cn(
-            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#64758b]',
+            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#64748b]',
             'hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
           )}
         >
@@ -160,7 +160,7 @@ const articleColumns: DataTableColumn<Article>[] = [
           aria-label={`Open ${a.title}`}
           onClick={(e) => e.stopPropagation()}
           className={cn(
-            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#64758b]',
+            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#64748b]',
             'hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
           )}
         >
@@ -227,7 +227,7 @@ const articleColumns: DataTableColumn<Article>[] = [
     headerClassName: 'px-4 py-0 text-[#475569]',
     className: 'px-4',
     render: (a) => (
-      <span className="text-[#64758b]">{a.lastUpdated}</span>
+      <span className="text-[#64748b]">{a.lastUpdated}</span>
     ),
   },
 ];

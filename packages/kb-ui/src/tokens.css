@@ -20,7 +20,7 @@
   --color-text-primary:   #0f172a;  /* headings, primary labels */
   --color-text-secondary: #334155;  /* card titles, secondary labels */
   --color-text-meta:      #475569;  /* meta info, sources badge */
-  --color-text-muted:     #64758b;  /* Figma text/neutral/faint — body copy, descriptions */
+  --color-text-muted:     #64748b;  /* Figma text/neutral/faint — body copy, descriptions */
 
   /* ── Semantic ───────────────────────────────── */
   --color-success-text:   #086e3f;  /* addition badge text */
@@ -29,7 +29,7 @@
   --color-border:         #f1f5f9;  /* card strokes, dividers */
   --color-border-input:   #e5e5e5;  /* input borders */
   --color-text-disabled:  #94a3b8;  /* disabled text */
-  --color-text-faint:     #64758b;  /* Figma text/neutral/faint — faint label text */
+  --color-text-faint:     #64748b;  /* Figma text/neutral/faint — faint label text */
   --color-highlight:      #e7f9ee;  /* inline highlight bg */
 
   /* ── AI Gaps semantic palette ──────────────── */
@@ -125,9 +125,9 @@
   --color-text-primary:   #0f172a;
   --color-text-secondary: #334155;
   --color-text-meta:      #475569;
-  --color-text-muted:     #64758b;  /* Figma text/neutral/faint */
+  --color-text-muted:     #64748b;  /* Figma text/neutral/faint */
   --color-text-disabled:  #94a3b8;
-  --color-text-faint:     #64758b;  /* Figma text/neutral/faint */
+  --color-text-faint:     #64748b;  /* Figma text/neutral/faint */
 
   --color-success-text:   #086e3f;
   --color-btn-primary:    #000000;

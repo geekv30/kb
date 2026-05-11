@@ -38,7 +38,7 @@ function AvatarPlayground() {
             initials={person.initials}
             src={person.src}
           />
-          <span className="text-[12px] leading-[18px] text-[#64758b]">
+          <span className="text-[12px] leading-[18px] text-[#64748b]">
             {person.name}
           </span>
         </div>

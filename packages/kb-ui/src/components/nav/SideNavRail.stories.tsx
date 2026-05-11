@@ -35,7 +35,7 @@ function SideNavRailPlayground() {
         bottomSlot={<Avatar initials="VK" />}
       />
       <div className="flex-1 bg-[#f5f5f5] flex items-center justify-center">
-        <span className="text-[14px] text-[#64758b]">
+        <span className="text-[14px] text-[#64748b]">
           Active section: {labelFor(activeId)}
         </span>
       </div>

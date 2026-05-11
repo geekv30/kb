@@ -57,7 +57,7 @@ const attentionColumns: DataTableColumn<ArticleAttentionRow>[] = [
       <div className="flex items-center gap-2 min-w-0 pr-2">
         <RiFile3Line
           size={16}
-          className="shrink-0 text-[#64758b]"
+          className="shrink-0 text-[#64748b]"
           aria-hidden="true"
         />
         <span className="truncate">{r.title}</span>
@@ -81,7 +81,7 @@ const performanceColumns: DataTableColumn<ArticlePerformanceRow>[] = [
       <div className="flex items-center gap-2 min-w-0 pr-2">
         <RiFile3Line
           size={16}
-          className="shrink-0 text-[#64758b]"
+          className="shrink-0 text-[#64748b]"
           aria-hidden="true"
         />
         <span className="truncate">{r.title}</span>

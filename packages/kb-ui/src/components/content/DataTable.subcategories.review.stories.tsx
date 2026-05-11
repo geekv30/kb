@@ -56,7 +56,7 @@ const subCategoryColumns: DataTableColumn<SubCategory>[] = [
           aria-label={`Open ${item.title}`}
           onClick={(e) => e.stopPropagation()}
           className={cn(
-            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#64758b]',
+            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#64748b]',
             'hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
           )}
         >

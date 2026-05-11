@@ -37,12 +37,12 @@ function TailSourceClickedReview() {
           icon={
             <RiCursorLine
               aria-hidden="true"
-              className="h-4 w-4 text-[#64758b]"
+              className="h-4 w-4 text-[#64748b]"
             />
           }
         >
           <div className="flex items-center gap-2 pt-[1px]">
-            <span aria-hidden="true" className="text-[14px] leading-5 text-[#64758b]">·</span>
+            <span aria-hidden="true" className="text-[14px] leading-5 text-[#64748b]">·</span>
             <RiBookOpenLine
               aria-hidden="true"
               className="h-4 w-4 shrink-0 text-[#475569]"

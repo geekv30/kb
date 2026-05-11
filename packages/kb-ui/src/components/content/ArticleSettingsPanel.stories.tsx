@@ -169,7 +169,7 @@ function ArticleSettingsPanelPlayground() {
       label: 'Publish date',
       content: (
         <FieldBox ariaLabel="Change publish date">
-          <RiCalendar2Line aria-hidden="true" className="h-4 w-4 shrink-0 text-[#64758b]" />
+          <RiCalendar2Line aria-hidden="true" className="h-4 w-4 shrink-0 text-[#64748b]" />
           {customSettings.publishDate ? (
             <span className="truncate">{customSettings.publishDate}</span>
           ) : (
@@ -229,7 +229,7 @@ function ArticleSettingsPanelPlayground() {
           <button
             type="button"
             aria-label="Add reviewer"
-            className={`inline-flex size-6 items-center justify-center rounded-full border border-dashed border-[#cbd5e1] bg-white text-[#64758b] ring-2 ring-white hover:bg-[#f8fafc] focus:outline-none focus:ring-2 focus:ring-black/10${(customSettings.reviewers?.length ?? 0) > 0 ? ' -ml-2' : ''}`}
+            className={`inline-flex size-6 items-center justify-center rounded-full border border-dashed border-[#cbd5e1] bg-white text-[#64748b] ring-2 ring-white hover:bg-[#f8fafc] focus:outline-none focus:ring-2 focus:ring-black/10${(customSettings.reviewers?.length ?? 0) > 0 ? ' -ml-2' : ''}`}
           >
             <RiAddLine className="h-[14px] w-[14px]" />
           </button>

@@ -84,7 +84,7 @@ const subCategoryColumns: DataTableColumn<SubCategoryRow>[] = [
           aria-label={`Open ${item.title}`}
           onClick={(e) => e.stopPropagation()}
           className={cn(
-            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#64758b]',
+            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#64748b]',
             'hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
           )}
         >
@@ -107,7 +107,7 @@ const subCategoryColumns: DataTableColumn<SubCategoryRow>[] = [
       <div className="flex items-center justify-end">
         <RiArrowRightSLine
           size={16}
-          className="text-[#64758b]"
+          className="text-[#64748b]"
           aria-hidden="true"
         />
       </div>
@@ -128,7 +128,7 @@ const articleColumns: DataTableColumn<ArticleRow>[] = [
           aria-label={`Open ${a.title}`}
           onClick={(e) => e.stopPropagation()}
           className={cn(
-            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#64758b]',
+            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-[#64748b]',
             'hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
           )}
         >
@@ -194,7 +194,7 @@ const articleColumns: DataTableColumn<ArticleRow>[] = [
     width: 251,
     headerClassName: 'px-4 py-0 text-[#475569]',
     className: 'px-4',
-    render: (a) => <span className="text-[#64758b]">{a.lastUpdated}</span>,
+    render: (a) => <span className="text-[#64748b]">{a.lastUpdated}</span>,
   },
 ];
 

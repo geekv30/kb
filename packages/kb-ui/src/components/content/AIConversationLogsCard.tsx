@@ -76,7 +76,7 @@ function SortDropdown({ options, value, onChange }: SortDropdownProps) {
           <RiArrowDownSLine
             size={14}
             aria-hidden="true"
-            className="text-[#64758b]"
+            className="text-[#64748b]"
           />
         </button>
       </DropdownMenu.Trigger>
@@ -161,7 +161,7 @@ export function AIConversationLogsCard({
                     <RiInformationLine
                       size={16}
                       aria-hidden="true"
-                      className="text-[#64758b]"
+                      className="text-[#64748b]"
                     />
                   </span>
                 </div>
