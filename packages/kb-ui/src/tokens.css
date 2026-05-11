@@ -3,6 +3,7 @@
 /* Hiver KB Design Tokens
    Extracted from Figma file 251DTRmxl2L6jmXd3FWzHe
    Pages: KB revamp (1952:10869), KB gaps (1958:32263), Analytics (1952:10867)
+   Phase 15 consolidation: card-border family unified to slate-200 (#e2e8f0); --color-success-wash-subtle added.
 */
 
 :root {
@@ -23,14 +24,14 @@
   --color-text-muted:     #64748b;  /* Figma text/neutral/faint — body copy, descriptions */
 
   /* ── Semantic ───────────────────────────────── */
-  --color-success-text:   #086e3f;  /* addition badge text */
-  --color-btn-primary:    #000000;  /* primary action button */
-  --color-btn-danger-bg:  #feeeec;  /* dismiss/delete button background */
-  --color-border:         #f1f5f9;  /* card strokes, dividers */
-  --color-border-input:   #e5e5e5;  /* input borders */
-  --color-text-disabled:  #94a3b8;  /* disabled text */
-  --color-text-faint:     #64748b;  /* Figma text/neutral/faint — faint label text */
-  --color-highlight:      #e7f9ee;  /* inline highlight bg */
+  --color-success-text:        #086e3f;  /* addition badge text */
+  --color-success-wash-subtle: #f2fcf6;  /* HelpfulnessTag up variant — softer than --color-highlight */
+  --color-btn-primary:         #000000;  /* primary action button */
+  --color-btn-danger-bg:       #feeeec;  /* dismiss/delete button background */
+  --color-border:              #f1f5f9;  /* card strokes, dividers */
+  --color-border-input:        #e2e8f0;  /* slate-200 — unified card outer border + input border + divider */
+  --color-text-disabled:       #94a3b8;  /* disabled text */
+  --color-highlight:           #e7f9ee;  /* inline highlight bg */
 
   /* ── AI Gaps semantic palette ──────────────── */
   /* Verified from Figma file 9aGp5t9fH1d0PXi4LMhOdb Frame 3 active addition (81:16926).
@@ -46,9 +47,9 @@
   --color-ai-addition-wash:   rgba(8, 110, 63, 0.10);    /* addition block bg — derived from #086e3f, mirrors --color-chart-wash-up */
   --color-ai-removal-wash:    rgba(213, 44, 31, 0.10);   /* removal block bg + replace-old half — derived from #d52c1f */
 
-  /* ── Card semantics (distinct from input borders) ─ */
-  --color-card-border:        #e5e5e5;  /* card outer stroke (replaces ad-hoc #e5e5e5/#e5e7eb/#e2e8f0 mixing) */
-  --color-card-divider:       #e5e5e5;  /* hairline INSIDE cards. Avoid #f1f5f9 — invisible on white */
+  /* ── Card semantics ─────────────────────────── */
+  --color-card-border:        #e2e8f0;  /* slate-200 — unified card outer border + input border + divider */
+  --color-card-divider:       #e2e8f0;  /* slate-200 — unified card outer border + input border + divider */
 
   /* ── Analytics — trend indicators ──────────── */
   /* Verified from Figma file 251DTRmxl2L6jmXd3FWzHe SupportPerformanceCard 1974:53911.
@@ -122,20 +123,20 @@
   --color-brand-bar:      #e6effd;
   --color-nav-rail:       #e2e8f0;
 
-  --color-text-primary:   #0f172a;
-  --color-text-secondary: #334155;
-  --color-text-meta:      #475569;
-  --color-text-muted:     #64748b;  /* Figma text/neutral/faint */
-  --color-text-disabled:  #94a3b8;
-  --color-text-faint:     #64748b;  /* Figma text/neutral/faint */
+  --color-text-primary:        #0f172a;
+  --color-text-secondary:      #334155;
+  --color-text-meta:           #475569;
+  --color-text-muted:          #64748b;  /* Figma text/neutral/faint */
+  --color-text-disabled:       #94a3b8;
 
-  --color-success-text:   #086e3f;
-  --color-btn-primary:    #000000;
-  --color-btn-danger-bg:  #feeeec;
+  --color-success-text:        #086e3f;
+  --color-success-wash-subtle: #f2fcf6;  /* HelpfulnessTag up variant — softer than --color-highlight */
+  --color-btn-primary:         #000000;
+  --color-btn-danger-bg:       #feeeec;
 
-  --color-border:         #f1f5f9;
-  --color-border-input:   #e5e5e5;
-  --color-highlight:      #e7f9ee;
+  --color-border:              #f1f5f9;
+  --color-border-input:        #e2e8f0;  /* slate-200 — unified card outer border + input border + divider */
+  --color-highlight:           #e7f9ee;
 
   /* ── AI Gaps semantic palette ──────────────── */
   /* Verified from Figma file 9aGp5t9fH1d0PXi4LMhOdb Frame 3 active addition (81:16926). */
@@ -148,9 +149,9 @@
   --color-ai-addition-wash:   rgba(8, 110, 63, 0.10);    /* derived from #086e3f */
   --color-ai-removal-wash:    rgba(213, 44, 31, 0.10);   /* derived from #d52c1f */
 
-  /* ── Card semantics (distinct from input borders) ─ */
-  --color-card-border:        #e5e5e5;  /* card outer stroke (replaces ad-hoc #e5e5e5/#e5e7eb/#e2e8f0 mixing) */
-  --color-card-divider:       #e5e5e5;  /* hairline INSIDE cards. Avoid #f1f5f9 — invisible on white */
+  /* ── Card semantics ─────────────────────────── */
+  --color-card-border:        #e2e8f0;  /* slate-200 — unified card outer border + input border + divider */
+  --color-card-divider:       #e2e8f0;  /* slate-200 — unified card outer border + input border + divider */
 
   /* ── Analytics — trend indicators ──────────── */
   /* Verified from Figma file 251DTRmxl2L6jmXd3FWzHe SupportPerformanceCard 1974:53911. */

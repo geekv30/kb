@@ -17,14 +17,14 @@ export const tokens = {
     textMeta: '#475569',
     textMuted: '#64748b',   // Figma text/neutral/faint
     textDisabled: '#94a3b8',
-    textFaint: '#64748b',   // Figma text/neutral/faint
 
     successText: '#086e3f',
+    successWashSubtle: '#f2fcf6',  // HelpfulnessTag up variant — softer than highlight
     btnPrimary: '#000000',
     btnDangerBg: '#feeeec',
 
     border: '#f1f5f9',
-    borderInput: '#e5e5e5',
+    borderInput: '#e2e8f0',  // slate-200 — unified card outer border + input border + divider
     highlight: '#e7f9ee',
 
     // AI Gaps semantic (Figma file 9aGp5t9fH1d0PXi4LMhOdb Frame 3 active addition 81:16926)
@@ -35,9 +35,9 @@ export const tokens = {
     aiAdditionWash: 'rgba(8, 110, 63, 0.10)',   // derived from #086e3f
     aiRemovalWash: 'rgba(213, 44, 31, 0.10)',   // derived from #d52c1f
 
-    // Card semantics
-    cardBorder: '#e5e5e5',
-    cardDivider: '#e5e5e5',
+    // Card semantics — unified to slate-200 (matches borderInput)
+    cardBorder: '#e2e8f0',
+    cardDivider: '#e2e8f0',
 
     // Analytics — trend indicators (Figma SupportPerformanceCard 1974:53911)
     trendUp: '#086e3f',     // Figma text/success/default + icon/success/subtle
