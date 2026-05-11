@@ -33,6 +33,8 @@
   --color-border-faint:        #cbd5e1;  /* slate-300 — soft hairlines, chevron separators, pressed-state bg */
   --color-text-disabled:       #94a3b8;  /* disabled text */
   --color-highlight:           #e7f9ee;  /* inline highlight bg */
+  --color-link:                #2563eb;  /* Tiptap link mark + interactive blue */
+  --color-link-hover:          #1d4ed8;  /* Tiptap link hover */
 
   /* ── AI Gaps semantic palette ──────────────── */
   /* Verified from Figma file 9aGp5t9fH1d0PXi4LMhOdb Frame 3 active addition (81:16926).
@@ -139,6 +141,8 @@
   --color-border-input:        #e2e8f0;  /* slate-200 — unified card outer border + input border + divider */
   --color-border-faint:        #cbd5e1;  /* slate-300 — soft hairlines, chevron separators, pressed-state bg */
   --color-highlight:           #e7f9ee;
+  --color-link:                #2563eb;  /* Tiptap link mark + interactive blue */
+  --color-link-hover:          #1d4ed8;  /* Tiptap link hover */
 
   /* ── AI Gaps semantic palette ──────────────── */
   /* Verified from Figma file 9aGp5t9fH1d0PXi4LMhOdb Frame 3 active addition (81:16926). */

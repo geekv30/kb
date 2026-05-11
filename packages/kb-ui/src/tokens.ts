@@ -27,6 +27,8 @@ export const tokens = {
     borderInput: '#e2e8f0',  // slate-200 — unified card outer border + input border + divider
     borderFaint: '#cbd5e1',  // slate-300 — soft hairlines, chevron separators, pressed-state bg
     highlight: '#e7f9ee',
+    link: '#2563eb',         // Tiptap link mark + interactive blue
+    linkHover: '#1d4ed8',    // Tiptap link hover
 
     // AI Gaps semantic (Figma file 9aGp5t9fH1d0PXi4LMhOdb Frame 3 active addition 81:16926)
     aiAddition: '#086e3f',  // Figma text/success/default + icon/success/subtle
