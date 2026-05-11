@@ -53,7 +53,6 @@ function FileExplorerNavReview() {
     >
       <div className="font-sans" style={{ width: 288, height: 635 }}>
         <FileExplorerNav
-          theme="light"
           title="Editor"
           items={tree}
           activeId={activeId}

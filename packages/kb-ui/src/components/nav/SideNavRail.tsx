@@ -15,7 +15,6 @@ export type SideNavRailProps = {
   items: NavRailItem[];
   activeId?: string;
   onItemClick?: (id: string) => void;
-  theme?: 'dark' | 'light';
   brandLogo?: React.ReactNode;
   bottomSlot?: React.ReactNode;
   className?: string;
@@ -25,18 +24,14 @@ export function SideNavRail({
   items,
   activeId,
   onItemClick,
-  theme = 'dark',
   brandLogo,
   bottomSlot,
   className,
 }: SideNavRailProps) {
-  const isDark = theme === 'dark';
-
   return (
     <nav
       className={cn(
-        'flex h-full w-[54px] flex-col',
-        isDark ? 'bg-[#1a1a1a]' : 'bg-white border-r border-card-border',
+        'flex h-full w-[54px] flex-col bg-white border-r border-card-border',
         className,
       )}
       aria-label="Primary"
@@ -54,10 +49,7 @@ export function SideNavRail({
       {/* Inset 1px divider at Y=54 — 8L / 8R inset (effective width 38) */}
       <div
         data-kb-part="rail-divider"
-        className={cn(
-          'h-px mx-[8px] shrink-0',
-          isDark ? 'bg-white/10' : 'bg-card-border',
-        )}
+        className="h-px mx-[8px] shrink-0 bg-card-border"
       />
 
       <div
@@ -77,16 +69,12 @@ export function SideNavRail({
               className={cn(
                 // 42 × 36 hit area, centered in 54 rail (6L / 6R gutter)
                 'flex h-9 items-center justify-center mx-[6px] rounded-[8px] transition-colors duration-150 cursor-pointer',
-                isDark
-                  ? isActive
-                    ? 'bg-[rgba(255,255,255,0.10)] text-white'
-                    : 'text-white/50 hover:bg-[rgba(255,255,255,0.06)] hover:text-white/80'
-                  : isActive
-                    ? // Active pill matches Figma `1:4350` (.menu-items active):
-                      // bg-[rgba(230,230,230,0.44)]. Previously used #f8fafc
-                      // which was nearly invisible against white rail bg.
-                      'bg-[rgba(230,230,230,0.44)] text-text-primary'
-                    : 'text-text-meta hover:bg-[rgba(230,230,230,0.32)] hover:text-text-primary',
+                isActive
+                  ? // Active pill matches Figma `1:4350` (.menu-items active):
+                    // bg-[rgba(230,230,230,0.44)]. Previously used #f8fafc
+                    // which was nearly invisible against white rail bg.
+                    'bg-[rgba(230,230,230,0.44)] text-text-primary'
+                  : 'text-text-meta hover:bg-[rgba(230,230,230,0.32)] hover:text-text-primary',
               )}
             >
               {/* Enforce 16×16 glyph in-component so size is not caller-dependent.

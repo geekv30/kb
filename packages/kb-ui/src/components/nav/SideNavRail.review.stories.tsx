@@ -36,7 +36,6 @@ function SideNavRailReview() {
     >
       <div className="font-sans" style={{ width: 54, height: 635 }}>
         <SideNavRail
-          theme="light"
           items={items}
           activeId={activeId}
           onItemClick={setActiveId}
