@@ -63,7 +63,7 @@ const citedColumns: DataTableColumn<MostCitedRow>[] = [
       <span className="inline-flex items-center gap-2">
         <RiFile3Line
           size={16}
-          className="shrink-0 text-[#64748b]"
+          className="shrink-0 text-text-muted"
           aria-hidden="true"
         />
         <span>{r.title}</span>
@@ -126,10 +126,10 @@ export default function AIAnswerPerformancePage() {
       {/* Page header */}
       <header className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-[24px] font-semibold leading-[32px] text-[#0f172a]">
+          <h1 className="text-[24px] font-semibold leading-[32px] text-text-primary">
             AI Answer Performance
           </h1>
-          <p className="mt-1 text-[14px] font-normal leading-[20px] text-[#475569]">
+          <p className="mt-1 text-[14px] font-normal leading-[20px] text-text-meta">
             Is the AI search feature actually helping, or are people still
             needing human support?
           </p>
@@ -193,13 +193,13 @@ export default function AIAnswerPerformancePage() {
         emptyMessage="No cited articles"
         heading={
           <div className="flex items-center">
-            <h3 className="text-[14px] font-medium leading-[20px] text-[#0f172a]">
+            <h3 className="text-[14px] font-medium leading-[20px] text-text-primary">
               Most Cited KB Articles
             </h3>
             <span className="ml-2 inline-flex" aria-hidden>
               <RiInformationLine
                 size={16}
-                className="text-[#475569]"
+                className="text-text-meta"
                 aria-hidden="true"
               />
             </span>

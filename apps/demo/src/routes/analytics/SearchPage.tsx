@@ -58,15 +58,15 @@ function WriteArticleButton({ onClick }: { onClick?: () => void }) {
       type="button"
       onClick={onClick}
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-[6px] bg-[#f1f5f9] px-2 py-1',
-        'text-[14px] font-medium leading-[20px] text-[#0f172a]',
-        'transition-colors hover:bg-[#e2e8f0]',
+        'inline-flex items-center gap-1.5 rounded-[6px] bg-surface-muted px-2 py-1',
+        'text-[14px] font-medium leading-[20px] text-text-primary',
+        'transition-colors hover:bg-card-border',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
       )}
     >
       <RiQuillPenLine
         size={14}
-        className="text-[#475569]"
+        className="text-text-meta"
         aria-hidden="true"
       />
       Write Article
@@ -113,10 +113,10 @@ export default function SearchPage() {
       {/* Page header */}
       <header className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-[24px] font-semibold leading-[32px] text-[#0f172a]">
+          <h1 className="text-[24px] font-semibold leading-[32px] text-text-primary">
             Search
           </h1>
-          <p className="mt-1 text-[14px] font-normal leading-[20px] text-[#475569]">
+          <p className="mt-1 text-[14px] font-normal leading-[20px] text-text-meta">
             See what your readers are searching for and where the gaps are.
           </p>
         </div>
@@ -167,13 +167,13 @@ export default function SearchPage() {
         emptyMessage="No keywords"
         heading={
           <div className="flex items-center">
-            <h3 className="text-[14px] font-medium leading-[20px] text-[#0f172a]">
+            <h3 className="text-[14px] font-medium leading-[20px] text-text-primary">
               Top 5 Search Keywords
             </h3>
             <span className="ml-2 inline-flex" aria-hidden>
               <RiInformationLine
                 size={16}
-                className="text-[#475569]"
+                className="text-text-meta"
                 aria-hidden="true"
               />
             </span>
@@ -190,18 +190,18 @@ export default function SearchPage() {
         heading={
           <div>
             <div className="flex items-center">
-              <h3 className="text-[14px] font-medium leading-[20px] text-[#0f172a]">
+              <h3 className="text-[14px] font-medium leading-[20px] text-text-primary">
                 Content Gaps
               </h3>
               <span className="ml-2 inline-flex" aria-hidden>
                 <RiInformationLine
                   size={16}
-                  className="text-[#475569]"
+                  className="text-text-meta"
                   aria-hidden="true"
                 />
               </span>
             </div>
-            <p className="mt-1 text-[13px] font-normal leading-[19px] text-[#475569]">
+            <p className="mt-1 text-[13px] font-normal leading-[19px] text-text-meta">
               Topics users searched for but didn&apos;t find. Write articles
               to close these gaps
             </p>

@@ -32,7 +32,7 @@ import {
 
 function H1({ children }: { children: React.ReactNode }) {
   return (
-    <h1 className="mb-2 text-[24px] font-semibold leading-[32px] text-[#0f172a]">
+    <h1 className="mb-2 text-[24px] font-semibold leading-[32px] text-text-primary">
       {children}
     </h1>
   );
@@ -40,7 +40,7 @@ function H1({ children }: { children: React.ReactNode }) {
 
 function Subtitle({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mb-6 text-[14px] font-normal leading-[20px] text-[#64748b]">
+    <p className="mb-6 text-[14px] font-normal leading-[20px] text-text-muted">
       {children}
     </p>
   );
@@ -48,7 +48,7 @@ function Subtitle({ children }: { children: React.ReactNode }) {
 
 function H2({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="mt-6 mb-3 text-[20px] font-semibold leading-[28px] text-[#0f172a]">
+    <h2 className="mt-6 mb-3 text-[20px] font-semibold leading-[28px] text-text-primary">
       {children}
     </h2>
   );
@@ -56,7 +56,7 @@ function H2({ children }: { children: React.ReactNode }) {
 
 function P({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mb-4 text-[16px] font-normal leading-[24px] text-[#334155]">
+    <p className="mb-4 text-[16px] font-normal leading-[24px] text-text-secondary">
       {children}
     </p>
   );
@@ -64,7 +64,7 @@ function P({ children }: { children: React.ReactNode }) {
 
 function UL({ children }: { children: React.ReactNode }) {
   return (
-    <ul className="mb-4 list-disc pl-6 text-[16px] font-normal leading-[24px] text-[#334155] [&>li]:mb-2">
+    <ul className="mb-4 list-disc pl-6 text-[16px] font-normal leading-[24px] text-text-secondary [&>li]:mb-2">
       {children}
     </ul>
   );
@@ -72,7 +72,7 @@ function UL({ children }: { children: React.ReactNode }) {
 
 function Strong({ children }: { children: React.ReactNode }) {
   return (
-    <strong className="font-semibold text-[#0f172a]">{children}</strong>
+    <strong className="font-semibold text-text-primary">{children}</strong>
   );
 }
 
@@ -90,7 +90,7 @@ function NumberedItem({
   children: React.ReactNode;
 }) {
   return (
-    <span className="flex items-start text-[16px] leading-[24px] text-[#0f172a]">
+    <span className="flex items-start text-[16px] leading-[24px] text-text-primary">
       <span className="shrink-0 pr-2 tabular-nums">{index}.</span>
       <SuggestionHighlight>{children}</SuggestionHighlight>
     </span>
@@ -118,7 +118,7 @@ export const passwordResetRegions: ArticleBodyRegions = {
   s1: [
     <span
       key="h2"
-      className="block text-[20px] font-semibold leading-[28px] text-[#0f172a]"
+      className="block text-[20px] font-semibold leading-[28px] text-text-primary"
     >
       <SuggestionHighlight>
         Resetting Your Password via Mobile App
@@ -160,7 +160,7 @@ export const passwordResetRegions: ArticleBodyRegions = {
     before: [
       <span
         key="s2-before"
-        className="text-[16px] leading-[24px] text-[#0f172a]"
+        className="text-[16px] leading-[24px] text-text-primary"
       >
         <SuggestionHighlight>
           Navigate to the admin panel at{' '}
@@ -172,7 +172,7 @@ export const passwordResetRegions: ArticleBodyRegions = {
     after: [
       <span
         key="s2-after"
-        className="text-[16px] leading-[24px] text-[#0f172a]"
+        className="text-[16px] leading-[24px] text-text-primary"
       >
         <SuggestionHighlight>
           Navigate to the admin panel at{' '}
@@ -193,13 +193,13 @@ export const passwordResetRegions: ArticleBodyRegions = {
   s3: [
     <span
       key="s3-h2"
-      className="block text-[20px] font-semibold leading-[28px] text-[#0f172a]"
+      className="block text-[20px] font-semibold leading-[28px] text-text-primary"
     >
       <SuggestionHighlight>Troubleshooting</SuggestionHighlight>
     </span>,
     <span
       key="s3-h3"
-      className="block text-[16px] font-semibold leading-[24px] text-[#0f172a]"
+      className="block text-[16px] font-semibold leading-[24px] text-text-primary"
     >
       <SuggestionHighlight>
         Resetting via Chrome Extension

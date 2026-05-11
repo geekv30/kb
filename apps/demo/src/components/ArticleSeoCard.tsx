@@ -162,10 +162,10 @@ export function ArticleSeoCard({
     >
       <header className="flex items-start justify-between gap-2">
         <div className="flex flex-col gap-0.5">
-          <h2 className="text-[14px] font-semibold leading-[20px] text-[#0f172a]">
+          <h2 className="text-[14px] font-semibold leading-[20px] text-text-primary">
             SEO
           </h2>
-          <p className="text-[12px] font-normal leading-[18px] text-[#64748b]">
+          <p className="text-[12px] font-normal leading-[18px] text-text-muted">
             Optimise how this article appears in search results.
           </p>
         </div>
@@ -176,7 +176,7 @@ export function ArticleSeoCard({
         <div className="flex items-center justify-between">
           <label
             htmlFor="seo-meta-description"
-            className="text-[13px] font-medium leading-[18px] text-[#0f172a]"
+            className="text-[13px] font-medium leading-[18px] text-text-primary"
           >
             Meta description
           </label>
@@ -210,19 +210,19 @@ export function ArticleSeoCard({
             maxLength={META_DESC_MAX + 40}
             className={cn(
               'w-full resize-y rounded-lg border bg-white px-3 py-2',
-              'text-[14px] font-normal leading-5 text-[#0f172a]',
-              'placeholder:text-[#94a3b8]',
-              'outline-none focus:border-[#94a3b8] focus:ring-2 focus:ring-black/5',
+              'text-[14px] font-normal leading-5 text-text-primary',
+              'placeholder:text-text-disabled',
+              'outline-none focus:border-text-disabled focus:ring-2 focus:ring-black/5',
               descLen > META_DESC_MAX
                 ? 'border-[#dc2626]'
-                : 'border-[#e5e5e5]',
+                : 'border-card-border',
             )}
           />
         )}
 
         <div className="flex items-center justify-between gap-2">
           <p
-            className="text-[12px] font-normal leading-[18px] text-[#64748b]"
+            className="text-[12px] font-normal leading-[18px] text-text-muted"
             id="ai-helper-text"
           >
             {aiReady
@@ -241,18 +241,18 @@ export function ArticleSeoCard({
         </div>
       </section>
 
-      <div className="h-px w-full bg-[#e2e8f0]" />
+      <div className="h-px w-full bg-card-border" />
 
       {/* ── Canonical URL ──────────────────────────────────── */}
       <section className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <span className="text-[13px] font-medium leading-[18px] text-[#0f172a]">
+          <span className="text-[13px] font-medium leading-[18px] text-text-primary">
             Canonical URL
           </span>
           <button
             type="button"
             onClick={() => setAdvancedOpen((o) => !o)}
-            className="text-[12px] font-medium leading-[18px] text-[#0f172a] underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20 rounded-sm"
+            className="text-[12px] font-medium leading-[18px] text-text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20 rounded-sm"
             aria-expanded={advancedOpen}
             aria-controls="seo-canonical-advanced"
           >
@@ -260,16 +260,16 @@ export function ArticleSeoCard({
           </button>
         </div>
 
-        <p className="text-[12px] font-normal leading-[18px] text-[#64748b]">
+        <p className="text-[12px] font-normal leading-[18px] text-text-muted">
           Auto-generated. Search engines treat this URL as the primary version
           when the same content is reachable via multiple paths.
         </p>
 
         <div
-          className="flex items-center gap-2 rounded-lg border border-dashed border-[#cbd5e1] bg-[#f8fafc] px-3 py-2"
+          className="flex items-center gap-2 rounded-lg border border-dashed border-border-faint bg-surface-subtle px-3 py-2"
           aria-label="Canonical URL preview"
         >
-          <code className="flex-1 truncate text-[13px] font-normal leading-[18px] text-[#0f172a]">
+          <code className="flex-1 truncate text-[13px] font-normal leading-[18px] text-text-primary">
             {canonicalEffective}
           </code>
           {value.canonicalUrlOverride.trim() && (
@@ -286,7 +286,7 @@ export function ArticleSeoCard({
           >
             <label
               htmlFor="seo-canonical-override"
-              className="text-[12px] font-medium leading-[18px] text-[#475569]"
+              className="text-[12px] font-medium leading-[18px] text-text-meta"
             >
               Override canonical URL
             </label>
@@ -299,7 +299,7 @@ export function ArticleSeoCard({
               placeholder={canonicalDefault}
             />
             <div className="flex items-center justify-between gap-2">
-              <p className="text-[11px] font-normal leading-[16px] text-[#94a3b8]">
+              <p className="text-[11px] font-normal leading-[16px] text-text-disabled">
                 Use only when this article is a duplicate of another canonical page.
               </p>
               {value.canonicalUrlOverride.trim() && (
@@ -340,20 +340,20 @@ function SuggestionPanel({
 }: SuggestionPanelProps) {
   return (
     <div
-      className="flex flex-col gap-3 rounded-lg border border-[#cbd5e1] bg-[#f8fafc] p-3"
+      className="flex flex-col gap-3 rounded-lg border border-border-faint bg-surface-subtle p-3"
       role="region"
       aria-label="AI-generated meta description suggestion"
     >
       <div className="flex items-center gap-1.5">
         <AiIcon size={14} />
-        <span className="text-[12px] font-semibold leading-[18px] text-[#0f172a]">
+        <span className="text-[12px] font-semibold leading-[18px] text-text-primary">
           AI suggestion
         </span>
-        <span className="text-[12px] font-normal leading-[18px] text-[#64748b]">
+        <span className="text-[12px] font-normal leading-[18px] text-text-muted">
           · {suggestion.length}/{META_DESC_MAX} chars
         </span>
       </div>
-      <p className="text-[14px] font-normal leading-[20px] text-[#0f172a]">
+      <p className="text-[14px] font-normal leading-[20px] text-text-primary">
         {suggestion}
       </p>
       <div className="flex flex-wrap items-center gap-2">

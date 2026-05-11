@@ -36,7 +36,7 @@ export function EmptyState({
       data-kb-part="empty-state"
       className={cn(
         'flex flex-col items-center justify-center gap-4 rounded-[8px]',
-        'border border-dashed border-[#e2e8f0] bg-[#fafafa]',
+        'border border-dashed border-card-border bg-[#fafafa]',
         'py-16 px-6 text-center',
         className,
       )}
@@ -44,17 +44,17 @@ export function EmptyState({
       {icon && (
         <div
           aria-hidden="true"
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#64748b] [&>svg]:h-5 [&>svg]:w-5"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-text-muted [&>svg]:h-5 [&>svg]:w-5"
         >
           {icon}
         </div>
       )}
       <div className="flex flex-col gap-1">
-        <p className="text-[16px] font-medium leading-6 text-[#0f172a]">
+        <p className="text-[16px] font-medium leading-6 text-text-primary">
           {title}
         </p>
         {subtitle && (
-          <p className="text-[14px] leading-5 text-[#64748b]">{subtitle}</p>
+          <p className="text-[14px] leading-5 text-text-muted">{subtitle}</p>
         )}
       </div>
       {cta && (

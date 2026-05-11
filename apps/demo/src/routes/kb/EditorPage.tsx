@@ -204,19 +204,19 @@ function ArticleNotFound({ slug }: { slug: string | undefined }) {
       data-route="kb-editor-not-found"
       className="flex flex-col items-start gap-3 py-8"
     >
-      <h1 className="text-[18px] font-semibold leading-[28px] text-[#0f172a]">
+      <h1 className="text-[18px] font-semibold leading-[28px] text-text-primary">
         Article not found
       </h1>
-      <p className="text-[14px] leading-[20px] text-[#475569]">
+      <p className="text-[14px] leading-[20px] text-text-meta">
         No article with slug{' '}
-        <code className="rounded bg-[#f1f5f9] px-1 py-0.5 text-[13px] text-[#0f172a]">
+        <code className="rounded bg-surface-muted px-1 py-0.5 text-[13px] text-text-primary">
           {slug ?? '(none)'}
         </code>
         .
       </p>
       <Link
         to={routes.home()}
-        className="text-[14px] font-medium text-[#0f172a] underline underline-offset-2 hover:no-underline"
+        className="text-[14px] font-medium text-text-primary underline underline-offset-2 hover:no-underline"
       >
         Back to home
       </Link>

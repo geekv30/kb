@@ -64,16 +64,16 @@ function Row({ item, isActive, onClick }: RowProps) {
         'flex h-[44px] w-full items-center gap-[8px]',
         'mx-[16px] rounded-[8px] px-[8px]',
         'transition-colors duration-150',
-        'text-left text-[14px] font-medium leading-5 text-[#0f172a]',
+        'text-left text-[14px] font-medium leading-5 text-text-primary',
         // Section rows aren't really click targets — sections are containers, not nav.
         // Keep them focusable for a11y but show a default cursor and skip hover bg.
         item.kind === 'section'
           ? 'cursor-default'
           : 'cursor-pointer',
         showActivePill
-          ? 'bg-[#f1f5f9]'
+          ? 'bg-surface-muted'
           : item.kind === 'item'
-            ? 'bg-transparent hover:bg-[#f8fafc]'
+            ? 'bg-transparent hover:bg-surface-subtle'
             : 'bg-transparent',
       )}
       // mx-16 + w-full would double-count; subtract manually so the row is

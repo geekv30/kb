@@ -61,7 +61,7 @@ export function ConfirmDialog({
       <Dialog.Portal>
         <Dialog.Overlay
           className={cn(
-            'fixed inset-0 z-[90] bg-[#0f172a]/40',
+            'fixed inset-0 z-[90] bg-text-primary/40',
             'animate-route-fade-in',
           )}
         />
@@ -71,7 +71,7 @@ export function ConfirmDialog({
           className={cn(
             'fixed left-1/2 top-1/2 z-[91] -translate-x-1/2 -translate-y-1/2',
             'w-[420px] max-w-[calc(100vw-32px)]',
-            'rounded-[8px] border border-[#e2e8f0] bg-white',
+            'rounded-[8px] border border-card-border bg-white',
             'shadow-[0_24px_48px_rgba(15,23,42,0.20)]',
             'p-6 flex flex-col gap-4',
             'animate-toast-in',
@@ -80,7 +80,7 @@ export function ConfirmDialog({
           )}
         >
           {title ? (
-            <Dialog.Title className="text-[16px] font-semibold leading-6 text-[#0f172a]">
+            <Dialog.Title className="text-[16px] font-semibold leading-6 text-text-primary">
               {title}
             </Dialog.Title>
           ) : (
@@ -90,7 +90,7 @@ export function ConfirmDialog({
             <Dialog.Title className="sr-only">{message}</Dialog.Title>
           )}
 
-          <Dialog.Description className="text-[14px] leading-5 text-[#475569]">
+          <Dialog.Description className="text-[14px] leading-5 text-text-meta">
             {message}
           </Dialog.Description>
 

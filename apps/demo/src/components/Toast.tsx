@@ -178,12 +178,12 @@ function ToastUI({
   const variantClasses: Record<ToastVariant, string> = {
     success: 'border-l-[#16a34a]',
     error: 'border-l-[#dc2626]',
-    info: 'border-l-[#64748b]',
+    info: 'border-l-text-muted',
   };
   const iconColor: Record<ToastVariant, string> = {
     success: 'text-[#16a34a]',
     error: 'text-[#dc2626]',
-    info: 'text-[#64748b]',
+    info: 'text-text-muted',
   };
   const Icon =
     toast.variant === 'success'
@@ -199,7 +199,7 @@ function ToastUI({
       data-toast-variant={toast.variant}
       className={cn(
         'fixed top-4 right-4 z-[100] flex items-start gap-3',
-        'min-w-[280px] max-w-[420px] rounded-[8px] border border-[#e2e8f0] border-l-[3px] bg-white',
+        'min-w-[280px] max-w-[420px] rounded-[8px] border border-card-border border-l-[3px] bg-white',
         'px-4 py-3 shadow-[0_8px_24px_rgba(15,23,42,0.10)]',
         'animate-toast-in',
         variantClasses[toast.variant],
@@ -211,7 +211,7 @@ function ToastUI({
         aria-hidden="true"
         className={cn('mt-0.5 h-4 w-4 shrink-0', iconColor[toast.variant])}
       />
-      <p className="flex-1 text-[14px] leading-5 text-[#0f172a]">
+      <p className="flex-1 text-[14px] leading-5 text-text-primary">
         {toast.message}
       </p>
       <button
@@ -219,8 +219,8 @@ function ToastUI({
         onClick={onDismiss}
         aria-label="Dismiss notification"
         className={cn(
-          'shrink-0 rounded-[4px] p-0.5 text-[#64748b]',
-          'hover:bg-[#f1f5f9] hover:text-[#0f172a]',
+          'shrink-0 rounded-[4px] p-0.5 text-text-muted',
+          'hover:bg-surface-muted hover:text-text-primary',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
         )}
       >
