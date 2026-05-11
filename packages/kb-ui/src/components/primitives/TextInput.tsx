@@ -48,12 +48,12 @@ export function TextInput({
         placeholder={placeholder}
         disabled={disabled}
         className={cn(
-          'min-w-0 flex-1 border-0 bg-transparent p-0 text-[14px] font-normal leading-5 text-[#0f172a] outline-none placeholder:text-[#94a3b8] disabled:cursor-not-allowed',
+          'min-w-0 flex-1 border-0 bg-transparent p-0 text-[14px] font-normal leading-5 text-text-primary outline-none placeholder:text-text-disabled disabled:cursor-not-allowed',
           inputClassName,
         )}
       />
       {charCount && (
-        <span className="shrink-0 text-[12px] font-normal leading-[18px] text-[#64748b] tabular-nums">
+        <span className="shrink-0 text-[12px] font-normal leading-[18px] text-text-muted tabular-nums">
           {charCount.current}/{charCount.max}
         </span>
       )}

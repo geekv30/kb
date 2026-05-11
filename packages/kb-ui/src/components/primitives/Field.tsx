@@ -41,11 +41,11 @@ export function Field({
           {label !== undefined && (
             <label
               htmlFor={htmlFor}
-              className="text-[14px] font-medium leading-5 text-[#0f172a]"
+              className="text-[14px] font-medium leading-5 text-text-primary"
             >
               {label}
               {required && (
-                <span aria-hidden="true" className="ml-0.5 text-[#64748b]">
+                <span aria-hidden="true" className="ml-0.5 text-text-muted">
                   *
                 </span>
               )}
@@ -58,7 +58,7 @@ export function Field({
                   <button
                     type="button"
                     aria-label="More information"
-                    className="inline-flex items-center text-[#94a3b8] outline-none focus-visible:text-[#475569]"
+                    className="inline-flex items-center text-text-disabled outline-none focus-visible:text-text-meta"
                   >
                     <RiInformationLine size={14} aria-hidden="true" />
                   </button>
@@ -67,10 +67,10 @@ export function Field({
                   <Tooltip.Content
                     side="top"
                     sideOffset={6}
-                    className="z-50 max-w-xs rounded-md bg-[#0f172a] px-2 py-1 text-[12px] leading-[18px] text-white shadow-md"
+                    className="z-50 max-w-xs rounded-md bg-text-primary px-2 py-1 text-[12px] leading-[18px] text-white shadow-md"
                   >
                     {tooltip}
-                    <Tooltip.Arrow className="fill-[#0f172a]" />
+                    <Tooltip.Arrow className="fill-text-primary" />
                   </Tooltip.Content>
                 </Tooltip.Portal>
               </Tooltip.Root>
@@ -80,7 +80,7 @@ export function Field({
       )}
       {children}
       {showHintRow && (
-        <div className="flex items-center justify-between gap-2 text-[12px] font-normal leading-[18px] text-[#64748b]">
+        <div className="flex items-center justify-between gap-2 text-[12px] font-normal leading-[18px] text-text-muted">
           <span>{hint}</span>
           {hintEnd !== undefined && <span>{hintEnd}</span>}
         </div>
