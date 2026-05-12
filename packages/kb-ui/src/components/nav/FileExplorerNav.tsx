@@ -404,7 +404,7 @@ export function FileExplorerNav({
       if (item.type === 'folder') {
         const isActive = item.id === activeId;
         const isActiveSub = ancestorIds.has(item.id);
-        const isExpanded = expanded.has(item.id) || isActiveSub;
+        const isExpanded = expanded.has(item.id);
         return (
           <div key={item.id} className="flex flex-col gap-[2px]">
             {renderItem ? (
