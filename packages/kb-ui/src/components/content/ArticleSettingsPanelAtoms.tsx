@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { RiArrowDownSLine, RiCloseLine } from '@remixicon/react';
+import { ChevronDown, XClose } from '@untitledui/icons';
 import { cn } from '../../utils/cn';
 
 /* ─────────────────────────────────────────────────────────────
@@ -54,7 +54,7 @@ export function FieldBox({ children, className, as = 'button', onClick, ariaLabe
 
 export function ChevronSuffix() {
   return (
-    <RiArrowDownSLine
+    <ChevronDown
       aria-hidden="true"
       className="ml-auto h-4 w-4 shrink-0 text-text-disabled"
     />
@@ -105,7 +105,7 @@ export function TagChip({ label, onRemove }: TagChipProps) {
             'focus:outline-none focus:ring-2 focus:ring-black/10',
           )}
         >
-          <RiCloseLine className="h-3 w-3" />
+          <XClose className="h-3 w-3" />
         </button>
       )}
     </span>

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { RiAddLine } from '@remixicon/react';
+import { Plus } from '@untitledui/icons';
 import '../../tokens.css';
 import { Button } from './Button';
 
@@ -46,7 +46,7 @@ function ButtonPlayground() {
         <Button variant="primary" disabled>
           Disabled
         </Button>
-        <Button variant="primary" icon={<RiAddLine size={14} />} onClick={() => {}}>
+        <Button variant="primary" icon={<Plus size={14} />} onClick={() => {}}>
           New article
         </Button>
       </div>

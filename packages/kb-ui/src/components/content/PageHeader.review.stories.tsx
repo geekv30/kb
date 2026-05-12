@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { RiAddLine, RiSlackFill } from '@remixicon/react';
+import { Plus, MessageSquare02 } from '@untitledui/icons';
 import '../../tokens.css';
 import { PageHeader } from './PageHeader';
 import { Button } from '../primitives/Button';
@@ -19,7 +19,7 @@ export default meta;
 // in the dashed-square. The production PageHeader forces the icon span to
 // 22×22; we hand it a Remix Slack glyph so review reflects what shipped.
 function CategoryGlyph() {
-  return <RiSlackFill style={{ color: '#6634ef' }} />;
+  return <MessageSquare02 style={{ color: '#6634ef' }} />;
 }
 
 function PageHeaderReview() {
@@ -44,7 +44,7 @@ function PageHeaderReview() {
           title="Getting Started"
           subtitle="Set up your account and get familiar with the basics"
           cta={
-            <Button variant="primary" icon={<RiAddLine size={14} />} onClick={() => {}}>
+            <Button variant="primary" icon={<Plus size={14} />} onClick={() => {}}>
               New
             </Button>
           }

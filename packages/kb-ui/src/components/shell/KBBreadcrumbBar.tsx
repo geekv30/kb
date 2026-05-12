@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { RiLayoutLeftLine, RiHome5Line } from '@remixicon/react';
+import { LayoutLeft, Home01 } from '@untitledui/icons';
 import { cn } from '../../utils/cn';
 
 export type KBBreadcrumbItem = {
@@ -11,18 +11,31 @@ export type KBBreadcrumbBarProps = {
   /** Path items; last entry is treated as the current page. */
   items: KBBreadcrumbItem[];
   /**
-   * When `true`, the leading icon becomes a **home** glyph (`RiHome5Line`)
+   * When `true`, the leading icon becomes a **home** glyph (`Home01`)
    * and the `aria-label` + testid become "home-icon" — matches the Figma
    * collapsed-shell state (`53:8464`) where rail + explorer are hidden.
    *
    * When `false` (default), the leading icon is the side-panel toggle
-   * (`RiLayoutLeftLine`) used when the sidebar is expanded.
+   * (`LayoutLeft`) used when the sidebar is expanded.
    *
    * The click handler (`onCollapse` / `onToggleSidebar`) fires regardless of
    * which icon is shown — callers can use the same handler for both states
    * or distinguish via the value they pass for `sidebarCollapsed`.
+   *
+   * Callers on user-toggleable surfaces should also pass
+   * `leadingIcon='sidebar-toggle'` to suppress the Home-icon swap; the
+   * LayoutLeft chrome will then remain regardless of this prop's value.
    */
   sidebarCollapsed?: boolean;
+  /**
+   * Leading-icon glyph mode. Default `'auto'` follows the existing rule:
+   * `Home01` when `sidebarCollapsed=true`, `LayoutLeft` when expanded —
+   * matches the editor's collapsed-shell where leaving the page IS the only
+   * way out. Pass `'sidebar-toggle'` on surfaces that own a user toggle:
+   * icon + divider stay in the LayoutLeft/vertical-bar chrome so the click
+   * affordance always reads as "toggle the sidebar", never as "go home".
+   */
+  leadingIcon?: 'auto' | 'sidebar-toggle';
   onCollapse?: () => void;
   /** Alias for `onCollapse`; symmetric with `AppShell`'s `onToggleSidebar`. Either may be passed. */
   onToggleSidebar?: () => void;
@@ -43,15 +56,17 @@ export type KBBreadcrumbBarProps = {
 export function KBBreadcrumbBar({
   items,
   sidebarCollapsed = false,
+  leadingIcon = 'auto',
   onCollapse,
   onToggleSidebar,
   className,
   actions,
 }: KBBreadcrumbBarProps) {
   const handleLeadingClick = onToggleSidebar ?? onCollapse;
-  const LeadingIcon = sidebarCollapsed ? RiHome5Line : RiLayoutLeftLine;
+  const useEditorChrome = leadingIcon === 'auto' && sidebarCollapsed;
+  const LeadingIcon = useEditorChrome ? Home01 : LayoutLeft;
   const leadingLabel = sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar';
-  const leadingTestId = sidebarCollapsed ? 'home-icon' : 'side-panel-icon';
+  const leadingTestId = useEditorChrome ? 'home-icon' : 'side-panel-icon';
 
   return (
     <div
@@ -83,7 +98,7 @@ export function KBBreadcrumbBar({
           variant uses a 1-px vertical divider before the side-panel
           toggle. Pick the right one based on `sidebarCollapsed`.
         */}
-        {sidebarCollapsed ? (
+        {useEditorChrome ? (
           <span
             aria-hidden="true"
             className="inline-flex items-center justify-center text-[14px] leading-5 text-border-faint px-[6px] shrink-0 select-none"

@@ -9,7 +9,7 @@
 // — no bespoke wrappers.
 
 import { useNavigate } from 'react-router-dom';
-import { RiCheckLine } from '@remixicon/react';
+import { Check } from '@untitledui/icons';
 import { SuggestionCard } from '@test-kb-ui/kb-ui';
 import { useMockStore } from '../../store/MockStoreContext';
 import {
@@ -65,7 +65,7 @@ export default function HubPage() {
           </p>
         </header>
         <EmptyState
-          icon={<RiCheckLine />}
+          icon={<Check />}
           title="All caught up."
           subtitle="No suggestions to review right now. Check back after new conversations come in."
         />

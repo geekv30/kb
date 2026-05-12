@@ -2,7 +2,7 @@
 //        9aGp5t9fH1d0PXi4LMhOdb#81:17189 (pre-review in editor chrome)
 //        9aGp5t9fH1d0PXi4LMhOdb#81:14752 (terminal — all reviewed)
 import * as React from 'react';
-import { RiCheckLine } from '@remixicon/react';
+import { Check } from '@untitledui/icons';
 import { cn } from '../../utils/cn';
 import { AiIcon } from '../brand/AiIcon';
 import { Button } from '../primitives/Button';
@@ -113,7 +113,7 @@ export function AISuggestionsCard({
                 'cursor-not-allowed',
               )}
             >
-              <RiCheckLine aria-hidden="true" className="h-[14px] w-[14px]" />
+              <Check aria-hidden="true" className="h-[14px] w-[14px]" />
               <span>{resolvedTerminalLabel}</span>
             </button>
           ) : cta !== undefined ? (

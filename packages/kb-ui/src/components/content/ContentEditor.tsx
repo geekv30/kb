@@ -15,24 +15,23 @@ import { Highlight } from '@tiptap/extension-highlight';
 import { Placeholder } from '@tiptap/extension-placeholder';
 import { createLowlight, common } from 'lowlight';
 import {
-  RiBold,
-  RiItalic,
-  RiUnderline,
-  RiStrikethrough,
-  RiListUnordered,
-  RiListOrdered,
-  RiLinkM,
-  RiCodeLine,
-  RiCodeBoxLine,
-  RiTable2,
-  RiImage2Line,
-  RiDoubleQuotesL,
-  RiSeparator,
-  RiSparkling2Line,
-  RiMore2Line,
-  RiArrowDownSLine,
-  RiCheckLine,
-} from '@remixicon/react';
+  Bold02,
+  Italic02,
+  Underline02,
+  Strikethrough02,
+  List,
+  Link02,
+  Code02,
+  CodeSquare02,
+  Table as TableIcon,
+  Image02,
+  MessageTextSquare02,
+  Divider,
+  Stars02,
+  DotsVertical,
+  ChevronDown,
+  Check,
+} from '@untitledui/icons';
 import { cn } from '../../utils/cn';
 
 const lowlight = createLowlight(common);
@@ -93,35 +92,35 @@ export const DEFAULT_TOOLBAR_ITEMS: ToolbarItemDef[] = [
   {
     id: 'bold',
     label: 'Bold',
-    icon: <RiBold />,
+    icon: <Bold02 />,
     isActive: (editor) => editor.isActive('bold'),
     onClick: (editor) => editor.chain().focus().toggleBold().run(),
   },
   {
     id: 'italic',
     label: 'Italic',
-    icon: <RiItalic />,
+    icon: <Italic02 />,
     isActive: (editor) => editor.isActive('italic'),
     onClick: (editor) => editor.chain().focus().toggleItalic().run(),
   },
   {
     id: 'underline',
     label: 'Underline',
-    icon: <RiUnderline />,
+    icon: <Underline02 />,
     isActive: (editor) => editor.isActive('underline'),
     onClick: (editor) => editor.chain().focus().toggleUnderline().run(),
   },
   {
     id: 'strike',
     label: 'Strikethrough',
-    icon: <RiStrikethrough />,
+    icon: <Strikethrough02 />,
     isActive: (editor) => editor.isActive('strike'),
     onClick: (editor) => editor.chain().focus().toggleStrike().run(),
   },
   {
     id: 'bulletList',
     label: 'Bulleted list',
-    icon: <RiListUnordered />,
+    icon: <List />,
     isActive: (editor) => editor.isActive('bulletList'),
     onClick: (editor) => editor.chain().focus().toggleBulletList().run(),
     separatorBefore: true,
@@ -129,14 +128,14 @@ export const DEFAULT_TOOLBAR_ITEMS: ToolbarItemDef[] = [
   {
     id: 'orderedList',
     label: 'Numbered list',
-    icon: <RiListOrdered />,
+    icon: <List />,
     isActive: (editor) => editor.isActive('orderedList'),
     onClick: (editor) => editor.chain().focus().toggleOrderedList().run(),
   },
   {
     id: 'link',
     label: 'Insert link',
-    icon: <RiLinkM />,
+    icon: <Link02 />,
     isActive: (editor) => editor.isActive('link'),
     onClick: (editor) => {
       const active = editor.isActive('link');
@@ -159,21 +158,21 @@ export const DEFAULT_TOOLBAR_ITEMS: ToolbarItemDef[] = [
   {
     id: 'code',
     label: 'Inline code',
-    icon: <RiCodeLine />,
+    icon: <Code02 />,
     isActive: (editor) => editor.isActive('code'),
     onClick: (editor) => editor.chain().focus().toggleCode().run(),
   },
   {
     id: 'codeBlock',
     label: 'Code block',
-    icon: <RiCodeBoxLine />,
+    icon: <CodeSquare02 />,
     isActive: (editor) => editor.isActive('codeBlock'),
     onClick: (editor) => editor.chain().focus().toggleCodeBlock().run(),
   },
   {
     id: 'table',
     label: 'Insert table',
-    icon: <RiTable2 />,
+    icon: <TableIcon />,
     isActive: (editor) => editor.isActive('table'),
     onClick: (editor) =>
       editor
@@ -185,7 +184,7 @@ export const DEFAULT_TOOLBAR_ITEMS: ToolbarItemDef[] = [
   {
     id: 'aiHighlight',
     label: 'AI highlight',
-    icon: <RiSparkling2Line />,
+    icon: <Stars02 />,
     isActive: (editor) => editor.isActive('highlight', { color: 'ai' }),
     onClick: (editor) => editor.chain().focus().toggleHighlight({ color: 'ai' }).run(),
     separatorBefore: true,
@@ -291,7 +290,7 @@ function ParagraphDropdown({ editor }: { editor: Editor }) {
         )}
       >
         <span className="text-[14px] font-medium leading-5">{currentOpt.shortLabel}</span>
-        <RiArrowDownSLine className="h-[14px] w-[14px]" />
+        <ChevronDown className="h-[14px] w-[14px]" />
       </button>
       {open && (
         <div
@@ -322,7 +321,7 @@ function ParagraphDropdown({ editor }: { editor: Editor }) {
                 >
                   {opt.label}
                 </span>
-                {isActive && <RiCheckLine className="h-[14px] w-[14px] text-text-primary" />}
+                {isActive && <Check className="h-[14px] w-[14px] text-text-primary" />}
               </button>
             );
           })}
@@ -353,18 +352,18 @@ function OverflowMenu({ editor }: { editor: Editor }) {
   const items: { label: string; icon: React.ReactNode; action: () => void; active?: boolean }[] = [
     {
       label: 'Blockquote',
-      icon: <RiDoubleQuotesL className="h-[14px] w-[14px]" />,
+      icon: <MessageTextSquare02 className="h-[14px] w-[14px]" />,
       action: () => editor.chain().focus().toggleBlockquote().run(),
       active: editor.isActive('blockquote'),
     },
     {
       label: 'Horizontal rule',
-      icon: <RiSeparator className="h-[14px] w-[14px]" />,
+      icon: <Divider className="h-[14px] w-[14px]" />,
       action: () => editor.chain().focus().setHorizontalRule().run(),
     },
     {
       label: 'Image from URL',
-      icon: <RiImage2Line className="h-[14px] w-[14px]" />,
+      icon: <Image02 className="h-[14px] w-[14px]" />,
       action: () => {
         const url = typeof window !== 'undefined' ? window.prompt('Image URL', 'https://') : null;
         if (url) editor.chain().focus().setImage({ src: url }).run();
@@ -375,7 +374,7 @@ function OverflowMenu({ editor }: { editor: Editor }) {
   return (
     <div ref={ref} className="relative">
       <ToolbarButton onClick={() => setOpen((o) => !o)} active={open} label="More options">
-        <RiMore2Line />
+        <DotsVertical />
       </ToolbarButton>
       {open && (
         <div

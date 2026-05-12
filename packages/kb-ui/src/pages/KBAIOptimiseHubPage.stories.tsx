@@ -1,13 +1,7 @@
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../tokens.css';
-import {
-  RiQuillPenLine,
-  RiBarChartBoxLine,
-  RiSettings5Line,
-  RiMagicLine,
-  RiSparkling2Line,
-} from '@remixicon/react';
+import { Feather, BarChartSquare02, Settings01, MagicWand02, Stars02 } from '@untitledui/icons';
 import { AppShell } from '../components/shell/AppShell';
 import { KBBreadcrumbBar } from '../components/shell/KBBreadcrumbBar';
 import { SideNavRail, type NavRailItem } from '../components/nav/SideNavRail';
@@ -33,8 +27,8 @@ import { AiIcon } from '../components/brand/AiIcon';
  *   [3] Content column (938)     — breadcrumb + page header + 3 suggestion cards
  *
  * Convention notes:
- *   - Settings icon = `RiSettings5Line` (matches existing page stories;
- *     spec suggested `RiSettings3Line`/`RiSettingsLine` — CLAUDE.md rule
+ *   - Settings icon = `Settings01` (matches existing page stories;
+ *     spec suggested `Settings03`/`Settings01` — CLAUDE.md rule
  *     #3 says match existing conventions, so `5Line` wins).
  *   - Page header is built inline rather than using `PageHeader` — the
  *     hub doesn't have a CTA button and `PageHeader` hard-wires one;
@@ -49,9 +43,9 @@ import { AiIcon } from '../components/brand/AiIcon';
 
 const railItems: NavRailItem[] = [
   { id: 'ai', icon: <AiIcon size={16} />, label: 'AI' },
-  { id: 'editor', icon: <RiQuillPenLine size={16} />, label: 'Editor' },
-  { id: 'analytics', icon: <RiBarChartBoxLine size={16} />, label: 'Analytics' },
-  { id: 'settings', icon: <RiSettings5Line size={16} />, label: 'Settings' },
+  { id: 'editor', icon: <Feather size={16} />, label: 'Editor' },
+  { id: 'analytics', icon: <BarChartSquare02 size={16} />, label: 'Analytics' },
+  { id: 'settings', icon: <Settings01 size={16} />, label: 'Settings' },
 ];
 
 /* ------- Sub-nav items (column 2) ------- */
@@ -69,7 +63,7 @@ const subNavItems: NavItem[] = [
     type: 'article',
     title: 'AI Optimise',
     kind: 'item',
-    icon: <RiMagicLine size={16} />,
+    icon: <MagicWand02 size={16} />,
   },
 ];
 
@@ -183,7 +177,7 @@ function AIOptimiseHubPage() {
           variant="flat"
           theme="light"
           title="AI"
-          headerIcon={<RiSparkling2Line size={16} />}
+          headerIcon={<Stars02 size={16} />}
           items={subNavItems}
           activeId="ai-optimise"
           onItemClick={(id) => {

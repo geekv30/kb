@@ -1,9 +1,9 @@
 import * as React from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import {
-  RiCalendarLine,
-  RiArrowDownSLine,
-} from '@remixicon/react';
+  Calendar,
+  ChevronDown,
+} from '@untitledui/icons';
 import { cn } from '../../utils/cn';
 
 /* ─────────────────────────────────────────────────────────────
@@ -65,9 +65,9 @@ export function DateRangePill({ value, onChange, label, className, presets }: Da
             className,
           )}
         >
-          <RiCalendarLine size={14} className="text-text-muted" aria-hidden="true" />
+          <Calendar size={14} className="text-text-muted" aria-hidden="true" />
           <span>{displayLabel}</span>
-          <RiArrowDownSLine size={14} className="text-text-muted" aria-hidden="true" />
+          <ChevronDown size={14} className="text-text-muted" aria-hidden="true" />
         </button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>

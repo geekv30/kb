@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { RiCursorLine, RiPriceTag3Line } from '@remixicon/react';
+import { Cursor02, Tag01 } from '@untitledui/icons';
 import '../../tokens.css';
 import { ConversationRow } from './AIConversationLogEntryAtoms';
 import { FigmaCompare } from '../../_review/FigmaCompare';
@@ -35,7 +35,7 @@ function TailTicketReview() {
           hideConnectorAbove
           hideConnectorBelow
           icon={
-            <RiCursorLine
+            <Cursor02
               aria-hidden="true"
               className="h-4 w-4 text-[#64748b]"
             />
@@ -43,7 +43,7 @@ function TailTicketReview() {
         >
           <div className="flex items-center gap-2 pt-[1px]">
             <span aria-hidden="true" className="text-[14px] leading-5 text-[#64748b]">·</span>
-            <RiPriceTag3Line
+            <Tag01
               aria-hidden="true"
               className="h-4 w-4 shrink-0 text-[#475569]"
             />

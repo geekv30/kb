@@ -1,6 +1,6 @@
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { RiFolderLine } from '@remixicon/react';
+import { Folder } from '@untitledui/icons';
 import '../../tokens.css';
 import { DataTable, type DataTableColumn } from './DataTable';
 import { FigmaCompare } from '../../_review/FigmaCompare';
@@ -60,7 +60,7 @@ const subCategoryColumns: DataTableColumn<SubCategory>[] = [
             'hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
           )}
         >
-          <RiFolderLine size={16} aria-hidden="true" />
+          <Folder size={16} aria-hidden="true" />
         </button>
         <span className="text-[14px] font-normal leading-[20px] text-[#0f172a]">
           {item.title}

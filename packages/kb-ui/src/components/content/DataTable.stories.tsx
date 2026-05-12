@@ -1,7 +1,7 @@
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../../tokens.css';
-import { RiFile3Line } from '@remixicon/react';
+import { File02 } from '@untitledui/icons';
 import { DataTable, type DataTableColumn } from './DataTable';
 import { Badge } from '../primitives/Badge';
 import { Avatar } from '../primitives/Avatar';
@@ -48,7 +48,7 @@ const articleColumns: DataTableColumn<Article>[] = [
     header: 'Article Title',
     render: (a) => (
       <div className="flex items-center gap-2 min-w-0 pr-2">
-        <RiFile3Line size={16} className="shrink-0 text-[#64748b]" aria-hidden="true" />
+        <File02 size={16} className="shrink-0 text-[#64748b]" aria-hidden="true" />
         <span className="truncate">{a.title}</span>
       </div>
     ),

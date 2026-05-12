@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { RiAddLine } from '@remixicon/react';
+import { Plus } from '@untitledui/icons';
 import { cn } from '../../utils/cn';
 import { Button } from '../primitives/Button';
 
@@ -111,7 +111,7 @@ export function PageHeader({
           renderCta && (
             <Button
               variant="primary"
-              icon={<RiAddLine size={14} />}
+              icon={<Plus size={14} />}
               onClick={onNewClick}
             >
               {newButtonLabel}

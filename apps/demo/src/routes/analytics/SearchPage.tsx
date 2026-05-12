@@ -20,7 +20,7 @@
 //   - ContentGapsTable rows: no-op v1
 //   - "Write Article" button → toast placeholder
 
-import { RiInformationLine, RiQuillPenLine } from '@remixicon/react';
+import { Feather, InfoCircle } from '@untitledui/icons';
 import {
   AnalyticsAreaChart,
   AnalyticsChartCard,
@@ -64,7 +64,7 @@ function WriteArticleButton({ onClick }: { onClick?: () => void }) {
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
       )}
     >
-      <RiQuillPenLine
+      <Feather
         size={14}
         className="text-text-meta"
         aria-hidden="true"
@@ -171,7 +171,7 @@ export default function SearchPage() {
               Top 5 Search Keywords
             </h3>
             <span className="ml-2 inline-flex" aria-hidden>
-              <RiInformationLine
+              <InfoCircle
                 size={16}
                 className="text-text-meta"
                 aria-hidden="true"
@@ -194,7 +194,7 @@ export default function SearchPage() {
                 Content Gaps
               </h3>
               <span className="ml-2 inline-flex" aria-hidden>
-                <RiInformationLine
+                <InfoCircle
                   size={16}
                   className="text-text-meta"
                   aria-hidden="true"

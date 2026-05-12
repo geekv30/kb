@@ -1,11 +1,11 @@
 import * as React from 'react';
 import {
-  RiSettings5Line,
-  RiArrowUpSLine,
-  RiArrowDownSLine,
-  RiCalendar2Line,
-  RiAddLine,
-} from '@remixicon/react';
+  Settings01,
+  ChevronUp,
+  ChevronDown,
+  Calendar,
+  Plus,
+} from '@untitledui/icons';
 import { cn } from '../../utils/cn';
 import { Avatar } from '../primitives/Avatar';
 import {
@@ -192,7 +192,7 @@ function SlugField({
             'placeholder:text-text-disabled focus:outline-none',
           )}
         />
-        <RiArrowDownSLine aria-hidden="true" className="h-4 w-4 shrink-0 text-text-disabled" />
+        <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 text-text-disabled" />
       </div>
     </div>
   );
@@ -250,7 +250,7 @@ function PublishDateField({
     <div className="flex flex-col gap-1.5">
       <FieldLabel>Publish date</FieldLabel>
       <FieldBox onClick={onOpen} ariaLabel="Change publish date">
-        <RiCalendar2Line aria-hidden="true" className="h-4 w-4 shrink-0 text-text-muted" />
+        <Calendar aria-hidden="true" className="h-4 w-4 shrink-0 text-text-muted" />
         {date ? <span className="truncate">{date}</span> : <Placeholder>Pick a date</Placeholder>}
       </FieldBox>
     </div>
@@ -363,7 +363,7 @@ function ReviewersField({
             'hover:bg-surface-subtle focus:outline-none focus:ring-2 focus:ring-black/10',
           )}
         >
-          <RiAddLine className="h-[14px] w-[14px]" />
+          <Plus className="h-[14px] w-[14px]" />
         </button>
       </div>
     </div>
@@ -435,12 +435,12 @@ export function ArticleSettingsPanel({
               'focus:outline-none focus:ring-2 focus:ring-black/10 rounded-[4px]',
             )}
           >
-            <RiSettings5Line aria-hidden="true" className="h-4 w-4 shrink-0 text-text-primary" />
+            <Settings01 aria-hidden="true" className="h-4 w-4 shrink-0 text-text-primary" />
             <span className="flex-1 text-[14px] font-medium leading-[20px] text-text-primary">Settings</span>
             {collapsed ? (
-              <RiArrowDownSLine aria-hidden="true" className="h-4 w-4 shrink-0 text-text-primary" />
+              <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 text-text-primary" />
             ) : (
-              <RiArrowUpSLine aria-hidden="true" className="h-4 w-4 shrink-0 text-text-primary" />
+              <ChevronUp aria-hidden="true" className="h-4 w-4 shrink-0 text-text-primary" />
             )}
           </button>
           <div className="flex items-center">{headerSlot}</div>
@@ -456,12 +456,12 @@ export function ArticleSettingsPanel({
             'focus:outline-none focus:ring-2 focus:ring-black/10 rounded-[4px]',
           )}
         >
-          <RiSettings5Line aria-hidden="true" className="h-4 w-4 shrink-0 text-text-primary" />
+          <Settings01 aria-hidden="true" className="h-4 w-4 shrink-0 text-text-primary" />
           <span className="flex-1 text-[14px] font-medium leading-[20px] text-text-primary">Settings</span>
           {collapsed ? (
-            <RiArrowDownSLine aria-hidden="true" className="h-4 w-4 shrink-0 text-text-primary" />
+            <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 text-text-primary" />
           ) : (
-            <RiArrowUpSLine aria-hidden="true" className="h-4 w-4 shrink-0 text-text-primary" />
+            <ChevronUp aria-hidden="true" className="h-4 w-4 shrink-0 text-text-primary" />
           )}
         </button>
       )}

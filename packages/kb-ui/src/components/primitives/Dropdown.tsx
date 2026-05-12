@@ -1,5 +1,5 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { RiArrowDownSLine } from '@remixicon/react';
+import { ChevronDown } from '@untitledui/icons';
 import { TextInput, type TextInputProps } from './TextInput';
 import { cn } from '../../utils/cn';
 
@@ -22,7 +22,7 @@ export function Dropdown({
       <label className="text-[14px] font-medium leading-5 text-text-primary">{label}</label>
       <TextInput
         {...inputProps}
-        suffix={<RiArrowDownSLine size={14} className="text-text-meta" />}
+        suffix={<ChevronDown size={14} className="text-text-meta" />}
       />
     </div>
   );

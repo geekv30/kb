@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { RiArrowRightUpLine, RiArrowRightDownLine } from '@remixicon/react';
+import { ArrowUpRight, ArrowDownRight } from '@untitledui/icons';
 import { cn } from '../../utils/cn';
 
 /* ─────────────────────────────────────────────────────────────
@@ -43,9 +43,9 @@ export function StatCard({
   const showTrend = Boolean(trendDelta);
   const TrendIcon =
     trendDirection === 'up'
-      ? RiArrowRightUpLine
+      ? ArrowUpRight
       : trendDirection === 'down'
-        ? RiArrowRightDownLine
+        ? ArrowDownRight
         : null;
 
   return (

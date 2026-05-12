@@ -1,12 +1,12 @@
 // Figma: 9aGp5t9fH1d0PXi4LMhOdb#74:8927 (isolated cards; context: 74:8928)
 import * as React from 'react';
 import {
-  RiFile3Line,
-  RiPencilLine,
-  RiBookOpenLine,
-  RiFolderTransferLine,
-  RiMailLine,
-} from '@remixicon/react';
+  File02,
+  Pencil02,
+  BookOpen01,
+  FolderDownload,
+  Mail01,
+} from '@untitledui/icons';
 import { cn } from '../../utils/cn';
 import { tokens } from '../../tokens';
 
@@ -68,22 +68,22 @@ const PINK = tokens.color.aiPink;
 export const DEFAULT_SUGGESTION_KINDS: Record<string, SuggestionKindMeta> = {
   'article-edit': {
     label: 'Article Edit',
-    icon: <RiPencilLine size={16} color={PINK} />,
+    icon: <Pencil02 size={16} color={PINK} />,
   },
   'new-article': {
     label: 'New Article',
-    icon: <RiBookOpenLine size={16} color={PINK} />,
+    icon: <BookOpen01 size={16} color={PINK} />,
   },
   'move-article': {
     label: 'Move Article',
-    icon: <RiFolderTransferLine size={16} color={PINK} />,
+    icon: <FolderDownload size={16} color={PINK} />,
   },
 };
 
 export type SuggestionCardProps = {
   /**
    * Leading icon beside the title. Defaults to a pink-tinted
-   * `RiFile3Line` (matches Figma doc-icon). Pass a custom node to
+   * `File02` (matches Figma doc-icon). Pass a custom node to
    * override (e.g. for `move-article` you may want a folder glyph).
    */
   icon?: React.ReactNode;
@@ -226,7 +226,7 @@ export function SuggestionCard({
   );
 
   const registry = kindRegistry ?? DEFAULT_SUGGESTION_KINDS;
-  const titleIcon = icon ?? <RiFile3Line size={18} color={PINK} />;
+  const titleIcon = icon ?? <File02 size={18} color={PINK} />;
 
   return (
     <div
@@ -293,7 +293,7 @@ export function SuggestionCard({
           <>
             <MetaDot />
             <span className="flex items-center gap-[6px] text-[14px] font-medium text-text-meta">
-              <RiMailLine size={16} />
+              <Mail01 size={16} />
               {conversationCount} Conversations
             </span>
             <MetaDot />

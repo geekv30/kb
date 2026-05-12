@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { RiArrowDownSLine } from '@remixicon/react';
+import { ChevronDown } from '@untitledui/icons';
 import '../../tokens.css';
 import { Field } from './Field';
 import { TextInput } from './TextInput';
@@ -29,7 +29,7 @@ function CategoryReview() {
             id="rv-category"
             value="Hiver in Incognito"
             suffix={
-              <RiArrowDownSLine
+              <ChevronDown
                 size={14}
                 className="text-[#64748b]"
                 aria-hidden="true"

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { RiInformationLine } from '@remixicon/react';
+import { InfoCircle } from '@untitledui/icons';
 import { Card } from '../primitives/Card';
 import { StatCard, type StatCardProps } from './StatCard';
 import { cn } from '../../utils/cn';
@@ -39,7 +39,7 @@ export function StatCardGrid({ title, infoTooltip, stats, className, headerRight
           className="inline-flex"
           {...(infoTooltip ? { title: infoTooltip, 'aria-label': infoTooltip } : {})}
         >
-          <RiInformationLine size={16} className="text-text-muted" aria-hidden="true" />
+          <InfoCircle size={16} className="text-text-muted" aria-hidden="true" />
         </span>
         {headerRight !== undefined ? <div className="ml-auto flex items-center">{headerRight}</div> : null}
       </div>

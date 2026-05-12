@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { RiSearchLine } from '@remixicon/react';
+import { SearchLg } from '@untitledui/icons';
 import '../../tokens.css';
 import { ConversationRow } from './AIConversationLogEntryAtoms';
 import { FigmaCompare } from '../../_review/FigmaCompare';
@@ -10,7 +10,7 @@ import { figmaNode } from './AIConversationLogEntry.question.figma';
  * AIConversationLogEntry — Question row (no feedback) review.
  *
  * Figma library-check cell `155:1781` (874 × 44): `#f1f5f9`
- * 28 × 28 round pill containing `RiSearchLine` (#475569) + the
+ * 28 × 28 round pill containing `SearchLg` (#475569) + the
  * question text only (no thumbs-up / no timestamp).
  * ───────────────────────────────────────────────────────────── */
 
@@ -36,7 +36,7 @@ function QuestionReview() {
           hideConnectorBelow
           iconPill
           icon={
-            <RiSearchLine aria-hidden="true" className="h-4 w-4 text-[#475569]" />
+            <SearchLg aria-hidden="true" className="h-4 w-4 text-[#475569]" />
           }
         >
           <p className="pt-[5px] text-[14px] font-medium leading-5 text-[#0f172a]">

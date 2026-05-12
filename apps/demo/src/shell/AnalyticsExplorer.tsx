@@ -6,7 +6,7 @@
 // the matching tab.
 
 import { useMemo } from 'react';
-import { RiBarChartBoxLine } from '@remixicon/react';
+import { BarChartSquare02 } from '@untitledui/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FileExplorerNav } from '@test-kb-ui/kb-ui';
 import { useMockStore } from '../store/MockStoreContext';
@@ -35,7 +35,7 @@ export function AnalyticsExplorer() {
   return (
     <FileExplorerNav
       title="Analytics"
-      headerIcon={<RiBarChartBoxLine size={16} />}
+      headerIcon={<BarChartSquare02 size={16} />}
       variant="flat"
       items={items}
       activeId={activeId}

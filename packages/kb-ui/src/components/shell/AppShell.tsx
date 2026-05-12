@@ -11,13 +11,14 @@ export type AppShellProps = {
   /** Main content — scrolls independently of the shell. */
   children: React.ReactNode;
   /**
-   * When `true`, the rail + explorer are **unmounted** and the content column
-   * spans the full viewport width. Used by the editor's collapsed state
-   * (Figma `53:8464`). Defaults to `false` — unchanged behaviour.
+   * When `true`, the `explorer` slot's width animates to 0 (200ms ease-out),
+   * clipping the panel out of view. The `rail` slot is persistent chrome
+   * and is NOT affected. Defaults to `false`.
    *
    * The breadcrumb slot receives this as-is; callers typically pass a
-   * `KBBreadcrumbBar` with the matching `sidebarCollapsed` prop so its icon
-   * swaps from a side-panel toggle to a home icon.
+   * `KBBreadcrumbBar` with the matching `sidebarCollapsed` prop. By default
+   * its leading icon flips to a home glyph — pass `leadingIcon='sidebar-toggle'`
+   * on user-toggleable surfaces to keep the LayoutLeft icon throughout.
    */
   sidebarCollapsed?: boolean;
   /**
@@ -45,10 +46,19 @@ export type AppShellProps = {
  * header line is marked by the rail and explorer dividers alone.
  *
  * Collapsed sidebar state (`sidebarCollapsed`):
- * - Rail + explorer are unmounted (not `display: none`), so DOM probes
- *   return null cleanly and flex layout ignores them entirely.
- * - Content column stretches the full viewport width; breadcrumb sits on
- *   the same `#ffffff` bg.
+ * - The `rail` slot is persistent chrome (54px) and stays visible
+ *   regardless of this flag. It contains primary navigation that the
+ *   user always needs reachable.
+ * - The `explorer` slot (288px) animates its width to 0 over 200ms
+ *   when `sidebarCollapsed=true`. The child stays mounted but is
+ *   clipped by `overflow-hidden` and removed from AT + tab order
+ *   via `aria-hidden` + `inert`.
+ * - On surfaces that pass no `rail`/`explorer` at all (e.g. the
+ *   editor's CollapsedShellLayout), this prop has no visual effect —
+ *   it's still forwarded via the `data-kb-sidebar-collapsed` attribute
+ *   for callers that style based on it.
+ * - Content column stretches the full viewport width via flex-1;
+ *   breadcrumb sits on the same `#ffffff` bg.
  */
 export function AppShell({
   rail,
@@ -71,14 +81,22 @@ export function AppShell({
         className,
       )}
     >
-      {!sidebarCollapsed && rail && (
-        <div data-kb-part="shell-rail" className="shrink-0 h-full">
+      {rail !== undefined && (
+        <div data-kb-part="shell-rail" className="shrink-0 h-full w-[54px]">
           {rail}
         </div>
       )}
 
-      {!sidebarCollapsed && explorer && (
-        <div data-kb-part="shell-explorer" className="shrink-0 h-full">
+      {explorer !== undefined && (
+        <div
+          data-kb-part="shell-explorer"
+          aria-hidden={sidebarCollapsed ? 'true' : undefined}
+          {...(sidebarCollapsed ? { inert: '' } : {})}
+          className={cn(
+            'shrink-0 h-full overflow-hidden transition-[width] duration-200 ease-out',
+            sidebarCollapsed ? 'w-0' : 'w-[288px]',
+          )}
+        >
           {explorer}
         </div>
       )}

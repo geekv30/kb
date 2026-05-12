@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { RiQuillPenLine, RiSettings5Line } from '@remixicon/react';
+import { Feather, Settings01 } from '@untitledui/icons';
 import '../../tokens.css';
 import { SideNavRail } from './SideNavRail';
 import { Avatar } from '../primitives/Avatar';
@@ -20,8 +20,8 @@ export default meta;
 
 const items = [
   { id: 'ai', icon: <AiIcon size={16} />, label: 'AI' },
-  { id: 'editor', icon: <RiQuillPenLine size={16} />, label: 'Editor' },
-  { id: 'settings', icon: <RiSettings5Line size={16} />, label: 'Settings' },
+  { id: 'editor', icon: <Feather size={16} />, label: 'Editor' },
+  { id: 'settings', icon: <Settings01 size={16} />, label: 'Settings' },
 ];
 
 function SideNavRailReview() {

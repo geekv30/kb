@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { RiSendPlaneLine, RiCloseLine } from '@remixicon/react';
+import { Send01, XClose } from '@untitledui/icons';
 import { cn } from '../../utils/cn';
 import { Button } from '../primitives/Button';
 
@@ -25,7 +25,7 @@ export type EditorBreadcrumbActionsProps = {
  * the styling.
  *
  * The lifted JSX is byte-identical to today's `variant='editor'` actions:
- * same Button primary variant for Publish, same RiSendPlaneLine / RiCloseLine
+ * same Button primary variant for Publish, same Send01 / XClose
  * icons at the same sizes, same Save-mute-when-Publish-disabled lockstep,
  * same `gap-2` between controls.
  */
@@ -73,7 +73,7 @@ export function EditorBreadcrumbActions({
         variant="primary"
         onClick={onPublish}
         disabled={publishDisabled}
-        icon={<RiSendPlaneLine size={14} />}
+        icon={<Send01 size={14} />}
       >
         {publishLabel}
       </Button>
@@ -90,7 +90,7 @@ export function EditorBreadcrumbActions({
         aria-label="Close"
         className="inline-flex size-8 items-center justify-center rounded-[6px] bg-surface-muted text-text-primary hover:bg-card-border focus:outline-none focus-visible:ring-2 focus-visible:ring-border-faint"
       >
-        <RiCloseLine size={16} />
+        <XClose size={16} />
       </button>
     </div>
   );

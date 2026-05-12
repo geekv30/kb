@@ -29,7 +29,7 @@
 
 import type { MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RiFile3Line, RiInformationLine } from '@remixicon/react';
+import { File02, InfoCircle } from '@untitledui/icons';
 import {
   AIConversationLogEntry,
   AIConversationLogsCard,
@@ -61,7 +61,7 @@ const citedColumns: DataTableColumn<MostCitedRow>[] = [
     header: 'Article Title',
     render: (r) => (
       <span className="inline-flex items-center gap-2">
-        <RiFile3Line
+        <File02
           size={16}
           className="shrink-0 text-text-muted"
           aria-hidden="true"
@@ -197,7 +197,7 @@ export default function AIAnswerPerformancePage() {
               Most Cited KB Articles
             </h3>
             <span className="ml-2 inline-flex" aria-hidden>
-              <RiInformationLine
+              <InfoCircle
                 size={16}
                 className="text-text-meta"
                 aria-hidden="true"

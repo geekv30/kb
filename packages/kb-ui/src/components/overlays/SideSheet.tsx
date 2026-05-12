@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
-import { RiCloseLine } from '@remixicon/react';
+import { XClose } from '@untitledui/icons';
 import { cn } from '../../utils/cn';
 
 /* ─────────────────────────────────────────────────────────────
@@ -110,7 +110,7 @@ export function SideSheet({
             onClick={() => onOpenChange(false)}
             className={closeBtnClass}
           >
-            <RiCloseLine aria-hidden="true" className="h-4 w-4" />
+            <XClose aria-hidden="true" className="h-4 w-4" />
           </button>
         </div>
 
@@ -182,7 +182,7 @@ export function SideSheet({
 
             <Dialog.Close asChild>
               <button type="button" aria-label="Close" className={closeBtnClass}>
-                <RiCloseLine aria-hidden="true" className="h-4 w-4" />
+                <XClose aria-hidden="true" className="h-4 w-4" />
               </button>
             </Dialog.Close>
           </div>

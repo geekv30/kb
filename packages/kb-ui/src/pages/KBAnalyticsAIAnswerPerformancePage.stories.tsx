@@ -1,12 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../tokens.css';
-import {
-  RiQuillPenLine,
-  RiSettings5Line,
-  RiBarChartBoxLine,
-  RiFile3Line,
-  RiInformationLine,
-} from '@remixicon/react';
+import { Feather, Settings01, BarChartSquare02, File02, InfoCircle } from '@untitledui/icons';
 import { AppShell } from '../components/shell/AppShell';
 import { KBBreadcrumbBar } from '../components/shell/KBBreadcrumbBar';
 import { SideNavRail, type NavRailItem } from '../components/nav/SideNavRail';
@@ -34,13 +28,13 @@ import type { ConversationSource } from '../components/overlays/SourcesSideSheet
 
 const railItems: NavRailItem[] = [
   { id: 'ai', icon: <AiIcon size={16} />, label: 'AI' },
-  { id: 'editor', icon: <RiQuillPenLine size={16} />, label: 'Editor' },
+  { id: 'editor', icon: <Feather size={16} />, label: 'Editor' },
   {
     id: 'analytics',
-    icon: <RiBarChartBoxLine size={16} />,
+    icon: <BarChartSquare02 size={16} />,
     label: 'Analytics',
   },
-  { id: 'settings', icon: <RiSettings5Line size={16} />, label: 'Settings' },
+  { id: 'settings', icon: <Settings01 size={16} />, label: 'Settings' },
 ];
 
 const analyticsNavItems: NavItem[] = [
@@ -126,7 +120,7 @@ const citedColumns: DataTableColumn<Cited>[] = [
     header: 'Article Title',
     render: (r) => (
       <span className="inline-flex items-center gap-2">
-        <RiFile3Line
+        <File02
           size={16}
           className="shrink-0 text-[#64748b]"
           aria-hidden="true"
@@ -160,7 +154,7 @@ function AIAnswerPerformancePage() {
           variant="flat"
           theme="light"
           title="Analytics"
-          headerIcon={<RiBarChartBoxLine size={16} />}
+          headerIcon={<BarChartSquare02 size={16} />}
           items={analyticsNavItems}
           activeId="ai"
           onItemClick={() => {}}
@@ -301,7 +295,7 @@ function AIAnswerPerformancePage() {
                 Most Cited KB Articles
               </h3>
               <span className="ml-2 inline-flex" aria-hidden>
-                <RiInformationLine
+                <InfoCircle
                   size={16}
                   className="text-[#475569]"
                   aria-hidden="true"

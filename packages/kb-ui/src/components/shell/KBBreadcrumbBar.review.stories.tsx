@@ -25,7 +25,7 @@ export default meta;
  * The frame's outer container is 1280×54 with the inner content
  * insetted by 22 px on the left (matches `pl-[22px]` in the
  * production component). We pass `sidebarCollapsed` so the leading
- * icon resolves to `RiHome5Line`, and route the action trio through
+ * icon resolves to `Home01`, and route the action trio through
  * `EditorBreadcrumbActions` (the canonical right-slot consumer).
  *
  * **Inline drift fixed in this dispatch**: the production component

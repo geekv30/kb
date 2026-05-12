@@ -1,15 +1,7 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../tokens.css';
-import {
-  RiMailLine,
-  RiQuillPenLine,
-  RiBarChartBoxLine,
-  RiSettings5Line,
-  RiFolderLine,
-  RiFile3Line,
-  RiMore2Line,
-} from '@remixicon/react';
+import { Mail01, Feather, BarChartSquare02, Settings01, Folder, File02, DotsVertical } from '@untitledui/icons';
 import { AppShell } from '../components/shell/AppShell';
 import { KBBreadcrumbBar } from '../components/shell/KBBreadcrumbBar';
 import { SideNavRail } from '../components/nav/SideNavRail';
@@ -22,13 +14,13 @@ import { CompanyLogo } from '../components/brand/CompanyLogo';
 import { AiIcon } from '../components/brand/AiIcon';
 import { cn } from '../utils/cn';
 
-const PageIcon = () => <RiMailLine size={22} className="text-[#6366f1]" />;
+const PageIcon = () => <Mail01 size={22} className="text-[#6366f1]" />;
 
 const railItems = [
   { id: 'ai', icon: <AiIcon size={16} />, label: 'AI' },
-  { id: 'editor', icon: <RiQuillPenLine size={16} />, label: 'Editor' },
-  { id: 'analytics', icon: <RiBarChartBoxLine size={16} />, label: 'Analytics' },
-  { id: 'settings', icon: <RiSettings5Line size={16} />, label: 'Settings' },
+  { id: 'editor', icon: <Feather size={16} />, label: 'Editor' },
+  { id: 'analytics', icon: <BarChartSquare02 size={16} />, label: 'Analytics' },
+  { id: 'settings', icon: <Settings01 size={16} />, label: 'Settings' },
 ];
 
 const navItems: NavItem[] = [
@@ -137,7 +129,7 @@ const subCategoryColumns: DataTableColumn<SubCategory>[] = [
             'hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
           )}
         >
-          <RiFolderLine size={16} aria-hidden="true" />
+          <Folder size={16} aria-hidden="true" />
         </button>
         <span className="text-[14px] font-normal leading-[20px] text-[#0f172a]">
           {item.title}
@@ -164,7 +156,7 @@ const articleColumns: DataTableColumn<Article>[] = [
             'hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
           )}
         >
-          <RiFile3Line size={16} aria-hidden="true" />
+          <File02 size={16} aria-hidden="true" />
         </button>
         <span className="text-[14px] font-normal leading-[20px] text-[#0f172a] truncate">
           {a.title}
@@ -190,7 +182,7 @@ const articleColumns: DataTableColumn<Article>[] = [
             'hover:bg-[#f8fafc] focus:bg-[#f8fafc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#cbd5e1]',
           )}
         >
-          <RiMore2Line size={16} aria-hidden="true" />
+          <DotsVertical size={16} aria-hidden="true" />
         </button>
       </div>
     ),

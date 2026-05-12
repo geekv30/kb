@@ -1,6 +1,6 @@
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { RiCalendar2Line, RiAddLine } from '@remixicon/react';
+import { Calendar, Plus } from '@untitledui/icons';
 import '../../tokens.css';
 import {
   ArticleSettingsPanel,
@@ -169,7 +169,7 @@ function ArticleSettingsPanelPlayground() {
       label: 'Publish date',
       content: (
         <FieldBox ariaLabel="Change publish date">
-          <RiCalendar2Line aria-hidden="true" className="h-4 w-4 shrink-0 text-[#64748b]" />
+          <Calendar aria-hidden="true" className="h-4 w-4 shrink-0 text-[#64748b]" />
           {customSettings.publishDate ? (
             <span className="truncate">{customSettings.publishDate}</span>
           ) : (
@@ -231,7 +231,7 @@ function ArticleSettingsPanelPlayground() {
             aria-label="Add reviewer"
             className={`inline-flex size-6 items-center justify-center rounded-full border border-dashed border-[#cbd5e1] bg-white text-[#64748b] ring-2 ring-white hover:bg-[#f8fafc] focus:outline-none focus:ring-2 focus:ring-black/10${(customSettings.reviewers?.length ?? 0) > 0 ? ' -ml-2' : ''}`}
           >
-            <RiAddLine className="h-[14px] w-[14px]" />
+            <Plus className="h-[14px] w-[14px]" />
           </button>
         </div>
       ),

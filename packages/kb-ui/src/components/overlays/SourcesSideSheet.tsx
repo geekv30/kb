@@ -1,6 +1,6 @@
 // Figma: 9aGp5t9fH1d0PXi4LMhOdb#76:12567
 import * as React from 'react';
-import { RiMailLine } from '@remixicon/react';
+import { Mail01 } from '@untitledui/icons';
 import { cn } from '../../utils/cn';
 import { SideSheet } from './SideSheet';
 
@@ -83,7 +83,7 @@ export function MailItem({
     <>
       {/* Row 1: mail icon + sender + timestamp */}
       <div className="flex items-center gap-2">
-        <RiMailLine
+        <Mail01
           aria-hidden="true"
           className="h-4 w-4 shrink-0 text-text-muted"
         />

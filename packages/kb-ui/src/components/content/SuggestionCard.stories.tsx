@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { RiGitMergeLine, RiSparkling2Line } from '@remixicon/react';
+import { GitMerge, Stars02 } from '@untitledui/icons';
 import '../../tokens.css';
 import {
   SuggestionCard,
@@ -39,7 +39,7 @@ function SuggestionCardPlayground() {
     ...DEFAULT_SUGGESTION_KINDS,
     'merge-articles': {
       label: 'Merge Articles',
-      icon: <RiGitMergeLine size={16} color={PINK} />,
+      icon: <GitMerge size={16} color={PINK} />,
     },
   };
 
@@ -89,7 +89,7 @@ function SuggestionCardPlayground() {
         title='Refresh AI-suggested rewrites for "Two-factor authentication"'
         description="Helpfulness dropped from 91% to 64% over the last 30 days."
         kind="article-edit"
-        icon={<RiSparkling2Line size={18} color={PINK} />}
+        icon={<Stars02 size={18} color={PINK} />}
         conversationCount={9}
         impact="high"
         onClick={() => {}}

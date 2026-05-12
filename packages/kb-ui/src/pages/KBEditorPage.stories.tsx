@@ -1,11 +1,7 @@
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../tokens.css';
-import {
-  RiQuillPenLine,
-  RiBarChartBoxLine,
-  RiSettings5Line,
-} from '@remixicon/react';
+import { Feather, BarChartSquare02, Settings01 } from '@untitledui/icons';
 import { AppShell } from '../components/shell/AppShell';
 import { KBBreadcrumbBar } from '../components/shell/KBBreadcrumbBar';
 import { EditorBreadcrumbActions } from '../components/shell/EditorBreadcrumbActions';
@@ -27,7 +23,7 @@ import { AiIcon } from '../components/brand/AiIcon';
  *   - SideNavRail and FileExplorerNav are hidden (AppShell's new
  *     `sidebarCollapsed` prop unmounts both).
  *   - Content column spans full viewport width.
- *   - Breadcrumb's leading icon is a HOME glyph (`RiHome5Line`), not
+ *   - Breadcrumb's leading icon is a HOME glyph (`Home01`), not
  *     the side-panel toggle used in the expanded state.
  *   - Editor card and Settings panel sit side-by-side (no stacking
  *     needed — full viewport has room for 720 + 24 + 452 ≈ 1196 px).
@@ -51,9 +47,9 @@ import { AiIcon } from '../components/brand/AiIcon';
 
 const railItems = [
   { id: 'ai', icon: <AiIcon size={16} />, label: 'AI' },
-  { id: 'editor', icon: <RiQuillPenLine size={16} />, label: 'Editor' },
-  { id: 'analytics', icon: <RiBarChartBoxLine size={16} />, label: 'Analytics' },
-  { id: 'settings', icon: <RiSettings5Line size={16} />, label: 'Settings' },
+  { id: 'editor', icon: <Feather size={16} />, label: 'Editor' },
+  { id: 'analytics', icon: <BarChartSquare02 size={16} />, label: 'Analytics' },
+  { id: 'settings', icon: <Settings01 size={16} />, label: 'Settings' },
 ];
 
 /* ------- File explorer tree — active article: "How to Reset Your Password" ------- */

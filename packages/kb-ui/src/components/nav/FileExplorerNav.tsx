@@ -1,14 +1,14 @@
 import * as React from 'react';
 import { useState, useMemo, useEffect } from 'react';
 import {
-  RiArrowRightSLine,
-  RiArrowDownSLine,
-  RiFolderLine,
-  RiFile3Line,
-  RiSearchLine,
-  RiQuillPenLine,
-  RiMore2Line,
-} from '@remixicon/react';
+  ChevronRight,
+  ChevronDown,
+  Folder,
+  File02,
+  SearchLg,
+  Feather,
+  DotsVertical,
+} from '@untitledui/icons';
 import { cn } from '../../utils/cn';
 
 export type NavItem = {
@@ -38,8 +38,8 @@ export type FileExplorerNavProps = {
   title?: string;
   /**
    * Header glyph rendered to the left of the title. Defaults to a quill-pen
-   * (RiQuillPenLine) for Editor. Other surfaces (e.g. Analytics) pass a
-   * different glyph (e.g. RiBarChartBoxLine).
+   * (Feather) for Editor. Other surfaces (e.g. Analytics) pass a
+   * different glyph (e.g. BarChartSquare02).
    */
   headerIcon?: React.ReactNode;
   items: NavItem[];
@@ -197,7 +197,7 @@ function FolderRow({
   onToggle,
 }: FolderRowProps) {
   const state: RowState = isActive ? 'active' : isActiveSub ? 'active-sub' : 'default';
-  const ChevronIcon = isExpanded ? RiArrowDownSLine : RiArrowRightSLine;
+  const ChevronIcon = isExpanded ? ChevronDown : ChevronRight;
 
   // Per Figma `6:438`: folder/sub-folder rows use font-normal in every state.
   // Only `type=category, state=hover` uses font-medium on the label. Keep regular
@@ -231,7 +231,7 @@ function FolderRow({
             <ChevronIcon size={16} />
           </span>
           <span className="flex size-6 items-center justify-center rounded-[6px] shrink-0 text-text-muted">
-            <RiFolderLine size={16} />
+            <Folder size={16} />
           </span>
           <span className="flex-1 truncate text-left text-[14px] leading-5 font-normal text-text-primary">
             {item.title}
@@ -247,7 +247,7 @@ function FolderRow({
             </span>
             {showHoverSwap && (
               <span className="hidden group-hover:flex items-center justify-center text-text-meta">
-                <RiMore2Line size={16} />
+                <DotsVertical size={16} />
               </span>
             )}
           </span>
@@ -304,7 +304,7 @@ function ArticleRow({ item, depth, isActive, onClick }: ArticleRowProps) {
           <span aria-hidden className="size-6 shrink-0" />
           {/* Article icon (no leading bullet — spec is icon + label + status-dot) */}
           <span className="flex size-6 items-center justify-center rounded-[6px] shrink-0 text-text-muted">
-            <RiFile3Line size={16} />
+            <File02 size={16} />
           </span>
           <span className="flex-1 truncate text-left text-[14px] font-normal leading-5 text-text-primary">
             {item.title}
@@ -321,7 +321,7 @@ function ArticleRow({ item, depth, isActive, onClick }: ArticleRowProps) {
             )}
             {showHoverSwap && (
               <span className="hidden group-hover:flex items-center justify-center text-text-meta">
-                <RiMore2Line size={16} />
+                <DotsVertical size={16} />
               </span>
             )}
           </span>
@@ -353,7 +353,7 @@ export function FileExplorerNav({
   // existing call sites (Editor) keep their glyph without breaking.
   const resolvedHeaderIcon =
     headerIcon ??
-    (isFlat ? null : <RiQuillPenLine size={16} className="text-text-muted" />);
+    (isFlat ? null : <Feather size={16} className="text-text-muted" />);
 
   const ancestorIds = useMemo(() => {
     if (!activeId) return new Set<string>();
@@ -478,7 +478,7 @@ export function FileExplorerNav({
             aria-label="Search"
             className="flex size-6 items-center justify-center rounded-[6px] cursor-pointer transition-colors duration-150 text-text-muted hover:bg-surface-subtle hover:text-text-primary"
           >
-            <RiSearchLine size={16} />
+            <SearchLg size={16} />
           </button>
         )}
       </div>
