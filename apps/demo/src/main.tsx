@@ -24,6 +24,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
+import { Agentation } from 'agentation';
 import { MockStoreProvider } from './store/MockStoreContext';
 import { EditorPageControllerProvider } from './shell/EditorPageController';
 import { ToastProvider } from './components/Toast';
@@ -53,6 +54,7 @@ createRoot(rootElement).render(
         <EditorPageControllerProvider>
           <RouterProvider router={router} />
           <ShortcutsCheatSheet />
+          <Agentation />
           <GlobalShortcutsBinder />
         </EditorPageControllerProvider>
       </MockStoreProvider>
