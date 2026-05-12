@@ -1,16 +1,15 @@
 import * as React from 'react';
 import {
-  RiH1,
-  RiH2,
-  RiH3,
-  RiListUnordered,
-  RiListOrdered,
-  RiCodeBoxLine,
-  RiTable2,
-  RiDoubleQuotesL,
-  RiSeparator,
-  RiSparkling2Line,
-} from '@remixicon/react';
+  Heading01,
+  Heading02,
+  HeadingSquare,
+  List,
+  CodeSquare02,
+  Table,
+  MessageTextSquare02,
+  Divider,
+  Stars02,
+} from '@untitledui/icons';
 import type { Editor, Range } from '@tiptap/core';
 import { cn } from '../../utils/cn';
 
@@ -43,7 +42,7 @@ export const DEFAULT_SLASH_COMMANDS: SlashCommand[] = [
     id: 'heading-1',
     title: 'Heading 1',
     subtitle: 'Big section heading',
-    icon: RiH1,
+    icon: Heading01,
     aliases: ['h1', 'heading', 'title'],
     command: (editor, range) => {
       editor.chain().focus().deleteRange(range).toggleHeading({ level: 1 }).run();
@@ -53,7 +52,7 @@ export const DEFAULT_SLASH_COMMANDS: SlashCommand[] = [
     id: 'heading-2',
     title: 'Heading 2',
     subtitle: 'Medium section heading',
-    icon: RiH2,
+    icon: Heading02,
     aliases: ['h2', 'heading', 'subtitle'],
     command: (editor, range) => {
       editor.chain().focus().deleteRange(range).toggleHeading({ level: 2 }).run();
@@ -63,7 +62,7 @@ export const DEFAULT_SLASH_COMMANDS: SlashCommand[] = [
     id: 'heading-3',
     title: 'Heading 3',
     subtitle: 'Small section heading',
-    icon: RiH3,
+    icon: HeadingSquare,
     aliases: ['h3', 'heading'],
     command: (editor, range) => {
       editor.chain().focus().deleteRange(range).toggleHeading({ level: 3 }).run();
@@ -73,7 +72,7 @@ export const DEFAULT_SLASH_COMMANDS: SlashCommand[] = [
     id: 'bullet-list',
     title: 'Bullet List',
     subtitle: 'Unordered list',
-    icon: RiListUnordered,
+    icon: List,
     aliases: ['bullet', 'ul', 'unordered', 'list'],
     command: (editor, range) => {
       editor.chain().focus().deleteRange(range).toggleBulletList().run();
@@ -83,7 +82,7 @@ export const DEFAULT_SLASH_COMMANDS: SlashCommand[] = [
     id: 'numbered-list',
     title: 'Numbered List',
     subtitle: 'Ordered list',
-    icon: RiListOrdered,
+    icon: List,
     aliases: ['ol', 'ordered', 'numbered', 'list'],
     command: (editor, range) => {
       editor.chain().focus().deleteRange(range).toggleOrderedList().run();
@@ -93,7 +92,7 @@ export const DEFAULT_SLASH_COMMANDS: SlashCommand[] = [
     id: 'code-block',
     title: 'Code Block',
     subtitle: 'Fenced code with syntax highlight',
-    icon: RiCodeBoxLine,
+    icon: CodeSquare02,
     aliases: ['code', 'pre', 'fenced'],
     command: (editor, range) => {
       editor.chain().focus().deleteRange(range).toggleCodeBlock().run();
@@ -103,7 +102,7 @@ export const DEFAULT_SLASH_COMMANDS: SlashCommand[] = [
     id: 'table',
     title: 'Table',
     subtitle: '3×3 with header row',
-    icon: RiTable2,
+    icon: Table,
     aliases: ['table', 'grid'],
     command: (editor, range) => {
       editor
@@ -118,7 +117,7 @@ export const DEFAULT_SLASH_COMMANDS: SlashCommand[] = [
     id: 'blockquote',
     title: 'Blockquote',
     subtitle: 'Indented quote',
-    icon: RiDoubleQuotesL,
+    icon: MessageTextSquare02,
     aliases: ['quote', 'blockquote', 'cite'],
     command: (editor, range) => {
       editor.chain().focus().deleteRange(range).toggleBlockquote().run();
@@ -128,7 +127,7 @@ export const DEFAULT_SLASH_COMMANDS: SlashCommand[] = [
     id: 'divider',
     title: 'Divider',
     subtitle: 'Horizontal rule',
-    icon: RiSeparator,
+    icon: Divider,
     aliases: ['hr', 'rule', 'separator', 'divider'],
     command: (editor, range) => {
       editor.chain().focus().deleteRange(range).setHorizontalRule().run();
@@ -138,7 +137,7 @@ export const DEFAULT_SLASH_COMMANDS: SlashCommand[] = [
     id: 'ai-highlight',
     title: 'AI Highlight',
     subtitle: 'Mark text as AI-sourced',
-    icon: RiSparkling2Line,
+    icon: Stars02,
     // Note: we deliberately keep "ai"/"mark"/"sparkle" as aliases but do
     // NOT include "highlight" — `/h` should land on headings, not a
     // selection-only mark. Use `/ai` or `/hi` (substring) to surface.
