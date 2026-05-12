@@ -33,3 +33,4 @@ npm-debug.log*
 .claude/skills/
 .claude/scheduled_tasks.lock
 **/.claude/agent-memory/
+.vercel
