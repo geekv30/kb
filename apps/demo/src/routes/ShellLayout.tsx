@@ -20,6 +20,10 @@ import { BreadcrumbBar } from '../shell/BreadcrumbBar';
 import { PageProgressBar } from '../components/PageProgressBar';
 import { RouteTransition } from '../components/RouteTransition';
 import { useFocusOnRouteChange } from '../hooks/useFocusOnRouteChange';
+import {
+  SidebarCollapseProvider,
+  useSidebarCollapse,
+} from '../shell/SidebarCollapseContext';
 
 function RouteAwareExplorer() {
   const { pathname } = useLocation();
@@ -31,13 +35,14 @@ function RouteAwareExplorer() {
   return null;
 }
 
-export default function ShellLayout() {
-  useFocusOnRouteChange();
+function ShellLayoutInner() {
+  const sidebar = useSidebarCollapse();
   return (
     <AppShell
       rail={<AppRail />}
       explorer={<RouteAwareExplorer />}
       breadcrumb={<BreadcrumbBar />}
+      sidebarCollapsed={sidebar?.collapsed ?? false}
     >
       <Suspense fallback={<PageProgressBar />}>
         <RouteTransition>
@@ -45,5 +50,14 @@ export default function ShellLayout() {
         </RouteTransition>
       </Suspense>
     </AppShell>
+  );
+}
+
+export default function ShellLayout() {
+  useFocusOnRouteChange();
+  return (
+    <SidebarCollapseProvider>
+      <ShellLayoutInner />
+    </SidebarCollapseProvider>
   );
 }

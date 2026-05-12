@@ -35,6 +35,7 @@ import { routes } from '../lib/routes';
 import { useEditorPageControls } from './EditorPageController';
 import { useToast } from '../components/Toast';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { useSidebarCollapse } from './SidebarCollapseContext';
 
 type BreadcrumbConfig = {
   items: KBBreadcrumbItem[];
@@ -61,6 +62,10 @@ export function BreadcrumbBar() {
   }>();
   const { state, dispatch } = useMockStore();
   const { showToast } = useToast();
+  // Sidebar collapse context — only present under ShellLayout. Under
+  // CollapsedShellLayout this is `null` (editor + AI Gaps routes), and
+  // the leading-icon click keeps its existing home-navigation behavior.
+  const sidebar = useSidebarCollapse();
   // AI Gaps "Discard review?" confirm dialog state. The dialog renders
   // outside the breadcrumb's KB element since Radix portals to <body>.
   const [aiGapsDiscardOpen, setAiGapsDiscardOpen] = useState(false);
@@ -249,15 +254,27 @@ export function BreadcrumbBar() {
     showToast('Coming soon.', 'info');
   }, [showToast]);
 
+  // Leading-icon resolution:
+  //   - Under ShellLayout (sidebar context present) → leading click
+  //     toggles the user's sidebar collapse, and the breadcrumb's
+  //     `sidebarCollapsed` prop reflects that toggle state.
+  //   - Under CollapsedShellLayout (sidebar context null) → existing
+  //     behavior verbatim: action handlers' onClose, or handleHomeClick.
+  const effectiveCollapsed = sidebar !== null ? sidebar.collapsed : config.collapsed;
+  const handleLeadingClick =
+    sidebar !== null
+      ? () => sidebar.toggle()
+      : activeHandlers
+        ? activeHandlers.onClose
+        : handleHomeClick;
+
   return (
     <>
       <KBBreadcrumbBar
-        sidebarCollapsed={config.collapsed}
+        sidebarCollapsed={effectiveCollapsed}
         items={config.items}
-        onCollapse={activeHandlers ? activeHandlers.onClose : handleHomeClick}
-        onToggleSidebar={
-          activeHandlers ? activeHandlers.onClose : handleHomeClick
-        }
+        onCollapse={handleLeadingClick}
+        onToggleSidebar={handleLeadingClick}
         actions={config.collapsed ? (
           <EditorBreadcrumbActions
             onSaveAsDraft={activeHandlers ? activeHandlers.onSaveAsDraft : placeholderSave}
