@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import {
   ChevronRight,
   ChevronDown,
@@ -361,33 +361,42 @@ export function FileExplorerNav({
     return new Set<string>(chain ?? []);
   }, [items, activeId]);
 
-  const autoExpandIds = useMemo(() => {
-    const set = new Set<string>(ancestorIds);
+  const prevActiveIdRef = useRef<string | undefined>(undefined);
+
+  const [expanded, setExpanded] = useState<Set<string>>(() => {
+    const seed = new Set<string>(ancestorIds);
     if (activeId) {
       const node = findNode(items, activeId);
-      if (node?.type === 'folder') set.add(activeId);
+      if (node?.type === 'folder') seed.add(activeId);
     }
-    return set;
-  }, [items, activeId, ancestorIds]);
-
-  const [expanded, setExpanded] = useState<Set<string>>(
-    () => new Set<string>(autoExpandIds),
-  );
+    return seed;
+  });
 
   useEffect(() => {
-    if (autoExpandIds.size === 0) return;
     setExpanded((prev) => {
       const next = new Set(prev);
       let changed = false;
-      autoExpandIds.forEach((id) => {
+      // Always keep ancestors of the active item expanded so the active row
+      // stays visible.
+      ancestorIds.forEach((id) => {
         if (!next.has(id)) {
           next.add(id);
           changed = true;
         }
       });
+      // Auto-expand the active folder itself only on activeId identity change,
+      // so the user can freely collapse it afterwards.
+      if (activeId && activeId !== prevActiveIdRef.current) {
+        const node = findNode(items, activeId);
+        if (node?.type === 'folder' && !next.has(activeId)) {
+          next.add(activeId);
+          changed = true;
+        }
+      }
       return changed ? next : prev;
     });
-  }, [autoExpandIds]);
+    prevActiveIdRef.current = activeId;
+  }, [items, activeId, ancestorIds]);
 
   const toggleFolder = (id: string) => {
     setExpanded((prev) => {
