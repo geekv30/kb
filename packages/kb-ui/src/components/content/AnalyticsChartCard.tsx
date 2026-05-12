@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { RiInformationLine } from '@remixicon/react';
+import { InfoCircle } from '@untitledui/icons';
 import { Card, type CardPadding } from '../primitives/Card';
 import { cn } from '../../utils/cn';
 
@@ -54,7 +54,7 @@ export function AnalyticsChartCard({
                 title={infoTooltip}
                 aria-label={infoTooltip}
               >
-                <RiInformationLine
+                <InfoCircle
                   size={16}
                   className="text-text-muted"
                   aria-hidden="true"

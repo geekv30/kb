@@ -4,13 +4,13 @@
 //        9aGp5t9fH1d0PXi4LMhOdb#81:15737 (active Removal in context)
 import * as React from 'react';
 import {
-  RiCheckLine,
-  RiCloseLine,
-  RiAddLine,
-  RiRefreshLine,
-  RiFileTextLine,
-  RiArrowGoBackLine,
-} from '@remixicon/react';
+  Check,
+  XClose,
+  Plus,
+  RefreshCcw01,
+  File04,
+  ReverseLeft,
+} from '@untitledui/icons';
 import { cn } from '../../utils/cn';
 import { tokens } from '../../tokens';
 import { AICard } from './AICard';
@@ -54,9 +54,9 @@ export type AIGapSuggestionCardProps = {
  * ───────────────────────────────────────────────────────────── */
 
 export const DEFAULT_GAP_TYPES: Record<string, SuggestionTypeMeta> = {
-  addition: { label: 'Addition', color: tokens.color.aiAddition, Icon: RiAddLine },
-  replace: { label: 'Replace', color: tokens.color.aiReplace, Icon: RiRefreshLine },
-  removal: { label: 'Removal', color: tokens.color.aiRemoval, Icon: RiCloseLine },
+  addition: { label: 'Addition', color: tokens.color.aiAddition, Icon: Plus },
+  replace: { label: 'Replace', color: tokens.color.aiReplace, Icon: RefreshCcw01 },
+  removal: { label: 'Removal', color: tokens.color.aiRemoval, Icon: XClose },
 };
 
 function TypeChip({
@@ -115,7 +115,7 @@ function SourcesButton({
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
       )}
     >
-      <RiFileTextLine aria-hidden="true" className="h-4 w-4" />
+      <File04 aria-hidden="true" className="h-4 w-4" />
       <span>{count} Sources</span>
     </button>
   );
@@ -134,7 +134,7 @@ function RejectButton({ onClick }: { onClick?: () => void }) {
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
       )}
     >
-      <RiCloseLine aria-hidden="true" className="h-[14px] w-[14px]" />
+      <XClose aria-hidden="true" className="h-[14px] w-[14px]" />
     </button>
   );
 }
@@ -155,7 +155,7 @@ function AcceptButton({ onClick }: { onClick?: () => void }) {
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
       )}
     >
-      <RiCheckLine aria-hidden="true" className="h-[14px] w-[14px]" />
+      <Check aria-hidden="true" className="h-[14px] w-[14px]" />
     </button>
   );
 }
@@ -205,7 +205,7 @@ export function AIGapSuggestionCard({
             'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
           )}
         >
-          <RiArrowGoBackLine aria-hidden="true" className="h-4 w-4" />
+          <ReverseLeft aria-hidden="true" className="h-4 w-4" />
         </button>
       </AICard>
     );

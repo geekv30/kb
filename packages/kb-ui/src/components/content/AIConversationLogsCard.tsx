@@ -2,7 +2,7 @@
 import * as React from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import * as Switch from '@radix-ui/react-switch';
-import { RiArrowDownSLine, RiInformationLine } from '@remixicon/react';
+import { ChevronDown, InfoCircle } from '@untitledui/icons';
 import { Card } from '../primitives/Card';
 import { cn } from '../../utils/cn';
 
@@ -73,7 +73,7 @@ function SortDropdown({ options, value, onChange }: SortDropdownProps) {
           )}
         >
           Sort by
-          <RiArrowDownSLine
+          <ChevronDown
             size={14}
             aria-hidden="true"
             className="text-text-muted"
@@ -158,7 +158,7 @@ export function AIConversationLogsCard({
                     title={infoTooltip}
                     aria-label={infoTooltip ?? 'More info'}
                   >
-                    <RiInformationLine
+                    <InfoCircle
                       size={16}
                       aria-hidden="true"
                       className="text-text-muted"

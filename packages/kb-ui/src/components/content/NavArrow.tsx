@@ -1,4 +1,4 @@
-import { RiArrowUpSLine, RiArrowDownSLine } from '@remixicon/react';
+import { ChevronUp, ChevronDown } from '@untitledui/icons';
 import { cn } from '../../utils/cn';
 
 /* ─────────────────────────────────────────────────────────────
@@ -18,7 +18,7 @@ export type NavArrowProps = {
 };
 
 export function NavArrow({ direction, onClick, className }: NavArrowProps) {
-  const Icon = direction === 'up' ? RiArrowUpSLine : RiArrowDownSLine;
+  const Icon = direction === 'up' ? ChevronUp : ChevronDown;
   return (
     <button
       type="button"
