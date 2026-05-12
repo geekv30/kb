@@ -1,5 +1,10 @@
 import type { Preview } from '@storybook/react-vite';
+import { Agentation } from 'agentation';
 import '../src/tokens.css';
+
+// Mount Agentation only in the local dev variant; Chromatic sets STORYBOOK_PUBLIC=1.
+// Vite builder exposes STORYBOOK_-prefixed env vars via import.meta.env.
+const isPublicBuild = import.meta.env.STORYBOOK_PUBLIC === '1';
 
 const preview: Preview = {
   parameters: {
@@ -44,7 +49,18 @@ const preview: Preview = {
     backgrounds: {
       value: 'canvas'
     }
-  }
+  },
+
+  decorators: isPublicBuild
+    ? []
+    : [
+        (Story) => (
+          <>
+            <Story />
+            <Agentation />
+          </>
+        ),
+      ],
 };
 
 export default preview;
