@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 /* Hiver KB Design Tokens
    Extracted from Figma file 251DTRmxl2L6jmXd3FWzHe
    Pages: KB revamp (1952:10869), KB gaps (1958:32263), Analytics (1952:10867)
