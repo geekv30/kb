@@ -30,11 +30,11 @@ import {
   type ReactNode,
 } from 'react';
 import {
-  RiCheckLine,
-  RiCloseLine,
-  RiErrorWarningLine,
-  RiInformationLine,
-} from '@remixicon/react';
+  AlertCircle,
+  Check,
+  InfoCircle,
+  XClose,
+} from '@untitledui/icons';
 import { cn } from '../lib/cn';
 
 /* ─────────────────────────────────────────────────────────────
@@ -187,10 +187,10 @@ function ToastUI({
   };
   const Icon =
     toast.variant === 'success'
-      ? RiCheckLine
+      ? Check
       : toast.variant === 'error'
-        ? RiErrorWarningLine
-        : RiInformationLine;
+        ? AlertCircle
+        : InfoCircle;
 
   return (
     <div
@@ -224,7 +224,7 @@ function ToastUI({
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
         )}
       >
-        <RiCloseLine aria-hidden="true" className="h-3.5 w-3.5" />
+        <XClose aria-hidden="true" className="h-3.5 w-3.5" />
       </button>
     </div>
   );

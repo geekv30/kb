@@ -10,7 +10,7 @@
 // outside any router subtree.
 
 import * as Dialog from '@radix-ui/react-dialog';
-import { RiCloseLine } from '@remixicon/react';
+import { XClose } from '@untitledui/icons';
 import { useEffect, useState } from 'react';
 import { cn } from '../lib/cn';
 
@@ -113,7 +113,7 @@ export function ShortcutsCheatSheet() {
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
               )}
             >
-              <RiCloseLine aria-hidden="true" className="h-4 w-4" />
+              <XClose aria-hidden="true" className="h-4 w-4" />
             </Dialog.Close>
           </header>
 

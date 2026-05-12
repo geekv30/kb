@@ -16,11 +16,11 @@
 import { useCallback, useMemo } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import {
-  RiArrowRightSLine,
-  RiFile3Line,
-  RiFolderLine,
-  RiMore2Line,
-} from '@remixicon/react';
+  ChevronRight,
+  DotsVertical,
+  File02,
+  Folder,
+} from '@untitledui/icons';
 import {
   Avatar,
   Badge,
@@ -88,7 +88,7 @@ const subCategoryColumns: DataTableColumn<SubCategoryRow>[] = [
             'hover:bg-surface-subtle focus:bg-surface-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-border-faint',
           )}
         >
-          <RiFolderLine size={16} aria-hidden="true" />
+          <Folder size={16} aria-hidden="true" />
         </button>
         <span className="text-[14px] font-normal leading-[20px] text-text-primary">
           {item.title}
@@ -105,7 +105,7 @@ const subCategoryColumns: DataTableColumn<SubCategoryRow>[] = [
     className: 'pl-0 pr-4',
     render: () => (
       <div className="flex items-center justify-end">
-        <RiArrowRightSLine
+        <ChevronRight
           size={16}
           className="text-text-muted"
           aria-hidden="true"
@@ -132,7 +132,7 @@ const articleColumns: DataTableColumn<ArticleRow>[] = [
             'hover:bg-surface-subtle focus:bg-surface-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-border-faint',
           )}
         >
-          <RiFile3Line size={16} aria-hidden="true" />
+          <File02 size={16} aria-hidden="true" />
         </button>
         <span className="text-[14px] font-normal leading-[20px] text-text-primary truncate">
           {a.title}
@@ -158,7 +158,7 @@ const articleColumns: DataTableColumn<ArticleRow>[] = [
             'hover:bg-surface-subtle focus:bg-surface-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-border-faint',
           )}
         >
-          <RiMore2Line size={16} aria-hidden="true" />
+          <DotsVertical size={16} aria-hidden="true" />
         </button>
       </div>
     ),
@@ -310,7 +310,7 @@ function EmptyCategoryState({ onCreate }: { onCreate: () => void }) {
   // the demo looks the same (PRD §12.5).
   return (
     <EmptyState
-      icon={<RiFile3Line />}
+      icon={<File02 />}
       title="No content here yet."
       subtitle="Add the first article to start building this section of the KB."
       cta={{ label: '+ Create the first article', onClick: onCreate }}

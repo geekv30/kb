@@ -7,10 +7,10 @@
 // stays visually identical to those frames.
 
 import {
-  RiBarChartBoxLine,
-  RiQuillPenLine,
-  RiSettings5Line,
-} from '@remixicon/react';
+  BarChartSquare02,
+  Feather,
+  Settings01,
+} from '@untitledui/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   AiIcon,
@@ -28,9 +28,9 @@ type RailSection = 'ai' | 'editor' | 'analytics' | 'settings';
 
 const railItems: NavRailItem[] = [
   { id: 'ai', icon: <AiIcon size={16} />, label: 'AI' },
-  { id: 'editor', icon: <RiQuillPenLine size={16} />, label: 'Editor' },
-  { id: 'analytics', icon: <RiBarChartBoxLine size={16} />, label: 'Analytics' },
-  { id: 'settings', icon: <RiSettings5Line size={16} />, label: 'Settings' },
+  { id: 'editor', icon: <Feather size={16} />, label: 'Editor' },
+  { id: 'analytics', icon: <BarChartSquare02 size={16} />, label: 'Analytics' },
+  { id: 'settings', icon: <Settings01 size={16} />, label: 'Settings' },
 ];
 
 /**

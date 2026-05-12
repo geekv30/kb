@@ -8,7 +8,7 @@
 //   2. AI Optimise — kind=item, active on both `/ai-optimise` and
 //      `/ai-optimise/.../review`. Click navigates to the hub.
 
-import { RiMagicLine } from '@remixicon/react';
+import { MagicWand02 } from '@untitledui/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AiIcon } from '@test-kb-ui/kb-ui';
 import { AISubNav, type AISubNavItem } from './AISubNav';
@@ -24,7 +24,7 @@ const subNavItems: AISubNavItem[] = [
   },
   {
     id: 'ai-optimise',
-    icon: <RiMagicLine size={18} />,
+    icon: <MagicWand02 size={18} />,
     label: 'AI Optimise',
     kind: 'item',
   },

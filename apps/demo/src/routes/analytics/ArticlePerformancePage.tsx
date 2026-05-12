@@ -23,7 +23,7 @@
 // <header> element instead of forcing an unrelated component.
 
 import { useNavigate } from 'react-router-dom';
-import { RiFile3Line, RiInformationLine } from '@remixicon/react';
+import { File02, InfoCircle } from '@untitledui/icons';
 import {
   AnalyticsAreaChart,
   AnalyticsChartCard,
@@ -56,7 +56,7 @@ const attentionColumns: DataTableColumn<ArticleAttentionRow>[] = [
     header: 'Article Title',
     render: (r) => (
       <div className="flex items-center gap-2 min-w-0 pr-2">
-        <RiFile3Line
+        <File02
           size={16}
           className="shrink-0 text-text-muted"
           aria-hidden="true"
@@ -80,7 +80,7 @@ const performanceColumns: DataTableColumn<ArticlePerformanceRow>[] = [
     width: 230,
     render: (r) => (
       <div className="flex items-center gap-2 min-w-0 pr-2">
-        <RiFile3Line
+        <File02
           size={16}
           className="shrink-0 text-text-muted"
           aria-hidden="true"
@@ -219,7 +219,7 @@ export default function ArticlePerformancePage() {
                   <h3 className="text-[14px] font-medium leading-[20px] text-text-primary">
                     Articles needs attention
                   </h3>
-                  <RiInformationLine
+                  <InfoCircle
                     size={16}
                     className="ml-2 text-text-meta"
                     aria-hidden="true"
@@ -257,7 +257,7 @@ export default function ArticlePerformancePage() {
               <h3 className="text-[14px] font-medium leading-[20px] text-text-primary">
                 Article Performance
               </h3>
-              <RiInformationLine
+              <InfoCircle
                 size={16}
                 className="ml-2 text-text-meta"
                 aria-hidden="true"

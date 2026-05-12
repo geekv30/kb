@@ -7,7 +7,7 @@
 
 import { useRouteError } from 'react-router-dom';
 import { Button } from '@test-kb-ui/kb-ui';
-import { RiErrorWarningLine } from '@remixicon/react';
+import { AlertCircle } from '@untitledui/icons';
 
 function describe(error: unknown): string {
   if (error instanceof Error) return error.message;
@@ -30,7 +30,7 @@ export function RouteErrorBoundary() {
     >
       <div className="flex max-w-[480px] flex-col items-center gap-4 rounded-[8px] border border-card-border bg-white p-8 text-center shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#fef2f2] text-[#dc2626]">
-          <RiErrorWarningLine aria-hidden="true" className="h-5 w-5" />
+          <AlertCircle aria-hidden="true" className="h-5 w-5" />
         </div>
         <div className="flex flex-col gap-1">
           <h2 className="text-[18px] font-semibold leading-7 text-text-primary">
