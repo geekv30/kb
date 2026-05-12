@@ -1,5 +1,5 @@
 import type * as React from 'react';
-import { RiLayoutLeftLine } from '@remixicon/react';
+import { LayoutLeft } from '@untitledui/icons';
 import { cn } from '../../utils/cn';
 
 export type BreadcrumbItem = {
@@ -34,7 +34,7 @@ export function Breadcrumb({ items, className, homeIcon, separator }: Breadcrumb
         )}
         aria-label={home.label}
       >
-        {homeIcon ?? <RiLayoutLeftLine size={14} className="text-text-disabled" />}
+        {homeIcon ?? <LayoutLeft size={14} className="text-text-disabled" />}
       </button>
       {rest.map((item, idx) => {
         const isCurrent = idx === lastIdx;

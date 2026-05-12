@@ -1,5 +1,5 @@
 import * as Tooltip from '@radix-ui/react-tooltip';
-import { RiInformationLine } from '@remixicon/react';
+import { InfoCircle } from '@untitledui/icons';
 import { cn } from '../../utils/cn';
 
 export type FieldProps = {
@@ -60,7 +60,7 @@ export function Field({
                     aria-label="More information"
                     className="inline-flex items-center text-text-disabled outline-none focus-visible:text-text-meta"
                   >
-                    <RiInformationLine size={14} aria-hidden="true" />
+                    <InfoCircle size={14} aria-hidden="true" />
                   </button>
                 </Tooltip.Trigger>
                 <Tooltip.Portal>
