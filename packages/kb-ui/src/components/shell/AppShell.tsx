@@ -45,10 +45,13 @@ export type AppShellProps = {
  * header line is marked by the rail and explorer dividers alone.
  *
  * Collapsed sidebar state (`sidebarCollapsed`):
- * - Rail + explorer are unmounted (not `display: none`), so DOM probes
- *   return null cleanly and flex layout ignores them entirely.
- * - Content column stretches the full viewport width; breadcrumb sits on
- *   the same `#ffffff` bg.
+ * - When collapsed, the rail + explorer wrapper widths animate to 0
+ *   (200ms ease-out), the children remain mounted but `overflow-hidden`
+ *   clips them and `aria-hidden`/`inert` removes them from AT + tab
+ *   order. This enables a smooth slide-out without the layout jank of
+ *   mount/unmount.
+ * - Content column stretches the full viewport width via flex-1;
+ *   breadcrumb sits on the same `#ffffff` bg.
  */
 export function AppShell({
   rail,
@@ -71,14 +74,33 @@ export function AppShell({
         className,
       )}
     >
-      {!sidebarCollapsed && rail && (
-        <div data-kb-part="shell-rail" className="shrink-0 h-full">
+      {rail !== undefined && (
+        <div
+          data-kb-part="shell-rail"
+          aria-hidden={sidebarCollapsed ? 'true' : undefined}
+          // React 18's typings don't include `inert` on HTMLAttributes yet;
+          // spread it conditionally so we only emit the attribute when set,
+          // and so TS doesn't complain about the unknown prop.
+          {...(sidebarCollapsed ? { inert: '' } : {})}
+          className={cn(
+            'shrink-0 h-full overflow-hidden transition-[width] duration-200 ease-out',
+            sidebarCollapsed ? 'w-0' : 'w-[54px]',
+          )}
+        >
           {rail}
         </div>
       )}
 
-      {!sidebarCollapsed && explorer && (
-        <div data-kb-part="shell-explorer" className="shrink-0 h-full">
+      {explorer !== undefined && (
+        <div
+          data-kb-part="shell-explorer"
+          aria-hidden={sidebarCollapsed ? 'true' : undefined}
+          {...(sidebarCollapsed ? { inert: '' } : {})}
+          className={cn(
+            'shrink-0 h-full overflow-hidden transition-[width] duration-200 ease-out',
+            sidebarCollapsed ? 'w-0' : 'w-[288px]',
+          )}
+        >
           {explorer}
         </div>
       )}
