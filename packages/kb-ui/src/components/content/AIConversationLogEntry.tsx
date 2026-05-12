@@ -2,14 +2,14 @@
 // Atoms (per-row library-check): 9aGp5t9fH1d0PXi4LMhOdb#155:1594
 import * as React from 'react';
 import {
-  RiSearchLine,
-  RiThumbUpLine,
-  RiThumbDownLine,
-  RiBookOpenLine,
-  RiCornerDownRightLine,
-  RiPriceTag3Line,
-  RiFileTextLine,
-} from '@remixicon/react';
+  SearchLg,
+  ThumbsUp,
+  ThumbsDown,
+  BookOpen01,
+  CornerDownRight,
+  Tag01,
+  File04,
+} from '@untitledui/icons';
 import { cn } from '../../utils/cn';
 import { AiIcon } from '../brand/AiIcon';
 import { CursorClickIcon } from '../brand/CursorClickIcon';
@@ -110,12 +110,12 @@ function FeedbackTimestamp({
   return (
     <div className="flex items-center gap-2">
       {feedback === 'positive' ? (
-        <RiThumbUpLine
+        <ThumbsUp
           aria-hidden="true"
           className="h-3.5 w-3.5 text-success-text"
         />
       ) : feedback === 'negative' ? (
-        <RiThumbDownLine
+        <ThumbsDown
           aria-hidden="true"
           className="h-3.5 w-3.5 text-ai-removal"
         />
@@ -180,7 +180,7 @@ function TailRow({ tail }: TailRowProps) {
       >
         <div className="flex items-center gap-2 pt-[1px]">
           <span aria-hidden="true" className="text-[14px] leading-5 text-text-muted">·</span>
-          <RiPriceTag3Line
+          <Tag01
             aria-hidden="true"
             className="h-4 w-4 shrink-0 text-text-meta"
           />
@@ -209,7 +209,7 @@ function TailRow({ tail }: TailRowProps) {
       >
         <div className="flex items-center gap-2 pt-[1px]">
           <span aria-hidden="true" className="text-[14px] leading-5 text-text-muted">·</span>
-          <RiBookOpenLine
+          <BookOpen01
             aria-hidden="true"
             className="h-4 w-4 shrink-0 text-text-meta"
           />
@@ -236,7 +236,7 @@ function TailRow({ tail }: TailRowProps) {
     >
       <div className="flex items-center gap-2 pt-[1px]">
         <span aria-hidden="true" className="text-[14px] leading-5 text-text-muted">·</span>
-        <RiFileTextLine
+        <File04
           aria-hidden="true"
           className="h-4 w-4 shrink-0 text-text-meta"
         />
@@ -308,7 +308,7 @@ export function AIConversationLogEntry({
         hideConnectorBelow
         iconPill
         icon={
-          <RiSearchLine
+          <SearchLg
             aria-hidden="true"
             className="h-4 w-4 text-text-meta"
           />
@@ -348,7 +348,7 @@ export function AIConversationLogEntry({
           hideConnectorAbove
           hideConnectorBelow
           icon={
-            <RiBookOpenLine
+            <BookOpen01
               aria-hidden="true"
               className="h-4 w-4 text-text-meta"
             />
@@ -372,7 +372,7 @@ export function AIConversationLogEntry({
             hideConnectorAbove
             hideConnectorBelow
             icon={
-              <RiCornerDownRightLine
+              <CornerDownRight
                 aria-hidden="true"
                 className="h-4 w-4 text-text-muted"
               />
@@ -383,7 +383,7 @@ export function AIConversationLogEntry({
                 follow up
               </span>
               <span aria-hidden="true" className="text-[13px] leading-[19px] text-text-meta">:</span>
-              <RiSearchLine
+              <SearchLg
                 aria-hidden="true"
                 className="h-4 w-4 shrink-0 text-text-meta"
               />
@@ -410,7 +410,7 @@ export function AIConversationLogEntry({
               hideConnectorAbove
               hideConnectorBelow
               icon={
-                <RiBookOpenLine
+                <BookOpen01
                   aria-hidden="true"
                   className="h-4 w-4 text-text-meta"
                 />
