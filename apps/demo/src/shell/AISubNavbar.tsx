@@ -1,55 +1,43 @@
-// Phase 7.5.3 — Route-aware wrapper around the local `AISubNav` for the
-// `/ai-optimise/*` surface.
+// Phase 7.5.3 — Route-aware wrapper around `FileExplorerNav` (flat variant)
+// for the `/ai-optimise/*` surface.
 //
-// Two rows per Figma `74:8871` (AI Optimise hub):
-//   1. AI Centre  — kind=section, no-op for v1 (PRD §10 decision 2). Phase
-//      7.5.8 will replace the placeholder console.log with a `Coming soon`
-//      toast; until then we keep behaviour observable but harmless.
-//   2. AI Optimise — kind=item, active on both `/ai-optimise` and
-//      `/ai-optimise/.../review`. Click navigates to the hub.
+// The flat variant matches the editor's FileExplorerNav header pattern:
+// "AI Centre" is the header title (with AiIcon glyph), and the single
+// "AI Optimise" row sits below. Per Figma `74:8871`, clicking the row
+// navigates to the AI Optimise hub; the "AI Centre" label is the panel
+// header itself (not a clickable row), so no toast is required.
 
 import { MagicWand02 } from '@untitledui/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { AiIcon } from '@test-kb-ui/kb-ui';
-import { AISubNav, type AISubNavItem } from './AISubNav';
+import { AiIcon, FileExplorerNav, type NavItem } from '@test-kb-ui/kb-ui';
 import { routes } from '../lib/routes';
-import { useToast } from '../components/Toast';
 
-const subNavItems: AISubNavItem[] = [
-  {
-    id: 'ai-centre',
-    icon: <AiIcon size={18} />,
-    label: 'AI Centre',
-    kind: 'section',
-  },
+const items: NavItem[] = [
   {
     id: 'ai-optimise',
-    icon: <MagicWand02 size={18} />,
-    label: 'AI Optimise',
+    title: 'AI Optimise',
+    type: 'article',
     kind: 'item',
+    icon: <MagicWand02 size={18} />,
   },
 ];
 
 export function AISubNavbar() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { showToast } = useToast();
-  // Active is `ai-optimise` whenever we're anywhere under /ai-optimise.
   const activeId = pathname.startsWith('/ai-optimise') ? 'ai-optimise' : undefined;
 
   return (
-    <AISubNav
-      items={subNavItems}
+    <FileExplorerNav
+      title="AI Centre"
+      headerIcon={<AiIcon size={18} />}
+      variant="flat"
+      items={items}
       activeId={activeId}
       onItemClick={(id) => {
         if (id === 'ai-optimise') {
           navigate(routes.aiOptimise.hub());
-          return;
         }
-        // AI Centre is intentionally a no-op (PRD §10 decision 2). The
-        // toast confirms the click registered without committing to a
-        // destination we don't ship.
-        showToast('Coming soon.', 'info');
       }}
     />
   );
