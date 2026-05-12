@@ -16,6 +16,7 @@
 import { useCallback, useMemo } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import {
+  BookOpen01,
   ChevronRight,
   DotsVertical,
   File02,
@@ -397,6 +398,7 @@ export default function CategoryPage() {
   return (
     <div data-route="kb-category" className="flex flex-col gap-4">
       <PageHeader
+        icon={<BookOpen01 className="size-[22px] text-blue-500" />}
         title={category.title}
         subtitle={category.subtitle}
         newButtonLabel="New article"
