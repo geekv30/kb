@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { RiLayoutLeftLine, RiHome5Line } from '@remixicon/react';
+import { LayoutLeft, Home01 } from '@untitledui/icons';
 import { cn } from '../../utils/cn';
 
 export type KBBreadcrumbItem = {
@@ -11,12 +11,12 @@ export type KBBreadcrumbBarProps = {
   /** Path items; last entry is treated as the current page. */
   items: KBBreadcrumbItem[];
   /**
-   * When `true`, the leading icon becomes a **home** glyph (`RiHome5Line`)
+   * When `true`, the leading icon becomes a **home** glyph (`Home01`)
    * and the `aria-label` + testid become "home-icon" — matches the Figma
    * collapsed-shell state (`53:8464`) where rail + explorer are hidden.
    *
    * When `false` (default), the leading icon is the side-panel toggle
-   * (`RiLayoutLeftLine`) used when the sidebar is expanded.
+   * (`LayoutLeft`) used when the sidebar is expanded.
    *
    * The click handler (`onCollapse` / `onToggleSidebar`) fires regardless of
    * which icon is shown — callers can use the same handler for both states
@@ -49,7 +49,7 @@ export function KBBreadcrumbBar({
   actions,
 }: KBBreadcrumbBarProps) {
   const handleLeadingClick = onToggleSidebar ?? onCollapse;
-  const LeadingIcon = sidebarCollapsed ? RiHome5Line : RiLayoutLeftLine;
+  const LeadingIcon = sidebarCollapsed ? Home01 : LayoutLeft;
   const leadingLabel = sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar';
   const leadingTestId = sidebarCollapsed ? 'home-icon' : 'side-panel-icon';
 
