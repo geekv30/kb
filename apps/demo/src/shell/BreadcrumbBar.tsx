@@ -272,6 +272,7 @@ export function BreadcrumbBar() {
     <>
       <KBBreadcrumbBar
         sidebarCollapsed={effectiveCollapsed}
+        leadingIcon={sidebar !== null ? 'sidebar-toggle' : 'auto'}
         items={config.items}
         onCollapse={handleLeadingClick}
         onToggleSidebar={handleLeadingClick}
