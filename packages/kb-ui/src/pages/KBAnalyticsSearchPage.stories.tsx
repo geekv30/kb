@@ -1,11 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../tokens.css';
-import {
-  RiQuillPenLine,
-  RiSettings5Line,
-  RiBarChartBoxLine,
-  RiInformationLine,
-} from '@remixicon/react';
+import { Feather, Settings01, BarChartSquare02, InfoCircle } from '@untitledui/icons';
 import { AppShell } from '../components/shell/AppShell';
 import { KBBreadcrumbBar } from '../components/shell/KBBreadcrumbBar';
 import { SideNavRail, type NavRailItem } from '../components/nav/SideNavRail';
@@ -36,13 +31,13 @@ import { cn } from '../utils/cn';
 
 const railItems: NavRailItem[] = [
   { id: 'ai', icon: <AiIcon size={16} />, label: 'AI' },
-  { id: 'editor', icon: <RiQuillPenLine size={16} />, label: 'Editor' },
+  { id: 'editor', icon: <Feather size={16} />, label: 'Editor' },
   {
     id: 'analytics',
-    icon: <RiBarChartBoxLine size={16} />,
+    icon: <BarChartSquare02 size={16} />,
     label: 'Analytics',
   },
-  { id: 'settings', icon: <RiSettings5Line size={16} />, label: 'Settings' },
+  { id: 'settings', icon: <Settings01 size={16} />, label: 'Settings' },
 ];
 
 const analyticsNavItems: NavItem[] = [
@@ -122,7 +117,7 @@ function WriteArticleButton({ onClick }: { onClick?: () => void }) {
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
       )}
     >
-      <RiQuillPenLine
+      <Feather
         size={14}
         className="text-[#475569]"
         aria-hidden="true"
@@ -171,7 +166,7 @@ function SearchAnalyticsPage() {
           variant="flat"
           theme="light"
           title="Analytics"
-          headerIcon={<RiBarChartBoxLine size={16} />}
+          headerIcon={<BarChartSquare02 size={16} />}
           items={analyticsNavItems}
           activeId="search"
           onItemClick={() => {}}
@@ -251,7 +246,7 @@ function SearchAnalyticsPage() {
                 Top 5 Search Keywords
               </h3>
               <span className="ml-2 inline-flex" aria-hidden>
-                <RiInformationLine
+                <InfoCircle
                   size={16}
                   className="text-[#475569]"
                   aria-hidden="true"
@@ -273,7 +268,7 @@ function SearchAnalyticsPage() {
                   Content Gaps
                 </h3>
                 <span className="ml-2 inline-flex" aria-hidden>
-                  <RiInformationLine
+                  <InfoCircle
                     size={16}
                     className="text-[#475569]"
                     aria-hidden="true"

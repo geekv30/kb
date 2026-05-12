@@ -1,11 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import * as React from "react";
 import "../../tokens.css";
-import {
-  RiQuillPenLine,
-  RiBarChartBoxLine,
-  RiSettings5Line,
-} from "@remixicon/react";
+import { Feather, BarChartSquare02, Settings01 } from '@untitledui/icons';
 import { SideNavRail } from "./SideNavRail";
 import { Avatar } from "../primitives/Avatar";
 import { CompanyLogo } from "../brand/CompanyLogo";
@@ -13,9 +9,9 @@ import { AiIcon } from "../brand/AiIcon";
 
 const items = [
   { id: "ai", icon: <AiIcon size={16} />, label: "AI" },
-  { id: "editor", icon: <RiQuillPenLine size={16} />, label: "Editor" },
-  { id: "analytics", icon: <RiBarChartBoxLine size={16} />, label: "Analytics" },
-  { id: "settings", icon: <RiSettings5Line size={16} />, label: "Settings" },
+  { id: "editor", icon: <Feather size={16} />, label: "Editor" },
+  { id: "analytics", icon: <BarChartSquare02 size={16} />, label: "Analytics" },
+  { id: "settings", icon: <Settings01 size={16} />, label: "Settings" },
 ];
 
 const labelFor = (id: string) =>

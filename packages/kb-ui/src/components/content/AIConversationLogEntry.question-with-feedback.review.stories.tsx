@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { RiSearchLine, RiThumbUpLine } from '@remixicon/react';
+import { SearchLg, ThumbsUp } from '@untitledui/icons';
 import '../../tokens.css';
 import { ConversationRow } from './AIConversationLogEntryAtoms';
 import { FigmaCompare } from '../../_review/FigmaCompare';
@@ -10,7 +10,7 @@ import { figmaNode } from './AIConversationLogEntry.question-with-feedback.figma
  * AIConversationLogEntry — Question row WITH feedback review.
  *
  * Figma library-check cell `155:1793`: pilled question icon +
- * question text on the left, outline `RiThumbUpLine` (#086e3f)
+ * question text on the left, outline `ThumbsUp` (#086e3f)
  * + grey `|` separator + "Mar 31, 2:23 PM" (#475569) on the
  * right.
  * ───────────────────────────────────────────────────────────── */
@@ -37,7 +37,7 @@ function QuestionWithFeedbackReview() {
           hideConnectorBelow
           iconPill
           icon={
-            <RiSearchLine aria-hidden="true" className="h-4 w-4 text-[#475569]" />
+            <SearchLg aria-hidden="true" className="h-4 w-4 text-[#475569]" />
           }
         >
           <div className="flex items-start gap-3">
@@ -47,7 +47,7 @@ function QuestionWithFeedbackReview() {
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2 pt-[5px]">
-              <RiThumbUpLine
+              <ThumbsUp
                 aria-hidden="true"
                 className="h-3.5 w-3.5 text-[#086e3f]"
               />

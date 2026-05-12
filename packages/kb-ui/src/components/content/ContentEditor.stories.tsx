@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { RiMagicLine, RiInformationLine } from '@remixicon/react';
+import { MagicWand02, InfoCircle } from '@untitledui/icons';
 import '../../tokens.css';
 import { ContentEditor, DEFAULT_TOOLBAR_ITEMS, type ToolbarItemDef } from './ContentEditor';
 import type { SlashCommand } from './SlashCommandMenu';
@@ -69,7 +69,7 @@ const customToolbar: ToolbarItemDef[] = [
   {
     id: 'uppercase',
     label: 'Uppercase selection',
-    icon: <RiMagicLine className="h-4 w-4" />,
+    icon: <MagicWand02 className="h-4 w-4" />,
     onClick: (editor) => {
       const { from, to } = editor.state.selection;
       const text = editor.state.doc.textBetween(from, to, ' ');
@@ -89,7 +89,7 @@ const customSlash: SlashCommand[] = [
     id: 'callout',
     title: 'Callout',
     subtitle: 'Insert a callout block',
-    icon: RiInformationLine,
+    icon: InfoCircle,
     aliases: ['note', 'info', 'callout'],
     command: (editor, range) => {
       editor

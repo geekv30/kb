@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { RiArrowDownSLine } from '@remixicon/react';
+import { ChevronDown } from '@untitledui/icons';
 import '../../tokens.css';
 import { Avatar } from './Avatar';
 import { Field } from './Field';
@@ -31,7 +31,7 @@ function AuthorReview() {
             value="Varun K"
             prefix={<Avatar initials="A" showStatus />}
             suffix={
-              <RiArrowDownSLine
+              <ChevronDown
                 size={14}
                 className="text-[#64748b]"
                 aria-hidden="true"

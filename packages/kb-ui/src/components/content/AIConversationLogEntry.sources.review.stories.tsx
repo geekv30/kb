@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { RiBookOpenLine } from '@remixicon/react';
+import { BookOpen01 } from '@untitledui/icons';
 import '../../tokens.css';
 import { ConversationRow } from './AIConversationLogEntryAtoms';
 import { FigmaCompare } from '../../_review/FigmaCompare';
@@ -34,7 +34,7 @@ function SourcesReview() {
           hideConnectorAbove
           hideConnectorBelow
           icon={
-            <RiBookOpenLine
+            <BookOpen01
               aria-hidden="true"
               className="h-4 w-4 text-[#475569]"
             />

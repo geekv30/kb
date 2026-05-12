@@ -1,8 +1,8 @@
 // Rail glyph provenance: all four nav icons extracted from Figma
 // `9aGp5t9fH1d0PXi4LMhOdb` node `1:4324` (page 0:1 "side-nav" → "option 12").
 // The AI slot renders <AiIcon /> (gradient sparkle) sourced from vector node
-// `I1:4349;206:6843;12619:15996;517:21335`. Other rail slots use Remix
-// (@remixicon/react) regular-weight Line icons at 16×16.
+// `I1:4349;206:6843;12619:15996;517:21335`. Other rail slots use
+// Untitled UI (@untitledui/icons) line icons at 16×16.
 import { cn } from '../../utils/cn';
 
 export type NavRailItem = {

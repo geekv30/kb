@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { RiCornerDownRightLine, RiSearchLine } from '@remixicon/react';
+import { CornerDownRight, SearchLg } from '@untitledui/icons';
 import '../../tokens.css';
 import { ConversationRow } from './AIConversationLogEntryAtoms';
 import { FigmaCompare } from '../../_review/FigmaCompare';
@@ -35,7 +35,7 @@ function FollowupQuestionReview() {
           hideConnectorAbove
           hideConnectorBelow
           icon={
-            <RiCornerDownRightLine
+            <CornerDownRight
               aria-hidden="true"
               className="h-4 w-4 text-[#64748b]"
             />
@@ -46,7 +46,7 @@ function FollowupQuestionReview() {
               follow up
             </span>
             <span aria-hidden="true" className="text-[13px] leading-[19px] text-[#475569]">:</span>
-            <RiSearchLine
+            <SearchLg
               aria-hidden="true"
               className="h-4 w-4 shrink-0 text-[#475569]"
             />

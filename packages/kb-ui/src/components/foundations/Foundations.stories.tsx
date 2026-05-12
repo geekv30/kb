@@ -1,22 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../../tokens.css';
-import {
-  RiAddLine,
-  RiArrowDownSLine,
-  RiArrowRightSLine,
-  RiBookOpenLine,
-  RiCloseLine,
-  RiDeleteBinLine,
-  RiFile3Line,
-  RiFolderLine,
-  RiLayoutLeftLine,
-  RiMailLine,
-  RiMore2Line,
-  RiQuillPenLine,
-  RiSearchLine,
-  RiSendPlaneLine,
-  RiSettings5Line,
-} from '@remixicon/react';
+import { Plus, ChevronDown, ChevronRight, BookOpen01, XClose, Trash01, File02, Folder, LayoutLeft, Mail01, DotsVertical, Feather, SearchLg, Send01, Settings01 } from '@untitledui/icons';
 import { AiIcon, CompanyLogo } from '../brand';
 
 /* ------------------------------------------------------------------ */
@@ -219,11 +203,11 @@ const iconCatalog = [
         node: <CompanyLogo size={24} />,
         size: 24,
       },
-      { name: 'RiQuillPenLine', node: <RiQuillPenLine size={16} />, size: 16 },
-      { name: 'RiFolderLine', node: <RiFolderLine size={16} />, size: 16 },
+      { name: 'Feather', node: <Feather size={16} />, size: 16 },
+      { name: 'Folder', node: <Folder size={16} />, size: 16 },
       {
-        name: 'RiSettings5Line',
-        node: <RiSettings5Line size={16} />,
+        name: 'Settings01',
+        node: <Settings01 size={16} />,
         size: 16,
       },
     ],
@@ -231,48 +215,48 @@ const iconCatalog = [
   {
     group: 'Explorer',
     entries: [
-      { name: 'RiQuillPenLine', node: <RiQuillPenLine size={16} />, size: 16 },
-      { name: 'RiSearchLine', node: <RiSearchLine size={16} />, size: 16 },
-      { name: 'RiFolderLine', node: <RiFolderLine size={16} />, size: 16 },
-      { name: 'RiFile3Line', node: <RiFile3Line size={16} />, size: 16 },
+      { name: 'Feather', node: <Feather size={16} />, size: 16 },
+      { name: 'SearchLg', node: <SearchLg size={16} />, size: 16 },
+      { name: 'Folder', node: <Folder size={16} />, size: 16 },
+      { name: 'File02', node: <File02 size={16} />, size: 16 },
       {
-        name: 'RiArrowRightSLine',
-        node: <RiArrowRightSLine size={16} />,
+        name: 'ChevronRight',
+        node: <ChevronRight size={16} />,
         size: 16,
       },
       {
-        name: 'RiArrowDownSLine',
-        node: <RiArrowDownSLine size={16} />,
+        name: 'ChevronDown',
+        node: <ChevronDown size={16} />,
         size: 16,
       },
-      { name: 'RiMore2Line', node: <RiMore2Line size={16} />, size: 16 },
+      { name: 'DotsVertical', node: <DotsVertical size={16} />, size: 16 },
     ],
   },
   {
     group: 'Breadcrumb',
     entries: [
       {
-        name: 'RiLayoutLeftLine',
-        node: <RiLayoutLeftLine size={14} />,
+        name: 'LayoutLeft',
+        node: <LayoutLeft size={14} />,
         size: 14,
       },
       {
-        name: 'RiSendPlaneLine',
-        node: <RiSendPlaneLine size={14} />,
+        name: 'Send01',
+        node: <Send01 size={14} />,
         size: 14,
       },
-      { name: 'RiCloseLine', node: <RiCloseLine size={16} />, size: 16 },
+      { name: 'XClose', node: <XClose size={16} />, size: 16 },
     ],
   },
   {
     group: 'Table',
     entries: [
-      { name: 'RiFolderLine', node: <RiFolderLine size={16} />, size: 16 },
-      { name: 'RiFile3Line', node: <RiFile3Line size={16} />, size: 16 },
-      { name: 'RiMore2Line', node: <RiMore2Line size={16} />, size: 16 },
+      { name: 'Folder', node: <Folder size={16} />, size: 16 },
+      { name: 'File02', node: <File02 size={16} />, size: 16 },
+      { name: 'DotsVertical', node: <DotsVertical size={16} />, size: 16 },
       {
-        name: 'RiArrowRightSLine',
-        node: <RiArrowRightSLine size={16} />,
+        name: 'ChevronRight',
+        node: <ChevronRight size={16} />,
         size: 16,
       },
     ],
@@ -280,11 +264,11 @@ const iconCatalog = [
   {
     group: 'Buttons',
     entries: [
-      { name: 'RiAddLine', node: <RiAddLine size={14} />, size: 14 },
-      { name: 'RiDeleteBinLine', node: <RiDeleteBinLine size={14} />, size: 14 },
+      { name: 'Plus', node: <Plus size={14} />, size: 14 },
+      { name: 'Trash01', node: <Trash01 size={14} />, size: 14 },
       {
-        name: 'RiSendPlaneLine',
-        node: <RiSendPlaneLine size={14} />,
+        name: 'Send01',
+        node: <Send01 size={14} />,
         size: 14,
       },
     ],
@@ -292,10 +276,10 @@ const iconCatalog = [
   {
     group: 'Other',
     entries: [
-      { name: 'RiMailLine', node: <RiMailLine size={16} />, size: 16 },
+      { name: 'Mail01', node: <Mail01 size={16} />, size: 16 },
       {
-        name: 'RiBookOpenLine',
-        node: <RiBookOpenLine size={22} />,
+        name: 'BookOpen01',
+        node: <BookOpen01 size={22} />,
         size: 22,
       },
     ],
@@ -426,10 +410,10 @@ function IconColorSection() {
                 className="inline-flex items-center justify-center w-9 h-9 rounded"
                 style={{ background: '#0f172a' }}
               >
-                <RiFolderLine size={20} style={{ color: c.hex }} />
+                <Folder size={20} style={{ color: c.hex }} />
               </span>
             ) : (
-              <RiFolderLine size={20} style={{ color: c.hex }} />
+              <Folder size={20} style={{ color: c.hex }} />
             )}
           </Row>
         ))}
@@ -486,7 +470,7 @@ function IconSizesSection() {
   return (
     <Section
       title="Icon sizes"
-      description="RiFolderLine rendered at every size used across the library — eyeball to confirm size consistency."
+      description="Folder rendered at every size used across the library — eyeball to confirm size consistency."
     >
       <div className="rounded-lg border border-[#e2e8f0] bg-white p-6">
         <div className="flex items-end gap-8">
@@ -499,7 +483,7 @@ function IconSizesSection() {
                 className="flex items-center justify-center text-[#0f172a]"
                 style={{ width: 32, height: 32 }}
               >
-                <RiFolderLine size={s} />
+                <Folder size={s} />
               </div>
               <code className="text-[12px] leading-[18px] font-mono text-[#475569]">
                 {s}px

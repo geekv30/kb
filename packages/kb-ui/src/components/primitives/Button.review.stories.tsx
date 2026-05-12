@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { RiAddLine, RiArrowUpLine } from '@remixicon/react';
+import { Plus, ArrowUp } from '@untitledui/icons';
 import '../../tokens.css';
 import { Button } from './Button';
 import { FigmaCompare } from '../../_review/FigmaCompare';
@@ -36,21 +36,21 @@ function ButtonReview() {
           height: 166,
         }}
       >
-        <Button variant="primary" icon={<RiAddLine size={14} />} onClick={() => {}}>
+        <Button variant="primary" icon={<Plus size={14} />} onClick={() => {}}>
           New
         </Button>
-        <Button variant="subtle" icon={<RiArrowUpLine size={14} />} onClick={() => {}}>
+        <Button variant="subtle" icon={<ArrowUp size={14} />} onClick={() => {}}>
           Button
         </Button>
-        <Button variant="danger" icon={<RiArrowUpLine size={14} />} onClick={() => {}}>
+        <Button variant="danger" icon={<ArrowUp size={14} />} onClick={() => {}}>
           Button
         </Button>
 
         <div />
-        <Button variant="outline" icon={<RiArrowUpLine size={14} />} onClick={() => {}}>
+        <Button variant="outline" icon={<ArrowUp size={14} />} onClick={() => {}}>
           Button
         </Button>
-        <Button variant="danger-outline" icon={<RiArrowUpLine size={14} />} onClick={() => {}}>
+        <Button variant="danger-outline" icon={<ArrowUp size={14} />} onClick={() => {}}>
           Button
         </Button>
       </div>

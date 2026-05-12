@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../../tokens.css';
-import { RiBookOpenLine, RiAddLine } from '@remixicon/react';
+import { BookOpen01, Plus } from '@untitledui/icons';
 import { PageHeader } from './PageHeader';
 import { Button } from '../primitives/Button';
 
@@ -17,11 +17,11 @@ function PageHeaderPlayground() {
     <PageHeader
       title="Getting Started"
       subtitle="12 articles · 3 sub-categories · Last updated 4 days ago"
-      icon={<RiBookOpenLine className="size-[22px] text-blue-500" />}
+      icon={<BookOpen01 className="size-[22px] text-blue-500" />}
       cta={
         <Button
           variant="primary"
-          icon={<RiAddLine size={14} />}
+          icon={<Plus size={14} />}
           onClick={() => {}}
         >
           New article

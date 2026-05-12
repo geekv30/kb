@@ -1,12 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import '../tokens.css';
-import {
-  RiQuillPenLine,
-  RiSettings5Line,
-  RiBarChartBoxLine,
-  RiFile3Line,
-  RiInformationLine,
-} from '@remixicon/react';
+import { Feather, Settings01, BarChartSquare02, File02, InfoCircle } from '@untitledui/icons';
 import { AppShell } from '../components/shell/AppShell';
 import { KBBreadcrumbBar } from '../components/shell/KBBreadcrumbBar';
 import { SideNavRail, type NavRailItem } from '../components/nav/SideNavRail';
@@ -42,13 +36,13 @@ import {
 
 const railItems: NavRailItem[] = [
   { id: 'ai', icon: <AiIcon size={16} />, label: 'AI' },
-  { id: 'editor', icon: <RiQuillPenLine size={16} />, label: 'Editor' },
+  { id: 'editor', icon: <Feather size={16} />, label: 'Editor' },
   {
     id: 'analytics',
-    icon: <RiBarChartBoxLine size={16} />,
+    icon: <BarChartSquare02 size={16} />,
     label: 'Analytics',
   },
-  { id: 'settings', icon: <RiSettings5Line size={16} />, label: 'Settings' },
+  { id: 'settings', icon: <Settings01 size={16} />, label: 'Settings' },
 ];
 
 const analyticsNavItems: NavItem[] = [
@@ -97,7 +91,7 @@ const attentionColumns: DataTableColumn<AttentionRow>[] = [
     header: 'Article Title',
     render: (r) => (
       <div className="flex items-center gap-2 min-w-0 pr-2">
-        <RiFile3Line
+        <File02
           size={16}
           className="shrink-0 text-[#64748b]"
           aria-hidden="true"
@@ -170,7 +164,7 @@ const performanceColumns: DataTableColumn<PerfRow>[] = [
     width: 230,
     render: (r) => (
       <div className="flex items-center gap-2 min-w-0 pr-2">
-        <RiFile3Line
+        <File02
           size={16}
           className="shrink-0 text-[#64748b]"
           aria-hidden="true"
@@ -241,7 +235,7 @@ function ArticlePerformancePage() {
           variant="flat"
           theme="light"
           title="Analytics"
-          headerIcon={<RiBarChartBoxLine size={16} />}
+          headerIcon={<BarChartSquare02 size={16} />}
           items={analyticsNavItems}
           activeId="views"
           onItemClick={() => {}}
@@ -336,7 +330,7 @@ function ArticlePerformancePage() {
                     <h3 className="text-[14px] font-medium leading-[20px] text-[#0f172a]">
                       Articles needs attention
                     </h3>
-                    <RiInformationLine
+                    <InfoCircle
                       size={16}
                       className="ml-2 text-[#475569]"
                       aria-hidden="true"
@@ -372,7 +366,7 @@ function ArticlePerformancePage() {
                 <h3 className="text-[14px] font-medium leading-[20px] text-[#0f172a]">
                   Article Performance
                 </h3>
-                <RiInformationLine
+                <InfoCircle
                   size={16}
                   className="ml-2 text-[#475569]"
                   aria-hidden="true"
