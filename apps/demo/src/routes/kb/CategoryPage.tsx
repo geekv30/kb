@@ -13,22 +13,28 @@
 // state when the category has neither children nor articles. Both are
 // intentionally simple — Phase 7.5.8 owns the polished empty-state pass.
 
-import { useCallback, useMemo } from 'react';
+import * as React from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
+import * as RxDropdownMenu from '@radix-ui/react-dropdown-menu';
 import {
   BookOpen01,
   ChevronRight,
   DotsVertical,
   File02,
   Folder,
+  Plus,
 } from '@untitledui/icons';
 import {
   Avatar,
   Badge,
   cn,
   DataTable,
+  NewCategoryModal,
   PageHeader,
   type DataTableColumn,
+  type NewCategoryFormValues,
+  type ParentCategoryOption,
 } from '@test-kb-ui/kb-ui';
 import { useMockStore } from '../../store/MockStoreContext';
 import {
@@ -39,7 +45,12 @@ import {
 import type { Article, Category, User } from '../../store/types';
 import { DEFAULT_KB_CATEGORY_SLUG, routes } from '../../lib/routes';
 import { formatRelativeDate } from '../../lib/relativeDate';
-import { EmptyState } from '../../components/EmptyState';
+import { EmptyStateGallery } from '../../components/EmptyStateVariants';
+import { useCreateArticle } from '../../hooks/useCreateArticle';
+import {
+  DropdownMenuItem,
+  DROPDOWN_CONTENT_CLASSES,
+} from '../../shell/DropdownMenuItem';
 
 /* ─────────────────────────────────────────────────────────────
  * Row types — co-located with the page that owns them.
@@ -253,23 +264,45 @@ function buildChildCategoryUrl(
   return routes.kb.deep(topLevel, mid, child.slug);
 }
 
-/**
- * Generate a unique `untitled-N` slug for a brand-new draft. Walks the
- * existing article slugs and finds the smallest N (>=1) that is not
- * already taken. O(M) over articles where M is small (~20) — fine.
- */
-function nextUntitledSlug(existingSlugs: Set<string>): string {
-  let n = 1;
-  while (existingSlugs.has(`untitled-${n}`)) {
-    n += 1;
-    if (n > 9999) {
-      // Defensive cap. Should never trip; prevents a runaway loop if
-      // the slug-generation invariant is ever broken.
-      return `untitled-${crypto.randomUUID()}`;
-    }
-  }
-  return `untitled-${n}`;
-}
+/* ─────────────────────────────────────────────────────────────
+ * "+ New" dropdown trigger
+ *
+ * Radix `Trigger asChild` requires a child that forwards refs so the
+ * menu can compute the trigger's bounding box. The kb-ui `Button`
+ * does NOT forward refs, so we use a native `<button>` styled to
+ * match Button's `primary` variant (h-8, px-3, rounded-[6px], black
+ * bg, 14/medium label, focus ring) — keeping the visual rhythm of
+ * the existing PageHeader CTA intact.
+ * ───────────────────────────────────────────────────────────── */
+
+const NewButtonTrigger = React.forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement>
+>(function NewButtonTrigger({ className, children, ...rest }, ref) {
+  return (
+    <button
+      ref={ref}
+      type="button"
+      className={cn(
+        'box-border inline-flex items-center justify-center gap-1.5',
+        'font-sans text-[14px] font-medium leading-5 transition-colors',
+        'h-8 px-3 rounded-[6px] bg-black text-white',
+        'hover:bg-black/90 active:bg-black/80',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-faint focus-visible:ring-offset-1',
+        className,
+      )}
+      {...rest}
+    >
+      <span
+        aria-hidden
+        className="flex size-[14px] shrink-0 items-center justify-center [&>svg]:h-[14px] [&>svg]:w-[14px]"
+      >
+        <Plus aria-hidden="true" />
+      </span>
+      {children}
+    </button>
+  );
+});
 
 /* ─────────────────────────────────────────────────────────────
  * Inline states
@@ -306,17 +339,12 @@ function CategoryNotFound({
 }
 
 function EmptyCategoryState({ onCreate }: { onCreate: () => void }) {
-  // Phase 7.5.8 — switched from a one-off inline render to the shared
-  // <EmptyState /> component so every "nothing here yet" surface in
-  // the demo looks the same (PRD §12.5).
-  return (
-    <EmptyState
-      icon={<File02 />}
-      title="No content here yet."
-      subtitle="Add the first article to start building this section of the KB."
-      cta={{ label: '+ Create the first article', onClick: onCreate }}
-    />
-  );
+  // Phase 7.5.8 — variant gallery prototype. Three spot-graphic
+  // treatments stacked for side-by-side review. Once the user picks a
+  // winner we promote it into kb-ui and restore the single <EmptyState />
+  // render here. Demo-local EmptyState.tsx is intentionally left
+  // untouched — other surfaces (AI Optimise hub etc.) still use it.
+  return <EmptyStateGallery onCreate={onCreate} />;
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -330,7 +358,8 @@ export default function CategoryPage() {
     depth2?: string;
   }>();
   const navigate = useNavigate();
-  const { state, dispatch } = useMockStore();
+  const { state } = useMockStore();
+  const createArticle = useCreateArticle();
 
   // Deepest URL segment is the active category slug. (`depth2` may be
   // undefined on /kb/<top> or /kb/<top>/<mid>; we fall back through
@@ -345,19 +374,21 @@ export default function CategoryPage() {
 
   const handleNewArticle = useCallback(() => {
     if (!category) return;
-    const existingSlugs = new Set<string>();
-    for (const a of Object.values(state.articles)) existingSlugs.add(a.slug);
-    const newSlug = nextUntitledSlug(existingSlugs);
-    const newArticleId = `art-${newSlug}-${crypto.randomUUID().slice(0, 8)}`;
-    dispatch({
-      type: 'editor/createNew',
-      categoryId: category.id,
-      newArticleId,
-      newSlug,
-      now: new Date().toISOString(),
-    });
-    navigate(routes.article(newSlug));
-  }, [category, state.articles, dispatch, navigate]);
+    createArticle(category.id);
+  }, [category, createArticle]);
+
+  /* ── Create-folder modal state ─────────────────────────────── */
+
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+
+  // Depth-0 categories drive the modal's "parent" dropdown options.
+  const parentOptions = useMemo<ParentCategoryOption[]>(
+    () =>
+      Object.values(state.categories)
+        .filter((c) => c.parentId === null)
+        .map((c) => ({ id: c.id, label: c.title })),
+    [state.categories],
+  );
 
   /* ── 404 path ──────────────────────────────────────────────── */
 
@@ -391,6 +422,45 @@ export default function CategoryPage() {
     navigate(routes.article(article.slug));
   };
 
+  /* ── PageHeader "+ New" dropdown ───────────────────────────── */
+  //
+  // Replaces the previous "+ New article" Button. Trigger label is
+  // intentionally "+ New" — the menu items disambiguate Folder /
+  // Article. Matches Figma 1958:33465 / image #7.
+  //
+  // Folder  → opens NewCategoryModal in create mode, parent pre-filled
+  //           with the current category.
+  // Article → reuses the existing useCreateArticle() flow scoped to
+  //           the current category.
+
+  const onNewFolder = () => setCreateModalOpen(true);
+
+  const newCta = (
+    <RxDropdownMenu.Root>
+      <RxDropdownMenu.Trigger asChild>
+        <NewButtonTrigger aria-label="Create new">New</NewButtonTrigger>
+      </RxDropdownMenu.Trigger>
+      <RxDropdownMenu.Portal>
+        <RxDropdownMenu.Content
+          align="end"
+          sideOffset={4}
+          className={DROPDOWN_CONTENT_CLASSES}
+        >
+          <DropdownMenuItem
+            label="Folder"
+            icon={<Folder aria-hidden="true" />}
+            onSelect={onNewFolder}
+          />
+          <DropdownMenuItem
+            label="Article"
+            icon={<File02 aria-hidden="true" />}
+            onSelect={handleNewArticle}
+          />
+        </RxDropdownMenu.Content>
+      </RxDropdownMenu.Portal>
+    </RxDropdownMenu.Root>
+  );
+
   /* ── Render ────────────────────────────────────────────────── */
 
   const isEmpty = subCategoryRows.length === 0 && articleRows.length === 0;
@@ -401,8 +471,7 @@ export default function CategoryPage() {
         icon={<BookOpen01 className="size-[22px] text-blue-500" />}
         title={category.title}
         subtitle={category.subtitle}
-        newButtonLabel="New article"
-        onNewClick={handleNewArticle}
+        cta={newCta}
       />
 
       {isEmpty ? (
@@ -434,6 +503,28 @@ export default function CategoryPage() {
             />
           )}
         </>
+      )}
+
+      {/* Conditional render: NewCategoryModal seeds form state on first
+       *  mount, so to ensure parent pre-fill applies on every open we
+       *  mount/unmount on each cycle. Mirrors the pattern in
+       *  EditorExplorer for edit-mode opens.
+       */}
+      {createModalOpen && (
+        <NewCategoryModal
+          open
+          onOpenChange={(next) => {
+            if (!next) setCreateModalOpen(false);
+          }}
+          mode="create"
+          parentOptions={parentOptions}
+          initialValues={{ parentCategoryId: category.id }}
+          onSubmit={(values: NewCategoryFormValues) => {
+            // eslint-disable-next-line no-console
+            console.log('TODO: create category', values);
+            setCreateModalOpen(false);
+          }}
+        />
       )}
     </div>
   );
