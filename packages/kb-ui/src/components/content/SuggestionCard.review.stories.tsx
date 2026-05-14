@@ -34,6 +34,7 @@ function SuggestionCardReview() {
           title="How to reset Password"
           description="Updating reset instructions, legacy URL and removing oudated instructions"
           kind="article-edit"
+          suggestionCount={3}
           conversationCount={12}
           impact="high"
         />
@@ -41,6 +42,7 @@ function SuggestionCardReview() {
           title="How to enable two-factor authentication"
           description="AI will write an article on how to enable two-factor authentication under security > SSO"
           kind="new-article"
+          suggestionCount={4}
           conversationCount={15}
           impact="medium"
         />

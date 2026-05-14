@@ -49,6 +49,7 @@ function SuggestionCardPlayground() {
         title="How to reset your password"
         description="Updating reset instructions, removing legacy mobile-app URL, and clarifying the recovery email step."
         kind="article-edit"
+        suggestionCount={3}
         conversationCount={12}
         impact="high"
         onClick={() => {}}
@@ -59,6 +60,7 @@ function SuggestionCardPlayground() {
         kind="move-article"
         pathFrom="Billing"
         pathTo="Reimbursements"
+        suggestionCount={1}
         conversationCount={8}
         impact="medium"
         onClick={() => {}}
@@ -81,6 +83,7 @@ function SuggestionCardPlayground() {
         title='Add a new article: "Bulk-deleting old conversations"'
         description="No existing article covers this — 23 search misses in the last 14 days."
         kind="new-article"
+        suggestionCount={5}
         conversationCount={23}
         impact="high"
         onClick={() => {}}
