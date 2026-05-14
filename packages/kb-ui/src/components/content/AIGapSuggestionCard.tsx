@@ -60,6 +60,19 @@ export type AIGapSuggestionCardProps = {
   meta?: React.ReactNode;
   decisionLabels?: { accepted: string; dismissed: string };
   typeRegistry?: Record<string, SuggestionTypeMeta>;
+  /**
+   * Chunk 5 — optional `X / Y` position indicator rendered on the
+   * `active` card next to the type chip. `index` is 1-based (the
+   * user-facing position of this card in the ORIGINAL suggestion
+   * list, NOT the unresolved-only subset). `total` is the full count.
+   * Suppressed on `idle` / `accepted` / `dismissed` states.
+   *
+   * Figma has no explicit spec for this indicator at chunk 5 lock;
+   * the inline rendering uses `text-12 font-medium text-text-muted`
+   * to read as a quiet secondary label that doesn't compete with
+   * the type chip's color treatment. Flagged in the PR description.
+   */
+  position?: { index: number; total: number };
 };
 
 /* ─────────────────────────────────────────────────────────────
@@ -223,6 +236,7 @@ export function AIGapSuggestionCard({
   meta,
   decisionLabels,
   typeRegistry,
+  position,
 }: AIGapSuggestionCardProps) {
   const resolvedRegistry = typeRegistry ?? DEFAULT_GAP_TYPES;
   if (state === 'accepted' || state === 'dismissed') {
@@ -319,7 +333,22 @@ export function AIGapSuggestionCard({
       data-kb-component="ai-gap-suggestion-card"
       data-kb-state={state}
       data-kb-type={suggestion.type}
-      header={<TypeChip type={suggestion.type} registry={resolvedRegistry} />}
+      header={
+        state === 'active' && position ? (
+          <div className="flex w-full items-center justify-between gap-2">
+            <TypeChip type={suggestion.type} registry={resolvedRegistry} />
+            <span
+              data-kb-part="ai-gap-position"
+              aria-label={`Suggestion ${position.index} of ${position.total}`}
+              className="text-[12px] font-medium leading-[18px] text-text-muted tabular-nums"
+            >
+              {position.index} / {position.total}
+            </span>
+          </div>
+        ) : (
+          <TypeChip type={suggestion.type} registry={resolvedRegistry} />
+        )
+      }
       body={
         <>
           {meta}

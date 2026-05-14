@@ -24,6 +24,13 @@ export type AISuggestionsCardProps = {
    * `terminal`    — "Suggestions" + count badge + disabled `✓ Reviewed All` pill.
    */
   mode: AISuggestionsCardMode;
+  /**
+   * Number to display in the count badge / CTA text. Semantics differ
+   * by mode (consumer-decided, not derived here):
+   *   - `pre-review` → total suggestions (kickoff CTA "Review Suggestions (N)")
+   *   - `reviewing`  → REMAINING unresolved (`total - accepted - dismissed`)
+   *   - `terminal`   → total suggestions (the "I reviewed N" summary)
+   */
   count: number;
   summary: string;
   onReview?: () => void;
@@ -97,7 +104,19 @@ export function AISuggestionsCard({
     return (
       <AICard
         mode="active"
-        className={cn('px-4 py-3', className)}
+        className={cn(
+          'px-4 py-3',
+          // Chunk 5 — when the rail's `sticky` wrapper pins this compact
+          // header at the top, scrolled cards behind it can overlap the
+          // bottom edge. AICard already provides an opaque white bg and a
+          // 1px slate border; add a subtle drop shadow so the overlap
+          // reads as "tucked under" rather than visually broken. Same
+          // tone as Figma `Shadows/md` used on the AI suggestion card
+          // chrome (low-opacity 2-step shadow), but only applied here so
+          // pre-review and terminal stay unchanged.
+          'shadow-[0px_2px_4px_-2px_rgba(0,0,0,0.06),0px_4px_6px_-1px_rgba(0,0,0,0.05)]',
+          className,
+        )}
         data-kb-component="ai-suggestions-card"
         data-kb-mode={mode}
         header={

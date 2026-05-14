@@ -758,7 +758,19 @@ function StaticFrameRender({
 function InteractiveRender({ enableKeyboard }: { enableKeyboard: boolean }) {
   const { state, dispatch, publishEnabled, canGoPrev, canGoNext } =
     useAIGapsReducer(interactiveSuggestions);
-  const activeSuggestion = interactiveSuggestions[state.activeIndex];
+  // `state.activeIndex` can be -1 (chunk 5 sentinel for "no active card"
+  // after strict-forward auto-advance runs off the end of the list).
+  // `Array[-1]` is safely `undefined` so downstream `?.id` checks no-op.
+  const activeSuggestion =
+    state.activeIndex >= 0
+      ? interactiveSuggestions[state.activeIndex]
+      : undefined;
+
+  // Chunk 5 — remaining unresolved count drives the compact reviewing
+  // summary's count pill. `pre-review` / `terminal` keep showing the
+  // total (kickoff CTA + post-review summary respectively).
+  const resolvedCount = Object.keys(state.decisions).length;
+  const remaining = interactiveSuggestions.length - resolvedCount;
 
   /* ─────────────────────────────────────────────────────────
    * Scroll side effects (chunk 4 — replaces scrollIntoView)
@@ -842,7 +854,6 @@ function InteractiveRender({ enableKeyboard }: { enableKeyboard: boolean }) {
       }
       if (state.mode !== 'reviewing') return;
       const activeId = activeSuggestion?.id;
-      if (!activeId) return;
       switch (e.key) {
         case 'j':
         case 'ArrowDown':
@@ -856,10 +867,15 @@ function InteractiveRender({ enableKeyboard }: { enableKeyboard: boolean }) {
           break;
         case 'y':
         case 'Enter':
+          // Accept/reject require an active card (chunk 5: activeIndex
+          // can be -1 with no card focused — the user must navigate or
+          // click before deciding).
+          if (!activeId) return;
           e.preventDefault();
           dispatch({ type: 'accept', id: activeId });
           break;
         case 'n':
+          if (!activeId) return;
           e.preventDefault();
           dispatch({ type: 'reject', id: activeId });
           break;
@@ -921,7 +937,7 @@ function InteractiveRender({ enableKeyboard }: { enableKeyboard: boolean }) {
       {state.mode === 'reviewing' && (
         <AISuggestionsCard
           mode="reviewing"
-          count={interactiveSuggestions.length}
+          count={remaining}
           summary={SUMMARY}
         />
       )}
@@ -937,7 +953,7 @@ function InteractiveRender({ enableKeyboard }: { enableKeyboard: boolean }) {
     </>
   );
 
-  const railItems: AIGapRailItem[] = interactiveSuggestions.map((s) => {
+  const railItems: AIGapRailItem[] = interactiveSuggestions.map((s, i) => {
     const decision = state.decisions[s.id];
     if (decision) {
       return {
@@ -965,6 +981,10 @@ function InteractiveRender({ enableKeyboard }: { enableKeyboard: boolean }) {
             onReject={(id) => dispatch({ type: 'reject', id })}
             canGoPrev={canGoPrev}
             canGoNext={canGoNext}
+            // Chunk 5 — 1-based position in the ORIGINAL list. Users
+            // need "I'm on 2 of 3" regardless of how many cards have
+            // already been resolved.
+            position={{ index: i + 1, total: interactiveSuggestions.length }}
           />
         ),
       };
