@@ -2,6 +2,7 @@
 //        9aGp5t9fH1d0PXi4LMhOdb#81:16926 (active Addition in context)
 //        9aGp5t9fH1d0PXi4LMhOdb#81:16342 (active Replace in context)
 //        9aGp5t9fH1d0PXi4LMhOdb#81:15737 (active Removal in context)
+//        251DTRmxl2L6jmXd3FWzHe#2829:9484 (idle / state=default — recessed paired card)
 import * as React from 'react';
 import {
   Check,
@@ -176,7 +177,7 @@ export function AIGapSuggestionCard({
   typeRegistry,
 }: AIGapSuggestionCardProps) {
   const resolvedRegistry = typeRegistry ?? DEFAULT_GAP_TYPES;
-  if (state !== 'active') {
+  if (state === 'accepted' || state === 'dismissed') {
     const decisionLabel =
       state === 'accepted'
         ? (decisionLabels?.accepted ?? 'ACCEPTED')
@@ -211,12 +212,34 @@ export function AIGapSuggestionCard({
     );
   }
 
+  /* ─────────────────────────────────────────────────────────────
+   * Active + Idle share the same slot composition (header /
+   * meta+title+description / footer) — only the chrome differs:
+   *
+   *   active  → bg=white, AICard default geometry, hairline divider
+   *             above the footer, title=text-primary.
+   *
+   *   idle    → bg=canvas (#f5f5f5), border=#f1f5f9 (border-border),
+   *             shadow-lg, px-[22px] py-[24px], NO divider, footerGap
+   *             20px, title=text-secondary (#334155). Matches Figma
+   *             251DTRmxl2L6jmXd3FWzHe#2829:9484 (state=default) — the
+   *             recessed paired-card look that peeks under the active
+   *             AI Suggestions summary card in the editor rail.
+   * ───────────────────────────────────────────────────────────── */
+  const isIdle = state === 'idle';
+
   return (
     <AICard
       mode="active"
-      className={className}
+      className={cn(
+        isIdle &&
+          // Override AICard defaults: grey BG + faint border + shadow +
+          // Figma-exact padding. twMerge resolves the conflicts.
+          'bg-canvas border-border shadow-lg px-[22px] py-[24px]',
+        className,
+      )}
       data-kb-component="ai-gap-suggestion-card"
-      data-kb-state="active"
+      data-kb-state={state}
       data-kb-type={suggestion.type}
       header={<TypeChip type={suggestion.type} registry={resolvedRegistry} />}
       body={
@@ -224,7 +247,11 @@ export function AIGapSuggestionCard({
           {meta}
           <h3
             data-kb-part="ai-gap-title"
-            className="mt-2 text-[14px] font-medium leading-[20px] text-text-primary"
+            className={cn(
+              'mt-2 text-[14px] font-medium leading-[20px]',
+              // Idle title steps down to slateTextBody per Figma 2829:9484.
+              isIdle ? 'text-text-secondary' : 'text-text-primary',
+            )}
           >
             {suggestion.title}
           </h3>
@@ -236,7 +263,8 @@ export function AIGapSuggestionCard({
           </p>
         </>
       }
-      showFooterDivider
+      showFooterDivider={!isIdle}
+      footerGap={isIdle ? 20 : 12}
       footer={
         actions !== undefined ? (
           actions

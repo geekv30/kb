@@ -23,4 +23,16 @@ export type AISuggestion = {
   sourceCount: number;
 };
 
-export type AISuggestionState = 'active' | AISuggestionDecision;
+/**
+ * Visual + lifecycle state of an AI gap suggestion card.
+ *
+ *   idle       → paired with a suggestion but not the currently-active one.
+ *                Recessed look: canvas-grey BG, faint border, drop shadow,
+ *                title color steps down to text-secondary. Sits behind the
+ *                active summary card in the editor's right rail.
+ *   active     → the card under review. White BG, body type-primary,
+ *                full set of arrows / sources / accept-reject affordances.
+ *   accepted   → terminal chip — collapsed card with "ACCEPTED" label.
+ *   dismissed  → terminal chip — collapsed card with "DISMISSED" label.
+ */
+export type AISuggestionState = 'idle' | 'active' | AISuggestionDecision;
