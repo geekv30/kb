@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import * as React from 'react';
+import { DotsVertical } from '@untitledui/icons';
 import '../../tokens.css';
 import { FileExplorerNav, type NavItem } from './FileExplorerNav';
 
@@ -127,4 +128,50 @@ export default meta;
 
 export const Playground: StoryObj<typeof FileExplorerNav> = {
   render: () => <FileExplorerNavPlayground />,
+};
+
+/* ─────────────────────────────────────────────────────────────
+ * WithRowActions — demonstrates the `renderRowAction` prop:
+ * a per-row 3-dot button that reveals on hover, replacing the
+ * count badge (folders) / status dot (articles). Click stops
+ * propagation so it does not trigger row navigation.
+ * ───────────────────────────────────────────────────────────── */
+function FileExplorerNavWithRowActions() {
+  const [activeId, setActiveId] = React.useState<string>('tut-organize');
+  const activeTitle = findTitle(tree, activeId) ?? activeId;
+
+  return (
+    <div className="flex h-screen">
+      <FileExplorerNav
+        title="Editor"
+        items={tree}
+        activeId={activeId}
+        onItemClick={(id) => setActiveId(id)}
+        variant="tree"
+        renderRowAction={(item) => (
+          <button
+            type="button"
+            aria-label="Open menu"
+            className="flex h-7 w-7 items-center justify-center rounded-[4px] hover:bg-[#f1f5f9] text-text-meta"
+            onClick={(e) => {
+              e.stopPropagation();
+              // eslint-disable-next-line no-console
+              console.log('row menu', item.id);
+            }}
+          >
+            <DotsVertical className="h-4 w-4" />
+          </button>
+        )}
+      />
+      <div className="flex-1 bg-[#f5f5f5] flex items-center justify-center">
+        <span className="text-[14px] text-[#64748b]">
+          Editing: {activeTitle}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+export const WithRowActions: StoryObj<typeof FileExplorerNav> = {
+  render: () => <FileExplorerNavWithRowActions />,
 };

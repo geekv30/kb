@@ -13,6 +13,9 @@ import { cn } from '../../utils/cn';
  *
  * Mirrors SideSheet's `inline` mode so a Modal can also be hosted
  * inside a review pane without escaping to document.body.
+ *
+ * Optional radius / bodyPadding / footerLayout props let consumers
+ * match modals with chunkier chrome — see NewCategoryModal.
  * ───────────────────────────────────────────────────────────── */
 
 export type ModalProps = {
@@ -50,6 +53,17 @@ export type ModalProps = {
    * to close.
    */
   inline?: boolean;
+  /** Outer corner radius in px. Defaults to 8 (existing Convert-to-External-KB modal). */
+  radius?: number;
+  /** Body padding in px (uniform). Defaults to 16. */
+  bodyPadding?: number;
+  /**
+   * When `'inside'` (default), footer renders inside the body
+   * container with `pt-2` (existing behavior).
+   * When `'section'`, footer renders as a separate section below
+   * the body with its own padding (`pb-5 pt-4 px-5`, white bg).
+   */
+  footerLayout?: 'inside' | 'section';
 };
 
 /* ─────────────────────────────────────────────────────────────
@@ -69,15 +83,23 @@ export type ModalProps = {
  * actions row.
  * ───────────────────────────────────────────────────────────── */
 
-const headerClass =
-  'flex shrink-0 items-center justify-between gap-2 rounded-t-[8px] border-b border-card-border bg-surface-subtle px-4 py-3';
+const headerBaseClass =
+  'flex shrink-0 items-center justify-between gap-2 border-b border-card-border bg-surface-subtle px-4 py-3';
 const headerLeftClass = 'flex items-center gap-2 min-w-0';
 const headerIconClass =
   'flex h-4 w-4 shrink-0 items-center justify-center text-text-primary [&_svg]:h-4 [&_svg]:w-4';
 const titleClass =
   'text-[16px] font-medium leading-6 text-text-primary truncate';
-const bodyClass = 'flex flex-col gap-4 p-4';
-const footerClass = 'flex items-end justify-end gap-2 pt-2';
+const bodyBaseClass = 'flex flex-col gap-4';
+/* Footer (inside mode): renders inside the body container with a
+ * pt-2 (8px) gap on top of the body's `gap-4` → 24px total above
+ * the actions row, matching Figma `_Modal-Actions`. */
+const footerInsideClass = 'flex items-end justify-end gap-2 pt-2';
+/* Footer (section mode): renders as a separate, white-bg section
+ * BELOW the body container. Padding `pb-5 pt-4 px-5` per Figma
+ * 1958:34896 (New Category). */
+const footerSectionClass =
+  'flex items-end justify-end gap-2 bg-white pb-5 pt-4 px-5';
 
 /* ─────────────────────────────────────────────────────────────
  * Internal — renders the visual chrome (header + body + footer).
@@ -93,6 +115,12 @@ type ChromeProps = Pick<
 > & {
   /** When true, wrap the title in `Dialog.Title` (portal mode). */
   asDialogTitle: boolean;
+  /** Outer corner radius — header consumes the top radius. */
+  radius: number;
+  /** Body padding (uniform). */
+  bodyPadding: number;
+  /** Where the footer renders relative to the body container. */
+  footerLayout: 'inside' | 'section';
 };
 
 function ModalChrome({
@@ -102,6 +130,9 @@ function ModalChrome({
   children,
   footer,
   asDialogTitle,
+  radius,
+  bodyPadding,
+  footerLayout,
 }: ChromeProps) {
   const titleNode =
     title !== undefined ? (
@@ -121,7 +152,11 @@ function ModalChrome({
 
   return (
     <>
-      <div data-kb-part="modal-header" className={headerClass}>
+      <div
+        data-kb-part="modal-header"
+        className={headerBaseClass}
+        style={{ borderTopLeftRadius: radius, borderTopRightRadius: radius }}
+      >
         <div className={headerLeftClass}>
           {titleIcon !== undefined ? (
             <span
@@ -142,14 +177,24 @@ function ModalChrome({
         ) : null}
       </div>
 
-      <div data-kb-part="modal-body" className={bodyClass}>
+      <div
+        data-kb-part="modal-body"
+        className={bodyBaseClass}
+        style={{ padding: bodyPadding }}
+      >
         {children}
-        {footer !== undefined ? (
-          <div data-kb-part="modal-footer" className={footerClass}>
+        {footer !== undefined && footerLayout === 'inside' ? (
+          <div data-kb-part="modal-footer" className={footerInsideClass}>
             {footer}
           </div>
         ) : null}
       </div>
+
+      {footer !== undefined && footerLayout === 'section' ? (
+        <div data-kb-part="modal-footer" className={footerSectionClass}>
+          {footer}
+        </div>
+      ) : null}
     </>
   );
 }
@@ -169,6 +214,9 @@ export function Modal({
   width = 384,
   className,
   inline = false,
+  radius = 8,
+  bodyPadding = 16,
+  footerLayout = 'inside',
 }: ModalProps) {
   /* Inline mode — render chrome directly (no Radix Dialog/Portal/
    * Overlay). Mirrors SideSheet's inline mode for use inside review
@@ -178,9 +226,9 @@ export function Modal({
       <div
         data-kb-component="modal"
         data-kb-mode="inline"
-        style={{ width: `${width}px` }}
+        style={{ width: `${width}px`, borderRadius: radius }}
         className={cn(
-          'flex flex-col bg-white rounded-[8px] border border-card-border',
+          'flex flex-col bg-white border border-card-border overflow-hidden',
           'shadow-[0_24px_48px_rgba(15,23,42,0.20)]',
           'focus:outline-none',
           className,
@@ -192,6 +240,9 @@ export function Modal({
           titleTrailing={titleTrailing}
           footer={footer}
           asDialogTitle={false}
+          radius={radius}
+          bodyPadding={bodyPadding}
+          footerLayout={footerLayout}
         >
           {children}
         </ModalChrome>
@@ -212,11 +263,11 @@ export function Modal({
 
         <Dialog.Content
           data-kb-component="modal"
-          style={{ width: `${width}px` }}
+          style={{ width: `${width}px`, borderRadius: radius }}
           className={cn(
             'fixed left-1/2 top-1/2 z-[91] -translate-x-1/2 -translate-y-1/2',
             'max-w-[calc(100vw-32px)]',
-            'flex flex-col bg-white rounded-[8px] border border-card-border',
+            'flex flex-col bg-white border border-card-border overflow-hidden',
             'shadow-[0_24px_48px_rgba(15,23,42,0.20)]',
             'animate-toast-in focus:outline-none',
             className,
@@ -240,6 +291,9 @@ export function Modal({
             titleTrailing={titleTrailing}
             footer={footer}
             asDialogTitle={title !== undefined}
+            radius={radius}
+            bodyPadding={bodyPadding}
+            footerLayout={footerLayout}
           >
             {children}
           </ModalChrome>

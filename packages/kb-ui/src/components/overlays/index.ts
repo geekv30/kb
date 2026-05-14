@@ -9,3 +9,9 @@ export { SideSheet } from './SideSheet';
 export type { SideSheetProps } from './SideSheet';
 export { Modal } from './Modal';
 export type { ModalProps } from './Modal';
+export { NewCategoryModal } from './NewCategoryModal';
+export type {
+  NewCategoryModalProps,
+  NewCategoryFormValues,
+  ParentCategoryOption,
+} from './NewCategoryModal';
