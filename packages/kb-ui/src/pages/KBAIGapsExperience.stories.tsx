@@ -996,6 +996,8 @@ function InteractiveRender({ enableKeyboard }: { enableKeyboard: boolean }) {
           suggestion={s}
           state="idle"
           onActivate={(id) => dispatch({ type: 'activateSuggestion', id })}
+          onAccept={(id) => dispatch({ type: 'accept', id })}
+          onReject={(id) => dispatch({ type: 'reject', id })}
         />
       ),
     };

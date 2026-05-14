@@ -3,13 +3,19 @@
 //
 // Replaces the legacy `flex flex-col gap-4` stack with a tall column in
 // which:
-//   - The `summary` slot is sticky at the top of the rail.
+//   - The `summary` slot sits at the top of the rail in normal flow and
+//     scrolls with the page (no longer sticky — the previous sticky
+//     positioning caused the summary to visually clip the first paired
+//     card whose anchor sat in the first ~200px of the article).
 //   - Each `items[i].node` (paired suggestion card) is absolutely
 //     positioned and vertically anchored to its matching DOM anchor in
 //     `articleRef`, identified by `data-suggestion-id`.
 //   - A top-to-bottom collision walk ensures cards don't overlap; the
-//     `minGap` between cards is enforced by pinning each card's top to
-//     `max(targetTop, prevBottom + minGap)`.
+//     walk is SEEDED with `summaryHeight + minGap` so the first paired
+//     card is always pushed below the summary's flow space, even when
+//     its anchor sits at a low article-Y.
+//   - The `minGap` between cards is enforced by pinning each card's
+//     top to `max(targetTop, prevBottom + minGap)`.
 //   - When a card is offset from its anchor's true Y by more than
 //     `connectorTolerance` px (default 24), a 1px dotted vertical
 //     connector renders on the card's left edge back toward the anchor.
@@ -25,9 +31,6 @@
 // `getBoundingClientRect()` relative to the viewport. This handles every
 // case where the two columns don't start at the same Y (e.g. when the
 // article body has a wrapping header above it).
-//
-// The rail itself is NOT sticky — chunk 3 explicitly moves stickiness
-// from the rail container to the summary card inside the rail.
 import * as React from 'react';
 import { cn } from '../../utils/cn';
 import { useAnchorPositions } from '../../hooks/useAnchorPositions';
@@ -53,9 +56,10 @@ export type AIGapRailProps = {
    */
   articleRef: React.RefObject<HTMLElement | null>;
   /**
-   * Sticky element rendered at the top of the rail. Typically the
-   * `<AISuggestionsCard>` summary card. The rail wraps it in a `sticky
-   * top-4` container so it stays visible while the user scrolls.
+   * Slot rendered at the top of the rail in normal flow. Typically the
+   * `<AISuggestionsCard>` summary card. The rail measures the slot's
+   * rendered height and uses it to seed the collision walk so the first
+   * paired card is never visually overlapped by the summary.
    */
   summary: React.ReactNode;
   /**
@@ -119,6 +123,7 @@ export function AIGapRail({
   className,
 }: AIGapRailProps) {
   const railRef = React.useRef<HTMLDivElement>(null);
+  const summaryRef = React.useRef<HTMLDivElement>(null);
   // Per-card refs so we can measure rendered heights for the collision
   // walk. Keyed by item.id so re-ordering doesn't blow up the map.
   const cardRefsRef = React.useRef<Map<string, HTMLDivElement | null>>(
@@ -128,6 +133,9 @@ export function AIGapRail({
   const [cardHeights, setCardHeights] = React.useState<Record<string, number>>(
     () => ({}),
   );
+  // Measured height of the summary slot. Used to seed the collision
+  // walk so the first paired card always sits below the summary.
+  const [summaryHeight, setSummaryHeight] = React.useState(0);
   // Translation offset between article container and rail container, in
   // viewport coordinates. Recomputed on resize / layout.
   const [coordOffset, setCoordOffset] = React.useState(0);
@@ -197,6 +205,26 @@ export function AIGapRail({
     };
   }, [items, ids]);
 
+  /* ── Measure summary slot height ───────────────────────────── */
+  // Seeds the collision walk so the first paired card never lands in
+  // the rail-Y range occupied by the summary's flow space. ResizeObserver
+  // catches summary mode swaps (pre-review ↔ reviewing ↔ terminal) which
+  // change the slot's rendered height.
+  React.useEffect(() => {
+    const el = summaryRef.current;
+    if (!el) return;
+    const measure = () => {
+      setSummaryHeight((prev) => {
+        const next = el.getBoundingClientRect().height;
+        return prev === next ? prev : next;
+      });
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   /* ── Article ↔ rail coordinate-space translation ───────────── */
   React.useEffect(() => {
     const measureOffset = () => {
@@ -229,9 +257,14 @@ export function AIGapRail({
   }, [articleRef]);
 
   /* ── Collision walk — pin each card top to max(target, prev+gap) ── */
+  // Seeded with `summaryHeight + minGap` so the first paired card is
+  // always positioned BELOW the summary slot's flow space. Without the
+  // seed, a suggestion anchor at e.g. article-Y=50 would land at rail-Y
+  // 50 and be visually clipped by the summary (which occupies rail-Y
+  // 0 → summaryHeight in normal flow).
   const layouts: CardLayout[] = React.useMemo(() => {
     const out: CardLayout[] = [];
-    let prevBottom = 0;
+    let prevBottom = summaryHeight > 0 ? summaryHeight + minGap : 0;
     for (const item of items) {
       const rawAnchor = anchorPositions[item.id];
       // Skip the connector + use a fallback top when the anchor isn't
@@ -247,7 +280,15 @@ export function AIGapRail({
       prevBottom = top + height + minGap;
     }
     return out;
-  }, [items, anchorPositions, coordOffset, cardHeights, minGap, connectorTolerance]);
+  }, [
+    items,
+    anchorPositions,
+    coordOffset,
+    cardHeights,
+    minGap,
+    connectorTolerance,
+    summaryHeight,
+  ]);
 
   /* ── Rail min-height: tallest card-bottom across the walk ──── */
   const minHeight = React.useMemo(() => {
@@ -271,18 +312,20 @@ export function AIGapRail({
       data-kb-part="ai-gaps-rail"
       className={cn(
         // Cards inside are absolutely positioned, so the rail must be
-        // `relative` and have an explicit min-height. The sticky child
-        // (summary) sits inside, so we can't use a `flex` layout that
-        // would otherwise control intrinsic height.
+        // `relative` and have an explicit min-height. The summary
+        // slot sits in normal flow at the top; everything below it is
+        // absolute-positioned, so a flex layout wouldn't add value.
         'relative w-[380px] shrink-0',
         className,
       )}
       style={{ minHeight: minHeight ? `${minHeight}px` : undefined }}
     >
-      {/* Sticky summary slot — replaces the rail-level stickiness. */}
+      {/* Summary slot — sits in normal flow at the top of the rail.
+          Its measured height seeds the collision walk so paired cards
+          never land in its rail-Y range. */}
       <div
+        ref={summaryRef}
         data-kb-part="ai-gap-rail-summary"
-        className="sticky top-4 z-[1]"
       >
         {summary}
       </div>
