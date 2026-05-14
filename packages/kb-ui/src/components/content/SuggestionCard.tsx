@@ -6,6 +6,7 @@ import {
   BookOpen01,
   FolderDownload,
   Mail01,
+  Stars02,
 } from '@untitledui/icons';
 import { cn } from '../../utils/cn';
 import { tokens } from '../../tokens';
@@ -37,10 +38,18 @@ export type SuggestionKindMeta = {
 };
 
 /* ─────────────────────────────────────────────────────────────
- * Constants — tokens verified against Figma 74:8927
+ * Constants — tokens verified against Figma 1958:45549
  *
- *   Brand pink   : #D92FFF (start of the AiIcon gradient — used for
- *                  all "suggestion" glyphs so they read as a family)
+ *   AI accent    : AI brand gradient (magenta → peach) — applied
+ *                  to the kind-chip glyph (Pencil02 / BookOpen01 /
+ *                  FolderDownload) AND the suggestions-chip glyph
+ *                  (Stars02). See AI_GRADIENT_STROKE below — the
+ *                  gradient stops mirror the brand AiIcon so all
+ *                  AI-accent glyphs read as one visual family.
+ *   Icon neutral : #0f172a — title leading icon (File02) and the
+ *                  Mail01 meta icon. Matches Figma variable
+ *                  `icon/neutral/default` (#0f172a) which the
+ *                  reference frame uses for both glyphs.
  *   Title text   : #0f172a
  *   Description  : #64748b (muted body — matches Figma screenshot)
  *   Divider      : #f1f5f9 (1px, full inner width)
@@ -52,8 +61,63 @@ export type SuggestionKindMeta = {
  *   Padding      : 20/24 (inner)
  * ───────────────────────────────────────────────────────────── */
 
-// mirror of --color-ai-pink — kept inline so Ri* icons accept color prop
-const PINK = tokens.color.aiPink;
+// mirror of --color-text-primary — same hex as Figma
+// `icon/neutral/default` (#0f172a). Used on the title leading icon
+// and the Mail01 conversations icon, matching the Figma reference.
+const ICON_NEUTRAL = tokens.color.textPrimary;
+
+/* ─────────────────────────────────────────────────────────────
+ * AI gradient — magenta → peach, mirrored from the AiIcon brand
+ * mark (`packages/kb-ui/src/components/brand/AiIcon.tsx`).
+ *
+ * The gradient id is suffixed with `-chip` so it cannot collide
+ * with `kb-ai-icon-gradient` (the brand AiIcon) if both render on
+ * the same screen. Stops, offsets, and direction are byte-identical
+ * to the brand mark so all "AI-accent" glyphs read as one family.
+ *
+ *   Stop 0 (offset 0): #D92FFF (magenta)
+ *   Stop 1 (offset 1): #FFC987 (peach)
+ *   Direction: linear, gradientUnits="objectBoundingBox",
+ *              x1=-0.07961 y1=0.49054 → x2=0.90309 y2=0.38804
+ *
+ * Untitled UI icons accept `color` only — internally they apply it
+ * via `stroke={color}` on the root <svg>. Because SVG resolves
+ * `url(#id)` references across the document, passing
+ * `color="url(#kb-ai-gradient-chip)"` and rendering the <defs>
+ * once at card root paints each chip icon with the gradient.
+ * ───────────────────────────────────────────────────────────── */
+
+const AI_GRADIENT_CHIP_ID = 'kb-ai-gradient-chip';
+const AI_GRADIENT_STROKE = `url(#${AI_GRADIENT_CHIP_ID})`;
+
+function AiGradientDefs() {
+  // Rendered once per SuggestionCard. The <svg> is zero-sized and
+  // aria-hidden — its sole purpose is to host the <defs> so that
+  // sibling icons can reference `url(#kb-ai-gradient-chip)`.
+  return (
+    <svg
+      width={0}
+      height={0}
+      aria-hidden
+      focusable={false}
+      style={{ position: 'absolute', width: 0, height: 0 }}
+    >
+      <defs>
+        <linearGradient
+          id={AI_GRADIENT_CHIP_ID}
+          gradientUnits="objectBoundingBox"
+          x1="-0.07961"
+          y1="0.49054"
+          x2="0.90309"
+          y2="0.38804"
+        >
+          <stop offset="0" stopColor="#D92FFF" />
+          <stop offset="1" stopColor="#FFC987" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
 
 /**
  * Default registry — covers the 3 historical built-in kinds. Custom
@@ -65,18 +129,24 @@ const PINK = tokens.color.aiPink;
  * the original behavior). The label here is the fallback used when
  * the path props are absent.
  */
+/**
+ * All meta-row icons render at 14px — matches Figma 1958:45561 exactly
+ * (Pencil02 / BookOpen01 / FolderDownload / Mail01 all sit in identical
+ * 14×14 boxes in the Tags Container). No size compensation: copy Figma
+ * literally per the project's 1:1 fidelity rule.
+ */
 export const DEFAULT_SUGGESTION_KINDS: Record<string, SuggestionKindMeta> = {
   'article-edit': {
     label: 'Article Edit',
-    icon: <Pencil02 size={16} color={PINK} />,
+    icon: <Pencil02 size={14} color={AI_GRADIENT_STROKE} />,
   },
   'new-article': {
     label: 'New Article',
-    icon: <BookOpen01 size={16} color={PINK} />,
+    icon: <BookOpen01 size={14} color={AI_GRADIENT_STROKE} />,
   },
   'move-article': {
     label: 'Move Article',
-    icon: <FolderDownload size={16} color={PINK} />,
+    icon: <FolderDownload size={14} color={AI_GRADIENT_STROKE} />,
   },
 };
 
@@ -95,6 +165,15 @@ export type SuggestionCardProps = {
    * as the label and no icon — never throws.
    */
   kind: SuggestionKind | (string & {});
+  /**
+   * Optional — number of AI suggestions for this article. When
+   * defined, renders a `<Stars02 gradient> {N} Suggestion(s)` chip
+   * BETWEEN the kind chip and the Conversations chip. Singular/plural
+   * follows the same convention as `conversationCount`. Left optional
+   * so existing usages of `SuggestionCard` keep their 3-chip layout
+   * unchanged.
+   */
+  suggestionCount?: number;
   conversationCount: number;
   impact: SuggestionImpact;
   /**
@@ -144,7 +223,7 @@ function KindChip({ kind, pathFrom, pathTo, registry }: KindChipProps) {
   // edge case where both path props are undefined.
   if (kind === 'move-article' && entry) {
     return (
-      <span className="flex items-center gap-[6px] text-[14px] font-medium text-text-meta">
+      <span className="flex items-center gap-[2px] text-[12px] leading-[18px] font-medium text-text-meta">
         {entry.icon}
         <span className="inline-flex items-center gap-1">
           {pathFrom ?? ''}
@@ -160,14 +239,14 @@ function KindChip({ kind, pathFrom, pathTo, registry }: KindChipProps) {
   if (!entry) {
     // Unknown kind — render the raw key as label, no icon. Don't throw.
     return (
-      <span className="flex items-center gap-[6px] text-[14px] font-medium text-text-meta">
+      <span className="flex items-center gap-[2px] text-[12px] leading-[18px] font-medium text-text-meta">
         {kind}
       </span>
     );
   }
 
   return (
-    <span className="flex items-center gap-[6px] text-[14px] font-medium text-text-meta">
+    <span className="flex items-center gap-[2px] text-[12px] leading-[18px] font-medium text-text-meta">
       {entry.icon}
       {entry.label}
     </span>
@@ -182,7 +261,7 @@ function MetaDot() {
   return (
     <span
       aria-hidden
-      className="mx-[8px] text-[14px] font-medium text-text-disabled leading-none select-none"
+      className="text-[13px] leading-[19px] font-medium text-text-muted select-none"
     >
       ·
     </span>
@@ -203,6 +282,7 @@ export function SuggestionCard({
   title,
   description,
   kind,
+  suggestionCount,
   conversationCount,
   impact,
   pathFrom,
@@ -226,7 +306,7 @@ export function SuggestionCard({
   );
 
   const registry = kindRegistry ?? DEFAULT_SUGGESTION_KINDS;
-  const titleIcon = icon ?? <File02 size={18} color={PINK} />;
+  const titleIcon = icon ?? <File02 size={18} color={ICON_NEUTRAL} />;
 
   return (
     <div
@@ -278,11 +358,23 @@ export function SuggestionCard({
         className="h-px bg-card-divider w-full"
       />
 
-      {/* Row 3 — meta row: kind · conversations · impact */}
+      {/* Row 3 — meta row: kind · [suggestions] · conversations · impact
+          Figma 1958:45561 — Tags Container. 12px gap between chips,
+          icons 14×14, chip labels 12px/18px Medium, divider dot 13px/19px
+          in text-text-muted (#64748b), HIGH IMPACT label 11px/18px Medium
+          with 0.22px letter-spacing (≈0.02em). The `suggestionCount`
+          chip uses the AI gradient stroke (Stars02 glyph) and is only
+          rendered when the prop is defined — keeping existing 3-chip
+          callsites unchanged. */}
       <div
         data-kb-part="suggestion-meta"
-        className="flex items-center flex-wrap"
+        className="flex items-center flex-wrap gap-x-[12px] gap-y-[4px]"
       >
+        {/* Shared <defs> for the AI gradient — referenced by stroke=url(#…)
+            on every Untitled UI line icon that carries the AI accent in
+            this card (kind chip + suggestions chip). Rendered once at the
+            top of the meta row so it's adjacent to its consumers. */}
+        <AiGradientDefs />
         <KindChip kind={kind} pathFrom={pathFrom} pathTo={pathTo} registry={registry} />
         {meta !== undefined ? (
           <>
@@ -291,13 +383,26 @@ export function SuggestionCard({
           </>
         ) : (
           <>
+            {suggestionCount !== undefined && (
+              <>
+                <MetaDot />
+                <span
+                  data-kb-part="suggestion-count"
+                  className="flex items-center gap-[2px] text-[12px] leading-[18px] font-medium text-text-meta"
+                >
+                  <Stars02 size={14} color={AI_GRADIENT_STROKE} />
+                  {suggestionCount}{' '}
+                  {suggestionCount === 1 ? 'Suggestion' : 'Suggestions'}
+                </span>
+              </>
+            )}
             <MetaDot />
-            <span className="flex items-center gap-[6px] text-[14px] font-medium text-text-meta">
-              <Mail01 size={16} />
+            <span className="flex items-center gap-[2px] text-[12px] leading-[18px] font-medium text-text-meta">
+              <Mail01 size={14} color={ICON_NEUTRAL} />
               {conversationCount} Conversations
             </span>
             <MetaDot />
-            <span className="text-[12px] font-medium leading-5 text-text-meta tracking-[0.04em]">
+            <span className="text-[11px] leading-[18px] font-medium text-text-meta tracking-[0.02em]">
               {impact.toUpperCase()} IMPACT
             </span>
           </>

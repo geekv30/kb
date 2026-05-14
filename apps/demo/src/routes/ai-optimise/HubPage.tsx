@@ -113,6 +113,7 @@ export default function HubPage() {
                 title={article.title}
                 description={description}
                 kind="article-edit"
+                suggestionCount={pending.length}
                 conversationCount={conversationCount}
                 impact={impact}
                 onClick={() => navigate(routes.aiOptimise.review(article.slug))}
