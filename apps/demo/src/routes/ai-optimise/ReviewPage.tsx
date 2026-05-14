@@ -33,6 +33,8 @@ import {
   ArticleBody,
   ArticleSettingsPanel,
   SourcesSideSheet,
+  hasUndecidedNeighbour,
+  smoothScrollTo,
   type AIGapRailItem,
   type AISuggestion as KbUiAISuggestion,
   type AISuggestionDecision,
@@ -288,22 +290,34 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
 
   const activeSuggestion = kbSuggestions[aiState.activeIndex];
 
-  /* ── Scroll side effects (mirrors kb-ui Interactive story) ─ */
+  /* ── Scroll side effects (chunk 4 — rAF smooth scroll) ───
+   *
+   * Mirrors the kb-ui Interactive story: position the active highlight's
+   * center at 40% of the viewport height so the rest of the article
+   * stays visible below it. Driven by the rAF-based `smoothScrollTo`
+   * utility — bails on prefers-reduced-motion, cancels on manual
+   * scroll input mid-flight.
+   * ─────────────────────────────────────────────────────── */
   React.useEffect(() => {
+    const main = document.querySelector('main') as HTMLElement | null;
+    if (!main) return;
     if (effectiveMode === 'reviewing') {
       const id = kbSuggestions[aiState.activeIndex]?.id;
       if (!id) return;
       const slot = slotMap.get(id);
       if (!slot) return;
       const el = document.getElementById(slot);
-      if (el) {
-        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      }
+      if (!el) return;
+      const mainRect = main.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      const viewportH = mainRect.height;
+      const elCenterFromTop = elRect.top - mainRect.top + elRect.height / 2;
+      const targetCenterY = viewportH * 0.4;
+      const target = Math.max(0, main.scrollTop + elCenterFromTop - targetCenterY);
+      smoothScrollTo({ target, duration: 400, scrollElement: main });
       return;
     }
-    // Both `terminal` and `pre-review` scroll <main> back to top.
-    const main = document.querySelector('main');
-    if (main) main.scrollTo({ top: 0, behavior: 'smooth' });
+    smoothScrollTo({ target: 0, duration: 400, scrollElement: main });
   }, [effectiveMode, aiState.activeIndex, kbSuggestions, slotMap]);
 
   /* ── Keyboard shortcuts (PRD §7.5) ──────────────────────── */
@@ -379,14 +393,31 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
   // an `<article>` so we widen the type accordingly.
   const articleRef = React.useRef<HTMLElement>(null);
 
-  /* ── Rail composition — chunk 3: paired layout ────────────────
-   * Summary card stays sticky at the rail top in every mode. In
-   * `pre-review` the paired idle cards render anchored to highlights;
-   * during `reviewing` we swap the matching item to its active card and
-   * other paired cards stay as decision chips or idle (chunks 4/5 wire
-   * the activation logic). In `terminal` the decision chips replace the
-   * paired idle cards.
+  /* ── Rail composition — chunk 4: active flow ──────────────────
+   *
+   * Summary card switches mode:
+   *   pre-review → full detail + "Review Suggestions (N)" CTA
+   *   reviewing  → compact header (icon + title + count pill)
+   *   terminal   → "Suggestions" + count + disabled "Reviewed All" pill
+   *
+   * Paired idle cards are click-to-activate via `onActivate` which
+   * dispatches `activateSuggestion`. Active card's up/down arrows
+   * are disabled at the boundaries (no unresolved card prev/next of
+   * the active one) via `canGoPrev` / `canGoNext`.
    * ───────────────────────────────────────────────────────────── */
+  const canGoPrev = hasUndecidedNeighbour(
+    kbSuggestions,
+    effectiveDecisions,
+    aiState.activeIndex,
+    'prev',
+  );
+  const canGoNext = hasUndecidedNeighbour(
+    kbSuggestions,
+    effectiveDecisions,
+    aiState.activeIndex,
+    'next',
+  );
+
   const summaryNode = (
     <>
       <ArticleSettingsPanel
@@ -399,9 +430,21 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
           mode="pre-review"
           count={kbSuggestions.length}
           summary={SUMMARY}
-          onReview={() => dispatch({ type: 'review' })}
+          onReview={() => {
+            const firstId = kbSuggestions[0]?.id;
+            if (firstId) {
+              dispatch({ type: 'activateSuggestion', id: firstId });
+            }
+          }}
           onPrev={() => dispatch({ type: 'prev' })}
           onNext={() => dispatch({ type: 'next' })}
+        />
+      )}
+      {effectiveMode === 'reviewing' && (
+        <AISuggestionsCard
+          mode="reviewing"
+          count={kbSuggestions.length}
+          summary={SUMMARY}
         />
       )}
       {effectiveMode === 'terminal' && (
@@ -449,16 +492,29 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
               }
               onAccept={(id) => dispatch({ type: 'accept', id })}
               onReject={(id) => dispatch({ type: 'reject', id })}
+              canGoPrev={canGoPrev}
+              canGoNext={canGoNext}
             />
           ),
         };
       }
-      // pre-review + reviewing-non-active → idle paired card. Chunk 3
-      // explicitly bypasses the legacy visibility gate so every
-      // suggestion's idle card renders from page load.
+      // pre-review + reviewing-non-active → idle paired card. Clicking
+      // an idle card dispatches `activateSuggestion` (chunk 4). When
+      // the article is already published (PRD §9.5) suppress activation
+      // so the historical chips can't be re-activated.
       return {
         id: s.id,
-        node: <AIGapSuggestionCard suggestion={s} state="idle" />,
+        node: (
+          <AIGapSuggestionCard
+            suggestion={s}
+            state="idle"
+            onActivate={
+              isAlreadyPublished
+                ? undefined
+                : (id) => dispatch({ type: 'activateSuggestion', id })
+            }
+          />
+        ),
       };
     });
   }, [
@@ -468,6 +524,8 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
     activeSuggestion,
     isAlreadyPublished,
     dispatch,
+    canGoPrev,
+    canGoNext,
   ]);
 
   return (

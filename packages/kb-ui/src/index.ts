@@ -2,6 +2,11 @@
 // Components are exported here as they are built phase by phase.
 
 export { cn } from './utils/cn';
+export { smoothScrollTo, easings } from './utils/smoothScrollTo';
+export type {
+  SmoothScrollOptions,
+  SmoothScrollHandle,
+} from './utils/smoothScrollTo';
 export { tokens } from './tokens';
 export type { Tokens } from './tokens';
 
@@ -19,6 +24,7 @@ export {
   aiGapsReducer,
   isPublishEnabled,
   isAllReviewed,
+  hasUndecidedNeighbour,
 } from './hooks/useAIGapsReducer';
 export type {
   AIGapsState,

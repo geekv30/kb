@@ -37,6 +37,24 @@ export type AIGapSuggestionCardProps = {
   onAccept?: (id: string) => void;
   onReject?: (id: string) => void;
   onUndo?: (id: string) => void;
+  /**
+   * Chunk 4 — click handler for the idle card. Fires when the user
+   * clicks anywhere on a paired `state="idle"` card to activate it.
+   * Wraps the entire card in a `<button>`-like surface (Radix-style
+   * keyboard semantics: Enter / Space).
+   */
+  onActivate?: (id: string) => void;
+  /**
+   * Chunk 4 — `false` disables the up-arrow on the active card.
+   * Defaults to `true` (arrow stays clickable). Has no effect when
+   * `state !== 'active'`.
+   */
+  canGoPrev?: boolean;
+  /**
+   * Chunk 4 — `false` disables the down-arrow on the active card.
+   * Defaults to `true`. Has no effect when `state !== 'active'`.
+   */
+  canGoNext?: boolean;
   className?: string;
   actions?: React.ReactNode;
   meta?: React.ReactNode;
@@ -97,14 +115,19 @@ function TypeChip({
 function SourcesButton({
   count,
   onClick,
+  disabled,
 }: {
   count: number;
   onClick?: () => void;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      aria-hidden={disabled || undefined}
+      tabIndex={disabled ? -1 : undefined}
       className={cn(
         'inline-flex items-center gap-1 rounded-[4px] px-1.5 py-1',
         // Per Figma `ai-gap-active-addition.png` — '4 Sources' is
@@ -112,7 +135,9 @@ function SourcesButton({
         // visual baseline alignment with the icon + adjacent NavArrow
         // / accept-reject pills (medium gave a heavier optical feel).
         'text-[14px] font-normal leading-[20px] text-text-meta',
-        'transition-colors hover:bg-surface-muted hover:text-text-primary',
+        disabled
+          ? 'cursor-default'
+          : 'transition-colors hover:bg-surface-muted hover:text-text-primary',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
       )}
     >
@@ -122,16 +147,26 @@ function SourcesButton({
   );
 }
 
-function RejectButton({ onClick }: { onClick?: () => void }) {
+function RejectButton({
+  onClick,
+  disabled,
+}: {
+  onClick?: () => void;
+  disabled?: boolean;
+}) {
   return (
     <button
       type="button"
-      onClick={onClick}
-      aria-label="Reject suggestion"
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      aria-hidden={disabled || undefined}
+      tabIndex={disabled ? -1 : undefined}
+      aria-label={disabled ? undefined : 'Reject suggestion'}
       className={cn(
         'inline-flex size-6 items-center justify-center rounded-full bg-[var(--color-btn-danger-bg)]',
         // Hover bg derived from --color-ai-removal (#d52c1f) at ~12% over white.
-        'text-ai-removal transition-colors hover:bg-[#fad9d6]',
+        'text-ai-removal',
+        disabled ? 'cursor-default' : 'transition-colors hover:bg-[#fad9d6]',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
       )}
     >
@@ -140,19 +175,29 @@ function RejectButton({ onClick }: { onClick?: () => void }) {
   );
 }
 
-function AcceptButton({ onClick }: { onClick?: () => void }) {
+function AcceptButton({
+  onClick,
+  disabled,
+}: {
+  onClick?: () => void;
+  disabled?: boolean;
+}) {
   return (
     <button
       type="button"
-      onClick={onClick}
-      aria-label="Accept suggestion"
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      aria-hidden={disabled || undefined}
+      tabIndex={disabled ? -1 : undefined}
+      aria-label={disabled ? undefined : 'Accept suggestion'}
       className={cn(
         // Figma 74:10490 — bg=background/neutral/subtle (#f1f5f9),
         // icon=icon/neutral/default (#0f172a). Same pill shape as
         // the reject button (rounded-full). Hover deepens the bg one
         // step to keep affordance visible on the light fill.
         'inline-flex size-6 items-center justify-center rounded-full bg-surface-muted',
-        'text-text-primary transition-colors hover:bg-card-border',
+        'text-text-primary',
+        disabled ? 'cursor-default' : 'transition-colors hover:bg-card-border',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
       )}
     >
@@ -170,6 +215,9 @@ export function AIGapSuggestionCard({
   onAccept,
   onReject,
   onUndo,
+  onActivate,
+  canGoPrev = true,
+  canGoNext = true,
   className,
   actions,
   meta,
@@ -228,6 +276,22 @@ export function AIGapSuggestionCard({
    * ───────────────────────────────────────────────────────────── */
   const isIdle = state === 'idle';
 
+  // Chunk 4 — idle cards are click-to-activate. The whole card acts as the
+  // primary click target so users don't need to hit a tiny CTA. Inner
+  // arrows/sources/accept-reject buttons keep their existing inert UI but
+  // are wrapped in `e.stopPropagation()` so cursor accuracy isn't punished.
+  const handleIdleActivate = isIdle && onActivate
+    ? () => onActivate(suggestion.id)
+    : undefined;
+  const handleIdleKey = handleIdleActivate
+    ? (e: React.KeyboardEvent<HTMLElement>) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleIdleActivate();
+        }
+      }
+    : undefined;
+
   return (
     <AICard
       mode="active"
@@ -236,8 +300,22 @@ export function AIGapSuggestionCard({
           // Override AICard defaults: grey BG + faint border + shadow +
           // Figma-exact padding. twMerge resolves the conflicts.
           'bg-canvas border-border shadow-lg px-[22px] py-[24px]',
+        // Click-to-activate surface for idle cards. Pointer cursor + soft
+        // hover lift indicate clickability without breaking the recessed
+        // visual treatment.
+        isIdle && handleIdleActivate &&
+          'cursor-pointer transition-shadow hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/15',
         className,
       )}
+      onClick={handleIdleActivate}
+      onKeyDown={handleIdleKey}
+      role={isIdle && handleIdleActivate ? 'button' : undefined}
+      tabIndex={isIdle && handleIdleActivate ? 0 : undefined}
+      aria-label={
+        isIdle && handleIdleActivate
+          ? `Activate suggestion: ${suggestion.title}`
+          : undefined
+      }
       data-kb-component="ai-gap-suggestion-card"
       data-kb-state={state}
       data-kb-type={suggestion.type}
@@ -268,11 +346,37 @@ export function AIGapSuggestionCard({
       footer={
         actions !== undefined ? (
           actions
+        ) : isIdle ? (
+          // Idle keeps the same chrome (arrows / sources / accept-reject
+          // pills) for visual parity with active, but every inner button
+          // is fully inert: `disabled` removes them from the tab order
+          // AND from the a11y role tree; `aria-hidden` keeps screen
+          // readers from double-announcing inactive controls. The whole
+          // card surface is the real input — clicks fire `onActivate`.
+          <>
+            <div className="flex items-center gap-1">
+              <NavArrow direction="up" disabled />
+              <NavArrow direction="down" disabled />
+            </div>
+            <div className="flex items-center gap-2">
+              <SourcesButton count={suggestion.sourceCount} disabled />
+              <RejectButton disabled />
+              <AcceptButton disabled />
+            </div>
+          </>
         ) : (
           <>
             <div className="flex items-center gap-1">
-              <NavArrow direction="up" onClick={onPrev} />
-              <NavArrow direction="down" onClick={onNext} />
+              <NavArrow
+                direction="up"
+                onClick={onPrev}
+                disabled={!canGoPrev}
+              />
+              <NavArrow
+                direction="down"
+                onClick={onNext}
+                disabled={!canGoNext}
+              />
             </div>
             <div className="flex items-center gap-2">
               <SourcesButton

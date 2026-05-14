@@ -14,20 +14,30 @@ import { cn } from '../../utils/cn';
 export type NavArrowProps = {
   direction: 'up' | 'down';
   onClick?: () => void;
+  /**
+   * Chunk 4 — disables the button and dims the icon. When `true`,
+   * `onClick` is dropped and the button is `aria-disabled` so screen
+   * readers announce the state.
+   */
+  disabled?: boolean;
   className?: string;
 };
 
-export function NavArrow({ direction, onClick, className }: NavArrowProps) {
+export function NavArrow({ direction, onClick, disabled, className }: NavArrowProps) {
   const Icon = direction === 'up' ? ChevronUp : ChevronDown;
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      aria-disabled={disabled || undefined}
       aria-label={direction === 'up' ? 'Previous suggestion' : 'Next suggestion'}
       className={cn(
         'inline-flex size-6 items-center justify-center rounded-[4px]',
-        'text-text-muted transition-colors',
-        'hover:bg-surface-muted hover:text-text-primary',
+        // Idle baseline. Hover affordances dropped when disabled.
+        disabled
+          ? 'cursor-not-allowed text-text-disabled'
+          : 'text-text-muted transition-colors hover:bg-surface-muted hover:text-text-primary',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
         className,
       )}

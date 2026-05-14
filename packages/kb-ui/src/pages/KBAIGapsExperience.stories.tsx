@@ -23,6 +23,7 @@ import {
   type ConversationSource,
 } from '../components/overlays/SourcesSideSheet';
 import { useAIGapsReducer } from '../hooks/useAIGapsReducer';
+import { smoothScrollTo } from '../utils/smoothScrollTo';
 
 /* ─────────────────────────────────────────────────────────────
  * KB AI Gaps Experience — Figma `9aGp5t9fH1d0PXi4LMhOdb#74:10788`
@@ -755,49 +756,54 @@ function StaticFrameRender({
  * ───────────────────────────────────────────────────────────── */
 
 function InteractiveRender({ enableKeyboard }: { enableKeyboard: boolean }) {
-  const { state, dispatch, publishEnabled } = useAIGapsReducer(
-    interactiveSuggestions,
-  );
+  const { state, dispatch, publishEnabled, canGoPrev, canGoNext } =
+    useAIGapsReducer(interactiveSuggestions);
   const activeSuggestion = interactiveSuggestions[state.activeIndex];
 
   /* ─────────────────────────────────────────────────────────
-   * Scroll side effects
+   * Scroll side effects (chunk 4 — replaces scrollIntoView)
    *
-   * Two distinct scroll behaviours:
-   * 1. `reviewing` — scroll the active suggestion block into view.
-   *    Target is looked up by `SuggestionBlock`'s `id` prop, which it
-   *    emits on its root DOM element.
-   * 2. `terminal` — scroll the <main> back to the top (per frame 10
-   *    annotation: "will scroll to top once the last suggestion is
-   *    acted upon").
+   * Behaviour:
+   *   1. `reviewing` — scroll <main> so the active suggestion's highlight
+   *      center sits ~40% from the top of the viewport. This gives room
+   *      for the rest of the article below the highlight to be visible
+   *      and prevents the active card from feeling pinned to a screen
+   *      edge. Animated via the custom `smoothScrollTo` rAF loop so
+   *      duration is deterministic and the user can cancel mid-flight
+   *      with manual scroll input.
+   *   2. `terminal` + `pre-review` — return <main> to the top.
    *
-   * `scrollIntoView` walks up to the nearest scrollable ancestor, which
-   * is the `<main>` inside `AppShell` (`overflow-y-auto`). `window` is
-   * not scrollable here because `AppShell` clips at `h-screen` +
-   * `overflow-hidden`. We therefore NEVER use `window.scrollTo`.
+   * `<main>` (inside `AppShell`) is the scroll container here, not
+   * `window` — `AppShell` clips at `h-screen overflow-hidden` so
+   * `window.scrollY` doesn't move.
    * ───────────────────────────────────────────────────────────── */
   React.useEffect(() => {
+    const main = document.querySelector('main') as HTMLElement | null;
+    if (!main) return;
     if (state.mode === 'reviewing') {
       const id = interactiveSuggestions[state.activeIndex]?.id;
       if (!id) return;
       const el = document.getElementById(id);
-      // `el` can be null if the active suggestion's block has been
-      // removed (e.g. an addition that was dismissed, or a removal that
-      // was accepted). Silently no-op in that case — the user can prev/
-      // next to a still-rendered block.
-      if (el) {
-        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      }
+      if (!el) return;
+      // Position the highlight's center at 40% of the viewport height.
+      // Math: target scrollTop = current scrollTop + (rect.top - 0.40 *
+      // viewport) + rect.height / 2.
+      const mainRect = main.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      const viewportH = mainRect.height;
+      const elCenterFromTop = elRect.top - mainRect.top + elRect.height / 2;
+      const targetCenterY = viewportH * 0.4;
+      const target = Math.max(0, main.scrollTop + elCenterFromTop - targetCenterY);
+      smoothScrollTo({
+        target,
+        duration: 400,
+        scrollElement: main,
+      });
       return;
     }
     // Both `terminal` (frame 10) and `pre-review` (post-reset) scroll
-    // <main> to the top. This keeps the close/reset handler from
-    // leaving the user mid-article, and matches flow-doc §frame 10:
-    // "will scroll to top once the last suggestion is acted upon".
-    const main = document.querySelector('main');
-    if (main) {
-      main.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    // <main> to the top.
+    smoothScrollTo({ target: 0, duration: 400, scrollElement: main });
   }, [state.mode, state.activeIndex]);
 
   /* ─────────────────────────────────────────────────────────
@@ -881,13 +887,14 @@ function InteractiveRender({ enableKeyboard }: { enableKeyboard: boolean }) {
     [],
   );
 
-  /* ─ Rail composition (chunk 3) ──────────────────────────────
-   * Summary card sticky at the top of the rail in every mode. Paired
-   * suggestion cards render in `idle` from page load, swapping to
-   * `active` for the focused suggestion during `reviewing` and to
-   * decision chips once accepted/dismissed. The legacy invisible-non-
-   * active branch is gone — every suggestion always renders a paired
-   * card in the rail, anchored to its highlight.
+  /* ─ Rail composition (chunk 4 — adds compact summary + onActivate) ─
+   * Summary card sticky at the top of the rail in every mode. In
+   * `pre-review` it's the full-detail card with the "Review Suggestions
+   * (N)" CTA. Once any card is activated the summary collapses to its
+   * `reviewing` (compact) variant — icon + title + count pill only.
+   * Paired suggestion cards remain in `idle` until activated; clicks
+   * dispatch `activateSuggestion` which both flips `mode` to `reviewing`
+   * and sets the active index.
    * ───────────────────────────────────────────────────────────── */
   const summaryNode = (
     <>
@@ -897,9 +904,25 @@ function InteractiveRender({ enableKeyboard }: { enableKeyboard: boolean }) {
           mode="pre-review"
           count={interactiveSuggestions.length}
           summary={SUMMARY}
-          onReview={() => dispatch({ type: 'review' })}
+          onReview={() =>
+            // Chunk 4 — the "Review Suggestions (N)" CTA now activates
+            // the first unresolved card directly. This replaces the
+            // legacy `'review'` action which only flipped mode without
+            // anchoring an active suggestion.
+            dispatch({
+              type: 'activateSuggestion',
+              id: interactiveSuggestions[0].id,
+            })
+          }
           onPrev={() => dispatch({ type: 'prev' })}
           onNext={() => dispatch({ type: 'next' })}
+        />
+      )}
+      {state.mode === 'reviewing' && (
+        <AISuggestionsCard
+          mode="reviewing"
+          count={interactiveSuggestions.length}
+          summary={SUMMARY}
         />
       )}
       {state.mode === 'terminal' && (
@@ -940,11 +963,22 @@ function InteractiveRender({ enableKeyboard }: { enableKeyboard: boolean }) {
             onOpenSources={(id) => dispatch({ type: 'openSources', id })}
             onAccept={(id) => dispatch({ type: 'accept', id })}
             onReject={(id) => dispatch({ type: 'reject', id })}
+            canGoPrev={canGoPrev}
+            canGoNext={canGoNext}
           />
         ),
       };
     }
-    return { id: s.id, node: <AIGapSuggestionCard suggestion={s} state="idle" /> };
+    return {
+      id: s.id,
+      node: (
+        <AIGapSuggestionCard
+          suggestion={s}
+          state="idle"
+          onActivate={(id) => dispatch({ type: 'activateSuggestion', id })}
+        />
+      ),
+    };
   });
 
   return (

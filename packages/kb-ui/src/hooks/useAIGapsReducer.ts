@@ -40,6 +40,11 @@ export type AIGapsAction =
   | { type: 'prev' }
   | { type: 'next' }
   | { type: 'setActive'; index: number }
+  // Chunk 4 — single-card activation. Equivalent to `setActive` by index
+  // but addresses the card by stable id (clicks on the rail card itself
+  // don't carry index information). Also forces `mode: 'reviewing'` so
+  // clicking a paired idle card transitions cleanly out of pre-review.
+  | { type: 'activateSuggestion'; id: string }
   | { type: 'openSources'; id: string }
   | { type: 'closeSources' }
   | { type: 'reset' };
@@ -79,6 +84,79 @@ function findNextUndecided(
     if (decisions[suggestions[idx].id] === undefined) return idx;
   }
   return -1;
+}
+
+/**
+ * Find the previous un-decided suggestion starting BEFORE `startIndex`.
+ * Chunk 4 — used by the `prev` action to skip resolved cards when walking
+ * the rail backwards. Returns -1 if none exist (every other card is
+ * resolved).
+ *
+ * Non-wrapping: if you're on the first un-decided suggestion and press
+ * `prev`, this returns -1 → the reducer keeps `activeIndex` where it is.
+ * That maps to the user spec's "previous arrow is disabled at the first
+ * unresolved card" rule.
+ */
+function findPrevUndecidedNoWrap(
+  suggestions: AISuggestion[],
+  decisions: Record<string, AISuggestionDecision>,
+  startIndex: number,
+): number {
+  for (let idx = startIndex - 1; idx >= 0; idx -= 1) {
+    if (decisions[suggestions[idx].id] === undefined) return idx;
+  }
+  return -1;
+}
+
+/**
+ * Non-wrapping version of `findNextUndecided` — only searches indices
+ * AFTER `startIndex`. Used by chunk 4's arrow-disabled UI to detect
+ * "no unresolved cards remain after this one" without wrapping back to
+ * the start of the list.
+ */
+function findNextUndecidedNoWrap(
+  suggestions: AISuggestion[],
+  decisions: Record<string, AISuggestionDecision>,
+  startIndex: number,
+): number {
+  for (let idx = startIndex + 1; idx < suggestions.length; idx += 1) {
+    if (decisions[suggestions[idx].id] === undefined) return idx;
+  }
+  return -1;
+}
+
+/**
+ * First un-decided suggestion in the list, or -1 if every suggestion has
+ * a decision. Used by chunk 4 when `activateSuggestion` lands on a card
+ * that's already resolved, or when `next`/`prev` is invoked from a
+ * terminal state.
+ */
+function findFirstUndecided(
+  suggestions: AISuggestion[],
+  decisions: Record<string, AISuggestionDecision>,
+): number {
+  for (let i = 0; i < suggestions.length; i += 1) {
+    if (decisions[suggestions[i].id] === undefined) return i;
+  }
+  return -1;
+}
+
+/**
+ * Returns `true` if the suggestion at `activeIndex` has at least one
+ * un-decided neighbour on the requested side. Drives the arrow-disabled
+ * UI on the active card so consumers don't have to re-derive this.
+ */
+export function hasUndecidedNeighbour(
+  suggestions: AISuggestion[],
+  decisions: Record<string, AISuggestionDecision>,
+  activeIndex: number,
+  direction: 'prev' | 'next',
+): boolean {
+  if (suggestions.length === 0) return false;
+  if (direction === 'prev') {
+    return findPrevUndecidedNoWrap(suggestions, decisions, activeIndex) !== -1;
+  }
+  return findNextUndecidedNoWrap(suggestions, decisions, activeIndex) !== -1;
 }
 
 /**
@@ -166,13 +244,44 @@ export function aiGapsReducer(
     case 'prev': {
       const n = suggestions.length;
       if (n === 0) return state;
-      return { ...state, activeIndex: (state.activeIndex - 1 + n) % n };
+      // Chunk 4 — skip resolved cards. If currently no card is active
+      // (pre-review or terminal) jump to the LAST un-decided card so
+      // pressing Up out of pre-review still produces a sensible target.
+      if (state.mode !== 'reviewing') {
+        const first = findFirstUndecided(suggestions, state.decisions);
+        if (first === -1) return state;
+        return { ...state, mode: 'reviewing', activeIndex: first };
+      }
+      const prevIdx = findPrevUndecidedNoWrap(
+        suggestions,
+        state.decisions,
+        state.activeIndex,
+      );
+      // -1 means "you're at the first unresolved; arrow should be disabled
+      // at the UI layer". Reducer keeps the current activeIndex so the UI
+      // doesn't lurch.
+      if (prevIdx === -1) return state;
+      return { ...state, activeIndex: prevIdx };
     }
 
     case 'next': {
       const n = suggestions.length;
       if (n === 0) return state;
-      return { ...state, activeIndex: (state.activeIndex + 1) % n };
+      // Chunk 4 — same logic as `prev`, mirrored. From pre-review/terminal,
+      // jump to the FIRST un-decided card so a fresh page can activate
+      // via a simple `next` dispatch.
+      if (state.mode !== 'reviewing') {
+        const first = findFirstUndecided(suggestions, state.decisions);
+        if (first === -1) return state;
+        return { ...state, mode: 'reviewing', activeIndex: first };
+      }
+      const nextIdx = findNextUndecidedNoWrap(
+        suggestions,
+        state.decisions,
+        state.activeIndex,
+      );
+      if (nextIdx === -1) return state;
+      return { ...state, activeIndex: nextIdx };
     }
 
     case 'setActive': {
@@ -181,6 +290,29 @@ export function aiGapsReducer(
       // Clamp defensively so callers can't leak out-of-range indices.
       const clamped = Math.max(0, Math.min(n - 1, action.index));
       return { ...state, activeIndex: clamped };
+    }
+
+    case 'activateSuggestion': {
+      // Chunk 4 — directly activate a card by id. Forces `mode:
+      // 'reviewing'` so the first click out of pre-review transitions
+      // both the summary card's chrome AND the rail's per-card decoration
+      // in a single dispatch.
+      //
+      // Two edge cases:
+      //   1. The id doesn't match any suggestion → no-op (defensive; the
+      //      rail items are derived from `suggestions` so this shouldn't
+      //      happen in practice).
+      //   2. The target is already resolved → activate the first
+      //      un-resolved card instead. Clicking an accepted/dismissed
+      //      chip should never re-activate a finished decision.
+      const idx = suggestions.findIndex((s) => s.id === action.id);
+      if (idx === -1) return state;
+      if (state.decisions[action.id] !== undefined) {
+        const fallback = findFirstUndecided(suggestions, state.decisions);
+        if (fallback === -1) return state;
+        return { ...state, mode: 'reviewing', activeIndex: fallback };
+      }
+      return { ...state, mode: 'reviewing', activeIndex: idx };
     }
 
     case 'openSources': {
@@ -213,6 +345,18 @@ export type UseAIGapsReducerResult = {
   dispatch: React.Dispatch<AIGapsAction>;
   publishEnabled: boolean;
   allReviewed: boolean;
+  /**
+   * `true` when there is at least one un-decided suggestion BEFORE the
+   * currently active one. Drives the up-arrow's disabled state on the
+   * active card. Chunk 4.
+   */
+  canGoPrev: boolean;
+  /**
+   * `true` when there is at least one un-decided suggestion AFTER the
+   * currently active one. Drives the down-arrow's disabled state on the
+   * active card. Chunk 4.
+   */
+  canGoNext: boolean;
 };
 
 /**
@@ -234,5 +378,17 @@ export function useAIGapsReducer(
   );
   const publishEnabled = isPublishEnabled(state.decisions);
   const allReviewed = isAllReviewed(suggestions, state.decisions);
-  return { state, dispatch, publishEnabled, allReviewed };
+  const canGoPrev = hasUndecidedNeighbour(
+    suggestions,
+    state.decisions,
+    state.activeIndex,
+    'prev',
+  );
+  const canGoNext = hasUndecidedNeighbour(
+    suggestions,
+    state.decisions,
+    state.activeIndex,
+    'next',
+  );
+  return { state, dispatch, publishEnabled, allReviewed, canGoPrev, canGoNext };
 }
