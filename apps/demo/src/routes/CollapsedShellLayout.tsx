@@ -7,7 +7,8 @@
 //
 // Phase 7.5.8 polish:
 //   - Suspense fallback → PageProgressBar
-//   - Outlet wrapped in RouteTransition
+//   - Lazy route chunks are loaded via <Suspense>; the first-visit
+//     progress bar is the only navigation indicator.
 //   - useFocusOnRouteChange runs (the editor route overrides via its
 //     own Tiptap autofocus; the focus hook detects an active
 //     ProseMirror element and steps aside).
@@ -17,7 +18,6 @@ import { Outlet } from 'react-router-dom';
 import { AppShell } from '@test-kb-ui/kb-ui';
 import { BreadcrumbBar } from '../shell/BreadcrumbBar';
 import { PageProgressBar } from '../components/PageProgressBar';
-import { RouteTransition } from '../components/RouteTransition';
 import { useFocusOnRouteChange } from '../hooks/useFocusOnRouteChange';
 
 export default function CollapsedShellLayout() {
@@ -25,9 +25,7 @@ export default function CollapsedShellLayout() {
   return (
     <AppShell sidebarCollapsed breadcrumb={<BreadcrumbBar />}>
       <Suspense fallback={<PageProgressBar />}>
-        <RouteTransition>
-          <Outlet />
-        </RouteTransition>
+        <Outlet />
       </Suspense>
     </AppShell>
   );
