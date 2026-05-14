@@ -288,7 +288,16 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
     ? deriveHistoricalDecisions(storeSuggestions)
     : aiState.decisions;
 
-  const activeSuggestion = kbSuggestions[aiState.activeIndex];
+  // `aiState.activeIndex` can be -1 (chunk 5 sentinel for "no active
+  // card" after strict-forward auto-advance runs off the end of the
+  // list). `Array[-1]` is `undefined` so downstream `?.id` checks no-op.
+  const activeSuggestion =
+    aiState.activeIndex >= 0 ? kbSuggestions[aiState.activeIndex] : undefined;
+
+  // Chunk 5 — remaining unresolved count drives the compact reviewing
+  // summary's count pill.
+  const resolvedCount = Object.keys(effectiveDecisions).length;
+  const remaining = kbSuggestions.length - resolvedCount;
 
   /* ── Scroll side effects (chunk 4 — rAF smooth scroll) ───
    *
@@ -339,7 +348,6 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
         return;
       }
       const activeId = activeSuggestion?.id;
-      if (!activeId) return;
       switch (e.key) {
         case 'j':
         case 'ArrowDown':
@@ -353,10 +361,15 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
           break;
         case 'y':
         case 'Enter':
+          // Chunk 5 — `activeIndex = -1` (no active card) means accept
+          // is a no-op. The user must navigate or click to focus a card
+          // before deciding.
+          if (!activeId) return;
           e.preventDefault();
           dispatch({ type: 'accept', id: activeId });
           break;
         case 'n':
+          if (!activeId) return;
           e.preventDefault();
           dispatch({ type: 'reject', id: activeId });
           break;
@@ -443,7 +456,7 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
       {effectiveMode === 'reviewing' && (
         <AISuggestionsCard
           mode="reviewing"
-          count={kbSuggestions.length}
+          count={remaining}
           summary={SUMMARY}
         />
       )}
@@ -460,7 +473,7 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
   );
 
   const railItems = React.useMemo<AIGapRailItem[]>(() => {
-    return kbSuggestions.map((s) => {
+    return kbSuggestions.map((s, i) => {
       const decision = effectiveDecisions[s.id];
       if (decision) {
         return {
@@ -494,6 +507,10 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
               onReject={(id) => dispatch({ type: 'reject', id })}
               canGoPrev={canGoPrev}
               canGoNext={canGoNext}
+              // Chunk 5 — 1-based position in the ORIGINAL list so the
+              // user always sees "I'm on N of M" regardless of which
+              // earlier cards have been resolved.
+              position={{ index: i + 1, total: kbSuggestions.length }}
             />
           ),
         };
