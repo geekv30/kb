@@ -360,6 +360,18 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
     slotMap,
   );
 
+  // Inverse of `slotMap` — `{ s1: suggestionId, s2: ..., s3: ... }`.
+  // `ArticleBody` propagates each entry to the matching SuggestionBlock
+  // as `data-suggestion-id`. Built from the same fixture sort the slot
+  // mapping uses so the two sides can never disagree.
+  const articleSuggestionIds = React.useMemo(() => {
+    const out: { s1?: string; s2?: string; s3?: string } = {};
+    for (const [id, slot] of slotMap.entries()) {
+      out[slot] = id;
+    }
+    return out;
+  }, [slotMap]);
+
   return (
     <div data-route="ai-optimise-review" className="w-full">
       <div
@@ -369,6 +381,7 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
         <ArticleBody
           decisions={articleDecisions}
           regions={passwordResetRegions}
+          suggestionIds={articleSuggestionIds}
           className="max-w-[720px] w-full"
         />
         <aside

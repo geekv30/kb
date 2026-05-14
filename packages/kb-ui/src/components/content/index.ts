@@ -57,6 +57,7 @@ export type {
   ArticleBodyProps,
   ArticleBodyDecisions,
   ArticleBodyRegions,
+  ArticleBodySuggestionIds,
   ArticleSuggestionDecision,
 } from './ArticleBody';
 export type {

@@ -104,6 +104,20 @@ export type ArticleBodyRegions = {
   afterS3?: React.ReactNode;
 };
 
+/**
+ * Optional map from slot key (`s1`/`s2`/`s3`) to the originating
+ * suggestion's stable id (the data model's `AISuggestion.id`). When set,
+ * the matching slot's `SuggestionBlock` emits `data-suggestion-id` so
+ * consumers can resolve DOM anchors via `useAnchorPositions`. Decoupled
+ * from `regions` because the article markup is static while the
+ * suggestion ids are derived at runtime from a per-article fixture.
+ */
+export type ArticleBodySuggestionIds = {
+  s1?: string;
+  s2?: string;
+  s3?: string;
+};
+
 export type ArticleBodyProps = {
   /**
    * Per-suggestion state.
@@ -126,6 +140,12 @@ export type ArticleBodyProps = {
    * `decisions`; the consumer owns the surrounding HTML between regions.
    */
   regions: ArticleBodyRegions;
+  /**
+   * Optional — suggestion ids per slot. When provided, propagated to the
+   * matching SuggestionBlock as `data-suggestion-id`. The legacy
+   * `id="s1|s2|s3"` anchors are preserved alongside.
+   */
+  suggestionIds?: ArticleBodySuggestionIds;
   className?: string;
 };
 
@@ -165,9 +185,11 @@ function PlainSentences({ sentences }: { sentences: SuggestionSentence[] }) {
 function S1Region({
   decision,
   content,
+  suggestionId,
 }: {
   decision: ArticleSuggestionDecision;
   content: SuggestionSentence[];
+  suggestionId?: string;
 }) {
   if (decision === 'accepted') {
     // Addition accepted → content kept as plain body text.
@@ -182,6 +204,7 @@ function S1Region({
     <SuggestionBlock
       type="addition"
       id="s1"
+      suggestionId={suggestionId}
       className="mb-4"
       sentences={content}
     />
@@ -192,10 +215,12 @@ function S2Region({
   decision,
   before,
   after,
+  suggestionId,
 }: {
   decision: ArticleSuggestionDecision;
   before: SuggestionSentence[];
   after: SuggestionSentence[];
+  suggestionId?: string;
 }) {
   if (decision === 'accepted') {
     // Replace accepted → new content remains as plain text.
@@ -210,6 +235,7 @@ function S2Region({
     <SuggestionBlock
       type="replace"
       id="s2"
+      suggestionId={suggestionId}
       className="mb-4"
       oldSentences={before}
       newSentences={after}
@@ -220,9 +246,11 @@ function S2Region({
 function S3Region({
   decision,
   content,
+  suggestionId,
 }: {
   decision: ArticleSuggestionDecision;
   content: SuggestionSentence[];
+  suggestionId?: string;
 }) {
   if (decision === 'accepted') {
     // Removal accepted → content deleted.
@@ -237,6 +265,7 @@ function S3Region({
     <SuggestionBlock
       type="removal"
       id="s3"
+      suggestionId={suggestionId}
       className="mb-4"
       sentences={content}
     />
@@ -250,6 +279,7 @@ function S3Region({
 export function ArticleBody({
   decisions,
   regions,
+  suggestionIds,
   className,
 }: ArticleBodyProps) {
   return (
@@ -267,15 +297,24 @@ export function ArticleBody({
     >
       {regions.header}
       {regions.beforeS1}
-      <S1Region decision={decisions.s1} content={regions.s1} />
+      <S1Region
+        decision={decisions.s1}
+        content={regions.s1}
+        suggestionId={suggestionIds?.s1}
+      />
       {regions.betweenS1AndS2}
       <S2Region
         decision={decisions.s2}
         before={regions.s2.before}
         after={regions.s2.after}
+        suggestionId={suggestionIds?.s2}
       />
       {regions.betweenS2AndS3}
-      <S3Region decision={decisions.s3} content={regions.s3} />
+      <S3Region
+        decision={decisions.s3}
+        content={regions.s3}
+        suggestionId={suggestionIds?.s3}
+      />
       {regions.afterS3}
     </article>
   );

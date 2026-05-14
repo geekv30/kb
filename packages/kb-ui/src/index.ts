@@ -26,3 +26,5 @@ export type {
   AIGapsMode,
   UseAIGapsReducerResult,
 } from './hooks/useAIGapsReducer';
+export { useAnchorPositions } from './hooks/useAnchorPositions';
+export type { UseAnchorPositionsOptions } from './hooks/useAnchorPositions';
