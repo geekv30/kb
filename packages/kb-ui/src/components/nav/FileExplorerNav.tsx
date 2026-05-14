@@ -46,6 +46,20 @@ export type FileExplorerNavProps = {
   activeId?: string;
   onItemClick?: (id: string) => void;
   /**
+   * Optional render-prop returning a trailing action element per row. Renders
+   * to the right of the row, opacity-0 by default → opacity-100 on row hover,
+   * REPLACING the count badge (folders) or status dot (articles) on hover.
+   * Use to surface contextual menus / extra actions per row.
+   *
+   * The action is rendered inside a wrapper that stops click propagation, so
+   * clicks on the action do NOT trigger the row's `onItemClick`. Keyboard
+   * focus inside the wrapper also reveals the action (via `focus-within`).
+   *
+   * When undefined, no change to existing behavior — kb-ui's built-in
+   * hover-kebab continues to swap in over the count/status on hover.
+   */
+  renderRowAction?: (item: NavItem) => React.ReactNode;
+  /**
    * Tree variant (default): renders chevron, folder/file icon, count/kebab —
    * the canonical Editor explorer.
    *
@@ -100,8 +114,8 @@ const HOVER_BG_CLASS = 'hover:bg-[rgba(230,230,230,0.32)]';
 /* ---------------------------- flat row -------------------------------- */
 //
 // Flat mode (Analytics): full-width inset row, 36 tall, 12px horizontal pad,
-// no chevron / no file icon / no count / no kebab. Active pill is #f8fafc
-// (Figma `background/neutral/faint`) — matches `1974:53328`.
+// no chevron / no file icon / no count / no kebab. Active + hover bg match
+// the tree variant (`stateBg`) for cross-surface consistency.
 
 type FlatRowProps = {
   item: NavItem;
@@ -135,8 +149,8 @@ function FlatRow({ item, isActive, onClick }: FlatRowProps) {
           isSection
             ? 'cursor-default font-medium'
             : isActive
-              ? 'bg-surface-subtle font-medium'
-              : 'font-normal hover:bg-surface-subtle',
+              ? cn(stateBg('active'), 'font-medium')
+              : cn('font-normal', HOVER_BG_CLASS),
         )}
       >
         {item.icon && (
@@ -186,6 +200,8 @@ type FolderRowProps = {
   isActiveSub: boolean;
   isExpanded: boolean;
   onToggle: () => void;
+  /** Consumer-supplied trailing action — REPLACES the built-in kebab on hover. */
+  rowAction?: React.ReactNode;
 };
 
 function FolderRow({
@@ -195,6 +211,7 @@ function FolderRow({
   isActiveSub,
   isExpanded,
   onToggle,
+  rowAction,
 }: FolderRowProps) {
   const state: RowState = isActive ? 'active' : isActiveSub ? 'active-sub' : 'default';
   const ChevronIcon = isExpanded ? ChevronDown : ChevronRight;
@@ -240,15 +257,29 @@ function FolderRow({
             <span
               className={cn(
                 'text-[14px] font-normal text-text-meta',
-                showHoverSwap && 'group-hover:hidden',
+                // Count badge hides on hover when there's a swappable action
+                // (either the built-in kebab or a consumer-supplied action).
+                // It also hides when keyboard focus is inside the action
+                // wrapper, so the action stays revealed for a11y.
+                showHoverSwap && 'group-hover:hidden group-focus-within:hidden',
               )}
             >
               {item.count ?? ''}
             </span>
             {showHoverSwap && (
-              <span className="hidden group-hover:flex items-center justify-center text-text-meta">
-                <DotsVertical size={16} />
-              </span>
+              rowAction !== undefined ? (
+                /* eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions */
+                <span
+                  className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {rowAction}
+                </span>
+              ) : (
+                <span className="hidden group-hover:flex group-focus-within:flex items-center justify-center text-text-meta">
+                  <DotsVertical size={16} />
+                </span>
+              )
             )}
           </span>
         </div>
@@ -262,9 +293,11 @@ type ArticleRowProps = {
   depth: number;
   isActive: boolean;
   onClick: () => void;
+  /** Consumer-supplied trailing action — REPLACES the built-in kebab on hover. */
+  rowAction?: React.ReactNode;
 };
 
-function ArticleRow({ item, depth, isActive, onClick }: ArticleRowProps) {
+function ArticleRow({ item, depth, isActive, onClick, rowAction }: ArticleRowProps) {
   const state: RowState = isActive ? 'active' : 'default';
 
   // Spec colors: published = #42cd83, draft = #898989. 4×4 size.
@@ -315,14 +348,26 @@ function ArticleRow({ item, depth, isActive, onClick }: ArticleRowProps) {
                 className={cn(
                   'size-[4px] rounded-full',
                   statusDotColor,
-                  showHoverSwap && 'group-hover:hidden',
+                  // Status dot hides on hover when a swappable action is present.
+                  // Also hides while keyboard focus is inside the action wrapper.
+                  showHoverSwap && 'group-hover:hidden group-focus-within:hidden',
                 )}
               />
             )}
             {showHoverSwap && (
-              <span className="hidden group-hover:flex items-center justify-center text-text-meta">
-                <DotsVertical size={16} />
-              </span>
+              rowAction !== undefined ? (
+                /* eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions */
+                <span
+                  className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {rowAction}
+                </span>
+              ) : (
+                <span className="hidden group-hover:flex group-focus-within:flex items-center justify-center text-text-meta">
+                  <DotsVertical size={16} />
+                </span>
+              )
             )}
           </span>
         </div>
@@ -339,6 +384,7 @@ export function FileExplorerNav({
   items,
   activeId,
   onItemClick,
+  renderRowAction,
   variant = 'tree',
   showSearch,
   className,
@@ -426,6 +472,7 @@ export function FileExplorerNav({
                 isActiveSub={isActiveSub && !isActive}
                 isExpanded={isExpanded}
                 onToggle={() => toggleFolder(item.id)}
+                rowAction={renderRowAction?.(item)}
               />
             )}
             {isExpanded && item.children && item.children.length > 0 && (
@@ -444,6 +491,7 @@ export function FileExplorerNav({
           depth={depth}
           isActive={item.id === activeId}
           onClick={() => onItemClick?.(item.id)}
+          rowAction={renderRowAction?.(item)}
         />
       );
     });
@@ -481,15 +529,17 @@ export function FileExplorerNav({
             {title}
           </span>
         </div>
-        {renderSearch && (
-          <button
-            type="button"
-            aria-label="Search"
-            className="flex size-6 items-center justify-center rounded-[6px] cursor-pointer transition-colors duration-150 text-text-muted hover:bg-surface-subtle hover:text-text-primary"
-          >
-            <SearchLg size={16} />
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {renderSearch && (
+            <button
+              type="button"
+              aria-label="Search"
+              className="flex size-6 items-center justify-center rounded-[6px] cursor-pointer transition-colors duration-150 text-text-muted hover:bg-surface-subtle hover:text-text-primary"
+            >
+              <SearchLg size={16} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Inset 1px divider at Y=54 — 16L / 16R inset (effective width 256) */}
