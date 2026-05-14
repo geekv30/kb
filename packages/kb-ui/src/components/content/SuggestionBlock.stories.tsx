@@ -258,3 +258,26 @@ function SuggestionBlockPlayground() {
 export const Playground: StoryObj<typeof SuggestionBlock> = {
   render: () => <SuggestionBlockPlayground />,
 };
+
+/* ─────────────────────────────────────────────────────────────
+ * WithSuggestionId — DOM-only verification that `suggestionId`
+ * propagates to `data-suggestion-id` on the SuggestionBlock root.
+ * Visual rendering is incidental; this story exists for the
+ * `useAnchorPositions` hook to target a deterministic anchor.
+ * Inspect the rendered element to confirm
+ * `[data-suggestion-id="suggestion-abc"]` is present on the root.
+ * ───────────────────────────────────────────────────────────── */
+
+export const WithSuggestionId: StoryObj<typeof SuggestionBlock> = {
+  render: () => (
+    <div style={{ width: 720, padding: 16 }}>
+      <SuggestionBlock
+        type="addition"
+        suggestionId="suggestion-abc"
+        sentences={[
+          'This block carries a stable suggestion id on its root element so consumers can resolve its DOM anchor without coupling to the legacy s1/s2/s3 ids.',
+        ]}
+      />
+    </div>
+  ),
+};

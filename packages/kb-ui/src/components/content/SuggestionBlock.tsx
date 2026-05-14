@@ -52,6 +52,14 @@ export type SuggestionBlockProps = {
   newContent?: React.ReactNode;
   /** Optional anchor id — used by the editor to `scrollIntoView`. */
   id?: string;
+  /**
+   * Optional suggestion identifier. When set, emitted as
+   * `data-suggestion-id` on the outermost element so consumers (e.g. the
+   * AI Gaps editor) can resolve a suggestion's DOM anchor via
+   * `useAnchorPositions` without coupling to the legacy `id="s1|s2|s3"`
+   * convention.
+   */
+  suggestionId?: string;
   className?: string;
 };
 
@@ -203,12 +211,17 @@ export function SuggestionBlock({
   oldContent,
   newContent,
   id,
+  suggestionId,
   className,
 }: SuggestionBlockProps) {
+  // Emit `data-suggestion-id` only when the consumer provides one — keeps
+  // the DOM clean for legacy callers and gives `useAnchorPositions` a
+  // single deterministic selector.
   const rootProps = {
     id,
     'data-kb-component': 'suggestion-block',
     'data-kb-type': type,
+    ...(suggestionId ? { 'data-suggestion-id': suggestionId } : {}),
   } as const;
 
   /* ── Replace ─────────────────────────────────────────────── */
