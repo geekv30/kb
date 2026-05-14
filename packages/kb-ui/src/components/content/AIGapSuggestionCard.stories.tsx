@@ -103,3 +103,32 @@ function AIGapSuggestionCardPlayground() {
 export const Playground: StoryObj<typeof AIGapSuggestionCard> = {
   render: () => <AIGapSuggestionCardPlayground />,
 };
+
+/* ─────────────────────────────────────────────────────────────
+ * Idle — recessed paired-card look. Same affordances as active
+ * but with canvas-grey BG, faint border, drop shadow, and title
+ * color stepped down to text-secondary. Mirrors Figma node
+ * 251DTRmxl2L6jmXd3FWzHe#2829:9484 (suggestion-cards, state=default).
+ * Rendered on the canvas-grey background that the card lives on in
+ * production so the contrast vs. the active card is legible.
+ * ───────────────────────────────────────────────────────────── */
+function AIGapSuggestionCardIdleStory() {
+  return (
+    <div className="w-[452px]">
+      <AIGapSuggestionCard
+        suggestion={SUGGESTION_ADDITION}
+        state="idle"
+        onPrev={() => {}}
+        onNext={() => {}}
+        onOpenSources={() => {}}
+        onAccept={() => {}}
+        onReject={() => {}}
+        onUndo={() => {}}
+      />
+    </div>
+  );
+}
+
+export const Idle: StoryObj<typeof AIGapSuggestionCard> = {
+  render: () => <AIGapSuggestionCardIdleStory />,
+};
