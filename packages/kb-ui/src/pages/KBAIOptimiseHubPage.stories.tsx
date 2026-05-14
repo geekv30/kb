@@ -23,7 +23,7 @@ import { AiIcon } from '../components/brand/AiIcon';
  *
  * Three-column layout:
  *   [1] SideNavRail (54)         — ai (active), editor, analytics, settings
- *   [2] FileExplorerNav flat (288) — AI Centre (section) + AI Optimise (item, active)
+ *   [2] FileExplorerNav flat (288) — AI Center (section) + AI Optimise (item, active)
  *   [3] Content column (938)     — breadcrumb + page header + 3 suggestion cards
  *
  * Convention notes:
@@ -54,7 +54,7 @@ const subNavItems: NavItem[] = [
   {
     id: 'ai-centre',
     type: 'article',
-    title: 'AI Centre',
+    title: 'AI Center',
     kind: 'section',
     icon: <AiIcon size={16} />,
   },
