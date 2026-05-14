@@ -2,12 +2,12 @@
 // for the `/ai-optimise/*` surface.
 //
 // The flat variant matches the editor's FileExplorerNav header pattern:
-// "AI Centre" is the header title (with AiIcon glyph), and the single
+// "AI Center" is the header title (with AiIcon glyph), and the single
 // "AI Optimise" row sits below. Per Figma `74:8871`, clicking the row
-// navigates to the AI Optimise hub; the "AI Centre" label is the panel
+// navigates to the AI Optimise hub; the "AI Center" label is the panel
 // header itself (not a clickable row), so no toast is required.
 
-import { MagicWand02 } from '@untitledui/icons';
+import { Edit04 } from '@untitledui/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AiIcon, FileExplorerNav, type NavItem } from '@test-kb-ui/kb-ui';
 import { routes } from '../lib/routes';
@@ -18,7 +18,7 @@ const items: NavItem[] = [
     title: 'AI Optimise',
     type: 'article',
     kind: 'item',
-    icon: <MagicWand02 size={18} />,
+    icon: <Edit04 size={18} />,
   },
 ];
 
@@ -29,7 +29,7 @@ export function AISubNavbar() {
 
   return (
     <FileExplorerNav
-      title="AI Centre"
+      title="AI Center"
       headerIcon={<AiIcon size={18} />}
       variant="flat"
       items={items}

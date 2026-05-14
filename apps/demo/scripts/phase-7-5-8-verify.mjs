@@ -2,7 +2,7 @@
 //
 // Walks the demo app via Playwright to confirm:
 //   1. Toast appears on save in editor (top-right, autohides)
-//   2. Toast appears on "Coming soon" clicks (DateRangePill, AI Centre)
+//   2. Toast appears on "Coming soon" clicks (DateRangePill, AI Center)
 //   3. ConfirmDialog appears on editor close-with-changes (NOT
 //      window.confirm).
 //   4. `?` opens cheat sheet
@@ -154,7 +154,7 @@ async function run() {
   await page.getByRole('button', { name: 'Stay on page' }).click();
   await page.waitForTimeout(200);
 
-  // ── Test 3: "Coming soon" toast on AI Centre click ────────
+  // ── Test 3: "Coming soon" toast on AI Center click ────────
   log('Navigating to AI Optimise hub…');
   // First reset dirty by leaving via discard.
   await page.getByRole('button', { name: 'Close' }).click();
@@ -170,21 +170,21 @@ async function run() {
   await page.waitForSelector('[data-route="ai-optimise-hub"]', { timeout: 5000 });
   log('AI Optimise hub loaded.');
 
-  log('Clicking AI Centre row → expecting "Coming soon" toast…');
-  // AISubNav rows — find AI Centre by its label.
-  await page.getByText('AI Centre', { exact: false }).first().click();
+  log('Clicking AI Center row → expecting "Coming soon" toast…');
+  // AISubNav rows — find AI Center by its label.
+  await page.getByText('AI Center', { exact: false }).first().click();
   await page.waitForTimeout(150);
   const infoToast = page.locator('[data-toast-variant="info"]');
   const infoVisible = await infoToast.isVisible().catch(() => false);
   if (!infoVisible) {
-    fail('No info toast appeared after AI Centre click.');
+    fail('No info toast appeared after AI Center click.');
   } else {
     const t = await infoToast.textContent();
-    log(`AI Centre toast: "${t?.trim()}"`);
+    log(`AI Center toast: "${t?.trim()}"`);
     if (!t || !/Coming soon/i.test(t)) {
-      fail(`AI Centre toast not "Coming soon.": "${t}"`);
+      fail(`AI Center toast not "Coming soon.": "${t}"`);
     } else {
-      log('AI Centre fires "Coming soon." toast.');
+      log('AI Center fires "Coming soon." toast.');
     }
   }
   // Wait for autohide.

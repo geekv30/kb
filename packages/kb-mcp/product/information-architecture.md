@@ -32,7 +32,7 @@ How the product's pages, routes, and navigation surfaces relate. Use this to dec
 | Section | Sub-nav component | Items |
 |---|---|---|
 | Editor | `FileExplorerNav` | Hierarchical category tree (depth 0–3) + article leaves |
-| AI Optimisation | `AISubNav` | 2 items: AI Centre (no-op), AI Optimise (active) |
+| AI Optimisation | `AISubNav` | 2 items: AI Center (no-op), AI Optimise (active) |
 | Analytics | `FileExplorerNav variant="flat"` | 3 flat items: Article Views, Search, AI Answer |
 | Settings | (none — collapsed shell) | — |
 

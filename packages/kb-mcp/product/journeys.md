@@ -47,7 +47,7 @@ Three primary journeys in the KB authoring product. Use these to scope where a n
 
 **Steps (condensed):**
 
-1. Click "AI" rail icon → `/ai-optimise`. Sub-nav: AI Centre (no-op) + AI Optimise (active). Hub shows 3 `SuggestionCard`s, one per article with pending suggestions.
+1. Click "AI" rail icon → `/ai-optimise`. Sub-nav: AI Center (no-op) + AI Optimise (active). Hub shows 3 `SuggestionCard`s, one per article with pending suggestions.
 2. Click a card → `/ai-optimise/<articleSlug>/review`. Shell collapses. `ArticleBody` renders with inline highlights (s1 green=addition, s2 red+green=replace, s3 red=removal). Right rail: `AISuggestionsCard` (mode='pre-review') + collapsed `ArticleSettingsPanel`.
 3. Click "Review Suggestions (3)" → reducer enters reviewing mode, scrolls to s1, shows `AIGapSuggestionCard` with controls.
 4. ✓ accept (`y` / Enter) → suggestion accepted, body updates, scroll to next. × dismiss (`n`) → reverted, scroll to next. ↶ undo on chip → suggestion → pending.
