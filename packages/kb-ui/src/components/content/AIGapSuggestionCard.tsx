@@ -164,7 +164,7 @@ function RejectButton({
   onClick,
   disabled,
 }: {
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent) => void;
   disabled?: boolean;
 }) {
   return (
@@ -192,7 +192,7 @@ function AcceptButton({
   onClick,
   disabled,
 }: {
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent) => void;
   disabled?: boolean;
 }) {
   return (
@@ -291,9 +291,11 @@ export function AIGapSuggestionCard({
   const isIdle = state === 'idle';
 
   // Chunk 4 — idle cards are click-to-activate. The whole card acts as the
-  // primary click target so users don't need to hit a tiny CTA. Inner
-  // arrows/sources/accept-reject buttons keep their existing inert UI but
-  // are wrapped in `e.stopPropagation()` so cursor accuracy isn't punished.
+  // primary click target so users don't need to hit a tiny CTA. The
+  // accept/reject pills inside the footer keep their own click handlers
+  // (so users can decide directly from the idle state) — those handlers
+  // call `stopPropagation()` to avoid double-firing the card-body
+  // activation.
   const handleIdleActivate = isIdle && onActivate
     ? () => onActivate(suggestion.id)
     : undefined;
@@ -303,6 +305,23 @@ export function AIGapSuggestionCard({
           e.preventDefault();
           handleIdleActivate();
         }
+      }
+    : undefined;
+
+  // Idle footer accept/reject — wrap caller's handlers so the card-body
+  // click doesn't ALSO fire on the same gesture. NavArrow + SourcesButton
+  // stay disabled on idle (per spec — they're confusing on a recessed
+  // card and aren't part of the user's explicit ask).
+  const handleIdleAccept = isIdle && onAccept
+    ? (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onAccept(suggestion.id);
+      }
+    : undefined;
+  const handleIdleReject = isIdle && onReject
+    ? (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onReject(suggestion.id);
       }
     : undefined;
 
@@ -376,12 +395,12 @@ export function AIGapSuggestionCard({
         actions !== undefined ? (
           actions
         ) : isIdle ? (
-          // Idle keeps the same chrome (arrows / sources / accept-reject
-          // pills) for visual parity with active, but every inner button
-          // is fully inert: `disabled` removes them from the tab order
-          // AND from the a11y role tree; `aria-hidden` keeps screen
-          // readers from double-announcing inactive controls. The whole
-          // card surface is the real input — clicks fire `onActivate`.
+          // Idle keeps the active chrome (arrows / sources / accept-reject)
+          // for visual parity, but NavArrow + SourcesButton stay disabled —
+          // they're confusing on a recessed paired card. Accept/Reject are
+          // ENABLED on idle so users can decide directly without first
+          // activating the card; `stopPropagation` in the handlers
+          // prevents the card-body click from also firing `onActivate`.
           <>
             <div className="flex items-center gap-1">
               <NavArrow direction="up" disabled />
@@ -389,8 +408,14 @@ export function AIGapSuggestionCard({
             </div>
             <div className="flex items-center gap-2">
               <SourcesButton count={suggestion.sourceCount} disabled />
-              <RejectButton disabled />
-              <AcceptButton disabled />
+              <RejectButton
+                onClick={handleIdleReject}
+                disabled={!handleIdleReject}
+              />
+              <AcceptButton
+                onClick={handleIdleAccept}
+                disabled={!handleIdleAccept}
+              />
             </div>
           </>
         ) : (

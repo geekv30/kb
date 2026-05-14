@@ -516,9 +516,11 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
         };
       }
       // pre-review + reviewing-non-active → idle paired card. Clicking
-      // an idle card dispatches `activateSuggestion` (chunk 4). When
-      // the article is already published (PRD §9.5) suppress activation
-      // so the historical chips can't be re-activated.
+      // an idle card dispatches `activateSuggestion` (chunk 4); the
+      // accept/reject pills inside the card dispatch their respective
+      // actions directly so users can decide without first activating.
+      // When the article is already published (PRD §9.5) suppress all
+      // three handlers so the historical chips can't be re-touched.
       return {
         id: s.id,
         node: (
@@ -529,6 +531,16 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
               isAlreadyPublished
                 ? undefined
                 : (id) => dispatch({ type: 'activateSuggestion', id })
+            }
+            onAccept={
+              isAlreadyPublished
+                ? undefined
+                : (id) => dispatch({ type: 'accept', id })
+            }
+            onReject={
+              isAlreadyPublished
+                ? undefined
+                : (id) => dispatch({ type: 'reject', id })
             }
           />
         ),
