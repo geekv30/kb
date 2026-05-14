@@ -913,7 +913,7 @@ function InteractiveRender({ enableKeyboard }: { enableKeyboard: boolean }) {
    * and sets the active index.
    * ───────────────────────────────────────────────────────────── */
   const summaryNode = (
-    <>
+    <div className="flex flex-col gap-5">
       <ArticleSettingsPanel compact defaultCollapsed value={dummySettings} />
       {state.mode === 'pre-review' && (
         <AISuggestionsCard
@@ -950,7 +950,7 @@ function InteractiveRender({ enableKeyboard }: { enableKeyboard: boolean }) {
           onNext={() => dispatch({ type: 'next' })}
         />
       )}
-    </>
+    </div>
   );
 
   const railItems: AIGapRailItem[] = interactiveSuggestions.map((s, i) => {

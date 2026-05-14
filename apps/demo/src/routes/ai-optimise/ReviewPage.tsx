@@ -217,7 +217,10 @@ function deriveHistoricalDecisions(
  * Component
  * ───────────────────────────────────────────────────────────── */
 
-const SUMMARY =
+// Generic fallback when an article has no per-article `aiGapsSummary`
+// seeded. Every AI-targeted article should set its own context-specific
+// copy — this only fires for unseeded articles routed into this page.
+const FALLBACK_SUMMARY =
   "Hiver's AI flagged improvements based on recent customer conversations. Review each suggestion below.";
 
 export default function ReviewPage() {
@@ -431,8 +434,10 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
     'next',
   );
 
+  const summary = article.aiGapsSummary ?? FALLBACK_SUMMARY;
+
   const summaryNode = (
-    <>
+    <div className="flex flex-col gap-5">
       <ArticleSettingsPanel
         compact
         defaultCollapsed
@@ -442,7 +447,7 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
         <AISuggestionsCard
           mode="pre-review"
           count={kbSuggestions.length}
-          summary={SUMMARY}
+          summary={summary}
           onReview={() => {
             const firstId = kbSuggestions[0]?.id;
             if (firstId) {
@@ -457,19 +462,19 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
         <AISuggestionsCard
           mode="reviewing"
           count={remaining}
-          summary={SUMMARY}
+          summary={summary}
         />
       )}
       {effectiveMode === 'terminal' && (
         <AISuggestionsCard
           mode="terminal"
           count={kbSuggestions.length}
-          summary={SUMMARY}
+          summary={summary}
           onPrev={() => dispatch({ type: 'prev' })}
           onNext={() => dispatch({ type: 'next' })}
         />
       )}
-    </>
+    </div>
   );
 
   const railItems = React.useMemo<AIGapRailItem[]>(() => {

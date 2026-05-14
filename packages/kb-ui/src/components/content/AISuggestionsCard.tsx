@@ -4,6 +4,7 @@
 import * as React from 'react';
 import { Check } from '@untitledui/icons';
 import { cn } from '../../utils/cn';
+import { tokens } from '../../tokens';
 import { AiIcon } from '../brand/AiIcon';
 import { Button } from '../primitives/Button';
 import { AICard } from './AICard';
@@ -106,14 +107,15 @@ export function AISuggestionsCard({
         mode="active"
         className={cn(
           'px-4 py-3',
+          // Match the Settings card's border colour so all rail-header
+          // cards read as one family. `border-surface-muted` overrides
+          // `AICard`'s default `border-card-border` via twMerge.
+          'border-surface-muted',
           // Chunk 5 — when the rail's `sticky` wrapper pins this compact
           // header at the top, scrolled cards behind it can overlap the
           // bottom edge. AICard already provides an opaque white bg and a
-          // 1px slate border; add a subtle drop shadow so the overlap
-          // reads as "tucked under" rather than visually broken. Same
-          // tone as Figma `Shadows/md` used on the AI suggestion card
-          // chrome (low-opacity 2-step shadow), but only applied here so
-          // pre-review and terminal stay unchanged.
+          // 1px slate border; keep the softer chunk-5 shadow here so the
+          // overlap reads as "tucked under" rather than visually broken.
           'shadow-[0px_2px_4px_-2px_rgba(0,0,0,0.06),0px_4px_6px_-1px_rgba(0,0,0,0.05)]',
           className,
         )}
@@ -136,7 +138,16 @@ export function AISuggestionsCard({
     <AICard
       mode="active"
       footerGap={16}
-      className={className}
+      // Match the Settings card's border colour (`border-surface-muted`)
+      // so the two rail-header cards read as the same family.
+      // `border-surface-muted` overrides `AICard`'s default
+      // `border-card-border` via twMerge. Shadow uses `tokens.shadow.md`
+      // — the same two-step shadow Settings already applies — so the
+      // pair has matching elevation. Inline style guarantees the shadow
+      // can't be stripped by twMerge collapsing arbitrary `shadow-[...]`
+      // classes against any caller-provided override.
+      className={cn('border-surface-muted', className)}
+      style={{ boxShadow: tokens.shadow.md }}
       data-kb-component="ai-suggestions-card"
       data-kb-mode={mode}
       header={
