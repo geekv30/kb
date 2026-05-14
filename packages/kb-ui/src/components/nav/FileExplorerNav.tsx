@@ -216,9 +216,9 @@ function FolderRow({
   const state: RowState = isActive ? 'active' : isActiveSub ? 'active-sub' : 'default';
   const ChevronIcon = isExpanded ? ChevronDown : ChevronRight;
 
-  // Per Figma `6:438`: folder/sub-folder rows use font-normal in every state.
-  // Only `type=category, state=hover` uses font-medium on the label. Keep regular
-  // weight across the board and let background + size carry the emphasis.
+  // Per Figma `206:6837` (kb-gaps file `251DTRmxl2L6jmXd3FWzHe`): folder rows
+  // use font-medium on the label in active + hover states; default + active-sub
+  // remain font-normal.
 
   // Figma behavior: on ACTIVE the count stays visible (no kebab — see 6:508, 6:491).
   // On HOVER (non-active) the kebab replaces the count (see 6:493 vs 6:484).
@@ -250,7 +250,14 @@ function FolderRow({
           <span className="flex size-6 items-center justify-center rounded-[6px] shrink-0 text-text-muted">
             <Folder size={16} />
           </span>
-          <span className="flex-1 truncate text-left text-[14px] leading-5 font-normal text-text-primary">
+          <span
+            className={cn(
+              'flex-1 truncate text-left text-[14px] leading-5 text-text-primary',
+              state === 'active' ? 'font-medium' : 'font-normal',
+              // hover swap — only when not already active or active-sub
+              state === 'default' && 'group-hover:font-medium',
+            )}
+          >
             {item.title}
           </span>
           <span className="flex size-6 items-center justify-center shrink-0 relative">
