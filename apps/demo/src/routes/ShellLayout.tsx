@@ -4,8 +4,8 @@
 // Phase 7.5.8 polish:
 //   - Suspense fallback now uses `<PageProgressBar />` (top-edge
 //     indeterminate band) per PRD §12.6.
-//   - `<Outlet />` is wrapped in `<RouteTransition />` so route swaps
-//     fade in over 150ms (PRD §12.3).
+//   - Lazy route chunks are loaded via <Suspense>; the first-visit
+//     progress bar is the only navigation indicator.
 //   - `useFocusOnRouteChange()` hands focus to the page's primary
 //     `<h1>` after navigation (PRD §12.2).
 
@@ -18,7 +18,6 @@ import { AnalyticsExplorer } from '../shell/AnalyticsExplorer';
 import { AISubNavbar } from '../shell/AISubNavbar';
 import { BreadcrumbBar } from '../shell/BreadcrumbBar';
 import { PageProgressBar } from '../components/PageProgressBar';
-import { RouteTransition } from '../components/RouteTransition';
 import { useFocusOnRouteChange } from '../hooks/useFocusOnRouteChange';
 import {
   SidebarCollapseProvider,
@@ -45,9 +44,7 @@ function ShellLayoutInner() {
       sidebarCollapsed={sidebar?.collapsed ?? false}
     >
       <Suspense fallback={<PageProgressBar />}>
-        <RouteTransition>
-          <Outlet />
-        </RouteTransition>
+        <Outlet />
       </Suspense>
     </AppShell>
   );

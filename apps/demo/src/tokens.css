@@ -55,17 +55,4 @@
   .animate-progress-slide {
     animation: kb-progress-slide 1.1s linear infinite;
   }
-
-  /* RouteTransition fade-in — 150ms opacity ease (PRD §12.3). */
-  @keyframes kb-route-fade-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  .animate-route-fade-in {
-    animation: kb-route-fade-in 150ms ease-out;
-  }
 }
