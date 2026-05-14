@@ -132,7 +132,7 @@ function FlatRow({ item, isActive, onClick }: FlatRowProps) {
       data-kb-part="flat-row"
       data-kb-kind={kind}
       data-kb-active={isActive ? 'true' : 'false'}
-      className="w-full px-[16px] py-0"
+      className="w-full px-[12px] py-0"
     >
       <button
         type="button"
@@ -141,7 +141,7 @@ function FlatRow({ item, isActive, onClick }: FlatRowProps) {
         // Section rows are non-interactive labels — keep them focusable
         // for a11y, but suppress hover/active affordances.
         className={cn(
-          'flex h-9 w-full items-center rounded-[6px] px-[12px]',
+          'flex h-9 w-full items-center rounded-[6px] px-[8px]',
           item.icon && 'gap-2',
           'text-left text-[14px] leading-[20px] transition-colors duration-150',
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
@@ -509,7 +509,7 @@ export function FileExplorerNav({
       {/* Header row (54 tall) — no border-b; inset divider lives below */}
       <div
         data-kb-part="explorer-header"
-        className="flex h-[54px] items-center justify-between px-4 shrink-0"
+        className="flex h-[54px] items-center justify-between px-[20px] shrink-0"
       >
         <div className="flex items-center gap-2">
           {resolvedHeaderIcon ? (
