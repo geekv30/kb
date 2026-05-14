@@ -31,6 +31,14 @@ File: `https://www.figma.com/design/251DTRmxl2L6jmXd3FWzHe/kb-gaps`
 
 **Rule:** Always `get_design_context` + `get_screenshot` on the relevant screen node before building any component from that screen.
 
+### Phase 16 nodes (category authoring entry points — 2026-05-14)
+
+| Surface | Node ID | Used for |
+| --- | --- | --- |
+| New Category modal | `1958:34896` | `NewCategoryModal` (kb-ui) — composition of Modal + Field + TextInput + Dropdown + Textarea + Button + inline icon swatch. Create + Edit modes. |
+| Row 3-dot dropdown | `1958:34638` | Shared Radix DropdownMenu chrome — `bg-white border-card-border rounded-[8px] py-2 px-1 shadow-md two-layer min-w-[160px]`. Inline in `apps/demo/src/shell/DropdownMenuItem.tsx`. Used by per-row 3-dot menu AND PageHeader "+ New" dropdown. |
+| PageHeader "+ New" Folder/Article dropdown | `1958:33465` | Compact "+ New" Button + dropdown (Folder / Article options) on `CategoryPage` PageHeader CTA. Replaces the previous "+ New article" button. |
+
 ### Library-Check File (component isolation, Phase 2b + Phase 6 source)
 
 File key: `9aGp5t9fH1d0PXi4LMhOdb` — **Note: `get_design_context` returns "nothing selected" for all nodes in this file. Use screenshots + specs below.**
