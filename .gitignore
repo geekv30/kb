@@ -16,6 +16,9 @@ npm-debug.log*
 # Playwright / MCP
 .playwright-mcp/
 
+# Per-app scratch review screenshots (one-off prototype captures)
+**/.review/
+
 # macOS
 .DS_Store
 ._*
