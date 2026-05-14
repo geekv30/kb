@@ -518,4 +518,37 @@ export const articles: Article[] = [
       reviewerIds: ['user-aanya'],
     },
   },
+  {
+    // Overview article living directly on the top-level "Automations & Workflows"
+    // category — sibling to the 3 sub-folders (Rule-based / SLAs / Notifications).
+    // Demonstrates that articles can sit at any depth, not only on leaf categories.
+    id: 'art-choosing-the-right-automation-type',
+    slug: 'choosing-the-right-automation-type',
+    categoryId: 'cat-automations-workflows',
+    title: 'Choosing the right automation type',
+    status: 'published',
+    authorId: 'user-rohan',
+    lastUpdatedAt: daysAgo(3),
+    bodyHTML: `<p>Most teams reach for the same kind of automation regardless of the problem in front of them — a rule, every time. That works for triage, but it leaves SLAs and notifications on the table when they would have been a better fit. This overview maps the three automation primitives Hiver supports to the cases each one is genuinely good at, so your team picks the right tool the first time.</p>
+<h2>Rule-based automations</h2>
+<p>Rules are stateless event-to-action mappings — when an inbound conversation matches a filter, run an action. A canonical example: <em>if the inbound subject contains "refund", apply the billing tag and assign to the billing inbox</em>. Rules don't track time, don't escalate, and don't notify anyone outside the action list. They're the right choice for high-volume, deterministic triage on shared inboxes — tagging, routing, auto-replies, and template insertion. See <a href="#">Rule-based automations →</a> for the full trigger and action catalogue.</p>
+<h2>SLAs &amp; escalations</h2>
+<p>SLAs add time to the picture. Where a rule fires once on arrival, an SLA tracks a conversation against a deadline and can fire follow-up actions when that deadline is at risk or breached. Pair an SLA with an escalation chain when the cost of a slow response is high — paying customers, security tickets, anything with a contractual response window. Good fits include:</p>
+<ul>
+<li>First-response deadlines per shared inbox, with different targets for billing vs general support.</li>
+<li>Tier-2 escalation on customer-blocker tickets — auto-assign to a manager when the SLA passes 75% elapsed.</li>
+<li>Weekend coverage notifications — page the on-call agent if a tagged conversation arrives outside business hours.</li>
+</ul>
+<p>See <a href="#">SLAs &amp; escalations →</a> for policy authoring and the breach-action catalogue.</p>
+<h2>Notifications</h2>
+<p>Notifications are the lightweight third primitive — no triggers, no deadlines, just per-agent preferences for what events should ping them and through which channel. Most agents tune their own notifications; managers tune team-wide defaults. Use notifications when you want awareness without action — "tell me when I'm mentioned in a note" rather than "auto-assign this to me." The three primitives compose: a rule routes a conversation, an SLA times it, and a notification pings the right agent the moment either fires.</p>`,
+    settings: {
+      slug: 'choosing-the-right-automation-type',
+      tags: ['automations', 'overview', 'workflows'],
+      publishDate: daysAgo(3),
+      seoTitle: 'When to use rules, SLAs, and notifications in Hiver',
+      visibility: 'public',
+      reviewerIds: ['user-mira'],
+    },
+  },
 ];
