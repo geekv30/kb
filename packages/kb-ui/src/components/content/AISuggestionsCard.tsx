@@ -9,11 +9,18 @@ import { Button } from '../primitives/Button';
 import { AICard } from './AICard';
 import { NavArrow } from './NavArrow';
 
-export type AISuggestionsCardMode = 'pre-review' | 'terminal';
+export type AISuggestionsCardMode = 'pre-review' | 'reviewing' | 'terminal';
 
 export type AISuggestionsCardProps = {
   /**
    * `pre-review`  — "AI Suggestions" + primary `Review Suggestions (N)` CTA.
+   * `reviewing`   — compact header (chunk 4): "AI Suggestions" + count pill,
+   *                 no description, no nav arrows, no CTA. Used while a
+   *                 paired suggestion card is active so the summary card
+   *                 doesn't compete visually with the active card.
+   *                 Figma has no explicit variant for this — minimal version
+   *                 derived to match the terminal mode's compact rhythm
+   *                 (icon + title + count pill in a single 56-px row).
    * `terminal`    — "Suggestions" + count badge + disabled `✓ Reviewed All` pill.
    */
   mode: AISuggestionsCardMode;
@@ -69,8 +76,42 @@ export function AISuggestionsCard({
   terminalLabel,
 }: AISuggestionsCardProps) {
   const isTerminal = mode === 'terminal';
+  const isReviewing = mode === 'reviewing';
   const resolvedTitle = title ?? (isTerminal ? 'Suggestions' : 'AI Suggestions');
   const resolvedTerminalLabel = terminalLabel ?? 'Reviewed All';
+
+  /* ─────────────────────────────────────────────────────────────
+   * Reviewing (chunk 4) — compact single-row variant.
+   *
+   * The summary card collapses to a 56-px tall pill: AI sparkle + title
+   * + count pill. No description, no nav arrows, no CTA. Matches the
+   * terminal mode's geometry but reads as a quiet header instead of an
+   * end-state. Figma has no explicit variant for this — derived to keep
+   * the rail visually clean while a paired suggestion card is active.
+   *
+   * Padding drops from 16 to `px-4 py-3` so the row reads as a header
+   * rather than a card body. Background stays white + 1-px slate border
+   * so it visually belongs to the same family as the active card below it.
+   * ───────────────────────────────────────────────────────────── */
+  if (isReviewing) {
+    return (
+      <AICard
+        mode="active"
+        className={cn('px-4 py-3', className)}
+        data-kb-component="ai-suggestions-card"
+        data-kb-mode={mode}
+        header={
+          <div className="flex items-center gap-2">
+            <AiIcon size={16} aria-hidden="true" />
+            <span className="text-[14px] font-medium leading-[20px] text-text-primary">
+              {resolvedTitle}
+            </span>
+            <CountPill count={count} />
+          </div>
+        }
+      />
+    );
+  }
 
   return (
     <AICard
