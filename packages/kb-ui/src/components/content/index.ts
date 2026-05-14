@@ -60,6 +60,8 @@ export type {
   ArticleBodySuggestionIds,
   ArticleSuggestionDecision,
 } from './ArticleBody';
+export { AIGapRail } from './AIGapRail';
+export type { AIGapRailProps, AIGapRailItem } from './AIGapRail';
 export type {
   AISuggestion,
   AISuggestionType,
