@@ -27,11 +27,13 @@
 import * as React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
+  AIGapRail,
   AIGapSuggestionCard,
   AISuggestionsCard,
   ArticleBody,
   ArticleSettingsPanel,
   SourcesSideSheet,
+  type AIGapRailItem,
   type AISuggestion as KbUiAISuggestion,
   type AISuggestionDecision,
   type ArticleBodyDecisions,
@@ -372,6 +374,102 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
     return out;
   }, [slotMap]);
 
+  // Ref to the ArticleBody root — passed to AIGapRail so cards can be
+  // Y-paired to their `data-suggestion-id` anchors. ArticleBody renders
+  // an `<article>` so we widen the type accordingly.
+  const articleRef = React.useRef<HTMLElement>(null);
+
+  /* ── Rail composition — chunk 3: paired layout ────────────────
+   * Summary card stays sticky at the rail top in every mode. In
+   * `pre-review` the paired idle cards render anchored to highlights;
+   * during `reviewing` we swap the matching item to its active card and
+   * other paired cards stay as decision chips or idle (chunks 4/5 wire
+   * the activation logic). In `terminal` the decision chips replace the
+   * paired idle cards.
+   * ───────────────────────────────────────────────────────────── */
+  const summaryNode = (
+    <>
+      <ArticleSettingsPanel
+        compact
+        defaultCollapsed
+        value={panelSettings}
+      />
+      {effectiveMode === 'pre-review' && (
+        <AISuggestionsCard
+          mode="pre-review"
+          count={kbSuggestions.length}
+          summary={SUMMARY}
+          onReview={() => dispatch({ type: 'review' })}
+          onPrev={() => dispatch({ type: 'prev' })}
+          onNext={() => dispatch({ type: 'next' })}
+        />
+      )}
+      {effectiveMode === 'terminal' && (
+        <AISuggestionsCard
+          mode="terminal"
+          count={kbSuggestions.length}
+          summary={SUMMARY}
+          onPrev={() => dispatch({ type: 'prev' })}
+          onNext={() => dispatch({ type: 'next' })}
+        />
+      )}
+    </>
+  );
+
+  const railItems = React.useMemo<AIGapRailItem[]>(() => {
+    return kbSuggestions.map((s) => {
+      const decision = effectiveDecisions[s.id];
+      if (decision) {
+        return {
+          id: s.id,
+          node: (
+            <AIGapSuggestionCard
+              suggestion={s}
+              state={decision}
+              onUndo={
+                isAlreadyPublished
+                  ? undefined
+                  : (id) => dispatch({ type: 'undo', id })
+              }
+            />
+          ),
+        };
+      }
+      if (effectiveMode === 'reviewing' && s.id === activeSuggestion?.id) {
+        return {
+          id: s.id,
+          node: (
+            <AIGapSuggestionCard
+              suggestion={s}
+              state="active"
+              onPrev={() => dispatch({ type: 'prev' })}
+              onNext={() => dispatch({ type: 'next' })}
+              onOpenSources={(id) =>
+                dispatch({ type: 'openSources', id })
+              }
+              onAccept={(id) => dispatch({ type: 'accept', id })}
+              onReject={(id) => dispatch({ type: 'reject', id })}
+            />
+          ),
+        };
+      }
+      // pre-review + reviewing-non-active → idle paired card. Chunk 3
+      // explicitly bypasses the legacy visibility gate so every
+      // suggestion's idle card renders from page load.
+      return {
+        id: s.id,
+        node: <AIGapSuggestionCard suggestion={s} state="idle" />,
+      };
+    });
+  }, [
+    kbSuggestions,
+    effectiveMode,
+    effectiveDecisions,
+    activeSuggestion,
+    isAlreadyPublished,
+    dispatch,
+  ]);
+
   return (
     <div data-route="ai-optimise-review" className="w-full">
       <div
@@ -379,100 +477,17 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
         className="flex flex-row justify-between items-start gap-6"
       >
         <ArticleBody
+          ref={articleRef}
           decisions={articleDecisions}
           regions={passwordResetRegions}
           suggestionIds={articleSuggestionIds}
           className="max-w-[720px] w-full"
         />
-        <aside
-          data-kb-part="ai-gaps-rail"
-          className="w-[380px] shrink-0 flex flex-col gap-4 sticky top-4"
-        >
-          <ArticleSettingsPanel
-            compact
-            defaultCollapsed
-            value={panelSettings}
-          />
-
-          {effectiveMode === 'pre-review' && (
-            <AISuggestionsCard
-              mode="pre-review"
-              count={kbSuggestions.length}
-              summary={SUMMARY}
-              onReview={() => dispatch({ type: 'review' })}
-              onPrev={() => dispatch({ type: 'prev' })}
-              onNext={() => dispatch({ type: 'next' })}
-            />
-          )}
-
-          {effectiveMode === 'reviewing' &&
-            kbSuggestions.map((s) => {
-              const decision = effectiveDecisions[s.id];
-              if (decision) {
-                return (
-                  <AIGapSuggestionCard
-                    key={s.id}
-                    suggestion={s}
-                    state={decision}
-                    onUndo={(id) => dispatch({ type: 'undo', id })}
-                  />
-                );
-              }
-              if (s.id === activeSuggestion?.id) {
-                return (
-                  <AIGapSuggestionCard
-                    key={s.id}
-                    suggestion={s}
-                    state="active"
-                    onPrev={() => dispatch({ type: 'prev' })}
-                    onNext={() => dispatch({ type: 'next' })}
-                    onOpenSources={(id) =>
-                      dispatch({ type: 'openSources', id })
-                    }
-                    onAccept={(id) => dispatch({ type: 'accept', id })}
-                    onReject={(id) => dispatch({ type: 'reject', id })}
-                  />
-                );
-              }
-              // Un-decided non-active suggestions are invisible in the rail
-              // during `reviewing` — matches the kb-ui Interactive story.
-              return null;
-            })}
-
-          {effectiveMode === 'terminal' && (
-            <>
-              <AISuggestionsCard
-                mode="terminal"
-                count={kbSuggestions.length}
-                summary={SUMMARY}
-                onPrev={() => dispatch({ type: 'prev' })}
-                onNext={() => dispatch({ type: 'next' })}
-              />
-              {/* Decision chips below — mirrors Interactive story so the
-                user can undo any decision from terminal (when not yet
-                published). When already published from a previous review,
-                we still render the chips so the user can see the
-                historical decisions, but the undo handler is a no-op
-                because the underlying suggestion is `published`. */}
-              {kbSuggestions.map((s) => {
-                const decision = effectiveDecisions[s.id];
-                if (!decision) return null;
-                return (
-                  <AIGapSuggestionCard
-                    key={s.id}
-                    suggestion={s}
-                    state={decision}
-                    onUndo={
-                      isAlreadyPublished
-                        ? undefined
-                        : (id) => dispatch({ type: 'undo', id })
-                    }
-                  />
-                );
-              })}
-            </>
-          )}
-        </aside>
+        <AIGapRail
+          articleRef={articleRef}
+          summary={summaryNode}
+          items={railItems}
+        />
       </div>
 
       <SourcesSideSheet

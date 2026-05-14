@@ -274,48 +274,60 @@ function S3Region({
 
 /* ─────────────────────────────────────────────────────────────
  * Component
+ *
+ * `forwardRef` so consumers (e.g. the AI Gaps rail) can pass a ref to
+ * the rendered `<article>` and measure the subtree's anchor offsets
+ * relative to it. The ref is intentionally typed `HTMLElement` (not
+ * `HTMLDivElement`) to match the `<article>` landmark.
  * ───────────────────────────────────────────────────────────── */
 
-export function ArticleBody({
-  decisions,
-  regions,
-  suggestionIds,
-  className,
-}: ArticleBodyProps) {
-  return (
-    <article
-      data-kb-component="article-body"
-      data-kb-s1={decisions.s1}
-      data-kb-s2={decisions.s2}
-      data-kb-s3={decisions.s3}
-      className={cn(
-        'w-full max-w-[720px] rounded-[12px] border border-card-border bg-white',
-        'shadow-[0_1px_2px_rgba(15,23,42,0.04)]',
-        'p-8',
-        className,
-      )}
-    >
-      {regions.header}
-      {regions.beforeS1}
-      <S1Region
-        decision={decisions.s1}
-        content={regions.s1}
-        suggestionId={suggestionIds?.s1}
-      />
-      {regions.betweenS1AndS2}
-      <S2Region
-        decision={decisions.s2}
-        before={regions.s2.before}
-        after={regions.s2.after}
-        suggestionId={suggestionIds?.s2}
-      />
-      {regions.betweenS2AndS3}
-      <S3Region
-        decision={decisions.s3}
-        content={regions.s3}
-        suggestionId={suggestionIds?.s3}
-      />
-      {regions.afterS3}
-    </article>
-  );
-}
+export const ArticleBody = React.forwardRef<HTMLElement, ArticleBodyProps>(
+  function ArticleBody(
+    { decisions, regions, suggestionIds, className },
+    ref,
+  ) {
+    return (
+      <article
+        ref={ref}
+        data-kb-component="article-body"
+        data-kb-s1={decisions.s1}
+        data-kb-s2={decisions.s2}
+        data-kb-s3={decisions.s3}
+        className={cn(
+          // `relative` makes the article a positioned ancestor so anchor
+          // descendants (SuggestionBlock with `data-suggestion-id`) have
+          // `offsetParent === article`. This is what `useAnchorPositions`
+          // walks; without it the walk goes off-chain to `<body>` and
+          // anchor offsets come back empty (the rail then falls back to
+          // its stacked layout).
+          'relative w-full max-w-[720px] rounded-[12px] border border-card-border bg-white',
+          'shadow-[0_1px_2px_rgba(15,23,42,0.04)]',
+          'p-8',
+          className,
+        )}
+      >
+        {regions.header}
+        {regions.beforeS1}
+        <S1Region
+          decision={decisions.s1}
+          content={regions.s1}
+          suggestionId={suggestionIds?.s1}
+        />
+        {regions.betweenS1AndS2}
+        <S2Region
+          decision={decisions.s2}
+          before={regions.s2.before}
+          after={regions.s2.after}
+          suggestionId={suggestionIds?.s2}
+        />
+        {regions.betweenS2AndS3}
+        <S3Region
+          decision={decisions.s3}
+          content={regions.s3}
+          suggestionId={suggestionIds?.s3}
+        />
+        {regions.afterS3}
+      </article>
+    );
+  },
+);

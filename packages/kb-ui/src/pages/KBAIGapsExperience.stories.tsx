@@ -10,6 +10,8 @@ import type {
   ArticleBodyRegions,
   ArticleSuggestionDecision,
 } from '../components/content/ArticleBody';
+import { AIGapRail } from '../components/content/AIGapRail';
+import type { AIGapRailItem } from '../components/content/AIGapRail';
 import { AISuggestionsCard } from '../components/content/AISuggestionsCard';
 import { AIGapSuggestionCard } from '../components/content/AIGapSuggestionCard';
 import { SuggestionHighlight } from '../components/content/SuggestionBlock';
@@ -870,6 +872,81 @@ function InteractiveRender({ enableKeyboard }: { enableKeyboard: boolean }) {
     state.mode,
   );
 
+  // Article ref + suggestion-ids map for the chunk 3 paired-layout rail.
+  // The three suggestion ids (s1/s2/s3) map 1:1 to ArticleBody slots in
+  // this story since `interactiveSuggestions` is ordered s1, s2, s3.
+  const articleRef = React.useRef<HTMLElement>(null);
+  const articleSuggestionIds = React.useMemo(
+    () => ({ s1: 's1', s2: 's2', s3: 's3' }),
+    [],
+  );
+
+  /* ─ Rail composition (chunk 3) ──────────────────────────────
+   * Summary card sticky at the top of the rail in every mode. Paired
+   * suggestion cards render in `idle` from page load, swapping to
+   * `active` for the focused suggestion during `reviewing` and to
+   * decision chips once accepted/dismissed. The legacy invisible-non-
+   * active branch is gone — every suggestion always renders a paired
+   * card in the rail, anchored to its highlight.
+   * ───────────────────────────────────────────────────────────── */
+  const summaryNode = (
+    <>
+      <ArticleSettingsPanel compact defaultCollapsed value={dummySettings} />
+      {state.mode === 'pre-review' && (
+        <AISuggestionsCard
+          mode="pre-review"
+          count={interactiveSuggestions.length}
+          summary={SUMMARY}
+          onReview={() => dispatch({ type: 'review' })}
+          onPrev={() => dispatch({ type: 'prev' })}
+          onNext={() => dispatch({ type: 'next' })}
+        />
+      )}
+      {state.mode === 'terminal' && (
+        <AISuggestionsCard
+          mode="terminal"
+          count={interactiveSuggestions.length}
+          summary={SUMMARY}
+          onPrev={() => dispatch({ type: 'prev' })}
+          onNext={() => dispatch({ type: 'next' })}
+        />
+      )}
+    </>
+  );
+
+  const railItems: AIGapRailItem[] = interactiveSuggestions.map((s) => {
+    const decision = state.decisions[s.id];
+    if (decision) {
+      return {
+        id: s.id,
+        node: (
+          <AIGapSuggestionCard
+            suggestion={s}
+            state={decision}
+            onUndo={(id) => dispatch({ type: 'undo', id })}
+          />
+        ),
+      };
+    }
+    if (state.mode === 'reviewing' && s.id === activeSuggestion?.id) {
+      return {
+        id: s.id,
+        node: (
+          <AIGapSuggestionCard
+            suggestion={s}
+            state="active"
+            onPrev={() => dispatch({ type: 'prev' })}
+            onNext={() => dispatch({ type: 'next' })}
+            onOpenSources={(id) => dispatch({ type: 'openSources', id })}
+            onAccept={(id) => dispatch({ type: 'accept', id })}
+            onReject={(id) => dispatch({ type: 'reject', id })}
+          />
+        ),
+      };
+    }
+    return { id: s.id, node: <AIGapSuggestionCard suggestion={s} state="idle" /> };
+  });
+
   return (
     <div className="h-screen w-full">
       <AppShell
@@ -900,101 +977,17 @@ function InteractiveRender({ enableKeyboard }: { enableKeyboard: boolean }) {
           className="flex flex-row justify-between items-start gap-6"
         >
           <ArticleBody
+            ref={articleRef}
             decisions={articleDecisions}
             regions={passwordResetRegions}
+            suggestionIds={articleSuggestionIds}
             className="max-w-[720px] w-full"
           />
-          <aside
-            data-kb-part="ai-gaps-rail"
-            /*
-             * `sticky top-4` keeps the rail in view as the article scrolls
-             * inside <main>. Round 2's static frames didn't need this since
-             * state was fixed per story; in the interactive flow the user
-             * auto-scrolls between suggestions and the rail must follow.
-             */
-            className="w-[380px] shrink-0 flex flex-col gap-4 sticky top-4"
-          >
-            <ArticleSettingsPanel compact defaultCollapsed value={dummySettings} />
-
-            {state.mode === 'pre-review' && (
-              <AISuggestionsCard
-                mode="pre-review"
-                count={interactiveSuggestions.length}
-                summary={SUMMARY}
-                onReview={() => dispatch({ type: 'review' })}
-                onPrev={() => dispatch({ type: 'prev' })}
-                onNext={() => dispatch({ type: 'next' })}
-              />
-            )}
-
-            {state.mode === 'reviewing' &&
-              interactiveSuggestions.map((s) => {
-                const decision = state.decisions[s.id];
-                if (decision) {
-                  // Reviewed suggestions persist as chips in the rail so
-                  // the user can undo at any time — matches flow-doc
-                  // frames 5/7/8.
-                  return (
-                    <AIGapSuggestionCard
-                      key={s.id}
-                      suggestion={s}
-                      state={decision}
-                      onUndo={(id) => dispatch({ type: 'undo', id })}
-                    />
-                  );
-                }
-                if (s.id === activeSuggestion?.id) {
-                  return (
-                    <AIGapSuggestionCard
-                      key={s.id}
-                      suggestion={s}
-                      state="active"
-                      onPrev={() => dispatch({ type: 'prev' })}
-                      onNext={() => dispatch({ type: 'next' })}
-                      onOpenSources={(id) =>
-                        dispatch({ type: 'openSources', id })
-                      }
-                      onAccept={(id) => dispatch({ type: 'accept', id })}
-                      onReject={(id) => dispatch({ type: 'reject', id })}
-                    />
-                  );
-                }
-                // Un-decided, non-active suggestions are invisible in the
-                // rail during `reviewing` — matches frames 3/5/7/8.
-                return null;
-              })}
-
-            {state.mode === 'terminal' && (
-              <>
-                <AISuggestionsCard
-                  mode="terminal"
-                  count={interactiveSuggestions.length}
-                  summary={SUMMARY}
-                  onPrev={() => dispatch({ type: 'prev' })}
-                  onNext={() => dispatch({ type: 'next' })}
-                />
-                {/*
-                 * Show every decision chip below the terminal card so the
-                 * user can still undo any individual decision. Figma hides
-                 * these in frame 10, but the dispatch explicitly calls out
-                 * that undo must remain available from the terminal screen
-                 * so the user can re-open a dismissed or accepted item.
-                 */}
-                {interactiveSuggestions.map((s) => {
-                  const decision = state.decisions[s.id];
-                  if (!decision) return null;
-                  return (
-                    <AIGapSuggestionCard
-                      key={s.id}
-                      suggestion={s}
-                      state={decision}
-                      onUndo={(id) => dispatch({ type: 'undo', id })}
-                    />
-                  );
-                })}
-              </>
-            )}
-          </aside>
+          <AIGapRail
+            articleRef={articleRef}
+            summary={summaryNode}
+            items={railItems}
+          />
         </div>
       </AppShell>
 
