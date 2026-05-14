@@ -178,6 +178,8 @@ export const articles: Article[] = [
       visibility: 'public',
       reviewerIds: ['user-aanya', 'user-devika'],
     },
+    aiGapsSummary:
+      'Refining the article with updated instruction set, updating link and by removing legacy instructions',
   },
   {
     id: 'art-restricting-an-inbox-to-specific-agents',
@@ -290,6 +292,8 @@ export const articles: Article[] = [
       visibility: 'public',
       reviewerIds: ['user-aanya'],
     },
+    aiGapsSummary:
+      'Adding accessibility best-practices guidance, renaming the color picker to theme selector and removing legacy iframe embed instructions',
   },
   {
     id: 'art-connecting-whatsapp-business-to-hiver',
@@ -378,6 +382,8 @@ export const articles: Article[] = [
       visibility: 'public',
       reviewerIds: ['user-mira', 'user-tarun'],
     },
+    aiGapsSummary:
+      'Adding timezone guidance for rule schedules, clarifying the ambiguous Recent trigger and removing the deprecated sender-domain toggle',
   },
   {
     id: 'art-defining-first-response-targets',

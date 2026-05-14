@@ -78,6 +78,15 @@ export type Article = {
    */
   bodyHTML: string;
   settings: ArticleSettings;
+  /**
+   * Optional per-article context-specific summary surfaced in the AI
+   * Gaps rail header. Briefly describes the actual suggestions on this
+   * article (e.g. "Refining the article with updated instruction set,
+   * updating link and by removing legacy instructions"). When absent,
+   * the rail falls back to a generic blurb. Only seeded on the 3
+   * AI-targeted articles.
+   */
+  aiGapsSummary?: string;
 };
 
 export type AISuggestionType = 'addition' | 'replace' | 'removal';
