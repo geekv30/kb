@@ -19,6 +19,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { ChevronLeft, X } from '@untitledui/icons';
 import { Button } from '@test-kb-ui/kb-ui';
 import { cn } from '../../lib/cn';
+import { useReducedMotion } from './useReducedMotion';
 
 const COACHMARK_GAP = 16;
 const COACH_MARK_WIDTH = 360; // ~max-w-sm
@@ -34,6 +35,15 @@ const RING_PADDING = 8; // px outside the target's bounding rect
 const RING_COLOR = '#0ea5e9'; // sky-500
 const RING_GLOW = 'rgba(14, 165, 233, 0.20)';
 const RING_GLOW_OUTER = 'rgba(14, 165, 233, 0.25)';
+
+/* Beacon — pulsing dot anchored to the target's top-right corner,
+ * layered ABOVE the ring. Reads as a "badge" hovering half-on/half-off
+ * the target. Two staggered pulse rings sit behind the solid core. */
+const BEACON_Z_INDEX = 8502; // above ring (8500), above dim (8499)
+const BEACON_DIAMETER = 14;
+const BEACON_COLOR = '#0ea5e9'; // sky-500 (matches the ring)
+const BEACON_PULSE_DURATION_MS = 1800;
+const BEACON_PULSE_DELAY_MS = 1200;
 
 const FADE_IN_DUR = 240;
 const FADE_IN_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
@@ -82,6 +92,7 @@ export function Spotlight({
   onSkip,
 }: SpotlightProps) {
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const prefersReducedMotion = useReducedMotion();
 
   /* Viewport size — clamps coach-mark Y so it never overflows. */
   const [viewport, setViewport] = useState<{ w: number; h: number }>(() => ({
@@ -184,6 +195,85 @@ export function Spotlight({
 
   const ring = <div aria-hidden="true" style={ringStyle} />;
 
+  /* ── Beacon — pulsing dot anchored to the target's top-right ──── */
+
+  // Anchor at the target's top-right corner. Offset by HALF the
+  // beacon diameter so the dot straddles the corner (half outside,
+  // half overlapping) — gives it the "badge" feel called for in the
+  // brief, and the same anchor works equally well for tall columns
+  // and small rail icons because it tracks the corner, not the centre.
+  const beaconOpacity = phase === 'in' && rect !== null ? 1 : 0;
+  const beaconCx = rect ? rect.left + rect.width : 0;
+  const beaconCy = rect ? rect.top : 0;
+
+  const beaconWrapperStyle: CSSProperties = rect
+    ? {
+        position: 'fixed',
+        top: beaconCy,
+        left: beaconCx,
+        width: 0,
+        height: 0,
+        pointerEvents: 'none',
+        zIndex: BEACON_Z_INDEX,
+        opacity: beaconOpacity,
+        transition: `opacity 200ms ease-out`,
+      }
+    : { display: 'none' };
+
+  // Solid core dot — centered on the wrapper's (0,0) anchor via
+  // translate(-50%, -50%). Stays at scale 1, fully visible.
+  const beaconCoreStyle: CSSProperties = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: BEACON_DIAMETER,
+    height: BEACON_DIAMETER,
+    borderRadius: '50%',
+    backgroundColor: BEACON_COLOR,
+    border: '2px solid #ffffff',
+    transform: 'translate(-50%, -50%)',
+    boxSizing: 'border-box',
+  };
+
+  // Pulse rings — same anchor as core. Animate scale + opacity only.
+  // The translate(-50%, -50%) is included inside the keyframe's
+  // transform so we don't lose centering when the scale changes.
+  const beaconPulseBase: CSSProperties = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: BEACON_DIAMETER,
+    height: BEACON_DIAMETER,
+    borderRadius: '50%',
+    backgroundColor: BEACON_COLOR,
+    transform: 'translate(-50%, -50%)',
+    transformOrigin: 'center',
+    opacity: 0, // animation drives opacity 0.6 → 0
+  };
+
+  const beaconPulse1Style: CSSProperties = prefersReducedMotion
+    ? { display: 'none' }
+    : {
+        ...beaconPulseBase,
+        animation: `welcome-beacon-pulse ${BEACON_PULSE_DURATION_MS}ms ease-out infinite`,
+      };
+
+  const beaconPulse2Style: CSSProperties = prefersReducedMotion
+    ? { display: 'none' }
+    : {
+        ...beaconPulseBase,
+        animation: `welcome-beacon-pulse ${BEACON_PULSE_DURATION_MS}ms ease-out infinite`,
+        animationDelay: `${BEACON_PULSE_DELAY_MS}ms`,
+      };
+
+  const beacon = (
+    <div aria-hidden="true" style={beaconWrapperStyle}>
+      <div style={beaconPulse1Style} />
+      <div style={beaconPulse2Style} />
+      <div style={beaconCoreStyle} />
+    </div>
+  );
+
   /* ── Coach-mark card placement ───────────────────────────────── */
 
   // Anchored to the right of the target. Clamp top so it stays in the
@@ -268,6 +358,7 @@ export function Spotlight({
     <div className="pointer-events-none fixed inset-0 z-[8500]">
       {dim}
       {ring}
+      {beacon}
 
       {/* Coach-mark card — sits above the dim. */}
       <div

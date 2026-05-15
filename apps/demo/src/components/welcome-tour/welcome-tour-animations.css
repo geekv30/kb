@@ -59,3 +59,24 @@
     transform: scale(1);
   }
 }
+
+/* Spotlight beacon — radial pulse rings expanding outward from the
+ * core dot. Two rings run on a staggered cycle (via animation-delay)
+ * so the pulses overlap and read as a continuous attention cue.
+ *
+ * Only transform + opacity animate (GPU-cheap, no layout). The solid
+ * core dot stays at scale 1 and full opacity — these keyframes are
+ * applied only to the pulse layers behind it.
+ *
+ * `translate(-50%, -50%)` is baked into the transform so the rings
+ * remain centered on the beacon's anchor point while scaling. */
+@keyframes welcome-beacon-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.6);
+    opacity: 0;
+  }
+}
