@@ -378,27 +378,29 @@ function FrameShell({ decisions, rail, publishDisabled }: FrameShellProps) {
         />
       }
     >
-      <div
-        data-kb-part="ai-gaps-columns"
-        className="flex flex-row justify-between items-start gap-6"
-      >
-        <ArticleBody
-          decisions={decisions}
-          regions={passwordResetRegions}
-          className="max-w-[720px] w-full"
-        />
-        <aside
-          data-kb-part="ai-gaps-rail"
-          /*
-           * `sticky top-4` keeps the rail in view as the article scrolls
-           * inside <main>. The Interactive render already used this — the
-           * static frames inherit it now so Frame 8 (with three rail cards
-           * + accepted chips) doesn't push the rail off-screen.
-           */
-          className="w-[380px] shrink-0 flex flex-col gap-4 sticky top-4"
+      <div className="mx-auto w-full max-w-[1180px]">
+        <div
+          data-kb-part="ai-gaps-columns"
+          className="flex flex-row items-start gap-10"
         >
-          {rail}
-        </aside>
+          <ArticleBody
+            decisions={decisions}
+            regions={passwordResetRegions}
+            className="max-w-[720px] w-full"
+          />
+          <aside
+            data-kb-part="ai-gaps-rail"
+            /*
+             * `sticky top-4` keeps the rail in view as the article scrolls
+             * inside <main>. The Interactive render already used this — the
+             * static frames inherit it now so Frame 8 (with three rail cards
+             * + accepted chips) doesn't push the rail off-screen.
+             */
+            className="w-[380px] shrink-0 flex flex-col gap-4 sticky top-4"
+          >
+            {rail}
+          </aside>
+        </div>
       </div>
     </AppShell>
   );
@@ -1028,22 +1030,24 @@ function InteractiveRender({ enableKeyboard }: { enableKeyboard: boolean }) {
           />
         }
       >
-        <div
-          data-kb-part="ai-gaps-columns"
-          className="flex flex-row justify-between items-start gap-6"
-        >
-          <ArticleBody
-            ref={articleRef}
-            decisions={articleDecisions}
-            regions={passwordResetRegions}
-            suggestionIds={articleSuggestionIds}
-            className="max-w-[720px] w-full"
-          />
-          <AIGapRail
-            articleRef={articleRef}
-            summary={summaryNode}
-            items={railItems}
-          />
+        <div className="mx-auto w-full max-w-[1180px]">
+          <div
+            data-kb-part="ai-gaps-columns"
+            className="flex flex-row items-start gap-10"
+          >
+            <ArticleBody
+              ref={articleRef}
+              decisions={articleDecisions}
+              regions={passwordResetRegions}
+              suggestionIds={articleSuggestionIds}
+              className="max-w-[720px] w-full"
+            />
+            <AIGapRail
+              articleRef={articleRef}
+              summary={summaryNode}
+              items={railItems}
+            />
+          </div>
         </div>
       </AppShell>
 

@@ -563,10 +563,13 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
   ]);
 
   return (
-    <div data-route="ai-optimise-review" className="w-full">
+    <div
+      data-route="ai-optimise-review"
+      className="mx-auto w-full max-w-[1180px]"
+    >
       <div
         data-kb-part="ai-gaps-columns"
-        className="flex flex-row justify-between items-start gap-6"
+        className="flex flex-row items-start gap-10"
       >
         <ArticleBody
           ref={articleRef}
