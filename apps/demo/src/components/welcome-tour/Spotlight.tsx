@@ -1,13 +1,15 @@
 // Ring overlay + anchored coach-mark card.
 //
-// v2 redesign:
-//   - NO page dim, NO slab frame, NO SVG mask. The rest of the UI stays
-//     fully bright and interactive.
-//   - A single fixed-position "ring" div sits over the target with a
-//     soft slate outline + neutral glow. `pointer-events: none` so it
-//     doesn't intercept clicks on the underlying UI.
-//   - A floating coach-mark card sits beside the target. Single-row
-//     footer IA (Skip / Back / Next 1/3) — no separate dot pager.
+// v3 redesign:
+//   - Uniform page-wide dim (Sentry/Navattic style) — NO cutout, NO mask.
+//     The dim is `pointer-events: auto` so it blocks clicks on the
+//     underlying UI. The coach-mark card is `pointer-events: auto` and
+//     stops propagation so the user can interact with it.
+//   - Target gets a confident slate-900 outline ring (2px) + a soft
+//     inner white halo so it lifts off the dimmed page.
+//   - Coach-mark card is wider (max-w-sm), p-5, with breathing-space
+//     between title / body / footer.
+//   - All footer buttons use kb-ui <Button> — no local 12px buttons.
 //
 // Transitions are explicit opacity + transform only — no width/height/
 // top/left animations. Layout is via translate3d on transform so we
@@ -16,17 +18,26 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { ChevronLeft, X } from '@untitledui/icons';
+import { Button } from '@test-kb-ui/kb-ui';
 import { cn } from '../../lib/cn';
 
 /* Ring chrome constants. */
-const RING_PADDING = 6;
+const RING_PADDING = 8;
 const RING_RADIUS = 12;
-const RING_BORDER_COLOR = 'rgb(148, 163, 184)'; // slate-400
-const RING_SHADOW =
-  '0 0 0 4px rgba(148, 163, 184, 0.15), 0 8px 24px rgba(15, 23, 42, 0.08)';
+const RING_BORDER_COLOR = 'rgb(15, 23, 42)'; // slate-900
+const RING_SHADOW = [
+  // Inner white halo so the ring lifts off the dimmed page.
+  'inset 0 0 0 4px rgba(255, 255, 255, 0.6)',
+  // Subtle outer glow.
+  '0 0 0 6px rgba(15, 23, 42, 0.08)',
+  '0 12px 32px rgba(15, 23, 42, 0.18)',
+].join(', ');
 const COACHMARK_GAP = 16;
-const COACH_MARK_WIDTH = 320;
-const COACH_MARK_EST_HEIGHT = 160; // tighter than v1 (no dot row, no oversized actions)
+const COACH_MARK_WIDTH = 360; // ~max-w-sm
+const COACH_MARK_EST_HEIGHT = 180;
+
+/* Uniform page-wide dim. */
+const DIM_COLOR = 'rgba(15, 23, 42, 0.28)';
 
 const FADE_IN_DUR = 240;
 const FADE_IN_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
@@ -131,6 +142,24 @@ export function Spotlight({
     }
   };
 
+  /* ── Uniform page-wide dim (modal-style backdrop) ─────────────── */
+
+  const dimOpacity = phase === 'in' && padded !== null ? 1 : 0;
+  const dim = (
+    <div
+      aria-hidden="true"
+      onClick={onSkip}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: DIM_COLOR,
+        opacity: dimOpacity,
+        transition: `opacity ${FADE_IN_DUR}ms ease-out`,
+        pointerEvents: 'auto',
+      }}
+    />
+  );
+
   /* ── Ring (single fixed div, sits over the target) ───────────── */
 
   // Use translate3d to stay GPU-composited. position: fixed at (0,0)
@@ -156,7 +185,7 @@ export function Spotlight({
         width: padded.width,
         height: padded.height,
         borderRadius: RING_RADIUS,
-        border: `1.5px solid ${RING_BORDER_COLOR}`,
+        border: `2px solid ${RING_BORDER_COLOR}`,
         boxShadow: RING_SHADOW,
         backgroundColor: 'transparent',
         pointerEvents: 'none',
@@ -249,7 +278,10 @@ export function Spotlight({
   const showBack = coachMark.stepIndex > 0;
 
   return (
+    // Wrapper is pointer-events:none so the dim child can opt-in to
+    // pointer-events:auto and we don't fight z-index on the rest of the page.
     <div className="pointer-events-none fixed inset-0 z-[8500]">
+      {dim}
       {ring}
 
       {/* Coach-mark card. */}
@@ -260,9 +292,10 @@ export function Spotlight({
         aria-labelledby={`spotlight-title-${coachMark.stepIndex}`}
         aria-describedby={`spotlight-body-${coachMark.stepIndex}`}
         onKeyDown={handleKeyDown}
+        onClick={(e) => e.stopPropagation()}
         style={coachMarkStyle}
         className={cn(
-          'pointer-events-auto max-w-xs rounded-xl border border-slate-200 bg-white p-4',
+          'pointer-events-auto max-w-sm rounded-xl border border-slate-200 bg-white p-5',
           'shadow-[0_20px_48px_-12px_rgba(15,23,42,0.18)]',
           'focus:outline-none',
         )}
@@ -277,11 +310,11 @@ export function Spotlight({
           onClick={onSkip}
           className={cn(
             'absolute right-3 top-3 inline-flex h-6 w-6 items-center justify-center rounded-md',
-            'text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600',
+            'text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300',
           )}
         >
-          <X className="h-4 w-4" />
+          <X className="h-[18px] w-[18px]" />
         </button>
 
         <h3
@@ -293,56 +326,38 @@ export function Spotlight({
 
         <p
           id={`spotlight-body-${coachMark.stepIndex}`}
-          className="mt-1.5 text-[13px] leading-[1.55] text-slate-600"
+          className="mt-2 text-[13px] leading-[1.55] text-slate-600"
         >
           {coachMark.body}
         </p>
 
         {/* Single-row footer: Skip | Back · Next 1/3 */}
-        <div className="mt-4 flex items-center justify-between gap-2 pt-1">
-          <button
-            type="button"
-            onClick={onSkip}
-            className={cn(
-              'inline-flex items-center rounded-md px-1 py-1 text-[12px]',
-              'text-slate-500 transition-colors hover:text-slate-700',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300',
-            )}
-          >
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <Button variant="ghost" onClick={onSkip}>
             Skip
-          </button>
+          </Button>
           <div className="flex items-center gap-2">
             {showBack && (
-              <button
-                type="button"
+              <Button
+                variant="ghost"
                 onClick={onBack}
-                className={cn(
-                  'inline-flex items-center gap-1 rounded-md px-1 py-1 text-[12px]',
-                  'text-slate-500 transition-colors hover:text-slate-700',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300',
-                )}
+                icon={<ChevronLeft />}
               >
-                <ChevronLeft className="h-[12px] w-[12px]" />
                 Back
-              </button>
+              </Button>
             )}
-            <button
-              type="button"
+            <Button
+              variant="primary"
               onClick={onNext}
               data-spotlight-primary="true"
-              className={cn(
-                'inline-flex items-center rounded-md bg-slate-900 px-3 py-1.5 text-[12px] font-medium text-white',
-                'transition-colors hover:bg-slate-800',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-1',
-              )}
             >
               {coachMark.primaryLabel}
               {!coachMark.primaryIsFinish && (
-                <span className="ml-1.5 text-[11px] opacity-70">
+                <span className="ml-1.5 text-[12px] opacity-70">
                   {stepCountLabel}
                 </span>
               )}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

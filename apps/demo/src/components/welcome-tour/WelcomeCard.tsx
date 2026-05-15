@@ -40,7 +40,7 @@ function FeatureRow({ icon, title, description }: FeatureRowProps) {
   return (
     <div
       className={cn(
-        'flex items-start gap-3 rounded-lg border border-card-border p-3',
+        'flex items-start gap-3 rounded-lg border border-card-border p-4',
         'transition-colors duration-150 hover:bg-slate-50',
       )}
     >
@@ -133,7 +133,7 @@ export function WelcomeCard({ onStart, onSkip }: WelcomeCardProps) {
         onKeyDown={handleKeyDown}
         style={cardStyle}
         className={cn(
-          'relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl',
+          'relative w-full max-w-md rounded-2xl bg-white p-7 shadow-2xl',
           'focus:outline-none',
         )}
       >
@@ -180,7 +180,7 @@ export function WelcomeCard({ onStart, onSkip }: WelcomeCardProps) {
           new &mdash; under a minute.
         </p>
 
-        <div className="mt-5 flex flex-col gap-2">
+        <div className="mt-5 flex flex-col gap-4">
           <FeatureRow
             icon={<Folder className="text-slate-700" />}
             title="File explorer in the sidebar"
@@ -198,7 +198,7 @@ export function WelcomeCard({ onStart, onSkip }: WelcomeCardProps) {
           />
         </div>
 
-        <div className="mt-6 flex items-center justify-end gap-2">
+        <div className="mt-7 flex items-center justify-end gap-2">
           <Button variant="ghost" onClick={onSkip}>
             I&rsquo;ll explore on my own
           </Button>

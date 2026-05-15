@@ -23,25 +23,22 @@ import {
   isActiveTourState,
 } from './WelcomeTourContext';
 import { WelcomeCard } from './WelcomeCard';
+import { CompletionCard } from './CompletionCard';
 import { Spotlight, type SpotlightRect, type CoachMarkContent } from './Spotlight';
 import { DEFAULT_KB_CATEGORY_SLUG, routes } from '../../lib/routes';
 import './welcome-tour-animations.css';
 
+type StepKey = 'step-explorer' | 'step-ai' | 'step-analytics';
+
 /* Step → target id mapping. */
-const STEP_TARGET: Record<
-  Exclude<TourState, 'closed' | 'welcome' | 'done'>,
-  TourTargetId
-> = {
+const STEP_TARGET: Record<StepKey, TourTargetId> = {
   'step-explorer': 'sidebar-explorer',
   'step-ai': 'rail-ai',
   'step-analytics': 'rail-analytics',
 };
 
 /* Step → route path mapping. */
-const STEP_ROUTE: Record<
-  Exclude<TourState, 'closed' | 'welcome' | 'done'>,
-  string
-> = {
+const STEP_ROUTE: Record<StepKey, string> = {
   'step-explorer': routes.kb.category(DEFAULT_KB_CATEGORY_SLUG),
   'step-ai': routes.aiOptimise.hub(),
   'step-analytics': routes.analytics.articlePerformance(),
@@ -49,7 +46,7 @@ const STEP_ROUTE: Record<
 
 /* Coach-mark content per step. */
 const STEP_CONTENT: Record<
-  Exclude<TourState, 'closed' | 'welcome' | 'done'>,
+  StepKey,
   { title: string; body: string; stepIndex: number }
 > = {
   'step-explorer': {
@@ -77,8 +74,6 @@ const MEASURE_RETRY_DELAYS = [120, 280, 500, 800];
 
 /** Total step count surfaced to the coach mark indicator. */
 const TOTAL_STEPS = 3;
-
-type StepKey = Exclude<TourState, 'closed' | 'welcome' | 'done'>;
 
 function isStepState(state: TourState): state is StepKey {
   return (
@@ -142,13 +137,16 @@ export function WelcomeTourOverlay() {
     // Non-step states.
     if (!isStepState(nextState)) {
       // If we were rendering a step and the user just finished/skipped
-      // out, play one final fade-out before unmounting. We do NOT
-      // update renderedStep yet — keeping it on the prior step keeps
-      // the Spotlight mounted while phase='out' drives the fade.
+      // out (or earned the completion card), play one final fade-out
+      // before unmounting. We do NOT update renderedStep yet — keeping
+      // it on the prior step keeps the Spotlight mounted while
+      // phase='out' drives the fade.
       const wasRenderingStep = isStepState(renderedStep);
       if (
         wasRenderingStep &&
-        (nextState === 'done' || nextState === 'closed')
+        (nextState === 'done' ||
+          nextState === 'closed' ||
+          nextState === 'completion')
       ) {
         setPhase('out');
         const t = window.setTimeout(() => {
@@ -294,6 +292,8 @@ export function WelcomeTourOverlay() {
 
   if (renderedStep === 'welcome') {
     content = <WelcomeCard onStart={tour.next} onSkip={tour.skip} />;
+  } else if (renderedStep === 'completion') {
+    content = <CompletionCard onDismiss={tour.next} />;
   } else if (coachMark) {
     content = (
       <Spotlight

@@ -5,7 +5,12 @@
 // `WelcomeCard`, and `Spotlight`.
 //
 // State machine:
-//   'closed' → 'welcome' → 'step-explorer' → 'step-ai' → 'step-analytics' → 'done'
+//   'closed' → 'welcome' → 'step-explorer' → 'step-ai' → 'step-analytics'
+//            → 'completion' → 'done'
+//
+// 'completion' is the gratification card — shown after step-analytics's
+// "Got it". Skip from any step still jumps straight to 'done' (no
+// completion card on skip — the user opted out, don't reward).
 //
 // Auto-show logic: on mount, if `localStorage.getItem(STORAGE_KEY) !== 'seen'`
 // (and no explicit reset via `?welcome=1`), schedule a 700ms timer that
@@ -33,6 +38,7 @@ export type TourState =
   | 'step-explorer'
   | 'step-ai'
   | 'step-analytics'
+  | 'completion'
   | 'done';
 
 export type TourTargetId =
@@ -65,17 +71,19 @@ const NEXT_STATE: Record<TourState, TourState> = {
   welcome: 'step-explorer',
   'step-explorer': 'step-ai',
   'step-ai': 'step-analytics',
-  'step-analytics': 'done',
+  'step-analytics': 'completion',
+  completion: 'done',
   done: 'done',
 };
 
-/** Previous-step map. `welcome` has no previous; `done` is terminal. */
+/** Previous-step map. `welcome` has no previous; `completion`/`done` are terminal. */
 const PREV_STATE: Record<TourState, TourState> = {
   closed: 'closed',
   welcome: 'welcome',
   'step-explorer': 'welcome',
   'step-ai': 'step-explorer',
   'step-analytics': 'step-ai',
+  completion: 'completion',
   done: 'done',
 };
 
@@ -85,6 +93,7 @@ const ACTIVE_STATES: ReadonlySet<TourState> = new Set<TourState>([
   'step-explorer',
   'step-ai',
   'step-analytics',
+  'completion',
 ]);
 
 export function isActiveTourState(state: TourState): boolean {
