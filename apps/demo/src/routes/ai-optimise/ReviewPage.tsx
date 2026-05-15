@@ -10,14 +10,13 @@
 //     persistence) rather than via React.useReducer.
 //   - Suggestions are sourced from the store's `suggestions` slice and
 //     mapped position-wise onto `ArticleBody`'s s1/s2/s3 slots.
-//     `ArticleBody` now accepts a `regions` prop carrying the article
-//     markup, and the demo passes `passwordResetRegions` (defined in
-//     `./passwordResetRegions.tsx`) for all three AI-targeted articles
-//     in v1, since the mock store doesn't yet model per-article body
-//     HTML. The visual highlight chrome and slot positions are correct
-//     per article, but the surrounding copy is the password-reset
-//     article for every AI review session. Modelling per-article body
-//     HTML in the mock store is left for a future demo iteration.
+//     `ArticleBody` accepts a `regions` prop carrying the article markup;
+//     each of the three AI-targeted articles has its own regions module
+//     (`./passwordResetRegions.tsx`, `./autoReplyRegions.tsx`,
+//     `./chatWidgetRegions.tsx`) so the rendered body content matches
+//     the suggestion payloads naturally. The mock store still doesn't
+//     model per-article body HTML — these regions modules are the
+//     demo's local source of truth for article copy.
 //   - PRD §9.5 terminal-state-after-publish branch: when an article was
 //     previously published from this flow, all suggestions have status
 //     `'published'` so we render the terminal state with chips reflecting
@@ -39,6 +38,7 @@ import {
   type AISuggestion as KbUiAISuggestion,
   type AISuggestionDecision,
   type ArticleBodyDecisions,
+  type ArticleBodyRegions,
   type ArticleSuggestionDecision,
   type ArticleSettings as KbUiArticleSettings,
   type ConversationSource as KbUiConversationSource,
@@ -53,6 +53,21 @@ import {
 import { useAIGapsForArticle } from '../../hooks/useAIGapsForArticle';
 import { routes } from '../../lib/routes';
 import { passwordResetRegions } from './passwordResetRegions';
+import { autoReplyRegions } from './autoReplyRegions';
+import { chatWidgetRegions } from './chatWidgetRegions';
+
+/* ─────────────────────────────────────────────────────────────
+ * Per-article regions lookup — each AI-targeted article ships its
+ * own body markup that threads the relevant suggestion payloads.
+ * Fallback to password-reset for any unseeded article id so the
+ * route can't crash on a stray slug.
+ * ───────────────────────────────────────────────────────────── */
+
+const regionsByArticleId: Record<string, ArticleBodyRegions> = {
+  'art-how-to-reset-your-password': passwordResetRegions,
+  'art-setting-up-auto-reply-rules': autoReplyRegions,
+  'art-customizing-the-chat-widget': chatWidgetRegions,
+};
 import type {
   AISuggestion as StoreAISuggestion,
   ConversationSource as StoreConversationSource,
@@ -574,7 +589,7 @@ function ReviewExperience({ articleId }: ReviewExperienceProps) {
         <ArticleBody
           ref={articleRef}
           decisions={articleDecisions}
-          regions={passwordResetRegions}
+          regions={regionsByArticleId[articleId] ?? passwordResetRegions}
           suggestionIds={articleSuggestionIds}
           className="max-w-[720px] w-full"
         />
