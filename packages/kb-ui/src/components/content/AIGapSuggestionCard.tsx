@@ -99,15 +99,20 @@ function TypeChip({
   registry: Record<string, SuggestionTypeMeta>;
 }) {
   const meta = registry[type];
+  // Figma 74:10470 / 81:16974 / 81:16996 — TypeChip label is 14/20 medium
+  // across active, idle, and collapsed states. Earlier 12/18 sizing was a
+  // mis-pulled token from an older Figma revision.
+  const labelClass =
+    'text-[14px] font-medium leading-[20px] whitespace-nowrap';
   if (!meta) {
     return (
       <span
         data-kb-part="ai-gap-type-chip"
         data-kb-type={type}
-        className="inline-flex items-center gap-1"
+        className="inline-flex items-center gap-[6px]"
         style={{ color: tokens.color.textDisabled }}
       >
-        <span className="text-[12px] font-medium leading-[18px]">{type}</span>
+        <span className={labelClass}>{type}</span>
       </span>
     );
   }
@@ -116,11 +121,11 @@ function TypeChip({
     <span
       data-kb-part="ai-gap-type-chip"
       data-kb-type={type}
-      className="inline-flex items-center gap-1"
+      className="inline-flex items-center gap-[6px]"
       style={{ color }}
     >
-      <Icon className="h-[14px] w-[14px]" />
-      <span className="text-[12px] font-medium leading-[18px]">{label}</span>
+      <Icon className="h-[14px] w-[14px] shrink-0" />
+      <span className={labelClass}>{label}</span>
     </span>
   );
 }
@@ -244,17 +249,29 @@ export function AIGapSuggestionCard({
       state === 'accepted'
         ? (decisionLabels?.accepted ?? 'ACCEPTED')
         : (decisionLabels?.dismissed ?? 'DISMISSED');
+    // Figma 74:10581 (dismissed-replace) / 74:10491 (accepted-addition) —
+    // both 452×76 with: bg=canvas (#f5f5f5), border=card-border, padding
+    // px-[22px] py-[24px], 12px radius. Inner row gap 6px. Label is
+    // 13/19 medium #64748b (text-muted) — NO letter-spacing. Divider is
+    // ~30px tall, 1px wide, slate-blue/faint.
     return (
       <AICard
         mode="collapsed"
-        className={className}
+        className={cn(
+          // Override AICard's collapsed defaults: canvas bg + Figma padding.
+          'bg-canvas px-[22px] py-[24px]',
+          className,
+        )}
         data-kb-component="ai-gap-suggestion-card"
         data-kb-state={state}
         data-kb-type={suggestion.type}
       >
         <TypeChip type={suggestion.type} registry={resolvedRegistry} />
-        <span aria-hidden className="mx-3 h-4 w-px shrink-0 bg-card-divider" />
-        <span className="text-[12px] font-medium leading-[18px] text-text-meta tracking-wide">
+        <span
+          aria-hidden
+          className="mx-3 h-[28px] w-px shrink-0 bg-card-divider"
+        />
+        <span className="text-[13px] font-medium leading-[19px] text-text-muted">
           {decisionLabel}
         </span>
         <button
@@ -262,9 +279,9 @@ export function AIGapSuggestionCard({
           onClick={() => onUndo?.(suggestion.id)}
           aria-label={`Undo ${state} for ${suggestion.title}`}
           className={cn(
-            'ml-auto inline-flex size-6 items-center justify-center rounded-[4px]',
-            'text-text-muted transition-colors',
-            'hover:bg-surface-muted hover:text-text-primary',
+            'ml-auto inline-flex size-7 items-center justify-center rounded-full',
+            'text-text-primary transition-colors',
+            'hover:bg-surface-muted',
             'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
           )}
         >
@@ -329,10 +346,12 @@ export function AIGapSuggestionCard({
     <AICard
       mode="active"
       className={cn(
-        isIdle &&
-          // Override AICard defaults: grey BG + faint border + shadow +
-          // Figma-exact padding. twMerge resolves the conflicts.
-          'bg-canvas border-border shadow-lg px-[22px] py-[24px]',
+        // Figma 74:10466 (active) / 2829:9484 (idle) — both share padding
+        // (px-22 py-24), 12px radius, faint border (#f1f5f9), and Shadows/lg.
+        // Override AICard's `p-4` default → Figma padding.
+        'border-border shadow-lg px-[22px] py-[24px]',
+        // Idle differs from active only by bg (canvas grey vs white).
+        isIdle ? 'bg-canvas' : 'bg-white',
         // Click-to-activate surface for idle cards. Pointer cursor + soft
         // hover lift indicate clickability without breaking the recessed
         // visual treatment.
@@ -373,11 +392,10 @@ export function AIGapSuggestionCard({
           {meta}
           <h3
             data-kb-part="ai-gap-title"
-            className={cn(
-              'mt-2 text-[14px] font-medium leading-[20px]',
-              // Idle title steps down to slateTextBody per Figma 2829:9484.
-              isIdle ? 'text-text-secondary' : 'text-text-primary',
-            )}
+            // Figma 74:10476 — title is 14/20 medium #334155 (slateTextBody)
+            // for both active and idle. Earlier active used text-primary
+            // (#0f172a) which was darker than the Figma spec.
+            className="mt-2 text-[14px] font-medium leading-[20px] text-text-secondary"
           >
             {suggestion.title}
           </h3>
@@ -389,8 +407,10 @@ export function AIGapSuggestionCard({
           </p>
         </>
       }
-      showFooterDivider={!isIdle}
-      footerGap={isIdle ? 20 : 12}
+      // Figma 74:10466 / 2829:9484 — NO horizontal divider between body and
+      // footer in either active or idle. Card uses a 20px gap instead.
+      showFooterDivider={false}
+      footerGap={20}
       footer={
         actions !== undefined ? (
           actions
