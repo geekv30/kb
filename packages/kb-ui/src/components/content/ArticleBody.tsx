@@ -6,18 +6,34 @@
 // Read-mode article body used by the AI Gaps review experience.
 //
 // The component owns the **decision-to-render** logic for the three
-// suggestion regions (s1 addition, s2 replace, s3 removal):
+// suggestion regions (s1 addition, s2 replace, s3 removal). The rule is
+// **only `active` renders the colored highlight wash**. Every other state
+// (inactive, accepted, dismissed) renders plain article text so the reader
+// can scan the article naturally — the rail's collapsed chip is the sole
+// indicator of a decided suggestion.
 //
-//   - `inactive` / `active` → the region content is wrapped in a
-//     `SuggestionBlock` of the matching variant. Per-sentence highlights
-//     are applied (each `sentences[]` entry gets its own green/red block
-//     with a 4px gap between blocks — matches Figma 137:4022 / 137:4132).
-//   - `accepted` (s1 addition)  → region rendered as plain body text.
-//   - `accepted` (s2 replace)   → only the `after` half rendered, plain.
-//   - `accepted` (s3 removal)   → region hidden.
-//   - `dismissed` (s1 addition) → region hidden (addition never applied).
-//   - `dismissed` (s2 replace)  → `before` half rendered, plain (revert).
-//   - `dismissed` (s3 removal)  → region rendered as plain body text.
+//   - s1 addition
+//       inactive → plain (preview the proposed addition, no wash)
+//       active   → green wash via SuggestionBlock
+//       accepted → plain (addition kept)
+//       dismissed → hidden (addition reverted, article reverts to baseline)
+//   - s2 replace
+//       inactive → plain `before` (current article state)
+//       active   → red(before) + green(after) wash via SuggestionBlock
+//       accepted → plain `after` (replacement applied)
+//       dismissed → plain `before` (revert)
+//   - s3 removal
+//       inactive → plain (text still in article, no wash)
+//       active   → red strike wash via SuggestionBlock
+//       accepted → hidden (text removed)
+//       dismissed → plain (text kept)
+//
+// Every slot ALWAYS emits an invisible `data-suggestion-id` anchor (even
+// when the slot's content is hidden, e.g. dismissed addition / accepted
+// removal). The anchor lets the AIGapRail's `useAnchorPositions` lookup
+// keep pairing the rail card to a stable article-Y for the lifetime of the
+// review — without it, the rail card would jump to its fallback (stacked
+// under summary) the moment its suggestion was decided.
 //
 // **The article copy itself lives in the consumer.** ArticleBody no longer
 // hardcodes any specific article — it accepts a `regions` object whose
@@ -179,7 +195,43 @@ function PlainSentences({ sentences }: { sentences: SuggestionSentence[] }) {
 }
 
 /* ─────────────────────────────────────────────────────────────
- * Per-suggestion renderers — encode the accept/dismiss semantics
+ * Anchor stub — invisible `data-suggestion-id` carrier rendered when a
+ * slot's content is hidden (s1 dismissed, s3 accepted). Has zero visual
+ * footprint but preserves the article-Y the rail uses for pairing the
+ * collapsed chip card to its anchor's original position.
+ *
+ * Doubles as a legacy `id="s1|s2|s3"` scroll target so the chunk-4
+ * rAF smooth-scroll still has something to scroll to.
+ * ───────────────────────────────────────────────────────────── */
+
+function AnchorStub({
+  id,
+  suggestionId,
+}: {
+  id: string;
+  suggestionId?: string;
+}) {
+  return (
+    <span
+      id={id}
+      data-kb-part="suggestion-anchor-stub"
+      {...(suggestionId ? { 'data-suggestion-id': suggestionId } : {})}
+      // `block` + zero height so it shows up in `offsetTop` measurements
+      // (inline `span`s without `block` can have funky offset behaviour
+      // depending on the layout context) without affecting the flow.
+      className="block h-0 w-full"
+      aria-hidden="true"
+    />
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * Per-suggestion renderers — encode the accept/dismiss semantics.
+ *
+ * Only `active` renders the SuggestionBlock wash. All other states
+ * render plain article text. Every variant emits a stable
+ * `data-suggestion-id` anchor — either via the SuggestionBlock itself
+ * (active) or via an invisible `AnchorStub` wrapper (plain / hidden).
  * ───────────────────────────────────────────────────────────── */
 
 function S1Region({
@@ -191,23 +243,31 @@ function S1Region({
   content: SuggestionSentence[];
   suggestionId?: string;
 }) {
-  if (decision === 'accepted') {
-    // Addition accepted → content kept as plain body text.
-    return <PlainSentences sentences={content} />;
+  if (decision === 'active') {
+    // Active addition → per-sentence green highlight block. SuggestionBlock
+    // already emits `id="s1"` + `data-suggestion-id`, so no stub needed.
+    return (
+      <SuggestionBlock
+        type="addition"
+        id="s1"
+        suggestionId={suggestionId}
+        className="mb-4"
+        sentences={content}
+      />
+    );
   }
   if (decision === 'dismissed') {
-    // Addition dismissed → content never added.
-    return null;
+    // Addition dismissed → content never added; emit a stub so the rail
+    // still has an article-Y to pair the collapsed dismissed chip to.
+    return <AnchorStub id="s1" suggestionId={suggestionId} />;
   }
-  // inactive | active → per-sentence highlight block.
+  // inactive | accepted → plain body text + stub anchor (the PlainSentences
+  // emit no `data-suggestion-id` so we wrap with a stub).
   return (
-    <SuggestionBlock
-      type="addition"
-      id="s1"
-      suggestionId={suggestionId}
-      className="mb-4"
-      sentences={content}
-    />
+    <>
+      <AnchorStub id="s1" suggestionId={suggestionId} />
+      <PlainSentences sentences={content} />
+    </>
   );
 }
 
@@ -222,24 +282,28 @@ function S2Region({
   after: SuggestionSentence[];
   suggestionId?: string;
 }) {
-  if (decision === 'accepted') {
-    // Replace accepted → new content remains as plain text.
-    return <PlainSentences sentences={after} />;
+  if (decision === 'active') {
+    // Active replace → per-sentence red (old) + green (new) stacked pair.
+    return (
+      <SuggestionBlock
+        type="replace"
+        id="s2"
+        suggestionId={suggestionId}
+        className="mb-4"
+        oldSentences={before}
+        newSentences={after}
+      />
+    );
   }
-  if (decision === 'dismissed') {
-    // Replace dismissed → old content remains.
-    return <PlainSentences sentences={before} />;
-  }
-  // inactive | active → per-sentence red (old) + green (new) stacked pair.
+  // inactive → plain `before` (current state of the article).
+  // accepted → plain `after` (replacement applied).
+  // dismissed → plain `before` (revert).
+  const sentences = decision === 'accepted' ? after : before;
   return (
-    <SuggestionBlock
-      type="replace"
-      id="s2"
-      suggestionId={suggestionId}
-      className="mb-4"
-      oldSentences={before}
-      newSentences={after}
-    />
+    <>
+      <AnchorStub id="s2" suggestionId={suggestionId} />
+      <PlainSentences sentences={sentences} />
+    </>
   );
 }
 
@@ -252,23 +316,28 @@ function S3Region({
   content: SuggestionSentence[];
   suggestionId?: string;
 }) {
+  if (decision === 'active') {
+    // Active removal → per-sentence red wash over the existing content.
+    return (
+      <SuggestionBlock
+        type="removal"
+        id="s3"
+        suggestionId={suggestionId}
+        className="mb-4"
+        sentences={content}
+      />
+    );
+  }
   if (decision === 'accepted') {
-    // Removal accepted → content deleted.
-    return null;
+    // Removal accepted → content deleted; emit a stub for the chip pairing.
+    return <AnchorStub id="s3" suggestionId={suggestionId} />;
   }
-  if (decision === 'dismissed') {
-    // Removal dismissed → existing content stays as plain body.
-    return <PlainSentences sentences={content} />;
-  }
-  // inactive | active → per-sentence red wash over the existing content.
+  // inactive | dismissed → plain body text + stub anchor.
   return (
-    <SuggestionBlock
-      type="removal"
-      id="s3"
-      suggestionId={suggestionId}
-      className="mb-4"
-      sentences={content}
-    />
+    <>
+      <AnchorStub id="s3" suggestionId={suggestionId} />
+      <PlainSentences sentences={content} />
+    </>
   );
 }
 

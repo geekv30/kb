@@ -301,9 +301,20 @@ export function AIGapRail({
   }, [layouts, cardHeights]);
 
   /* ── First-paint opacity: hide cards until anchors are measured ─ */
-  // If at least one anchor is measured we consider the layout ready.
-  // (All-or-nothing on the first frame to avoid a partial reveal.)
-  const ready = items.length === 0 || Object.keys(anchorPositions).length > 0;
+  // Strictly a FIRST-FRAME flicker gate. We latch `ready` to `true` on the
+  // first effect tick — never flip it back to `false` afterwards. Anchors
+  // legitimately disappear when their suggestions are accepted/dismissed (S1
+  // accepted → PlainSentences; S3 accepted → null; etc.), and previously the
+  // gate's `Object.keys(anchorPositions).length > 0` check would flip back
+  // to `false` in those terminal states and hide every collapsed-chip card
+  // with opacity 0. The collision walk already handles missing anchors via
+  // the `prevBottom` fallback, so cards still position correctly when only
+  // some / none of their anchors are mounted.
+  const [ready, setReady] = React.useState(false);
+  React.useEffect(() => {
+    if (ready) return;
+    setReady(true);
+  }, [ready]);
 
   return (
     <aside
