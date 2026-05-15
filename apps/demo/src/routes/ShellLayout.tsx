@@ -9,7 +9,7 @@
 //   - `useFocusOnRouteChange()` hands focus to the page's primary
 //     `<h1>` after navigation (PRD §12.2).
 
-import { Suspense } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { AppShell } from '@test-kb-ui/kb-ui';
 import { AppRail } from '../shell/AppRail';
@@ -23,6 +23,10 @@ import {
   SidebarCollapseProvider,
   useSidebarCollapse,
 } from '../shell/SidebarCollapseContext';
+import {
+  WelcomeTourProvider,
+  useTourTarget,
+} from '../components/welcome-tour';
 
 function RouteAwareExplorer() {
   const { pathname } = useLocation();
@@ -34,12 +38,63 @@ function RouteAwareExplorer() {
   return null;
 }
 
+/**
+ * Resolves the rail's AI and Analytics buttons (the rail markup lives
+ * inside `@test-kb-ui/kb-ui` so we can't add refs directly). We watch
+ * the rail container for its `[data-kb-part="rail-item"]` children and
+ * register the AI button (index 0) and Analytics button (index 2) as
+ * tour targets. Order matches `AppRail.tsx` railItems:
+ * AI, Editor, Analytics, Settings.
+ */
+function useRegisterRailTourTargets(
+  containerRef: React.RefObject<HTMLDivElement | null>,
+) {
+  const registerAi = useTourTarget('rail-ai');
+  const registerAnalytics = useTourTarget('rail-analytics');
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container === null) return;
+
+    const resolve = () => {
+      const items = container.querySelectorAll<HTMLElement>(
+        '[data-kb-part="rail-item"]',
+      );
+      // Index 0 = AI, 1 = Editor, 2 = Analytics, 3 = Settings.
+      registerAi(items[0] ?? null);
+      registerAnalytics(items[2] ?? null);
+    };
+
+    resolve();
+    // Re-resolve if rail markup changes (defensive — rail items are stable).
+    const observer = new MutationObserver(resolve);
+    observer.observe(container, { childList: true, subtree: true });
+    return () => {
+      observer.disconnect();
+      registerAi(null);
+      registerAnalytics(null);
+    };
+  }, [containerRef, registerAi, registerAnalytics]);
+}
+
 function ShellLayoutInner() {
   const sidebar = useSidebarCollapse();
+  const railRef = useRef<HTMLDivElement | null>(null);
+  const registerExplorer = useTourTarget('sidebar-explorer');
+  useRegisterRailTourTargets(railRef);
+
   return (
     <AppShell
-      rail={<AppRail />}
-      explorer={<RouteAwareExplorer />}
+      rail={
+        <div ref={railRef} className="h-full w-full">
+          <AppRail />
+        </div>
+      }
+      explorer={
+        <div ref={registerExplorer} className="h-full w-full">
+          <RouteAwareExplorer />
+        </div>
+      }
       breadcrumb={<BreadcrumbBar />}
       sidebarCollapsed={sidebar?.collapsed ?? false}
     >
@@ -54,7 +109,9 @@ export default function ShellLayout() {
   useFocusOnRouteChange();
   return (
     <SidebarCollapseProvider>
-      <ShellLayoutInner />
+      <WelcomeTourProvider>
+        <ShellLayoutInner />
+      </WelcomeTourProvider>
     </SidebarCollapseProvider>
   );
 }

@@ -1,0 +1,64 @@
+/* Welcome tour keyframes.
+ *
+ * Imported by WelcomeTourOverlay so the keyframes are available
+ * wherever the overlay portals to. We use plain CSS keyframes
+ * (not Tailwind utilities) so the styles ship via the demo's
+ * standard CSS pipeline without needing a Tailwind config edit.
+ *
+ * All easings prefer cubic-bezier(0.16, 1, 0.3, 1) — the smooth
+ * "Apple" curve — to match the rest of the tour's polish bar.
+ */
+
+@keyframes welcome-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes welcome-card-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes welcome-coachmark-in {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes welcome-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(217, 47, 255, 0.5);
+  }
+  60% {
+    box-shadow: 0 0 0 12px rgba(217, 47, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 12px rgba(217, 47, 255, 0);
+  }
+}
+
+@keyframes welcome-check-bounce {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
