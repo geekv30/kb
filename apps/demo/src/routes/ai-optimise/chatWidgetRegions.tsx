@@ -62,6 +62,22 @@ function Strong({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * Bullet list item where the disc renders OUTSIDE the highlight — mirrors
+ * the `NumberedItem` pattern in `passwordResetRegions.tsx`. Wrapping the
+ * `<span className="flex">` inside `<SuggestionHighlight>` causes
+ * `box-decoration-break: clone` to leak the wash into the bullet column,
+ * producing stray green strips between list items.
+ */
+function BulletItem({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="flex items-start text-[16px] leading-[24px] text-text-primary">
+      <span className="shrink-0 pr-2">•</span>
+      <SuggestionHighlight>{children}</SuggestionHighlight>
+    </span>
+  );
+}
+
 export const chatWidgetRegions: ArticleBodyRegions = {
   header: (
     <>
@@ -99,49 +115,19 @@ export const chatWidgetRegions: ArticleBodyRegions = {
       </SuggestionHighlight>
     </span>,
     'The default theme already meets WCAG 2.1 AA contrast for body text and controls. When customising colours, keep contrast above 4.5:1 between launcher text and launcher background — the colour picker shows a live contrast warning when you fall below this. Other accessibility-affecting settings:',
-    <span
-      key="s1-list-1"
-      className="block text-[16px] leading-[24px] text-text-primary"
-    >
-      <SuggestionHighlight>
-        <span className="flex items-start">
-          <span className="shrink-0 pr-2">•</span>
-          <span>
-            Always provide a non-emoji welcome banner — screen readers
-            treat emoji-only banners as decorative.
-          </span>
-        </span>
-      </SuggestionHighlight>
-    </span>,
-    <span
-      key="s1-list-2"
-      className="block text-[16px] leading-[24px] text-text-primary"
-    >
-      <SuggestionHighlight>
-        <span className="flex items-start">
-          <span className="shrink-0 pr-2">•</span>
-          <span>
-            Keep the launcher position bottom-right unless your site&rsquo;s
-            navigation conflicts — most users now expect that spot.
-          </span>
-        </span>
-      </SuggestionHighlight>
-    </span>,
-    <span
-      key="s1-list-3"
-      className="block text-[16px] leading-[24px] text-text-primary"
-    >
-      <SuggestionHighlight>
-        <span className="flex items-start">
-          <span className="shrink-0 pr-2">•</span>
-          <span>
-            Enable keyboard-shortcut hints in{' '}
-            <Strong>Widget → Behaviour</Strong> for power users on
-            assistive tech.
-          </span>
-        </span>
-      </SuggestionHighlight>
-    </span>,
+    <BulletItem key="s1-list-1">
+      Always provide a non-emoji welcome banner — screen readers treat
+      emoji-only banners as decorative.
+    </BulletItem>,
+    <BulletItem key="s1-list-2">
+      Keep the launcher position bottom-right unless your site&rsquo;s
+      navigation conflicts — most users now expect that spot.
+    </BulletItem>,
+    <BulletItem key="s1-list-3">
+      Enable keyboard-shortcut hints in{' '}
+      <Strong>Widget → Behaviour</Strong> for power users on assistive
+      tech.
+    </BulletItem>,
   ],
   betweenS1AndS2: (
     <>
