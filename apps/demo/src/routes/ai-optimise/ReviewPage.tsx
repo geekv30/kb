@@ -55,6 +55,10 @@ import { routes } from '../../lib/routes';
 import { passwordResetRegions } from './passwordResetRegions';
 import { autoReplyRegions } from './autoReplyRegions';
 import { chatWidgetRegions } from './chatWidgetRegions';
+import type {
+  AISuggestion as StoreAISuggestion,
+  ConversationSource as StoreConversationSource,
+} from '../../store/types';
 
 /* ─────────────────────────────────────────────────────────────
  * Per-article regions lookup — each AI-targeted article ships its
@@ -68,10 +72,6 @@ const regionsByArticleId: Record<string, ArticleBodyRegions> = {
   'art-setting-up-auto-reply-rules': autoReplyRegions,
   'art-customizing-the-chat-widget': chatWidgetRegions,
 };
-import type {
-  AISuggestion as StoreAISuggestion,
-  ConversationSource as StoreConversationSource,
-} from '../../store/types';
 
 /* ─────────────────────────────────────────────────────────────
  * Adapters — store types → kb-ui types
