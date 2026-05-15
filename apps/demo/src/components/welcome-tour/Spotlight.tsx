@@ -1,49 +1,40 @@
-// Ring overlay + anchored coach-mark card.
+// Anchored coach-mark card with z-index lift on the target.
 //
-// v3 redesign:
-//   - Uniform page-wide dim (Sentry/Navattic style) — NO cutout, NO mask.
-//     The dim is `pointer-events: auto` so it blocks clicks on the
-//     underlying UI. The coach-mark card is `pointer-events: auto` and
-//     stops propagation so the user can interact with it.
-//   - Target gets a confident slate-900 outline ring (2px) + a soft
-//     inner white halo so it lifts off the dimmed page.
-//   - Coach-mark card is wider (max-w-sm), p-5, with breathing-space
-//     between title / body / footer.
-//   - All footer buttons use kb-ui <Button> — no local 12px buttons.
+// v4 redesign:
+//   - NO ring. NO halo. NO outline on the target.
+//   - Uniform page-wide dim at rgba(15, 23, 42, 0.40) at z-index 50.
+//   - The target element is "lifted" above the dim via z-index 60 +
+//     position: relative (saved/restored on the target's inline style).
+//     For rail buttons (transparent background) we temporarily apply
+//     a white background-color so the lift reads cleanly.
+//   - The Navattic pattern: target stays bright, everything else dims.
+//   - Coach-mark card lives at z-index 8500 (above the dim).
 //
-// Transitions are explicit opacity + transform only — no width/height/
-// top/left animations. Layout is via translate3d on transform so we
-// stay GPU-composited. The overlay drives a fade-out → re-place →
-// fade-in cycle on step change.
+// Inline-style overrides on the target node are managed via a
+// useEffect cleanup that restores the original inline values when the
+// step changes or the component unmounts.
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { ChevronLeft, X } from '@untitledui/icons';
 import { Button } from '@test-kb-ui/kb-ui';
 import { cn } from '../../lib/cn';
 
-/* Ring chrome constants. */
-const RING_PADDING = 8;
-const RING_RADIUS = 12;
-const RING_BORDER_COLOR = 'rgb(15, 23, 42)'; // slate-900
-const RING_SHADOW = [
-  // Inner white halo so the ring lifts off the dimmed page.
-  'inset 0 0 0 4px rgba(255, 255, 255, 0.6)',
-  // Subtle outer glow.
-  '0 0 0 6px rgba(15, 23, 42, 0.08)',
-  '0 12px 32px rgba(15, 23, 42, 0.18)',
-].join(', ');
+/* Lift padding (visual breathing-room around the target — not a ring). */
 const COACHMARK_GAP = 16;
 const COACH_MARK_WIDTH = 360; // ~max-w-sm
 const COACH_MARK_EST_HEIGHT = 180;
 
-/* Uniform page-wide dim. */
-const DIM_COLOR = 'rgba(15, 23, 42, 0.28)';
+/* Uniform page-wide dim — bumped from 0.28 → 0.40 so the contrast
+ * between target and surroundings is decisive. */
+const DIM_COLOR = 'rgba(15, 23, 42, 0.40)';
+const DIM_Z_INDEX = 8499; // just below coach-mark wrapper
+const TARGET_LIFT_Z_INDEX = 8500; // above the dim
 
 const FADE_IN_DUR = 240;
 const FADE_IN_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
 export type SpotlightRect = {
-  /** Target's bounding rect (raw, no padding applied). */
+  /** Target's bounding rect (raw). */
   top: number;
   left: number;
   width: number;
@@ -62,6 +53,13 @@ export type CoachMarkContent = {
 
 export type SpotlightProps = {
   rect: SpotlightRect | null;
+  /** The DOM node we're lifting — passed in by the overlay so we can
+   *  apply inline-style overrides and restore them on cleanup. */
+  targetNode: HTMLElement | null;
+  /** True when the target element has a transparent background and we
+   *  need to paint a white background underneath the lift so it reads
+   *  against the dim (rail icon buttons). */
+  targetNeedsBackgroundFill: boolean;
   coachMark: CoachMarkContent;
   /** Fade phase driven by the parent overlay. */
   phase: 'in' | 'out';
@@ -72,6 +70,8 @@ export type SpotlightProps = {
 
 export function Spotlight({
   rect,
+  targetNode,
+  targetNeedsBackgroundFill,
   coachMark,
   phase,
   onNext,
@@ -79,17 +79,6 @@ export function Spotlight({
   onSkip,
 }: SpotlightProps) {
   const cardRef = useRef<HTMLDivElement | null>(null);
-
-  /* The ring rect with padding applied. Null until first measure. */
-  const padded =
-    rect === null
-      ? null
-      : {
-          top: rect.top - RING_PADDING,
-          left: rect.left - RING_PADDING,
-          width: rect.width + RING_PADDING * 2,
-          height: rect.height + RING_PADDING * 2,
-        };
 
   /* Viewport size — clamps coach-mark Y so it never overflows. */
   const [viewport, setViewport] = useState<{ w: number; h: number }>(() => ({
@@ -111,6 +100,49 @@ export function Spotlight({
       if (timer !== null) window.clearTimeout(timer);
     };
   }, []);
+
+  /* ── Z-INDEX LIFT — save + restore inline style on the target ──
+   *
+   * This is the Navattic pattern: don't ring the target, just lift it
+   * above the dim. The target stays at full brightness while the dim
+   * eats the rest of the page.
+   *
+   * We snapshot the inline `style.position`, `style.zIndex`, and (when
+   * needed) `style.backgroundColor` before mutating, and restore them
+   * on cleanup. We DO NOT touch computed style — only inline. If the
+   * existing inline style already sets one of these values, we
+   * preserve and restore that exact string.
+   */
+  useEffect(() => {
+    if (targetNode === null || phase !== 'in') return;
+
+    // Snapshot prior inline-style values so we can restore precisely.
+    const prevPosition = targetNode.style.position;
+    const prevZIndex = targetNode.style.zIndex;
+    const prevBackground = targetNode.style.backgroundColor;
+
+    // Apply lift. If the element already has `position` set inline,
+    // we leave it alone; otherwise force `relative` so z-index applies.
+    // (Static-positioned elements ignore z-index.)
+    if (prevPosition === '') {
+      targetNode.style.position = 'relative';
+    }
+    targetNode.style.zIndex = String(TARGET_LIFT_Z_INDEX);
+
+    // For transparent targets (rail icon buttons), paint white behind
+    // so we don't see the dim through the button.
+    if (targetNeedsBackgroundFill && prevBackground === '') {
+      targetNode.style.backgroundColor = '#ffffff';
+    }
+
+    return () => {
+      targetNode.style.position = prevPosition;
+      targetNode.style.zIndex = prevZIndex;
+      if (targetNeedsBackgroundFill) {
+        targetNode.style.backgroundColor = prevBackground;
+      }
+    };
+  }, [targetNode, targetNeedsBackgroundFill, phase, coachMark.stepIndex]);
 
   /* Focus the primary CTA when the step (= card identity) changes. */
   useEffect(() => {
@@ -142,9 +174,9 @@ export function Spotlight({
     }
   };
 
-  /* ── Uniform page-wide dim (modal-style backdrop) ─────────────── */
+  /* ── Uniform page-wide dim ─────────────────────────────────── */
 
-  const dimOpacity = phase === 'in' && padded !== null ? 1 : 0;
+  const dimOpacity = phase === 'in' && rect !== null ? 1 : 0;
   const dim = (
     <div
       aria-hidden="true"
@@ -156,70 +188,34 @@ export function Spotlight({
         opacity: dimOpacity,
         transition: `opacity ${FADE_IN_DUR}ms ease-out`,
         pointerEvents: 'auto',
+        zIndex: DIM_Z_INDEX,
       }}
     />
   );
 
-  /* ── Ring (single fixed div, sits over the target) ───────────── */
-
-  // Use translate3d to stay GPU-composited. position: fixed at (0,0)
-  // then transform to the actual location.
-  const ringTranslate =
-    padded === null
-      ? null
-      : `translate3d(${padded.left}px, ${padded.top}px, 0)`;
-
-  const ringOpacity = phase === 'in' ? 1 : 0;
-  const ringTransform =
-    ringTranslate === null
-      ? 'translate3d(0,0,0)'
-      : `${ringTranslate} translateY(${phase === 'in' ? 0 : 4}px)`;
-
-  const ring = padded ? (
-    <div
-      aria-hidden="true"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: padded.width,
-        height: padded.height,
-        borderRadius: RING_RADIUS,
-        border: `2px solid ${RING_BORDER_COLOR}`,
-        boxShadow: RING_SHADOW,
-        backgroundColor: 'transparent',
-        pointerEvents: 'none',
-        willChange: 'transform, opacity',
-        transform: ringTransform,
-        opacity: ringOpacity,
-        transition: `opacity ${FADE_IN_DUR}ms ease-out, transform ${FADE_IN_DUR}ms ${FADE_IN_EASE}`,
-      }}
-    />
-  ) : null;
-
   /* ── Coach-mark card placement ───────────────────────────────── */
 
-  // Anchored to the right of the ring. Clamp top so it stays in the
-  // viewport even when the ring is near the top/bottom edges.
+  // Anchored to the right of the target. Clamp top so it stays in the
+  // viewport even when the target is near the top/bottom edges.
   let coachLeft = 0;
   let coachTop = 0;
-  if (padded) {
-    coachLeft = padded.left + padded.width + COACHMARK_GAP;
+  if (rect) {
+    coachLeft = rect.left + rect.width + COACHMARK_GAP;
     const naturalTop =
-      padded.top + padded.height / 2 - COACH_MARK_EST_HEIGHT / 2;
+      rect.top + rect.height / 2 - COACH_MARK_EST_HEIGHT / 2;
     const minTop = 16;
     const maxTop = viewport.h - COACH_MARK_EST_HEIGHT - 16;
     coachTop = Math.min(maxTop, Math.max(minTop, naturalTop));
-    // If we'd overflow the right edge, flip to the left of the ring.
+    // If we'd overflow the right edge, flip to the left of the target.
     if (coachLeft + COACH_MARK_WIDTH > viewport.w - 16) {
-      coachLeft = padded.left - COACH_MARK_WIDTH - COACHMARK_GAP;
+      coachLeft = rect.left - COACH_MARK_WIDTH - COACHMARK_GAP;
     }
   }
 
   const coachOpacity = phase === 'in' ? 1 : 0;
   const coachTransform = `translate3d(${coachLeft}px, ${coachTop + (phase === 'in' ? 0 : 4)}px, 0)`;
 
-  const coachMarkStyle: CSSProperties = padded
+  const coachMarkStyle: CSSProperties = rect
     ? {
         position: 'fixed',
         top: 0,
@@ -227,24 +223,22 @@ export function Spotlight({
         width: COACH_MARK_WIDTH,
         transform: coachTransform,
         opacity: coachOpacity,
+        // Explicitly above the dim (8499) AND above the lifted target
+        // (8500) so the user can always click footer buttons.
+        zIndex: 8501,
         willChange: 'transform, opacity',
         transition: `opacity ${FADE_IN_DUR}ms ease-out, transform ${FADE_IN_DUR}ms ${FADE_IN_EASE}`,
       }
     : { display: 'none' };
 
-  /* ── Pointer arrow — anchored to the side facing the ring ────── */
+  /* ── Pointer arrow — anchored to the side facing the target ────── */
 
-  // If the card is to the right of the ring, arrow points left from
-  // the card's left edge. Otherwise (flipped), arrow points right from
-  // the card's right edge.
-  const cardIsRightOfTarget = padded
-    ? coachLeft > padded.left
-    : true;
-  const arrowVerticalCenter = padded
-    ? padded.top + padded.height / 2 - coachTop - 6
+  const cardIsRightOfTarget = rect ? coachLeft > rect.left : true;
+  const arrowVerticalCenter = rect
+    ? rect.top + rect.height / 2 - coachTop - 6
     : 0;
   // Clamp away from the rounded corners (12px radius — keep 12px+).
-  const arrowTop = padded
+  const arrowTop = rect
     ? Math.max(12, Math.min(arrowVerticalCenter, COACH_MARK_EST_HEIGHT - 24))
     : 0;
 
@@ -282,9 +276,8 @@ export function Spotlight({
     // pointer-events:auto and we don't fight z-index on the rest of the page.
     <div className="pointer-events-none fixed inset-0 z-[8500]">
       {dim}
-      {ring}
 
-      {/* Coach-mark card. */}
+      {/* Coach-mark card — sits above the dim. */}
       <div
         ref={cardRef}
         role="dialog"

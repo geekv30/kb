@@ -91,6 +91,10 @@ export function WelcomeTourOverlay() {
   /* The rect that the Spotlight should render against. */
   const [rect, setRect] = useState<SpotlightRect | null>(null);
 
+  /* The DOM node we're lifting above the dim. The Spotlight applies
+   * inline-style overrides to this node and restores them on cleanup. */
+  const [targetNode, setTargetNode] = useState<HTMLElement | null>(null);
+
   /* Fade phase. 'in' = visible, 'out' = fading away. */
   const [phase, setPhase] = useState<'in' | 'out'>('in');
 
@@ -152,11 +156,13 @@ export function WelcomeTourOverlay() {
         const t = window.setTimeout(() => {
           if (cycle !== measureCycleRef.current) return;
           setRect(null);
+          setTargetNode(null);
           setRenderedStep(nextState);
         }, 220);
         return () => window.clearTimeout(t);
       }
       setRect(null);
+      setTargetNode(null);
       setRenderedStep(nextState);
       setPhase('in');
       return;
@@ -186,6 +192,7 @@ export function WelcomeTourOverlay() {
       // 'in' flip actually animates.
       setPhase('out');
       setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+      setTargetNode(node);
       setRenderedStep(nextState);
       // Two rAFs: one to flush layout for the ring's initial transform,
       // one to flip opacity so the transition actually plays.
@@ -295,9 +302,17 @@ export function WelcomeTourOverlay() {
   } else if (renderedStep === 'completion') {
     content = <CompletionCard onDismiss={tour.next} />;
   } else if (coachMark) {
+    // Rail icon buttons (rail-ai, rail-analytics) have transparent
+    // backgrounds — when we lift them above the dim, we need to paint
+    // a white background underneath so they read cleanly. The sidebar
+    // explorer is a full surface card and already has its own bg.
+    const targetNeedsBackgroundFill =
+      renderedStep === 'step-ai' || renderedStep === 'step-analytics';
     content = (
       <Spotlight
         rect={rect}
+        targetNode={targetNode}
+        targetNeedsBackgroundFill={targetNeedsBackgroundFill}
         coachMark={coachMark}
         phase={phase}
         onNext={tour.next}

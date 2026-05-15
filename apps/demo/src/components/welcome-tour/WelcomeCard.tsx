@@ -1,15 +1,9 @@
 // Step 0 — the centered welcome modal that introduces the tour.
 //
-// Mounts inside the WelcomeTourOverlay's portal. Builds its own
-// backdrop + card (rather than reusing kb-ui Modal) because:
-//   - We need the backdrop to *coexist* with the spotlight overlay
-//     in later steps without the kb-ui modal's z-index/Radix focus
-//     trap fighting our custom trap.
-//   - We need precise control over the staged backdrop→card→content
-//     entrance choreography.
-//
-// Focus trap, Esc handling, and scroll lock are owned by the parent
-// overlay/provider so this component is purely presentational.
+// v4: unified visual language with CompletionCard. Same width (max-w-md),
+// same chip pattern, same tile styling, same typography, same spacing
+// rhythm. Adds a small illustration at the top matching completion's
+// radial-gradient backdrop + slate glyph language.
 
 import {
   useEffect,
@@ -37,24 +31,26 @@ type FeatureRowProps = {
 };
 
 function FeatureRow({ icon, title, description }: FeatureRowProps) {
+  // Same tile structure as CompletionCard: border, p-3, 32x32 icon
+  // container, title 13px semibold, body 12px slate-500.
   return (
     <div
       className={cn(
-        'flex items-start gap-3 rounded-lg border border-card-border p-4',
-        'transition-colors duration-150 hover:bg-slate-50',
+        'rounded-lg border border-slate-200 bg-white p-3',
+        'transition-colors hover:bg-slate-50',
       )}
     >
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-50 text-text-primary [&>svg]:h-[18px] [&>svg]:w-[18px]">
-        {icon}
-      </div>
-      <div className="flex min-w-0 flex-col gap-0.5">
-        <div className="text-[13px] font-medium leading-5 text-text-primary">
+      <div className="flex items-center gap-3">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100 [&>svg]:h-[18px] [&>svg]:w-[18px]">
+          {icon}
+        </div>
+        <div className="text-[13px] font-semibold leading-5 text-slate-900">
           {title}
         </div>
-        <div className="text-[12px] leading-[18px] text-slate-600">
-          {description}
-        </div>
       </div>
+      <p className="mt-1 text-[12px] leading-relaxed text-slate-500">
+        {description}
+      </p>
     </div>
   );
 }
@@ -137,50 +133,113 @@ export function WelcomeCard({ onStart, onSkip }: WelcomeCardProps) {
           'focus:outline-none',
         )}
       >
-        {/* Top-right close. */}
+        {/* Top-right close — matches CompletionCard's exact position +
+            sizing: top-4 right-4, 18px X icon in slate-400. */}
         <button
           type="button"
           aria-label="Close welcome tour"
           onClick={onSkip}
           className={cn(
-            'absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-md',
-            'text-slate-500 transition-colors hover:bg-slate-100 hover:text-text-primary',
+            'absolute right-4 top-4 inline-flex h-6 w-6 items-center justify-center rounded-md',
+            'text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300',
           )}
         >
-          <XClose className="h-[14px] w-[14px]" />
+          <XClose className="h-[18px] w-[18px]" />
         </button>
 
-        {/* Neutral "What's new" chip — understated, no gradient. */}
-        <div
-          className={cn(
-            'mb-4 inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2 py-0.5',
-            'text-[11px] font-medium uppercase tracking-wide text-slate-700',
-          )}
-        >
-          <span
+        {/* Illustration — small compass/direction glyph on radial-
+            gradient slate-100 → white backdrop. Mirrors completion's
+            visual language so the two cards bookend each other. */}
+        <div className="flex justify-center">
+          <svg
+            width={56}
+            height={56}
+            viewBox="0 0 56 56"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
             aria-hidden="true"
-            className="inline-block h-1.5 w-1.5 rounded-full bg-slate-500"
-          />
-          <span>What&rsquo;s new</span>
+          >
+            <defs>
+              <radialGradient
+                id="welcome-bg"
+                cx="50%"
+                cy="50%"
+                r="50%"
+                fx="50%"
+                fy="50%"
+              >
+                <stop offset="0%" stopColor="#f1f5f9" />
+                <stop offset="100%" stopColor="#ffffff" />
+              </radialGradient>
+            </defs>
+
+            {/* Soft circular backdrop. */}
+            <circle cx={28} cy={28} r={20} fill="url(#welcome-bg)" />
+            <circle
+              cx={28}
+              cy={28}
+              r={20}
+              fill="none"
+              stroke="#e2e8f0"
+              strokeWidth={1}
+            />
+
+            {/* Compass needle — slate-700 stroke. Diamond/needle shape
+                pointing NE (representing "explore what's new"). */}
+            <path
+              d="M28 16 L33 28 L28 26 L23 28 Z"
+              fill="#334155"
+              stroke="#334155"
+              strokeWidth={1}
+              strokeLinejoin="round"
+            />
+            <path
+              d="M28 40 L33 28 L28 30 L23 28 Z"
+              fill="none"
+              stroke="#94a3b8"
+              strokeWidth={1.5}
+              strokeLinejoin="round"
+            />
+            {/* Center pivot dot. */}
+            <circle cx={28} cy={28} r={1.5} fill="#334155" />
+          </svg>
+        </div>
+
+        {/* Chip — "WHAT'S NEW". Same pattern bookended on completion. */}
+        <div className="mt-4 flex justify-center">
+          <div
+            className={cn(
+              'inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2 py-0.5',
+              'text-[11px] font-medium uppercase tracking-wide text-slate-700',
+            )}
+          >
+            <span
+              aria-hidden="true"
+              className="inline-block h-1.5 w-1.5 rounded-full bg-slate-500"
+            />
+            <span>What&rsquo;s new</span>
+          </div>
         </div>
 
         <h2
           id="welcome-tour-title"
-          className="text-xl font-semibold leading-7 text-text-primary"
+          className="mt-5 text-center text-[20px] font-semibold leading-7 text-slate-900"
         >
           Welcome back, your KB just got a refresh
         </h2>
 
         <p
           id="welcome-tour-subtitle"
-          className="mt-2 text-sm leading-5 text-slate-600"
+          className="mt-1 text-center text-[14px] leading-relaxed text-slate-600"
         >
           A few things moved around. Here&rsquo;s a quick tour of what&rsquo;s
           new &mdash; under a minute.
         </p>
 
-        <div className="mt-5 flex flex-col gap-4">
+        {/* Feature tiles — full-width rows. Same internal structure as
+            CompletionCard tiles, just in single-column layout. */}
+        <div className="mt-6 flex flex-col gap-3">
           <FeatureRow
             icon={<Folder className="text-slate-700" />}
             title="File explorer in the sidebar"

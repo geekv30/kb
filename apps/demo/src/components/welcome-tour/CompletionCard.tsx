@@ -1,23 +1,9 @@
 // Completion card — shown after the user clicks "Got it" on step 3.
 //
-// Replaces the silent fade-out with a gratification beat: a small
-// drawn-in checkmark with sparkles, a "You're all set" headline, and
-// a 2x2 grid of changelog tiles surfacing four other improvements.
-//
-// Visual choreography (after card mount):
-//   - 0ms     card opacity 0→1 + scale 0.96→1 (350ms)
-//   - 200ms   green checkmark begins drawing in (~500ms, stroke-dash)
-//   - 300ms   tile 1 fades+slides in (translateY 6→0, opacity 0→1, 350ms)
-//   - 380ms   tile 2
-//   - 460ms   tile 3
-//   - 540ms   tile 4
-//   - 700ms   sparkle 1 (top-right) fades+scales in (300ms)
-//   - 800ms   sparkle 2 (bottom-right)
-//   - 900ms   sparkle 3 (bottom-left)
-//   - 1000ms  sparkle 4 (top-left)
-//
-// On dismiss (Got it OR X), the parent overlay drives the fade-out and
-// transitions tour state to 'done' (which writes localStorage = 'seen').
+// v4: unified visual language with WelcomeCard. Same width (max-w-md),
+// same chip pattern ("YOU'RE ALL SET"), same tile styling, same
+// typography (20px headline), same spacing rhythm (p-7, mt-5, mt-1,
+// mt-6, mt-7). Now surfaces 6 distinct features in a 2x3 grid.
 
 import {
   useEffect,
@@ -26,10 +12,12 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
 import {
+  ClockRewind,
   Command,
-  Route,
+  Globe02,
+  LayersThree01,
+  MessageChatCircle,
   SearchSm,
-  Stars02,
   X,
 } from '@untitledui/icons';
 import { Button } from '@test-kb-ui/kb-ui';
@@ -44,6 +32,8 @@ type ChangelogTile = {
   body: string;
 };
 
+/* 6 distinct features — none overlap with WelcomeCard's
+   File explorer / AI Gaps / Detailed analytics tiles. */
 const TILES: ChangelogTile[] = [
   {
     icon: <Command className="h-[18px] w-[18px] text-slate-700" />,
@@ -51,23 +41,34 @@ const TILES: ChangelogTile[] = [
     body: 'Press ? anywhere to see them all',
   },
   {
-    icon: <Stars02 className="h-[18px] w-[18px] text-slate-700" />,
-    title: 'AI suggestions',
-    body: 'Get inline help on tone, clarity, and gaps',
+    icon: <ClockRewind className="h-[18px] w-[18px] text-slate-700" />,
+    title: 'Autosave & version history',
+    body: 'Every keystroke saved; restore any earlier draft',
+  },
+  {
+    icon: <MessageChatCircle className="h-[18px] w-[18px] text-slate-700" />,
+    title: 'Inline comment threads',
+    body: 'Collaborate on a paragraph without leaving the article',
   },
   {
     icon: <SearchSm className="h-[18px] w-[18px] text-slate-700" />,
-    title: 'Faster search',
-    body: 'Smarter ranking and instant previews',
+    title: 'Faster, smarter search',
+    body: 'Better ranking and instant previews',
   },
   {
-    icon: <Route className="h-[18px] w-[18px] text-slate-700" />,
-    title: 'Quick-action breadcrumbs',
-    body: 'Jump between articles without losing context',
+    icon: <LayersThree01 className="h-[18px] w-[18px] text-slate-700" />,
+    title: 'Bulk actions on articles',
+    body: 'Select multiple to move, archive, or tag at once',
+  },
+  {
+    icon: <Globe02 className="h-[18px] w-[18px] text-slate-700" />,
+    title: 'Multi-language drafts',
+    body: 'Write one article in multiple languages from one view',
   },
 ];
 
-const TILE_DELAYS_MS = [300, 380, 460, 540];
+/* Tighter cadence than v3 since there's more to reveal. */
+const TILE_DELAYS_MS = [300, 350, 400, 450, 500, 550];
 const SPARKLE_DELAYS_MS = [700, 800, 900, 1000];
 const CHECK_DRAW_DELAY_MS = 200;
 const CHECK_DRAW_DUR_MS = 500;
@@ -132,9 +133,7 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
       : `completion-tile-in 350ms ease-out ${TILE_DELAYS_MS[index]}ms both`,
   });
 
-  /* Sparkle animation delays. Sparkles are positioned via inline
-   * SVG x/y attributes (NOT transform) so the CSS animation can use
-   * the transform property cleanly without fighting. */
+  /* Sparkle animation delays. */
   const sparkleStyle = (index: number): CSSProperties => ({
     animation: reduceMotion
       ? `welcome-fade-in 100ms ease-out both`
@@ -173,11 +172,11 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
         onKeyDown={handleKeyDown}
         style={cardStyle}
         className={cn(
-          'relative w-full max-w-2xl rounded-2xl bg-white p-8 shadow-2xl',
+          'relative w-full max-w-md rounded-2xl bg-white p-7 shadow-2xl',
           'focus:outline-none',
         )}
       >
-        {/* X close — top-right. */}
+        {/* X close — top-right. Same position + sizing as WelcomeCard. */}
         <button
           type="button"
           aria-label="Close"
@@ -191,12 +190,13 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
           <X className="h-[18px] w-[18px]" />
         </button>
 
-        {/* Illustration — drawn-in check with sparkles. */}
+        {/* Illustration — drawn-in check with sparkles. Same 56px scale
+            as WelcomeCard's compass relative to the card. */}
         <div className="flex justify-center">
           <svg
-            width={88}
-            height={88}
-            viewBox="0 0 88 88"
+            width={56}
+            height={56}
+            viewBox="0 0 56 56"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
             aria-hidden="true"
@@ -216,11 +216,11 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
             </defs>
 
             {/* Soft circular backdrop. */}
-            <circle cx={44} cy={44} r={28} fill="url(#completion-bg)" />
+            <circle cx={28} cy={28} r={20} fill="url(#completion-bg)" />
             <circle
-              cx={44}
-              cy={44}
-              r={28}
+              cx={28}
+              cy={28}
+              r={20}
               fill="none"
               stroke="#e2e8f0"
               strokeWidth={1}
@@ -228,57 +228,61 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
 
             {/* Drawn-in check (green-600 #16a34a). */}
             <path
-              d="M32 45 L40 53 L56 36"
+              d="M20 29 L25.5 34.5 L36 24"
               fill="none"
               stroke="#16a34a"
-              strokeWidth={3.5}
+              strokeWidth={2.5}
               strokeLinecap="round"
               strokeLinejoin="round"
               style={checkStyle}
             />
 
-            {/* Sparkles — four 4-point stars at 28px from center.
-                Positions (delta from center 44,44):
-                  TR: ( 28, -22 )     → (72, 22)  delay 1000ms (idx 3)
-                  BR: ( 26,  24 )     → (70, 68)  delay 700ms  (idx 0)
-                  BL: (-26,  22 )     → (18, 66)  delay 800ms  (idx 1)
-                  TL: (-24, -22 )     → (20, 22)  delay 900ms  (idx 2)
-            */}
-            {/* TR — amber.
-                Outer g handles SVG positioning; inner g is the CSS-
-                animated target (scales from its own bbox center). */}
-            <g transform="translate(72,22)">
+            {/* Sparkles at four corners — scaled for the 56px viewBox. */}
+            <g transform="translate(46,14)">
               <g style={sparkleStyle(3)} fill="#fbbf24">
-                <path d="M0 -5 L1.2 -1.2 L5 0 L1.2 1.2 L0 5 L-1.2 1.2 L-5 0 L-1.2 -1.2 Z" />
+                <path d="M0 -4 L1 -1 L4 0 L1 1 L0 4 L-1 1 L-4 0 L-1 -1 Z" />
               </g>
             </g>
-            {/* BR — slate */}
-            <g transform="translate(70,68)">
+            <g transform="translate(45,44)">
               <g style={sparkleStyle(0)} fill="#94a3b8">
-                <path d="M0 -4 L1 -1 L4 0 L1 1 L0 4 L-1 1 L-4 0 L-1 -1 Z" />
+                <path d="M0 -3 L0.8 -0.8 L3 0 L0.8 0.8 L0 3 L-0.8 0.8 L-3 0 L-0.8 -0.8 Z" />
               </g>
             </g>
-            {/* BL — amber */}
-            <g transform="translate(18,66)">
+            <g transform="translate(11,42)">
               <g style={sparkleStyle(1)} fill="#fbbf24">
-                <path d="M0 -5 L1.2 -1.2 L5 0 L1.2 1.2 L0 5 L-1.2 1.2 L-5 0 L-1.2 -1.2 Z" />
+                <path d="M0 -4 L1 -1 L4 0 L1 1 L0 4 L-1 1 L-4 0 L-1 -1 Z" />
               </g>
             </g>
-            {/* TL — slate */}
-            <g transform="translate(20,22)">
+            <g transform="translate(12,14)">
               <g style={sparkleStyle(2)} fill="#94a3b8">
-                <path d="M0 -4 L1 -1 L4 0 L1 1 L0 4 L-1 1 L-4 0 L-1 -1 Z" />
+                <path d="M0 -3 L0.8 -0.8 L3 0 L0.8 0.8 L0 3 L-0.8 0.8 L-3 0 L-0.8 -0.8 Z" />
               </g>
             </g>
           </svg>
         </div>
 
-        {/* Headline + subtitle. */}
+        {/* Chip — "YOU'RE ALL SET". Bookends the welcome chip. */}
+        <div className="mt-4 flex justify-center">
+          <div
+            className={cn(
+              'inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2 py-0.5',
+              'text-[11px] font-medium uppercase tracking-wide text-slate-700',
+            )}
+          >
+            <span
+              aria-hidden="true"
+              className="inline-block h-1.5 w-1.5 rounded-full bg-slate-500"
+            />
+            <span>You&rsquo;re all set</span>
+          </div>
+        </div>
+
+        {/* Headline + subtitle — same 20px / 14px scale as WelcomeCard. */}
         <h2
           id="completion-title"
-          className="mt-5 text-center text-[22px] font-semibold leading-7 text-slate-900"
+          className="mt-5 text-center text-[20px] font-semibold leading-7 text-slate-900"
         >
-          You&rsquo;re all set
+          Tour complete
         </h2>
         <p
           id="completion-subtitle"
@@ -287,14 +291,14 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
           A few other improvements you&rsquo;ll notice as you go
         </p>
 
-        {/* 2x2 changelog grid. */}
+        {/* 2x3 changelog grid — 6 tiles. */}
         <div className="mt-6 grid grid-cols-2 gap-3">
           {TILES.map((tile, i) => (
             <div
               key={tile.title}
               style={tileStyle(i)}
               className={cn(
-                'rounded-lg border border-slate-200 bg-white p-4',
+                'rounded-lg border border-slate-200 bg-white p-3',
                 'transition-colors hover:bg-slate-50',
               )}
             >
