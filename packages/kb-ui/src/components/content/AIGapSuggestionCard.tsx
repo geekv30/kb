@@ -249,17 +249,24 @@ export function AIGapSuggestionCard({
       state === 'accepted'
         ? (decisionLabels?.accepted ?? 'ACCEPTED')
         : (decisionLabels?.dismissed ?? 'DISMISSED');
-    // Figma 74:10581 (dismissed-replace) / 74:10491 (accepted-addition) —
-    // both 452×76 with: bg=canvas (#f5f5f5), border=card-border, padding
-    // px-[22px] py-[24px], 12px radius. Inner row gap 6px. Label is
-    // 13/19 medium #64748b (text-muted) — NO letter-spacing. Divider is
-    // ~30px tall, 1px wide, slate-blue/faint.
+    // Collapsed chip — short single-row pill (~40-48px tall).
+    //
+    // PR #90 audit inflated the chip to `px-[22px] py-[24px]` (76px total
+    // height) by pulling values from Figma's standalone chip frame
+    // (74:10491 / 74:10581) which sits in a wide spec grid where it's
+    // padded to match the active card width. In the actual editor rail,
+    // the chip is meant to read as a quiet terminal-state pill, not a
+    // full-bleed card. Reverted to AICard's collapsed default
+    // (`px-3 py-2`) and trimmed the divider from h-[28px] to h-4.
+    // Label kept at 13/19 medium #64748b per Figma 74:10502 / 74:10592.
     return (
       <AICard
         mode="collapsed"
         className={cn(
-          // Override AICard's collapsed defaults: canvas bg + Figma padding.
-          'bg-canvas px-[22px] py-[24px]',
+          // Canvas BG matches the rail backdrop; padding is AICard's
+          // collapsed default (px-3 py-2). Do not re-add the 22/24
+          // override — see comment above.
+          'bg-canvas',
           className,
         )}
         data-kb-component="ai-gap-suggestion-card"
@@ -269,7 +276,7 @@ export function AIGapSuggestionCard({
         <TypeChip type={suggestion.type} registry={resolvedRegistry} />
         <span
           aria-hidden
-          className="mx-3 h-[28px] w-px shrink-0 bg-card-divider"
+          className="mx-3 h-4 w-px shrink-0 bg-card-divider"
         />
         <span className="text-[13px] font-medium leading-[19px] text-text-muted">
           {decisionLabel}

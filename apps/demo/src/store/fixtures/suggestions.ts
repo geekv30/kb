@@ -19,7 +19,7 @@ export const suggestions: AISuggestion[] = [
     type: 'addition',
     title: 'Add a "Step 0: Verify identity" block',
     description:
-      'Customers report being phished mid-reset. Adding an explicit identity-verification step before the reset CTA reduces support tickets about hijacked accounts by ~40%.',
+      'Phishing reports up — an explicit identity-check step before the reset CTA cuts hijack tickets ~40%.',
     anchorBlockId: 'reset-pw-intro',
     payload: {
       newHTML:
@@ -34,7 +34,7 @@ export const suggestions: AISuggestion[] = [
     type: 'replace',
     title: 'Update the CTA — "Forgot password" was renamed in v3.2',
     description:
-      'The button label changed from "Forgot password" to "Reset password" in the v3.2 sign-in redesign. The article still references the old label, which trips up customers who can\'t find the button.',
+      'Button renamed "Forgot password" → "Reset password" in v3.2 — article still uses the old label.',
     anchorBlockId: 'reset-pw-cta',
     payload: {
       oldHTML:
@@ -51,7 +51,7 @@ export const suggestions: AISuggestion[] = [
     type: 'removal',
     title: 'Remove the deprecated "Reset via SMS" section',
     description:
-      'SMS-based reset was deprecated in February 2026 in favour of authenticator-app codes. The article still documents the old SMS path, which contradicts the in-app messaging.',
+      'SMS reset was deprecated Feb 2026 for authenticator codes — article still documents it.',
     anchorBlockId: 'reset-pw-sms',
     payload: {
       oldHTML:
@@ -68,7 +68,7 @@ export const suggestions: AISuggestion[] = [
     type: 'addition',
     title: 'Add a note about timezone handling for rule schedules',
     description:
-      'Multiple customer tickets confused workspace timezone with the agent\'s local timezone. A short clarifying paragraph after the schedule explanation prevents the misconfiguration.',
+      'Tickets confuse workspace vs agent timezone — a note after the schedule block prevents misconfig.',
     anchorBlockId: 'auto-reply-schedules',
     payload: {
       newHTML:
@@ -83,7 +83,7 @@ export const suggestions: AISuggestion[] = [
     type: 'replace',
     title: 'Clarify the ambiguous "Recent" trigger',
     description:
-      'The "Recent" label is consistently misread as "any recent message" when it actually means "within the last 24 hours." Replacing the wording with the explicit window removes the ambiguity.',
+      '"Recent" reads as "any recent message" but means "within 24h" — rename to fix the ambiguity.',
     anchorBlockId: 'auto-reply-recent',
     payload: {
       oldHTML:
@@ -100,7 +100,7 @@ export const suggestions: AISuggestion[] = [
     type: 'removal',
     title: 'Remove the deprecated "Match by sender domain only" toggle',
     description:
-      'This legacy toggle was removed from the rule editor in March 2026. Documenting it confuses new customers who can\'t find it in the UI. Filter groups now cover the same use-case more flexibly.',
+      'Toggle removed from the editor in March 2026 — filter groups now cover the same use-case.',
     anchorBlockId: 'auto-reply-domain',
     payload: {
       oldHTML:
@@ -117,7 +117,7 @@ export const suggestions: AISuggestion[] = [
     type: 'addition',
     title: 'Add an accessibility-best-practices subsection',
     description:
-      'Customers in regulated industries (healthcare, finance, gov) need WCAG 2.1 AA guidance up front. A dedicated accessibility subsection right after the colour-customisation block surfaces the right defaults.',
+      'Regulated customers need WCAG 2.1 AA guidance up front — add a subsection after colour.',
     anchorBlockId: 'chat-widget-themes',
     payload: {
       newHTML:
@@ -132,7 +132,7 @@ export const suggestions: AISuggestion[] = [
     type: 'replace',
     title: 'Update "Color picker" — renamed to "Theme selector"',
     description:
-      'The colour-picker UI was upgraded in v4.1 to a full theme selector with WCAG-validated palettes. The article should reflect the new control name and call out the validation step.',
+      'v4.1 turned the colour picker into a WCAG-validated theme selector — rename and note it.',
     anchorBlockId: 'chat-widget-color',
     payload: {
       oldHTML:
@@ -149,7 +149,7 @@ export const suggestions: AISuggestion[] = [
     type: 'removal',
     title: 'Remove the legacy "Embed via iframe" instructions',
     description:
-      'The iframe embed path was deprecated in v4.0 — it doesn\'t support the new realtime features and is end-of-life by Q3 2026. Documenting it sends customers down a dead-end path.',
+      'iframe embed was deprecated in v4.0 (EOL Q3 2026) — no realtime; doc still documents it.',
     anchorBlockId: 'chat-widget-iframe',
     payload: {
       oldHTML:
