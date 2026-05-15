@@ -12,12 +12,12 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
 import {
-  ClockRewind,
+  AlertCircle,
   Command,
-  Globe02,
-  LayersThree01,
+  Keyboard01,
   MessageChatCircle,
-  SearchSm,
+  Pencil02,
+  ShieldTick,
   X,
 } from '@untitledui/icons';
 import { Button } from '@test-kb-ui/kb-ui';
@@ -32,38 +32,38 @@ type ChangelogTile = {
   body: string;
 };
 
-/* 6 distinct features — none overlap with WelcomeCard's
-   File explorer / AI Gaps / Detailed analytics tiles. */
+/* 6 distinct features — all real per kb-mcp/product/feature-map.md.
+   No overlap with WelcomeCard's File explorer / AI Gaps / Analytics tiles. */
 const TILES: ChangelogTile[] = [
   {
     icon: <Command className="h-[18px] w-[18px] text-slate-700" />,
-    title: 'Keyboard shortcuts',
-    body: 'Press ? anywhere to see them all',
+    title: 'Slash-command editor',
+    body: 'Type / anywhere to insert headings, lists, code, tables, and more',
   },
   {
-    icon: <ClockRewind className="h-[18px] w-[18px] text-slate-700" />,
-    title: 'Autosave & version history',
-    body: 'Every keystroke saved; restore any earlier draft',
+    icon: <Pencil02 className="h-[18px] w-[18px] text-slate-700" />,
+    title: 'Selection bubble menu',
+    body: 'Select text for instant formatting, links, and AI actions',
+  },
+  {
+    icon: <ShieldTick className="h-[18px] w-[18px] text-slate-700" />,
+    title: 'Smart publish gate',
+    body: 'Publishing stays disabled until your AI suggestions are reviewed',
   },
   {
     icon: <MessageChatCircle className="h-[18px] w-[18px] text-slate-700" />,
-    title: 'Inline comment threads',
-    body: 'Collaborate on a paragraph without leaving the article',
+    title: 'Conversation sources',
+    body: 'Every AI suggestion shows the customer tickets behind it',
   },
   {
-    icon: <SearchSm className="h-[18px] w-[18px] text-slate-700" />,
-    title: 'Faster, smarter search',
-    body: 'Better ranking and instant previews',
+    icon: <AlertCircle className="h-[18px] w-[18px] text-slate-700" />,
+    title: 'Articles needing attention',
+    body: 'Analytics flags low-helpfulness articles automatically',
   },
   {
-    icon: <LayersThree01 className="h-[18px] w-[18px] text-slate-700" />,
-    title: 'Bulk actions on articles',
-    body: 'Select multiple to move, archive, or tag at once',
-  },
-  {
-    icon: <Globe02 className="h-[18px] w-[18px] text-slate-700" />,
-    title: 'Multi-language drafts',
-    body: 'Write one article in multiple languages from one view',
+    icon: <Keyboard01 className="h-[18px] w-[18px] text-slate-700" />,
+    title: 'Keyboard-first workflow',
+    body: 'Press ? for shortcuts; navigate AI review with j/k, decide with y/n',
   },
 ];
 
