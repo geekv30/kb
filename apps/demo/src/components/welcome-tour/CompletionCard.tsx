@@ -172,7 +172,7 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
         onKeyDown={handleKeyDown}
         style={cardStyle}
         className={cn(
-          'relative w-full max-w-md rounded-2xl bg-white p-7 shadow-2xl',
+          'relative w-full max-w-xl rounded-2xl bg-white p-7 shadow-2xl',
           'focus:outline-none',
         )}
       >
