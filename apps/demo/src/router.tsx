@@ -23,6 +23,7 @@ import { Navigate, createBrowserRouter } from 'react-router-dom';
 import ShellLayout from './routes/ShellLayout';
 import CollapsedShellLayout from './routes/CollapsedShellLayout';
 import RedirectToDefault from './routes/RedirectToDefault';
+import WelcomeRedirect from './routes/WelcomeRedirect';
 import NotFoundPage from './routes/NotFoundPage';
 import { routes } from './lib/routes';
 import { RouteErrorBoundary } from './components/RouteErrorBoundary';
@@ -50,6 +51,10 @@ const err = { errorElement: <RouteErrorBoundary /> } as const;
 export const router = createBrowserRouter([
   // Root redirect — must be FIRST so it matches before the catch-all.
   { path: '/', element: <RedirectToDefault /> },
+
+  // `/welcome` — force-starts the welcome tour. Clears the seen flag
+  // and redirects to the default KB landing route with `?welcome=1`.
+  { path: '/welcome', element: <WelcomeRedirect /> },
 
   // Shell layout — rail + sub-nav + breadcrumb persist.
   {

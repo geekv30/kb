@@ -1,0 +1,61 @@
+/* Welcome tour keyframes.
+ *
+ * Imported by WelcomeTourOverlay so the keyframes are available
+ * wherever the overlay portals to. We use plain CSS keyframes
+ * (not Tailwind utilities) so the styles ship via the demo's
+ * standard CSS pipeline without needing a Tailwind config edit.
+ *
+ * v3: in addition to the welcome modal, the completion card uses
+ * keyframes for its check-draw + tile-stagger + sparkle-pop choreography.
+ * The in-page ring + coach-mark still use inline transitions (opacity +
+ * transform) driven by the overlay's phase state.
+ */
+
+@keyframes welcome-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes welcome-card-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* CompletionCard — drawn-in checkmark. The path has stroke-dasharray
+ * set inline to its measured length (~36) so we animate to 0 here. */
+@keyframes completion-check-draw {
+  from { stroke-dashoffset: 36; }
+  to { stroke-dashoffset: 0; }
+}
+
+/* CompletionCard — staggered fade+slide for each changelog tile. */
+@keyframes completion-tile-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* CompletionCard — sparkle pop. Each sparkle is rendered inside a
+ * pre-positioned <g transform="translate(x,y)">. We scale around the
+ * group's transform-origin (center). */
+@keyframes completion-sparkle-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
