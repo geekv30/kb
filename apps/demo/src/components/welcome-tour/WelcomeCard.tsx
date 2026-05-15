@@ -1,9 +1,8 @@
 // Step 0 — the centered welcome modal that introduces the tour.
 //
-// v4: unified visual language with CompletionCard. Same width (max-w-md),
-// same chip pattern, same tile styling, same typography, same spacing
-// rhythm. Adds a small illustration at the top matching completion's
-// radial-gradient backdrop + slate glyph language.
+// v5: drop the abstract glyph illustration entirely. Cards lead with the
+// "WHAT'S NEW" chip — same pattern Lovable/Relume/Linear use for "what's
+// new" surfaces. No mystery symbol; the chip + headline carry the moment.
 
 import {
   useEffect,
@@ -148,66 +147,8 @@ export function WelcomeCard({ onStart, onSkip }: WelcomeCardProps) {
           <XClose className="h-[18px] w-[18px]" />
         </button>
 
-        {/* Illustration — small compass/direction glyph on radial-
-            gradient slate-100 → white backdrop. Mirrors completion's
-            visual language so the two cards bookend each other. */}
+        {/* Chip — "WHAT'S NEW". Leads the card (no illustration above). */}
         <div className="flex justify-center">
-          <svg
-            width={56}
-            height={56}
-            viewBox="0 0 56 56"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <defs>
-              <radialGradient
-                id="welcome-bg"
-                cx="50%"
-                cy="50%"
-                r="50%"
-                fx="50%"
-                fy="50%"
-              >
-                <stop offset="0%" stopColor="#f1f5f9" />
-                <stop offset="100%" stopColor="#ffffff" />
-              </radialGradient>
-            </defs>
-
-            {/* Soft circular backdrop. */}
-            <circle cx={28} cy={28} r={20} fill="url(#welcome-bg)" />
-            <circle
-              cx={28}
-              cy={28}
-              r={20}
-              fill="none"
-              stroke="#e2e8f0"
-              strokeWidth={1}
-            />
-
-            {/* Compass needle — slate-700 stroke. Diamond/needle shape
-                pointing NE (representing "explore what's new"). */}
-            <path
-              d="M28 16 L33 28 L28 26 L23 28 Z"
-              fill="#334155"
-              stroke="#334155"
-              strokeWidth={1}
-              strokeLinejoin="round"
-            />
-            <path
-              d="M28 40 L33 28 L28 30 L23 28 Z"
-              fill="none"
-              stroke="#94a3b8"
-              strokeWidth={1.5}
-              strokeLinejoin="round"
-            />
-            {/* Center pivot dot. */}
-            <circle cx={28} cy={28} r={1.5} fill="#334155" />
-          </svg>
-        </div>
-
-        {/* Chip — "WHAT'S NEW". Same pattern bookended on completion. */}
-        <div className="mt-4 flex justify-center">
           <div
             className={cn(
               'inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2 py-0.5',
