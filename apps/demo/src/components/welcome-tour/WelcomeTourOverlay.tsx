@@ -1,17 +1,19 @@
 // Portal-rendered overlay that orchestrates the welcome tour.
 //
-// Responsibilities:
+// v2 responsibilities:
 //   - Portals to document.body so it's not clipped by the shell.
-//   - On each step-* state, navigates to the route for that step,
-//     waits for the route content to settle, then resolves the
-//     target rect via the provider's `getTarget(id)` lookup.
-//   - Re-measures on window resize.
-//   - Owns the "welcome card" (step 0) and the "spotlight" (step 1-3).
-//   - Listens for Esc to skip the tour.
-//   - Plays a brief sparkle-check finale animation on the last step's
-//     primary CTA before transitioning to 'done'.
+//   - Cross-fades between steps: when state changes, fades out the
+//     current ring + coach mark (180ms), navigates, waits for the new
+//     target to be measurable (2x rAF), then fades the new ring + card
+//     in at their final positions (240ms).
+//   - Re-measures on debounced window resize (150ms) — no
+//     ResizeObserver.
+//   - No celebration. "Got it" just transitions to 'done' which fades
+//     the overlay out (handled by the parent fade) and writes 'seen'.
+//   - The welcome step keeps its own modal backdrop (it's an interrupt
+//     modal — different surface from the in-page tour).
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -67,14 +69,14 @@ const STEP_CONTENT: Record<
   },
 };
 
-/** Delay (ms) after a navigation before we measure the target. */
-const POST_NAV_SETTLE_MS = 250;
+/** Fade-out duration before we navigate + remeasure. */
+const FADE_OUT_MS = 180;
+
+/** Max retries when target isn't measurable yet (rAFs + spaced timers). */
+const MEASURE_RETRY_DELAYS = [120, 280, 500, 800];
 
 /** Total step count surfaced to the coach mark indicator. */
 const TOTAL_STEPS = 3;
-
-/** Delay before transitioning to 'done' so the sparkle-check can play. */
-const FINISH_CELEBRATION_MS = 450;
 
 type StepKey = Exclude<TourState, 'closed' | 'welcome' | 'done'>;
 
@@ -90,9 +92,22 @@ export function WelcomeTourOverlay() {
   const tour = useWelcomeTour();
   const navigate = useNavigate();
   const location = useLocation();
+
+  /* The rect that the Spotlight should render against. */
   const [rect, setRect] = useState<SpotlightRect | null>(null);
-  const [celebratingFinish, setCelebratingFinish] = useState(false);
-  const finishTimerRef = useRef<number | null>(null);
+
+  /* Fade phase. 'in' = visible, 'out' = fading away. */
+  const [phase, setPhase] = useState<'in' | 'out'>('in');
+
+  /* The step we are currently rendering content for. May lag the
+   * tour state by FADE_OUT_MS while we fade out then re-measure. On
+   * the "Got it" → 'done' transition we hold this on the prior step
+   * for ~220ms so the ring + coach mark can fade out cleanly. */
+  const [renderedStep, setRenderedStep] = useState<TourState>(tour.state);
+
+  /* Track whether a measure cycle is in flight so we can cancel
+   * cleanly on rapid step changes. */
+  const measureCycleRef = useRef<number>(0);
 
   /* ── Esc handler ─────────────────────────────────────────── */
 
@@ -108,129 +123,186 @@ export function WelcomeTourOverlay() {
     return () => window.removeEventListener('keydown', handle);
   }, [tour]);
 
-  /* ── Navigate to the right route when entering a step ────── */
+  /* ── Step change orchestration ──────────────────────────────
+   *
+   * When tour.state changes:
+   *   1. If new state is non-step (welcome / closed / done), update
+   *      renderedStep immediately and clear rect.
+   *   2. If new state is a step:
+   *      a. If we have something currently rendered, fade out (180ms).
+   *      b. Navigate to the new route.
+   *      c. Wait 2x rAF so layout flushes, then measure (with retries).
+   *      d. Set rect + flip phase to 'in' (fade in 240ms).
+   */
 
   useEffect(() => {
-    if (!isStepState(tour.state)) return;
-    const targetPath = STEP_ROUTE[tour.state];
-    if (location.pathname !== targetPath) {
-      navigate(targetPath);
+    const cycle = ++measureCycleRef.current;
+    const nextState = tour.state;
+
+    // Non-step states.
+    if (!isStepState(nextState)) {
+      // If we were rendering a step and the user just finished/skipped
+      // out, play one final fade-out before unmounting. We do NOT
+      // update renderedStep yet — keeping it on the prior step keeps
+      // the Spotlight mounted while phase='out' drives the fade.
+      const wasRenderingStep = isStepState(renderedStep);
+      if (
+        wasRenderingStep &&
+        (nextState === 'done' || nextState === 'closed')
+      ) {
+        setPhase('out');
+        const t = window.setTimeout(() => {
+          if (cycle !== measureCycleRef.current) return;
+          setRect(null);
+          setRenderedStep(nextState);
+        }, 220);
+        return () => window.clearTimeout(t);
+      }
+      setRect(null);
+      setRenderedStep(nextState);
+      setPhase('in');
+      return;
     }
-    // We intentionally leave `location.pathname` out of the deps —
-    // we only want to fire navigation when the tour state changes.
+
+    const targetId = STEP_TARGET[nextState];
+    const targetPath = STEP_ROUTE[nextState];
+
+    // Already rendering something? Fade it out first.
+    const wasRenderingStep = isStepState(renderedStep);
+    const fadeDelay = wasRenderingStep ? FADE_OUT_MS : 0;
+
+    if (wasRenderingStep) {
+      setPhase('out');
+    }
+
+    const timers: number[] = [];
+
+    const tryMeasure = (): boolean => {
+      if (cycle !== measureCycleRef.current) return true; // cancelled
+      const node = tour.getTarget(targetId);
+      if (node === null) return false;
+      const r = node.getBoundingClientRect();
+      if (r.width === 0 && r.height === 0) return false;
+      // Force phase='out' before placing the new content. This ensures
+      // the Spotlight's initial render uses opacity:0 so the next-tick
+      // 'in' flip actually animates.
+      setPhase('out');
+      setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+      setRenderedStep(nextState);
+      // Two rAFs: one to flush layout for the ring's initial transform,
+      // one to flip opacity so the transition actually plays.
+      requestAnimationFrame(() => {
+        if (cycle !== measureCycleRef.current) return;
+        requestAnimationFrame(() => {
+          if (cycle !== measureCycleRef.current) return;
+          setPhase('in');
+        });
+      });
+      return true;
+    };
+
+    timers.push(
+      window.setTimeout(() => {
+        if (cycle !== measureCycleRef.current) return;
+        // Navigate (no-op if already on the route).
+        if (location.pathname !== targetPath) {
+          navigate(targetPath);
+        }
+        // First attempt after 2 rAFs — gives React + router a chance
+        // to commit the new route content.
+        requestAnimationFrame(() => {
+          if (cycle !== measureCycleRef.current) return;
+          requestAnimationFrame(() => {
+            if (cycle !== measureCycleRef.current) return;
+            if (tryMeasure()) return;
+            // Spaced retries for slower-mounting content.
+            MEASURE_RETRY_DELAYS.forEach((delay) => {
+              timers.push(
+                window.setTimeout(() => {
+                  tryMeasure();
+                }, delay),
+              );
+            });
+          });
+        });
+      }, fadeDelay),
+    );
+
+    return () => {
+      timers.forEach((t) => window.clearTimeout(t));
+    };
+    // We intentionally exclude `location.pathname` and `renderedStep`
+    // from deps — the cycle is driven by tour.state changes only.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tour.state]);
 
-  /* ── Measure target rect ─────────────────────────────────── */
-
-  // When we enter a step OR when the route content mounts, wait a beat
-  // then resolve the target rect. Re-measure on resize.
-  useEffect(() => {
-    if (!isStepState(tour.state)) {
-      setRect(null);
-      return;
-    }
-    const targetId = STEP_TARGET[tour.state];
-
-    let cancelled = false;
-
-    const measure = () => {
-      if (cancelled) return;
-      const node = tour.getTarget(targetId);
-      if (node === null) {
-        // Target hasn't mounted yet — try again shortly.
-        return;
-      }
-      const r = node.getBoundingClientRect();
-      // Skip degenerate (collapsed) rects.
-      if (r.width === 0 && r.height === 0) return;
-      setRect({
-        top: r.top,
-        left: r.left,
-        width: r.width,
-        height: r.height,
-      });
-    };
-
-    // Schedule a few retries spaced out — the route content + the
-    // file explorer (which has its own internal layout) need a beat
-    // to settle.
-    const retries = [POST_NAV_SETTLE_MS, 500, 800, 1200];
-    const timers = retries.map((delay) =>
-      window.setTimeout(measure, delay),
-    );
-
-    const onResize = () => measure();
-    window.addEventListener('resize', onResize);
-
-    return () => {
-      cancelled = true;
-      timers.forEach((t) => window.clearTimeout(t));
-      window.removeEventListener('resize', onResize);
-    };
-  }, [tour.state, tour, location.pathname]);
-
-  /* ── Finish celebration ──────────────────────────────────── */
-
-  const handlePrimary = () => {
-    if (tour.state === 'step-analytics') {
-      // Play the sparkle-check, then call finish.
-      setCelebratingFinish(true);
-      if (finishTimerRef.current !== null) {
-        window.clearTimeout(finishTimerRef.current);
-      }
-      finishTimerRef.current = window.setTimeout(() => {
-        setCelebratingFinish(false);
-        tour.finish();
-        finishTimerRef.current = null;
-      }, FINISH_CELEBRATION_MS);
-    } else {
-      tour.next();
-    }
-  };
+  /* ── Window resize re-measure (debounced 150ms) ──────────── */
 
   useEffect(() => {
+    if (!isStepState(renderedStep)) return;
+    const targetId = STEP_TARGET[renderedStep];
+    let timer: number | null = null;
+    const handle = () => {
+      if (timer !== null) window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        const node = tour.getTarget(targetId);
+        if (node === null) return;
+        const r = node.getBoundingClientRect();
+        if (r.width === 0 && r.height === 0) return;
+        setRect({
+          top: r.top,
+          left: r.left,
+          width: r.width,
+          height: r.height,
+        });
+      }, 150);
+    };
+    window.addEventListener('resize', handle);
     return () => {
-      if (finishTimerRef.current !== null) {
-        window.clearTimeout(finishTimerRef.current);
-      }
+      window.removeEventListener('resize', handle);
+      if (timer !== null) window.clearTimeout(timer);
     };
-  }, []);
+  }, [renderedStep, tour]);
 
-  /* ── Coach-mark content for the current step ─────────────── */
+  /* ── Build coach-mark content ────────────────────────────── */
 
-  const coachMark = useMemo<CoachMarkContent | null>(() => {
-    if (!isStepState(tour.state)) return null;
-    const base = STEP_CONTENT[tour.state];
-    const isLast = base.stepIndex === TOTAL_STEPS - 1;
-    return {
-      title: base.title,
-      body: base.body,
-      stepIndex: base.stepIndex,
-      totalSteps: TOTAL_STEPS,
-      primaryLabel: isLast ? 'Got it' : 'Next',
-      primaryIsFinish: isLast,
-    };
-  }, [tour.state]);
+  const coachMark: CoachMarkContent | null = isStepState(renderedStep)
+    ? (() => {
+        const base = STEP_CONTENT[renderedStep];
+        const isLast = base.stepIndex === TOTAL_STEPS - 1;
+        return {
+          title: base.title,
+          body: base.body,
+          stepIndex: base.stepIndex,
+          totalSteps: TOTAL_STEPS,
+          primaryLabel: isLast ? 'Got it' : 'Next',
+          primaryIsFinish: isLast,
+        };
+      })()
+    : null;
 
   /* ── Render via portal ───────────────────────────────────── */
 
   if (typeof document === 'undefined') return null;
-  if (tour.state === 'closed' || tour.state === 'done') return null;
+
+  // The visible state is renderedStep (which lags tour.state during
+  // fade-out). This keeps the overlay mounted through the closing
+  // fade after "Got it" / "Skip".
+  if (renderedStep === 'closed' || renderedStep === 'done') return null;
 
   let content: React.ReactNode = null;
 
-  if (tour.state === 'welcome') {
+  if (renderedStep === 'welcome') {
     content = <WelcomeCard onStart={tour.next} onSkip={tour.skip} />;
   } else if (coachMark) {
     content = (
       <Spotlight
         rect={rect}
         coachMark={coachMark}
-        onNext={handlePrimary}
+        phase={phase}
+        onNext={tour.next}
         onBack={tour.back}
         onSkip={tour.skip}
-        showFinishCelebration={celebratingFinish}
       />
     );
   }

@@ -1,32 +1,35 @@
-// Spotlight cutout + anchored coach-mark card.
+// Ring overlay + anchored coach-mark card.
 //
-// Visual technique:
-//   - 4 fixed divs form a "frame" around the cutout (top/right/bottom/left
-//     slabs of dim wash). This is more reliable than animating an SVG
-//     mask attribute — width/height/top/left transition smoothly via
-//     CSS.
-//   - A separate "cutout border" div sits exactly where the cutout is
-//     and carries the pulsing magenta glow. The cutout itself is
-//     transparent — the underlying app shows through.
-//   - The coach-mark card is positioned to the RIGHT of the cutout
-//     for all current targets (rail items + explorer panel are on the
-//     left half of the screen).
+// v2 redesign:
+//   - NO page dim, NO slab frame, NO SVG mask. The rest of the UI stays
+//     fully bright and interactive.
+//   - A single fixed-position "ring" div sits over the target with a
+//     soft slate outline + neutral glow. `pointer-events: none` so it
+//     doesn't intercept clicks on the underlying UI.
+//   - A floating coach-mark card sits beside the target. Single-row
+//     footer IA (Skip / Back / Next 1/3) — no separate dot pager.
 //
-// The cutout rect is supplied by the parent overlay after it has
-// measured the target's `getBoundingClientRect()`.
+// Transitions are explicit opacity + transform only — no width/height/
+// top/left animations. Layout is via translate3d on transform so we
+// stay GPU-composited. The overlay drives a fade-out → re-place →
+// fade-in cycle on step change.
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { ArrowRight, ChevronLeft, Check } from '@untitledui/icons';
-import { Button } from '@test-kb-ui/kb-ui';
+import { ChevronLeft, X } from '@untitledui/icons';
 import { cn } from '../../lib/cn';
-import { useReducedMotion } from './useReducedMotion';
 
-/* Cutout chrome constants. */
-const CUTOUT_PADDING = 12;
-const CUTOUT_RADIUS = 16;
-const DIM_COLOR = 'rgba(15, 23, 42, 0.55)';
-const SMOOTH_CUBIC = 'cubic-bezier(0.16, 1, 0.3, 1)';
+/* Ring chrome constants. */
+const RING_PADDING = 6;
+const RING_RADIUS = 12;
+const RING_BORDER_COLOR = 'rgb(148, 163, 184)'; // slate-400
+const RING_SHADOW =
+  '0 0 0 4px rgba(148, 163, 184, 0.15), 0 8px 24px rgba(15, 23, 42, 0.08)';
 const COACHMARK_GAP = 16;
+const COACH_MARK_WIDTH = 320;
+const COACH_MARK_EST_HEIGHT = 160; // tighter than v1 (no dot row, no oversized actions)
+
+const FADE_IN_DUR = 240;
+const FADE_IN_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
 export type SpotlightRect = {
   /** Target's bounding rect (raw, no padding applied). */
@@ -42,57 +45,63 @@ export type CoachMarkContent = {
   stepIndex: number; // 0-based — 0 = first step
   totalSteps: number;
   primaryLabel: string;
-  /** When true, primary action shows the "got it" sparkle-check finale. */
+  /** When true, primary action is the terminal "Got it" — no step count. */
   primaryIsFinish: boolean;
 };
 
 export type SpotlightProps = {
   rect: SpotlightRect | null;
   coachMark: CoachMarkContent;
+  /** Fade phase driven by the parent overlay. */
+  phase: 'in' | 'out';
   onNext: () => void;
   onBack: () => void;
   onSkip: () => void;
-  /** True when the primary action's celebratory animation should play. */
-  showFinishCelebration: boolean;
 };
 
 export function Spotlight({
   rect,
   coachMark,
+  phase,
   onNext,
   onBack,
   onSkip,
-  showFinishCelebration,
 }: SpotlightProps) {
-  const reduceMotion = useReducedMotion();
   const cardRef = useRef<HTMLDivElement | null>(null);
 
-  /* The cutout rect with padding applied. Null until first measure. */
+  /* The ring rect with padding applied. Null until first measure. */
   const padded =
     rect === null
       ? null
       : {
-          top: rect.top - CUTOUT_PADDING,
-          left: rect.left - CUTOUT_PADDING,
-          width: rect.width + CUTOUT_PADDING * 2,
-          height: rect.height + CUTOUT_PADDING * 2,
+          top: rect.top - RING_PADDING,
+          left: rect.left - RING_PADDING,
+          width: rect.width + RING_PADDING * 2,
+          height: rect.height + RING_PADDING * 2,
         };
 
-  /* Viewport size — used to clamp coach-mark Y so it never overflows. */
+  /* Viewport size — clamps coach-mark Y so it never overflows. */
   const [viewport, setViewport] = useState<{ w: number; h: number }>(() => ({
     w: typeof window === 'undefined' ? 1280 : window.innerWidth,
     h: typeof window === 'undefined' ? 800 : window.innerHeight,
   }));
 
   useEffect(() => {
-    const handle = () =>
-      setViewport({ w: window.innerWidth, h: window.innerHeight });
+    let timer: number | null = null;
+    const handle = () => {
+      if (timer !== null) window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        setViewport({ w: window.innerWidth, h: window.innerHeight });
+      }, 150);
+    };
     window.addEventListener('resize', handle);
-    return () => window.removeEventListener('resize', handle);
+    return () => {
+      window.removeEventListener('resize', handle);
+      if (timer !== null) window.clearTimeout(timer);
+    };
   }, []);
 
-  /* Focus trap inside the coach-mark card. Re-bind whenever the step
-   * (and therefore the card identity) changes. */
+  /* Focus the primary CTA when the step (= card identity) changes. */
   useEffect(() => {
     const root = cardRef.current;
     if (root === null) return;
@@ -122,243 +131,218 @@ export function Spotlight({
     }
   };
 
-  /* ── Frame slabs (4 fixed divs that compose the dim wash) ────── */
+  /* ── Ring (single fixed div, sits over the target) ───────────── */
 
-  const TRANSITION_DUR = reduceMotion ? 100 : 400;
-  const slabTransition = `top ${TRANSITION_DUR}ms ${SMOOTH_CUBIC}, left ${TRANSITION_DUR}ms ${SMOOTH_CUBIC}, width ${TRANSITION_DUR}ms ${SMOOTH_CUBIC}, height ${TRANSITION_DUR}ms ${SMOOTH_CUBIC}`;
+  // Use translate3d to stay GPU-composited. position: fixed at (0,0)
+  // then transform to the actual location.
+  const ringTranslate =
+    padded === null
+      ? null
+      : `translate3d(${padded.left}px, ${padded.top}px, 0)`;
 
-  const slabStyle = (style: CSSProperties): CSSProperties => ({
-    position: 'fixed',
-    background: DIM_COLOR,
-    transition: slabTransition,
-    pointerEvents: 'auto',
-    ...style,
-  });
+  const ringOpacity = phase === 'in' ? 1 : 0;
+  const ringTransform =
+    ringTranslate === null
+      ? 'translate3d(0,0,0)'
+      : `${ringTranslate} translateY(${phase === 'in' ? 0 : 4}px)`;
 
-  // While we don't yet have a rect, render a single full-screen dim.
-  const slabs = padded ? (
-    <>
-      {/* Top slab: 0 → cutout-top */}
-      <div
-        style={slabStyle({
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: Math.max(0, padded.top),
-        })}
-      />
-      {/* Bottom slab: cutout-bottom → viewport-bottom */}
-      <div
-        style={slabStyle({
-          top: padded.top + padded.height,
-          left: 0,
-          width: '100vw',
-          height: Math.max(0, viewport.h - (padded.top + padded.height)),
-        })}
-      />
-      {/* Left slab: 0 → cutout-left, bounded vertically by cutout */}
-      <div
-        style={slabStyle({
-          top: padded.top,
-          left: 0,
-          width: Math.max(0, padded.left),
-          height: padded.height,
-        })}
-      />
-      {/* Right slab: cutout-right → viewport-right, bounded vertically */}
-      <div
-        style={slabStyle({
-          top: padded.top,
-          left: padded.left + padded.width,
-          width: Math.max(0, viewport.w - (padded.left + padded.width)),
-          height: padded.height,
-        })}
-      />
-    </>
-  ) : (
+  const ring = padded ? (
     <div
+      aria-hidden="true"
       style={{
         position: 'fixed',
-        inset: 0,
-        background: DIM_COLOR,
-      }}
-    />
-  );
-
-  /* ── Cutout glow ring (the pulsing magenta) ──────────────────── */
-
-  const cutoutRing = padded ? (
-    <div
-      style={{
-        position: 'fixed',
-        top: padded.top,
-        left: padded.left,
+        top: 0,
+        left: 0,
         width: padded.width,
         height: padded.height,
-        borderRadius: CUTOUT_RADIUS,
-        transition: slabTransition,
+        borderRadius: RING_RADIUS,
+        border: `1.5px solid ${RING_BORDER_COLOR}`,
+        boxShadow: RING_SHADOW,
+        backgroundColor: 'transparent',
         pointerEvents: 'none',
-        boxShadow: reduceMotion
-          ? '0 0 0 2px rgba(217, 47, 255, 0.35)'
-          : undefined,
-        animation: reduceMotion ? undefined : 'welcome-pulse 2s ease-out infinite',
+        willChange: 'transform, opacity',
+        transform: ringTransform,
+        opacity: ringOpacity,
+        transition: `opacity ${FADE_IN_DUR}ms ease-out, transform ${FADE_IN_DUR}ms ${FADE_IN_EASE}`,
       }}
     />
   ) : null;
 
   /* ── Coach-mark card placement ───────────────────────────────── */
 
-  // The card is anchored to the RIGHT of the cutout. We compute its
-  // top + left from the cutout rect; clamp top so the card stays in
-  // the viewport even when the cutout is near the top/bottom.
-  const COACH_MARK_WIDTH = 320;
-  const COACH_MARK_EST_HEIGHT = 200; // approximate, only used for clamp
-
+  // Anchored to the right of the ring. Clamp top so it stays in the
+  // viewport even when the ring is near the top/bottom edges.
   let coachLeft = 0;
   let coachTop = 0;
   if (padded) {
     coachLeft = padded.left + padded.width + COACHMARK_GAP;
-    const naturalTop = padded.top + padded.height / 2 - COACH_MARK_EST_HEIGHT / 2;
+    const naturalTop =
+      padded.top + padded.height / 2 - COACH_MARK_EST_HEIGHT / 2;
     const minTop = 16;
     const maxTop = viewport.h - COACH_MARK_EST_HEIGHT - 16;
     coachTop = Math.min(maxTop, Math.max(minTop, naturalTop));
+    // If we'd overflow the right edge, flip to the left of the ring.
+    if (coachLeft + COACH_MARK_WIDTH > viewport.w - 16) {
+      coachLeft = padded.left - COACH_MARK_WIDTH - COACHMARK_GAP;
+    }
   }
 
-  const coachMarkDelay = reduceMotion ? 0 : 150;
-  const coachMarkDuration = reduceMotion ? 100 : 350;
+  const coachOpacity = phase === 'in' ? 1 : 0;
+  const coachTransform = `translate3d(${coachLeft}px, ${coachTop + (phase === 'in' ? 0 : 4)}px, 0)`;
 
   const coachMarkStyle: CSSProperties = padded
     ? {
         position: 'fixed',
-        top: coachTop,
-        left: coachLeft,
+        top: 0,
+        left: 0,
         width: COACH_MARK_WIDTH,
-        animation: `welcome-coachmark-in ${coachMarkDuration}ms ${SMOOTH_CUBIC} ${coachMarkDelay}ms both`,
+        transform: coachTransform,
+        opacity: coachOpacity,
+        willChange: 'transform, opacity',
+        transition: `opacity ${FADE_IN_DUR}ms ease-out, transform ${FADE_IN_DUR}ms ${FADE_IN_EASE}`,
       }
     : { display: 'none' };
 
-  /* ── Pointer arrow that visually connects card → cutout ──────── */
+  /* ── Pointer arrow — anchored to the side facing the ring ────── */
 
-  // Triangle pointing LEFT (toward the cutout). The card sits to the
-  // right; we anchor the pointer to the left edge of the card and
-  // center it vertically against the cutout, but clamp within the card.
-  const arrowTop = padded
-    ? Math.max(
-        16,
-        Math.min(
-          // Cutout center relative to card top.
-          padded.top + padded.height / 2 - coachTop - 6,
-          COACH_MARK_EST_HEIGHT - 32,
-        ),
-      )
+  // If the card is to the right of the ring, arrow points left from
+  // the card's left edge. Otherwise (flipped), arrow points right from
+  // the card's right edge.
+  const cardIsRightOfTarget = padded
+    ? coachLeft > padded.left
+    : true;
+  const arrowVerticalCenter = padded
+    ? padded.top + padded.height / 2 - coachTop - 6
     : 0;
+  // Clamp away from the rounded corners (12px radius — keep 12px+).
+  const arrowTop = padded
+    ? Math.max(12, Math.min(arrowVerticalCenter, COACH_MARK_EST_HEIGHT - 24))
+    : 0;
+
+  const arrowStyle: CSSProperties = cardIsRightOfTarget
+    ? {
+        position: 'absolute',
+        top: arrowTop,
+        left: -7,
+        width: 0,
+        height: 0,
+        borderTop: '7px solid transparent',
+        borderBottom: '7px solid transparent',
+        borderRight: '7px solid #ffffff',
+        filter: 'drop-shadow(-1px 0 0 rgba(15,23,42,0.06))',
+      }
+    : {
+        position: 'absolute',
+        top: arrowTop,
+        right: -7,
+        width: 0,
+        height: 0,
+        borderTop: '7px solid transparent',
+        borderBottom: '7px solid transparent',
+        borderLeft: '7px solid #ffffff',
+        filter: 'drop-shadow(1px 0 0 rgba(15,23,42,0.06))',
+      };
+
+  /* ── Footer button labels ────────────────────────────────────── */
+
+  const stepCountLabel = `${coachMark.stepIndex + 1}/${coachMark.totalSteps}`;
+  const showBack = coachMark.stepIndex > 0;
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[8500]">
-      {/* Dim wash + cutout (block clicks via pointer-events:auto on slabs). */}
-      {slabs}
-      {cutoutRing}
+      {ring}
 
       {/* Coach-mark card. */}
       <div
         ref={cardRef}
         role="dialog"
-        aria-modal="true"
+        aria-modal="false"
         aria-labelledby={`spotlight-title-${coachMark.stepIndex}`}
         aria-describedby={`spotlight-body-${coachMark.stepIndex}`}
         onKeyDown={handleKeyDown}
         style={coachMarkStyle}
         className={cn(
-          'pointer-events-auto rounded-xl bg-white p-4 shadow-2xl',
+          'pointer-events-auto max-w-xs rounded-xl border border-slate-200 bg-white p-4',
+          'shadow-[0_20px_48px_-12px_rgba(15,23,42,0.18)]',
           'focus:outline-none',
         )}
       >
-        {/* Left-pointing arrow (CSS triangle), anchored to card's left edge. */}
-        <div
-          aria-hidden="true"
-          style={{
-            position: 'absolute',
-            top: arrowTop,
-            left: -8,
-            width: 0,
-            height: 0,
-            borderTop: '8px solid transparent',
-            borderBottom: '8px solid transparent',
-            borderRight: '8px solid #ffffff',
-            filter: 'drop-shadow(-1px 0 0 rgba(15,23,42,0.04))',
-          }}
-        />
+        {/* Pointer arrow toward the target. */}
+        <div aria-hidden="true" style={arrowStyle} />
+
+        {/* X close — top-right, acts as "Skip tour". */}
+        <button
+          type="button"
+          aria-label="Skip tour"
+          onClick={onSkip}
+          className={cn(
+            'absolute right-3 top-3 inline-flex h-6 w-6 items-center justify-center rounded-md',
+            'text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300',
+          )}
+        >
+          <X className="h-4 w-4" />
+        </button>
 
         <h3
           id={`spotlight-title-${coachMark.stepIndex}`}
-          className="text-[15px] font-semibold leading-5 text-text-primary"
+          className="pr-7 text-[15px] font-semibold leading-5 text-slate-900"
         >
           {coachMark.title}
         </h3>
 
         <p
           id={`spotlight-body-${coachMark.stepIndex}`}
-          className="mt-1.5 text-[13px] leading-[19px] text-slate-600"
+          className="mt-1.5 text-[13px] leading-[1.55] text-slate-600"
         >
           {coachMark.body}
         </p>
 
-        {/* Step indicator dots — sit between body and action row. */}
-        <div className="mt-4 flex items-center justify-between">
-          <div className="flex items-center gap-1.5" aria-hidden="true">
-            {Array.from({ length: coachMark.totalSteps }).map((_, i) => (
-              <span
-                key={i}
-                className={cn(
-                  'h-1.5 w-1.5 rounded-full transition-colors',
-                  i === coachMark.stepIndex
-                    ? 'bg-[#D92FFF]'
-                    : 'bg-slate-300',
-                )}
-              />
-            ))}
-          </div>
-          <div className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
-            {coachMark.stepIndex + 1} of {coachMark.totalSteps}
-          </div>
-        </div>
-
-        <div className="mt-3 flex items-center justify-between gap-2">
-          <Button variant="ghost" onClick={onSkip}>
-            Skip tour
-          </Button>
-          <div className="flex items-center gap-2">
-            {coachMark.stepIndex > 0 && (
-              <Button variant="ghost" onClick={onBack}>
-                <ChevronLeft className="h-[14px] w-[14px]" />
-                Back
-              </Button>
+        {/* Single-row footer: Skip | Back · Next 1/3 */}
+        <div className="mt-4 flex items-center justify-between gap-2 pt-1">
+          <button
+            type="button"
+            onClick={onSkip}
+            className={cn(
+              'inline-flex items-center rounded-md px-1 py-1 text-[12px]',
+              'text-slate-500 transition-colors hover:text-slate-700',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300',
             )}
-            <Button
-              variant="primary"
+          >
+            Skip
+          </button>
+          <div className="flex items-center gap-2">
+            {showBack && (
+              <button
+                type="button"
+                onClick={onBack}
+                className={cn(
+                  'inline-flex items-center gap-1 rounded-md px-1 py-1 text-[12px]',
+                  'text-slate-500 transition-colors hover:text-slate-700',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300',
+                )}
+              >
+                <ChevronLeft className="h-[12px] w-[12px]" />
+                Back
+              </button>
+            )}
+            <button
+              type="button"
               onClick={onNext}
               data-spotlight-primary="true"
-            >
-              {showFinishCelebration ? (
-                <span
-                  className="inline-flex h-[14px] w-[14px] items-center justify-center"
-                  aria-hidden="true"
-                >
-                  <Check
-                    className="h-[14px] w-[14px]"
-                    style={{
-                      animation: reduceMotion
-                        ? undefined
-                        : `welcome-check-bounce 250ms ${SMOOTH_CUBIC} both`,
-                    }}
-                  />
-                </span>
-              ) : null}
-              <span>{coachMark.primaryLabel}</span>
-              {!coachMark.primaryIsFinish && (
-                <ArrowRight className="h-[14px] w-[14px]" />
+              className={cn(
+                'inline-flex items-center rounded-md bg-slate-900 px-3 py-1.5 text-[12px] font-medium text-white',
+                'transition-colors hover:bg-slate-800',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-1',
               )}
-            </Button>
+            >
+              {coachMark.primaryLabel}
+              {!coachMark.primaryIsFinish && (
+                <span className="ml-1.5 text-[11px] opacity-70">
+                  {stepCountLabel}
+                </span>
+              )}
+            </button>
           </div>
         </div>
       </div>

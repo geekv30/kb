@@ -21,7 +21,6 @@ import {
   ArrowRight,
   BarChartSquare02,
   Folder,
-  Stars02,
   XClose,
 } from '@untitledui/icons';
 import { AiIcon, Button } from '@test-kb-ui/kb-ui';
@@ -152,17 +151,17 @@ export function WelcomeCard({ onStart, onSkip }: WelcomeCardProps) {
           <XClose className="h-[14px] w-[14px]" />
         </button>
 
-        {/* Brand-gradient "What's new" badge. */}
+        {/* Neutral "What's new" chip — understated, no gradient. */}
         <div
           className={cn(
-            'mb-4 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide text-white',
+            'mb-4 inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2 py-0.5',
+            'text-[11px] font-medium uppercase tracking-wide text-slate-700',
           )}
-          style={{
-            backgroundImage:
-              'linear-gradient(90deg, #D92FFF 0%, #FFC987 100%)',
-          }}
         >
-          <Stars02 className="h-[12px] w-[12px]" />
+          <span
+            aria-hidden="true"
+            className="inline-block h-1.5 w-1.5 rounded-full bg-slate-500"
+          />
           <span>What&rsquo;s new</span>
         </div>
 

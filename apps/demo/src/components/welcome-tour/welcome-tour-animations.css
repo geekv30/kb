@@ -5,8 +5,9 @@
  * (not Tailwind utilities) so the styles ship via the demo's
  * standard CSS pipeline without needing a Tailwind config edit.
  *
- * All easings prefer cubic-bezier(0.16, 1, 0.3, 1) — the smooth
- * "Apple" curve — to match the rest of the tour's polish bar.
+ * v2: only the welcome modal still uses keyframes here. The in-page
+ * ring + coach-mark use inline transitions (opacity + transform)
+ * driven by the overlay's phase state — no keyframes needed.
  */
 
 @keyframes welcome-fade-in {
@@ -22,43 +23,5 @@
   to {
     opacity: 1;
     transform: scale(1);
-  }
-}
-
-@keyframes welcome-coachmark-in {
-  from {
-    opacity: 0;
-    transform: translateX(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes welcome-pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(217, 47, 255, 0.5);
-  }
-  60% {
-    box-shadow: 0 0 0 12px rgba(217, 47, 255, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 12px rgba(217, 47, 255, 0);
-  }
-}
-
-@keyframes welcome-check-bounce {
-  0% {
-    transform: scale(0);
-    opacity: 0;
-  }
-  60% {
-    transform: scale(1.15);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
   }
 }
