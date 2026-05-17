@@ -58,7 +58,7 @@ import {
 } from '../../shell/EditorPageController';
 import { useUnsavedChangesGuard } from '../../hooks/useUnsavedChangesGuard';
 import { useToast } from '../../components/Toast';
-import { ConfirmDialog } from '../../components/ConfirmDialog';
+import { ConfirmDialog } from '@test-kb-ui/kb-ui';
 
 /* ─────────────────────────────────────────────────────────────
  * Constants

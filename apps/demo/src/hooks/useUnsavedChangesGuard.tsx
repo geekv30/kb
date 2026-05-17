@@ -23,7 +23,7 @@
 
 import { type ReactNode, useEffect } from 'react';
 import { useBlocker } from 'react-router-dom';
-import { ConfirmDialog } from '../components/ConfirmDialog';
+import { ConfirmDialog } from '@test-kb-ui/kb-ui';
 
 const DEFAULT_TITLE = 'Discard unsaved changes?';
 const DEFAULT_MESSAGE =

@@ -1,12 +1,11 @@
-// Phase 7.5.8 — Branded confirm dialog used in place of `window.confirm`.
-//
-// Chrome (overlay, header background, shadow, focus trap, animation, a11y)
-// is provided by `@test-kb-ui/kb-ui`'s `Modal` primitive — see that component
-// for chrome-level concerns. This wrapper only owns the action layout
-// (subtle cancel + primary/danger confirm) and the optional title icon slot.
+// Branded confirm dialog used in place of `window.confirm`. Chrome (overlay,
+// header background, shadow, focus trap, animation, a11y) is provided by the
+// `Modal` primitive — this wrapper only owns the action layout (subtle cancel
+// + primary/danger confirm) and the optional title icon slot.
 
 import * as React from 'react';
-import { Modal, Button } from '@test-kb-ui/kb-ui';
+import { Modal } from './Modal';
+import { Button } from '../primitives/Button';
 
 export type ConfirmDialogProps = {
   /** Controls visibility. Parent owns the open/close lifecycle. */
