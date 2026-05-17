@@ -35,8 +35,7 @@ import {
 import { routes } from '../lib/routes';
 import { useEditorPageControls } from './EditorPageController';
 import { useToast } from '../components/Toast';
-import { ConfirmDialog } from '@test-kb-ui/kb-ui';
-import { useSidebarCollapse } from './SidebarCollapseContext';
+import { ConfirmDialog, useSidebarCollapse } from '@test-kb-ui/kb-ui';
 
 type BreadcrumbConfig = {
   items: KBBreadcrumbItem[];

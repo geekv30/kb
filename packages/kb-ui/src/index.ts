@@ -35,3 +35,11 @@ export type {
 } from './hooks/useAIGapsReducer';
 export { useAnchorPositions } from './hooks/useAnchorPositions';
 export type { UseAnchorPositionsOptions } from './hooks/useAnchorPositions';
+export {
+  SidebarCollapseProvider,
+  useSidebarCollapse,
+} from './hooks/useSidebarCollapse';
+export type {
+  SidebarCollapseContextValue,
+  SidebarCollapseProviderProps,
+} from './hooks/useSidebarCollapse';
