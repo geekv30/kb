@@ -25,6 +25,7 @@ import {
 import { WelcomeCard } from './WelcomeCard';
 import { CompletionCard } from './CompletionCard';
 import { Spotlight, type SpotlightRect, type CoachMarkContent } from './Spotlight';
+import { useReducedMotion } from './useReducedMotion';
 import { DEFAULT_KB_CATEGORY_SLUG, routes } from '../../lib/routes';
 import './welcome-tour-animations.css';
 
@@ -66,11 +67,21 @@ const STEP_CONTENT: Record<
   },
 };
 
-/** Fade-out duration before we navigate + remeasure. */
-const FADE_OUT_MS = 180;
+/** Cross-route fade-out duration before we navigate + remeasure.
+ *  Compressed from the previous 180ms (out) + 240ms (in) ≥ 400ms total
+ *  to stay under Emil Kowalski's 300ms ceiling for UI animations. */
+const FADE_OUT_MS = 120;
 
-/** Max retries when target isn't measurable yet (rAFs + spaced timers). */
-const MEASURE_RETRY_DELAYS = [120, 280, 500, 800];
+/** Reduced-motion path collapses the swap to a single short transition.
+ *  Per `prefers-reduced-motion: reduce` — keep enough opacity change to
+ *  avoid jarring instant teleports but drop the position travel. */
+const REDUCED_MOTION_SWAP_MS = 60;
+
+/** Max retries when target isn't measurable yet (rAFs + spaced timers).
+ *  Shortened from [120, 280, 500, 800] so a slow-mounting target
+ *  doesn't push the total step swap beyond 300ms. The 320ms tail still
+ *  catches second-render targets without dragging the happy path. */
+const MEASURE_RETRY_DELAYS = [80, 180, 320];
 
 /** Total step count surfaced to the coach mark indicator. */
 const TOTAL_STEPS = 3;
@@ -127,6 +138,7 @@ export function WelcomeTourOverlay() {
   const tour = useWelcomeTour();
   const navigate = useNavigate();
   const location = useLocation();
+  const reduceMotion = useReducedMotion();
 
   /* The rect that the Spotlight should render against. */
   const [rect, setRect] = useState<SpotlightRect | null>(null);
@@ -137,6 +149,12 @@ export function WelcomeTourOverlay() {
 
   /* Fade phase. 'in' = visible, 'out' = fading away. */
   const [phase, setPhase] = useState<'in' | 'out'>('in');
+
+  /* Whether the current step swap is in-place on the same pathname
+   * (true → ring + beacon slide to new rect) or cross-route (false →
+   * ring + beacon snap to new rect while invisible, then fade in).
+   * Defaults to false because the very first step always pops in. */
+  const [slideMode, setSlideMode] = useState<boolean>(false);
 
   /* The step we are currently rendering content for. May lag the
    * tour state by FADE_OUT_MS while we fade out then re-measure. On
@@ -164,14 +182,22 @@ export function WelcomeTourOverlay() {
 
   /* ── Step change orchestration ──────────────────────────────
    *
-   * When tour.state changes:
-   *   1. If new state is non-step (welcome / closed / done), update
-   *      renderedStep immediately and clear rect.
-   *   2. If new state is a step:
-   *      a. If we have something currently rendered, fade out (180ms).
-   *      b. Navigate to the new route.
-   *      c. Wait 2x rAF so layout flushes, then measure (with retries).
-   *      d. Set rect + flip phase to 'in' (fade in 240ms).
+   * Three transition modes — chosen to keep total swap ≤ 300ms per
+   * Emil Kowalski's "UI animations stay under 300ms" rule:
+   *
+   *   1. SAME pathname → in-place slide. No opacity dip; rect + content
+   *      update atomically, ring/beacon/coach-mark CSS transitions
+   *      handle the position travel (250ms cubic-bezier).
+   *   2. DIFFERENT pathname → cross-route fade. 120ms fade-out, then
+   *      navigate + measure + content+rect commit, then 180ms fade-in.
+   *      Total ≤ 300ms on the happy path. Measure retries shortened to
+   *      [80, 180, 320] so slow-mounting targets don't drag past 300ms.
+   *   3. REDUCED MOTION → 60ms swap, no position travel.
+   *
+   * Content guard: renderedStep (which drives coach-mark title/body)
+   * is ONLY updated inside `applyMeasured()`, atomically with the new
+   * rect. This guarantees the title/body never appears anchored to the
+   * old rect — a flash the user would catch.
    */
 
   useEffect(() => {
@@ -193,12 +219,15 @@ export function WelcomeTourOverlay() {
           nextState === 'completion')
       ) {
         setPhase('out');
+        // Tightened from 220ms to match the new compressed fade-out
+        // window. Keeps the overlay teardown ≤ FADE_OUT_MS + buffer.
+        const exitDelay = reduceMotion ? REDUCED_MOTION_SWAP_MS : FADE_OUT_MS + 20;
         const t = window.setTimeout(() => {
           if (cycle !== measureCycleRef.current) return;
           setRect(null);
           setTargetNode(null);
           setRenderedStep(nextState);
-        }, 220);
+        }, exitDelay);
         return () => window.clearTimeout(t);
       }
       setRect(null);
@@ -211,31 +240,50 @@ export function WelcomeTourOverlay() {
     const targetId = STEP_TARGET[nextState];
     const targetPath = STEP_ROUTE[nextState];
 
-    // Already rendering something? Fade it out first.
     const wasRenderingStep = isStepState(renderedStep);
-    const fadeDelay = wasRenderingStep ? FADE_OUT_MS : 0;
+    const samePathname = location.pathname === targetPath;
+    // Same-pathname slide: skip fade-out, no opacity dip.
+    // Cross-route swap: short fade-out (or 60ms in reduced-motion).
+    const needsFadeOut = wasRenderingStep && !samePathname;
+    const fadeDelay = needsFadeOut
+      ? (reduceMotion ? REDUCED_MOTION_SWAP_MS : FADE_OUT_MS)
+      : 0;
 
-    if (wasRenderingStep) {
+    if (needsFadeOut) {
       setPhase('out');
     }
 
     const timers: number[] = [];
 
-    const tryMeasure = (): boolean => {
-      if (cycle !== measureCycleRef.current) return true; // cancelled
-      const node = tour.getTarget(targetId);
-      if (node === null) return false;
-      const nextRect = computeRectForStep(nextState, node);
-      if (nextRect === null) return false;
-      // Force phase='out' before placing the new content. This ensures
-      // the Spotlight's initial render uses opacity:0 so the next-tick
-      // 'in' flip actually animates.
+    // Atomically commit the new rect + content. Content (renderedStep)
+    // MUST update in the same React batch as the new rect so the
+    // coach-mark title/body never appears anchored to the old rect.
+    const applyMeasured = (
+      nextRect: SpotlightRect,
+      node: HTMLElement,
+    ): void => {
+      // slideMode is consulted by Spotlight to decide whether to
+      // animate position transitions. Only true when we're swapping
+      // in-place on the same pathname AND the prior step was already
+      // mounted (first-mount always pops, never slides).
+      setSlideMode(samePathname && wasRenderingStep);
+      if (samePathname && wasRenderingStep) {
+        // Same-pathname slide: keep phase='in' the whole way. The
+        // ring/beacon's positional CSS transitions and the coach-mark's
+        // transform transition do the in-place travel.
+        setRect(nextRect);
+        setTargetNode(node);
+        setRenderedStep(nextState);
+        setPhase('in');
+        return;
+      }
+      // Cross-route swap (or first mount). Force phase='out' for the
+      // initial commit so the Spotlight renders with opacity:0, then
+      // flip to 'in' on the next paint to trigger the fade-in.
       setPhase('out');
       setRect(nextRect);
       setTargetNode(node);
       setRenderedStep(nextState);
-      // Two rAFs: one to flush layout for the ring's initial transform,
-      // one to flip opacity so the transition actually plays.
       requestAnimationFrame(() => {
         if (cycle !== measureCycleRef.current) return;
         requestAnimationFrame(() => {
@@ -243,6 +291,23 @@ export function WelcomeTourOverlay() {
           setPhase('in');
         });
       });
+      // After the fade-in lands, re-enable positional transitions so
+      // window resizes glide rather than snap. The fade-in is 200ms;
+      // 240ms gives a small buffer past it.
+      const reenableTimer = window.setTimeout(() => {
+        if (cycle !== measureCycleRef.current) return;
+        setSlideMode(true);
+      }, 240);
+      timers.push(reenableTimer);
+    };
+
+    const tryMeasure = (): boolean => {
+      if (cycle !== measureCycleRef.current) return true; // cancelled
+      const node = tour.getTarget(targetId);
+      if (node === null) return false;
+      const nextRect = computeRectForStep(nextState, node);
+      if (nextRect === null) return false;
+      applyMeasured(nextRect, node);
       return true;
     };
 
@@ -250,7 +315,7 @@ export function WelcomeTourOverlay() {
       window.setTimeout(() => {
         if (cycle !== measureCycleRef.current) return;
         // Navigate (no-op if already on the route).
-        if (location.pathname !== targetPath) {
+        if (!samePathname) {
           navigate(targetPath);
         }
         // First attempt after 2 rAFs — gives React + router a chance
@@ -260,7 +325,8 @@ export function WelcomeTourOverlay() {
           requestAnimationFrame(() => {
             if (cycle !== measureCycleRef.current) return;
             if (tryMeasure()) return;
-            // Spaced retries for slower-mounting content.
+            // Spaced retries for slower-mounting content. Shortened
+            // tail keeps the worst-case swap ≤ 320ms + commit.
             MEASURE_RETRY_DELAYS.forEach((delay) => {
               timers.push(
                 window.setTimeout(() => {
@@ -278,6 +344,7 @@ export function WelcomeTourOverlay() {
     };
     // We intentionally exclude `location.pathname` and `renderedStep`
     // from deps — the cycle is driven by tour.state changes only.
+    // (reduceMotion is also stable across a single tour run.)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tour.state]);
 
@@ -351,6 +418,7 @@ export function WelcomeTourOverlay() {
         targetNeedsBackgroundFill={targetNeedsBackgroundFill}
         coachMark={coachMark}
         phase={phase}
+        slideMode={slideMode}
         onNext={tour.next}
         onBack={tour.back}
         onSkip={tour.skip}

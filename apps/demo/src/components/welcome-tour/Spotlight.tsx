@@ -73,6 +73,12 @@ export type SpotlightProps = {
   coachMark: CoachMarkContent;
   /** Fade phase driven by the parent overlay. */
   phase: 'in' | 'out';
+  /** When true, the ring + beacon use positional CSS transitions so
+   *  changing `rect` slides them across the page in-place (used for
+   *  same-pathname step swaps). When false, they snap to new
+   *  positions instantly (cross-route swaps) so the fade-in pops at
+   *  the new location instead of smearing from the old one. */
+  slideMode: boolean;
   onNext: () => void;
   onBack: () => void;
   onSkip: () => void;
@@ -84,6 +90,7 @@ export function Spotlight({
   targetNeedsBackgroundFill,
   coachMark,
   phase,
+  slideMode,
   onNext,
   onBack,
   onSkip,
@@ -166,7 +173,17 @@ export function Spotlight({
         pointerEvents: 'none',
         zIndex: RING_Z_INDEX,
         opacity: ringOpacity,
-        transition: `opacity 200ms ${STRONG_EASE_OUT}`,
+        // Opacity always transitions. Positional transitions only when
+        // sliding in-place between same-pathname steps — for cross-
+        // route swaps the ring snaps to the new position while invisible
+        // so it pops in cleanly instead of smearing from the old rect.
+        transition: slideMode
+          ? `opacity 200ms ${STRONG_EASE_OUT}, ` +
+            `top 250ms cubic-bezier(0.16, 1, 0.3, 1), ` +
+            `left 250ms cubic-bezier(0.16, 1, 0.3, 1), ` +
+            `width 250ms cubic-bezier(0.16, 1, 0.3, 1), ` +
+            `height 250ms cubic-bezier(0.16, 1, 0.3, 1)`
+          : `opacity 200ms ${STRONG_EASE_OUT}`,
       }
     : { display: 'none' };
 
@@ -196,7 +213,13 @@ export function Spotlight({
         pointerEvents: 'none',
         zIndex: BEACON_Z_INDEX,
         opacity: beaconOpacity,
-        transition: `opacity 200ms ${STRONG_EASE_OUT}`,
+        // Same slide-vs-snap policy as the ring — beacon slides on
+        // same-pathname swaps, snaps on cross-route swaps.
+        transition: slideMode
+          ? `opacity 200ms ${STRONG_EASE_OUT}, ` +
+            `top 250ms cubic-bezier(0.16, 1, 0.3, 1), ` +
+            `left 250ms cubic-bezier(0.16, 1, 0.3, 1)`
+          : `opacity 200ms ${STRONG_EASE_OUT}`,
       }
     : { display: 'none' };
 
@@ -291,7 +314,15 @@ export function Spotlight({
         // Both properties use the SAME custom curve. Mixing bare `ease-out`
         // on opacity with the smooth cubic on transform caused the fade
         // and slide to feel out-of-sync.
-        transition: `opacity ${FADE_IN_DUR}ms ${FADE_IN_EASE}, transform ${FADE_IN_DUR}ms ${FADE_IN_EASE}`,
+        //
+        // On cross-route swaps the coach-mark also snaps to its new
+        // anchor (transform transition disabled) so the fade-in lands
+        // at the new spot instead of smearing from the prior step's
+        // location. The tiny 4px slide-on-mount (phase 'out' → 'in'
+        // translation) only plays for same-pathname swaps + first mount.
+        transition: slideMode
+          ? `opacity ${FADE_IN_DUR}ms ${FADE_IN_EASE}, transform ${FADE_IN_DUR}ms ${FADE_IN_EASE}`
+          : `opacity ${FADE_IN_DUR}ms ${FADE_IN_EASE}`,
       }
     : { display: 'none' };
 
