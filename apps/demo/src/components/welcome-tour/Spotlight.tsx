@@ -217,10 +217,23 @@ export function Spotlight({
   // and small rail icons because it tracks the corner, not the centre.
   const beaconOpacity = phase === 'in' && rect !== null ? 1 : 0;
   const beaconCx = rect ? rect.left + rect.width : 0;
-  // Clamp Y so the beacon stays in view when the target extends to /
-  // above the viewport top (e.g. the file explorer column). 20px floor
-  // keeps the dot fully visible (14px diameter + small breathing margin).
-  const beaconCy = rect ? Math.max(rect.top, BEACON_SAFE_TOP) : 0;
+  // Y anchoring rules:
+  //   - Short targets (rail icons ~24-36px tall) — sit at the corner
+  //     so the beacon reads as a "badge" hovering on the icon.
+  //   - Tall targets (file explorer column, ~viewport height) —
+  //     slip the beacon DOWN into the visible "head" area where the
+  //     eye naturally lands while reading the column. Sitting at
+  //     `rect.top` for a viewport-height column anchors the dot at
+  //     the very top edge, far from where the user's attention is.
+  // The new Y = `rect.top + min(rect.height / 2, 40)`, then clamped
+  // to BEACON_SAFE_TOP so it never escapes the viewport when the
+  // target starts above it. Short targets (≤80px) end up at
+  // height/2 (close to the visual centre, still corner-like); tall
+  // targets cap at +40px below the top edge (a comfortable
+  // peripheral-vision distance from the column header).
+  const beaconCy = rect
+    ? Math.max(BEACON_SAFE_TOP, rect.top + Math.min(rect.height / 2, 40))
+    : 0;
 
   // Same enter/exit asymmetry as the ring — 200ms in, 120ms out.
   const beaconOpacityDur = phase === 'in' ? 200 : FADE_OUT_DUR;
