@@ -11,7 +11,11 @@
 
 import { Suspense, useEffect, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { AppShell } from '@test-kb-ui/kb-ui';
+import {
+  AppShell,
+  SidebarCollapseProvider,
+  useSidebarCollapse,
+} from '@test-kb-ui/kb-ui';
 import { AppRail } from '../shell/AppRail';
 import { EditorExplorer } from '../shell/EditorExplorer';
 import { AnalyticsExplorer } from '../shell/AnalyticsExplorer';
@@ -19,10 +23,6 @@ import { AISubNavbar } from '../shell/AISubNavbar';
 import { BreadcrumbBar } from '../shell/BreadcrumbBar';
 import { PageProgressBar } from '../components/PageProgressBar';
 import { useFocusOnRouteChange } from '../hooks/useFocusOnRouteChange';
-import {
-  SidebarCollapseProvider,
-  useSidebarCollapse,
-} from '../shell/SidebarCollapseContext';
 import {
   WelcomeTourProvider,
   useTourTarget,
@@ -108,7 +108,7 @@ function ShellLayoutInner() {
 export default function ShellLayout() {
   useFocusOnRouteChange();
   return (
-    <SidebarCollapseProvider>
+    <SidebarCollapseProvider storageKey="kb-demo.sidebar.collapsed">
       <WelcomeTourProvider>
         <ShellLayoutInner />
       </WelcomeTourProvider>
