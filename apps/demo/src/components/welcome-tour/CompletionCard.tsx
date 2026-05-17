@@ -291,7 +291,15 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
         onKeyDown={handleKeyDown}
         style={cardStyle}
         className={cn(
-          'relative w-full max-w-xl rounded-2xl bg-white p-7 shadow-2xl',
+          'relative w-full max-w-xl rounded-2xl bg-white p-7',
+          // Custom shadow tuned to the modal's size + prominence,
+          // cohesive with (but stronger than) the Spotlight coach-
+          // mark's `0_20px_48px_-12px_rgba(15,23,42,0.18)`. Tailwind's
+          // generic `shadow-2xl` is a heavy preset designed for
+          // elevated cards in light themes — it reads as a bit too
+          // diffuse against the dark backdrop here. The custom value
+          // gives the modal a definite lift without the diffuse halo.
+          'shadow-[0_24px_64px_-16px_rgba(15,23,42,0.24)]',
           'focus:outline-none',
         )}
       >

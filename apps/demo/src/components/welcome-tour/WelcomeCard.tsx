@@ -155,7 +155,12 @@ export function WelcomeCard({ onStart, onSkip }: WelcomeCardProps) {
         onKeyDown={handleKeyDown}
         style={cardStyle}
         className={cn(
-          'relative w-full max-w-md rounded-2xl bg-white p-7 shadow-2xl',
+          'relative w-full max-w-md rounded-2xl bg-white p-7',
+          // Matches CompletionCard's custom shadow — cohesive with
+          // (but stronger than) the Spotlight coach-mark's
+          // `0_20px_48px_-12px_rgba(15,23,42,0.18)`. See CompletionCard
+          // for the full rationale.
+          'shadow-[0_24px_64px_-16px_rgba(15,23,42,0.24)]',
           'focus:outline-none',
         )}
       >
