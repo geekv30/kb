@@ -7,7 +7,9 @@
 
 import {
   useEffect,
+  useLayoutEffect,
   useRef,
+  useState,
   type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
@@ -84,6 +86,7 @@ export type CompletionCardProps = {
 
 export function CompletionCard({ onDismiss }: CompletionCardProps) {
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const cleanupRef = useRef<(() => void) | null>(null);
   const reduceMotion = useReducedMotion();
 
   /* Focus trap — keep Tab cycling within the card. */
@@ -117,26 +120,70 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
     primary?.focus();
   }, []);
 
+  /* Mount-flip pattern (data-mounted equivalent) — initial render uses
+   * the "from" styles, then a layout-effect + rAF flips to "to" so the
+   * CSS transition runs. Unlike keyframe `animation`, transitions are
+   * interruptible: if the user dismisses mid-mount the next mount
+   * retargets smoothly instead of restarting from zero.
+   *
+   * Why useLayoutEffect + double-rAF? useLayoutEffect runs after DOM
+   * commit but before paint, and double-rAF guarantees the browser
+   * has painted the "from" frame before we flip — otherwise React
+   * batches the initial render with the post-effect state and no
+   * transition plays. */
+  const [mounted, setMounted] = useState(false);
+  useLayoutEffect(() => {
+    const id1 = requestAnimationFrame(() => {
+      const id2 = requestAnimationFrame(() => setMounted(true));
+      cleanupRef.current = () => cancelAnimationFrame(id2);
+    });
+    return () => {
+      cancelAnimationFrame(id1);
+      cleanupRef.current?.();
+    };
+  }, []);
+
   const backdropDuration = reduceMotion ? 80 : 200;
   const cardDuration = reduceMotion ? 100 : 350;
-  const cardDelay = reduceMotion ? 0 : 0;
 
-  /* Backdrop. */
+  /* Backdrop — opacity transition (interruptible). */
   const backdropStyle: CSSProperties = {
-    animation: `welcome-fade-in ${backdropDuration}ms ease-out both`,
+    opacity: mounted ? 1 : 0,
+    transition: `opacity ${backdropDuration}ms cubic-bezier(0.23, 1, 0.32, 1)`,
   };
 
-  /* Card. */
+  /* Card — opacity + scale transition. Same target as the previous
+   * `welcome-card-in` keyframe (scale 0.96 → 1) but interruptible. */
   const cardStyle: CSSProperties = {
-    animation: `welcome-card-in ${cardDuration}ms ${SMOOTH_CUBIC} ${cardDelay}ms both`,
+    opacity: mounted ? 1 : 0,
+    transform: mounted ? 'scale(1)' : 'scale(0.96)',
+    transition: reduceMotion
+      ? `opacity ${cardDuration}ms ${SMOOTH_CUBIC}`
+      : `opacity ${cardDuration}ms ${SMOOTH_CUBIC}, transform ${cardDuration}ms ${SMOOTH_CUBIC}`,
+    willChange: 'opacity, transform',
   };
 
-  /* Per-tile stagger. */
-  const tileStyle = (index: number): CSSProperties => ({
-    animation: reduceMotion
-      ? `welcome-fade-in 100ms ease-out both`
-      : `completion-tile-in 350ms ease-out ${TILE_DELAYS_MS[index]}ms both`,
-  });
+  /* Per-tile stagger — same target as the previous `completion-tile-in`
+   * keyframe (translateY 6px → 0, opacity 0 → 1) but each tile gets a
+   * transition-delay equal to its previous animation-delay. Tiles can
+   * now be interrupted (e.g. if the card is dismissed mid-cascade,
+   * tiles smoothly fade back instead of jumping). */
+  const tileStyle = (index: number): CSSProperties => {
+    if (reduceMotion) {
+      return {
+        opacity: mounted ? 1 : 0,
+        transition: `opacity 100ms cubic-bezier(0.23, 1, 0.32, 1)`,
+      };
+    }
+    return {
+      opacity: mounted ? 1 : 0,
+      transform: mounted ? 'translateY(0)' : 'translateY(6px)',
+      transition:
+        `opacity 350ms cubic-bezier(0.23, 1, 0.32, 1) ${TILE_DELAYS_MS[index]}ms, ` +
+        `transform 350ms cubic-bezier(0.23, 1, 0.32, 1) ${TILE_DELAYS_MS[index]}ms`,
+      willChange: 'opacity, transform',
+    };
+  };
 
   /* Sparkle animation — initial pop then a continuous shimmer loop.
      The shimmer phase offset is per-sparkle so they twinkle out of
