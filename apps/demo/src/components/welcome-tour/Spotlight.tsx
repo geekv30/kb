@@ -39,6 +39,12 @@ const BEACON_SAFE_TOP = 20;
 const FADE_IN_DUR = 240;
 const FADE_IN_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
+/* Strong ease-out from easings.dev — replaces bare `ease-out` for ring +
+ * beacon opacity transitions. Bare ease-out lacks the punch that makes
+ * fades feel intentional; this curve front-loads the animation so the
+ * ring registers immediately on mount. */
+const STRONG_EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
+
 export type SpotlightRect = {
   /** Target's bounding rect (raw). */
   top: number;
@@ -160,7 +166,7 @@ export function Spotlight({
         pointerEvents: 'none',
         zIndex: RING_Z_INDEX,
         opacity: ringOpacity,
-        transition: `opacity 200ms ease-out`,
+        transition: `opacity 200ms ${STRONG_EASE_OUT}`,
       }
     : { display: 'none' };
 
@@ -190,7 +196,7 @@ export function Spotlight({
         pointerEvents: 'none',
         zIndex: BEACON_Z_INDEX,
         opacity: beaconOpacity,
-        transition: `opacity 200ms ease-out`,
+        transition: `opacity 200ms ${STRONG_EASE_OUT}`,
       }
     : { display: 'none' };
 
@@ -282,7 +288,10 @@ export function Spotlight({
         // buttons even when the card overlaps the ring's bounds.
         zIndex: 8501,
         willChange: 'transform, opacity',
-        transition: `opacity ${FADE_IN_DUR}ms ease-out, transform ${FADE_IN_DUR}ms ${FADE_IN_EASE}`,
+        // Both properties use the SAME custom curve. Mixing bare `ease-out`
+        // on opacity with the smooth cubic on transform caused the fade
+        // and slide to feel out-of-sync.
+        transition: `opacity ${FADE_IN_DUR}ms ${FADE_IN_EASE}, transform ${FADE_IN_DUR}ms ${FADE_IN_EASE}`,
       }
     : { display: 'none' };
 
