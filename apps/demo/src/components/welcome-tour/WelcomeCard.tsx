@@ -6,7 +6,9 @@
 
 import {
   useEffect,
+  useLayoutEffect,
   useRef,
+  useState,
   type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
@@ -61,6 +63,7 @@ export type WelcomeCardProps = {
 
 export function WelcomeCard({ onStart, onSkip }: WelcomeCardProps) {
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const cleanupRef = useRef<(() => void) | null>(null);
   const reduceMotion = useReducedMotion();
 
   /* Focus trap — keep Tab cycling within the card. */
@@ -94,18 +97,39 @@ export function WelcomeCard({ onStart, onSkip }: WelcomeCardProps) {
     primary?.focus();
   }, []);
 
+  /* Mount-flip pattern — see CompletionCard for full rationale. */
+  const [mounted, setMounted] = useState(false);
+  useLayoutEffect(() => {
+    const id1 = requestAnimationFrame(() => {
+      const id2 = requestAnimationFrame(() => setMounted(true));
+      cleanupRef.current = () => cancelAnimationFrame(id2);
+    });
+    return () => {
+      cancelAnimationFrame(id1);
+      cleanupRef.current?.();
+    };
+  }, []);
+
   const backdropDuration = reduceMotion ? 80 : 200;
   const cardDuration = reduceMotion ? 100 : 300;
   const cardDelay = reduceMotion ? 0 : 100;
 
-  /* Backdrop: bg-slate-950/60 with backdrop-blur, fades in. */
+  /* Backdrop: bg-slate-950/60 with backdrop-blur, transitions opacity. */
   const backdropStyle: CSSProperties = {
-    animation: `welcome-fade-in ${backdropDuration}ms ease-out both`,
+    opacity: mounted ? 1 : 0,
+    transition: `opacity ${backdropDuration}ms cubic-bezier(0.23, 1, 0.32, 1)`,
   };
 
-  /* Card: opacity 0→1 + scale 0.96→1, staged after backdrop. */
+  /* Card: opacity 0→1 + scale 0.96→1, staged after backdrop via
+   * transition-delay. Transition (not keyframe) so a rapid dismiss
+   * during the mount-in cleanly reverses instead of restarting. */
   const cardStyle: CSSProperties = {
-    animation: `welcome-card-in ${cardDuration}ms ${SMOOTH_CUBIC} ${cardDelay}ms both`,
+    opacity: mounted ? 1 : 0,
+    transform: mounted ? 'scale(1)' : 'scale(0.96)',
+    transition: reduceMotion
+      ? `opacity ${cardDuration}ms ${SMOOTH_CUBIC} ${cardDelay}ms`
+      : `opacity ${cardDuration}ms ${SMOOTH_CUBIC} ${cardDelay}ms, transform ${cardDuration}ms ${SMOOTH_CUBIC} ${cardDelay}ms`,
+    willChange: 'opacity, transform',
   };
 
   return (
@@ -138,9 +162,14 @@ export function WelcomeCard({ onStart, onSkip }: WelcomeCardProps) {
           type="button"
           aria-label="Close welcome tour"
           onClick={onSkip}
+          // 160ms strong ease-out on transform so the press-scale feels
+          // instant. `active:scale-[0.97]` adds the responsive press
+          // feedback that the raw <button> was missing.
+          style={{ transition: 'background-color 160ms ease, color 160ms ease, transform 160ms cubic-bezier(0.23, 1, 0.32, 1)' }}
           className={cn(
             'absolute right-4 top-4 inline-flex h-6 w-6 items-center justify-center rounded-md',
-            'text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700',
+            'text-slate-400 hover:bg-slate-100 hover:text-slate-700',
+            'active:scale-[0.97]',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300',
           )}
         >

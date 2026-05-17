@@ -39,6 +39,12 @@ const BEACON_SAFE_TOP = 20;
 const FADE_IN_DUR = 240;
 const FADE_IN_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
+/* Strong ease-out from easings.dev — replaces bare `ease-out` for ring +
+ * beacon opacity transitions. Bare ease-out lacks the punch that makes
+ * fades feel intentional; this curve front-loads the animation so the
+ * ring registers immediately on mount. */
+const STRONG_EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
+
 export type SpotlightRect = {
   /** Target's bounding rect (raw). */
   top: number;
@@ -67,6 +73,12 @@ export type SpotlightProps = {
   coachMark: CoachMarkContent;
   /** Fade phase driven by the parent overlay. */
   phase: 'in' | 'out';
+  /** When true, the ring + beacon use positional CSS transitions so
+   *  changing `rect` slides them across the page in-place (used for
+   *  same-pathname step swaps). When false, they snap to new
+   *  positions instantly (cross-route swaps) so the fade-in pops at
+   *  the new location instead of smearing from the old one. */
+  slideMode: boolean;
   onNext: () => void;
   onBack: () => void;
   onSkip: () => void;
@@ -78,6 +90,7 @@ export function Spotlight({
   targetNeedsBackgroundFill,
   coachMark,
   phase,
+  slideMode,
   onNext,
   onBack,
   onSkip,
@@ -160,7 +173,17 @@ export function Spotlight({
         pointerEvents: 'none',
         zIndex: RING_Z_INDEX,
         opacity: ringOpacity,
-        transition: `opacity 200ms ease-out`,
+        // Opacity always transitions. Positional transitions only when
+        // sliding in-place between same-pathname steps — for cross-
+        // route swaps the ring snaps to the new position while invisible
+        // so it pops in cleanly instead of smearing from the old rect.
+        transition: slideMode
+          ? `opacity 200ms ${STRONG_EASE_OUT}, ` +
+            `top 250ms cubic-bezier(0.16, 1, 0.3, 1), ` +
+            `left 250ms cubic-bezier(0.16, 1, 0.3, 1), ` +
+            `width 250ms cubic-bezier(0.16, 1, 0.3, 1), ` +
+            `height 250ms cubic-bezier(0.16, 1, 0.3, 1)`
+          : `opacity 200ms ${STRONG_EASE_OUT}`,
       }
     : { display: 'none' };
 
@@ -190,7 +213,13 @@ export function Spotlight({
         pointerEvents: 'none',
         zIndex: BEACON_Z_INDEX,
         opacity: beaconOpacity,
-        transition: `opacity 200ms ease-out`,
+        // Same slide-vs-snap policy as the ring — beacon slides on
+        // same-pathname swaps, snaps on cross-route swaps.
+        transition: slideMode
+          ? `opacity 200ms ${STRONG_EASE_OUT}, ` +
+            `top 250ms cubic-bezier(0.16, 1, 0.3, 1), ` +
+            `left 250ms cubic-bezier(0.16, 1, 0.3, 1)`
+          : `opacity 200ms ${STRONG_EASE_OUT}`,
       }
     : { display: 'none' };
 
@@ -282,7 +311,18 @@ export function Spotlight({
         // buttons even when the card overlaps the ring's bounds.
         zIndex: 8501,
         willChange: 'transform, opacity',
-        transition: `opacity ${FADE_IN_DUR}ms ease-out, transform ${FADE_IN_DUR}ms ${FADE_IN_EASE}`,
+        // Both properties use the SAME custom curve. Mixing bare `ease-out`
+        // on opacity with the smooth cubic on transform caused the fade
+        // and slide to feel out-of-sync.
+        //
+        // On cross-route swaps the coach-mark also snaps to its new
+        // anchor (transform transition disabled) so the fade-in lands
+        // at the new spot instead of smearing from the prior step's
+        // location. The tiny 4px slide-on-mount (phase 'out' → 'in'
+        // translation) only plays for same-pathname swaps + first mount.
+        transition: slideMode
+          ? `opacity ${FADE_IN_DUR}ms ${FADE_IN_EASE}, transform ${FADE_IN_DUR}ms ${FADE_IN_EASE}`
+          : `opacity ${FADE_IN_DUR}ms ${FADE_IN_EASE}`,
       }
     : { display: 'none' };
 
@@ -358,9 +398,16 @@ export function Spotlight({
           type="button"
           aria-label="Skip tour"
           onClick={onSkip}
+          // `transition` (not `transition-colors`) so the press-scale
+          // transform animates too. 160ms strong ease-out matches Emil
+          // Kowalski's button-feedback rule. active:scale-[0.97] gives
+          // the instant "the UI heard me" feedback the raw <button>
+          // was missing.
+          style={{ transition: 'background-color 160ms ease, color 160ms ease, transform 160ms cubic-bezier(0.23, 1, 0.32, 1)' }}
           className={cn(
             'absolute right-3 top-3 inline-flex h-6 w-6 items-center justify-center rounded-md',
-            'text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700',
+            'text-slate-400 hover:bg-slate-100 hover:text-slate-700',
+            'active:scale-[0.97]',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300',
           )}
         >
