@@ -30,6 +30,7 @@ import {
   Badge,
   cn,
   DataTable,
+  formatArticleTitle,
   NewCategoryModal,
   PageHeader,
   type DataTableColumn,
@@ -44,7 +45,6 @@ import {
 } from '../../store/selectors';
 import type { Article, Category, User } from '../../store/types';
 import { DEFAULT_KB_CATEGORY_SLUG, routes } from '../../lib/routes';
-import { formatArticleTitle } from '../../lib/articleDisplay';
 import { formatRelativeDate } from '../../lib/relativeDate';
 import { EmptyStateGallery } from '../../components/EmptyStateVariants';
 import { useCreateArticle } from '../../hooks/useCreateArticle';

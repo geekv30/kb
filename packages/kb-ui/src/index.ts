@@ -7,6 +7,7 @@ export type {
   SmoothScrollOptions,
   SmoothScrollHandle,
 } from './utils/smoothScrollTo';
+export { formatArticleTitle } from './utils/formatArticleTitle';
 export { tokens } from './tokens';
 export type { Tokens } from './tokens';
 

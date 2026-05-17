@@ -33,6 +33,7 @@ import {
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   ArticleSettingsPanel,
+  ArticleTitleInput,
   ContentEditor,
   type ArticleSettings as KbUiArticleSettings,
   type ArticleSettingsPerson,
@@ -58,7 +59,6 @@ import {
 import { useUnsavedChangesGuard } from '../../hooks/useUnsavedChangesGuard';
 import { useToast } from '../../components/Toast';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
-import { ArticleTitleInput } from '../../components/ArticleTitleInput';
 
 /* ─────────────────────────────────────────────────────────────
  * Constants

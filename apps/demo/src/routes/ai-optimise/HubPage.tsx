@@ -10,14 +10,13 @@
 
 import { useNavigate } from 'react-router-dom';
 import { Check } from '@untitledui/icons';
-import { SuggestionCard } from '@test-kb-ui/kb-ui';
+import { formatArticleTitle, SuggestionCard } from '@test-kb-ui/kb-ui';
 import { useMockStore } from '../../store/MockStoreContext';
 import {
   selectPendingSuggestionArticles,
   selectSuggestionsForArticle,
 } from '../../store/selectors';
 import { routes } from '../../lib/routes';
-import { formatArticleTitle } from '../../lib/articleDisplay';
 import type { AISuggestion, Article } from '../../store/types';
 import { EmptyState } from '../../components/EmptyState';
 
