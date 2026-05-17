@@ -31,6 +31,7 @@ export type StoreAction =
       settings: ArticleSettings;
     }
   | { type: 'editor/publish'; articleId: string }
+  | { type: 'editor/setTitle'; articleId: string; title: string }
   | {
       type: 'editor/createNew';
       categoryId: string;
@@ -247,6 +248,17 @@ export function rootReducer(
       };
     }
 
+    case 'editor/setTitle': {
+      const article = state.articles[action.articleId];
+      if (!article) return state;
+      if (article.title === action.title) return state;
+      const next: Article = { ...article, title: action.title };
+      return {
+        ...state,
+        articles: { ...state.articles, [action.articleId]: next },
+      };
+    }
+
     case 'editor/publish': {
       const article = state.articles[action.articleId];
       if (!article) return state;
@@ -274,7 +286,7 @@ export function rootReducer(
         id: action.newArticleId,
         slug: action.newSlug,
         categoryId: action.categoryId,
-        title: 'Untitled article',
+        title: '',
         status: 'draft',
         authorId: state.currentUserId,
         lastUpdatedAt: action.now,

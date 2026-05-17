@@ -53,6 +53,15 @@ export type ToolbarItemDef = {
 };
 
 export type ContentEditorProps = {
+  /** Optional className override on outer card */
+  className?: string;
+  /**
+   * Optional slot rendered inside the editor's card chrome, above the
+   * body content. The caller controls its styling — no padding, border,
+   * or divider is added by the editor. Use this for a title input,
+   * banner, or other in-card header content.
+   */
+  header?: React.ReactNode;
   /** Initial content as HTML string or Tiptap JSON */
   initialContent?: string | object;
   /** Fires on each change (for autosave-on-exit plumbing above). */
@@ -61,10 +70,14 @@ export type ContentEditorProps = {
   onSave?: (html: string, json: object) => void;
   /** Placeholder text when empty */
   placeholder?: string;
-  /** Optional className override on outer card */
-  className?: string;
   /** Read-only mode (e.g. preview). Default: false */
   readOnly?: boolean;
+  /**
+   * Override the slash-command menu's items. When omitted, the built-in
+   * `DEFAULT_SLASH_COMMANDS` set is used. Filtering rules (title-prefix
+   * + alias-prefix match) are applied to whichever list is active.
+   */
+  slashCommands?: SlashCommand[];
   /**
    * Override the BubbleMenu toolbar's button items. When omitted, the
    * built-in `DEFAULT_TOOLBAR_ITEMS` set is rendered. Only affects the
@@ -72,12 +85,6 @@ export type ContentEditorProps = {
    * menu — the dropdowns themselves are not configurable here.
    */
   toolbarItems?: ToolbarItemDef[];
-  /**
-   * Override the slash-command menu's items. When omitted, the built-in
-   * `DEFAULT_SLASH_COMMANDS` set is used. Filtering rules (title-prefix
-   * + alias-prefix match) are applied to whichever list is active.
-   */
-  slashCommands?: SlashCommand[];
 };
 
 /* ─────────────────────────────────────────────────────────────
@@ -474,17 +481,21 @@ function ContentEditorToolbar({
 
 /* ─────────────────────────────────────────────────────────────
  * ContentEditor
+ *
+ * Optional `header` slot renders inside the card chrome, above the
+ * body content (no extra chrome added — caller controls styling).
  * ───────────────────────────────────────────────────────────── */
 
 export function ContentEditor({
+  className,
+  header,
   initialContent,
   onChange,
   onSave,
   placeholder = 'Start writing…',
-  className,
   readOnly = false,
-  toolbarItems,
   slashCommands,
+  toolbarItems,
 }: ContentEditorProps) {
   const resolvedToolbarItems = toolbarItems ?? DEFAULT_TOOLBAR_ITEMS;
   const resolvedSlashCommands = slashCommands ?? DEFAULT_SLASH_COMMANDS;
@@ -561,6 +572,7 @@ export function ContentEditor({
         className,
       )}
     >
+      {header}
       <EditorContent editor={editor} />
       {!readOnly && editor && (
         <>

@@ -127,3 +127,33 @@ function ContentEditorPlayground() {
 export const Playground: StoryObj<typeof ContentEditor> = {
   render: () => <ContentEditorPlayground />,
 };
+
+/* ─────────────────────────────────────────────────────────────
+ * WithHeaderSlot — demonstrates the optional `header` slot.
+ * The caller passes arbitrary ReactNode (a plain `<input>` here)
+ * which renders inside the card chrome, above the editor body.
+ * No padding/border/divider is added by ContentEditor — styling
+ * is entirely caller-controlled.
+ * ───────────────────────────────────────────────────────────── */
+
+function ContentEditorWithHeader() {
+  return (
+    <div className="min-h-[900px]">
+      <ContentEditor
+        header={
+          <input
+            type="text"
+            placeholder="Untitled"
+            className="mb-4 w-full border-0 bg-transparent p-0 text-[32px] font-semibold leading-[40px] text-text-primary outline-none placeholder:text-text-disabled"
+          />
+        }
+        initialContent="<p>Body content lives below the header slot.</p>"
+        placeholder="Start writing your article…"
+      />
+    </div>
+  );
+}
+
+export const WithHeaderSlot: StoryObj<typeof ContentEditor> = {
+  render: () => <ContentEditorWithHeader />,
+};

@@ -17,6 +17,7 @@ import {
   selectSuggestionsForArticle,
 } from '../../store/selectors';
 import { routes } from '../../lib/routes';
+import { formatArticleTitle } from '../../lib/articleDisplay';
 import type { AISuggestion, Article } from '../../store/types';
 import { EmptyState } from '../../components/EmptyState';
 
@@ -110,7 +111,7 @@ export default function HubPage() {
           return (
             <li key={article.id}>
               <SuggestionCard
-                title={article.title}
+                title={formatArticleTitle(article.title)}
                 description={description}
                 kind="article-edit"
                 suggestionCount={pending.length}

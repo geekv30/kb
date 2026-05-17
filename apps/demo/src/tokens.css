@@ -55,4 +55,12 @@
   .animate-progress-slide {
     animation: kb-progress-slide 1.1s linear infinite;
   }
+
+  /* Suppress the stray focus outline on programmatically-focused
+   * tabindex=-1 elements (e.g., the page <h1> focused on every
+   * route change by useFocusOnRouteChange). Keyboard-driven focus
+   * still shows the outline via :focus-visible — a11y preserved. */
+  [tabindex="-1"]:focus:not(:focus-visible) {
+    outline: none;
+  }
 }

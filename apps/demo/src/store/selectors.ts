@@ -6,6 +6,7 @@
 // hot spots; until then, KISS.
 
 import type { NavItem } from '@test-kb-ui/kb-ui';
+import { formatArticleTitle } from '../lib/articleDisplay';
 import type {
   AISuggestion,
   Article,
@@ -186,7 +187,7 @@ export function selectExplorerTree(state: MockStoreState): NavItem[] {
       ...childCategories.map(buildNode),
       ...articles.map<NavItem>((a) => ({
         id: a.id,
-        title: a.title,
+        title: formatArticleTitle(a.title),
         type: 'article',
         status: a.status,
       })),

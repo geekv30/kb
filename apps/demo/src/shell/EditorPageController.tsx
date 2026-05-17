@@ -26,6 +26,12 @@ import {
 export type EditorPageControls = {
   saveDisabled: boolean;
   publishDisabled: boolean;
+  /**
+   * When set, surfaced as a native `title=` tooltip on the (disabled)
+   * Publish button so the user knows why the action is blocked. Only
+   * meaningful when `publishDisabled` is `true`.
+   */
+  publishDisabledReason?: string;
   onSaveAsDraft: () => void;
   onPublish: () => void;
   onClose: () => void;

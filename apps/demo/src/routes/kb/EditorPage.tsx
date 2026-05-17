@@ -58,13 +58,12 @@ import {
 import { useUnsavedChangesGuard } from '../../hooks/useUnsavedChangesGuard';
 import { useToast } from '../../components/Toast';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
-import { ArticleSeoCard } from '../../components/ArticleSeoCard';
+import { ArticleTitleInput } from '../../components/ArticleTitleInput';
 
 /* ─────────────────────────────────────────────────────────────
  * Constants
  * ───────────────────────────────────────────────────────────── */
 
-const UNTITLED_TITLE = 'Untitled article';
 const SAVE_DEBOUNCE_MS = 200;
 
 /* ─────────────────────────────────────────────────────────────
@@ -179,7 +178,7 @@ function categoryUrlFromAncestors(ancestors: Category[]): string {
 
 /**
  * `true` when the article was created via "+ New" and the user has not
- * touched it (placeholder title + empty body). Used to decide whether
+ * touched it (no title typed + empty body). Used to decide whether
  * a close-without-save should `editor/discardNew` the empty draft.
  */
 function isUntouchedNewDraft(
@@ -188,7 +187,7 @@ function isUntouchedNewDraft(
   title: string,
 ): boolean {
   if (!article.slug.startsWith('untitled-')) return false;
-  if (title !== UNTITLED_TITLE) return false;
+  if (title.trim() !== '') return false;
   // Tiptap renders an empty doc as `<p></p>`; treat both as empty.
   const stripped = bodyHTML.replace(/<p>\s*<\/p>/g, '').trim();
   return stripped === '';
@@ -286,7 +285,11 @@ function EditorPageBody({ article }: { article: Article }) {
   const [storeSettings, setStoreSettings] = useState<StoreArticleSettings>(
     article.settings,
   );
-  const [titleSnapshot] = useState<string>(article.title);
+  // Chunk 2 — Notion-style title input drives this state and dispatches
+  // `editor/setTitle` on every change. The close-handler's untouched-
+  // new-draft probe reads the live `titleDraft` so a user who types a
+  // real title escapes the silent-discard branch.
+  const [titleDraft, setTitleDraft] = useState<string>(article.title);
   const [isDirty, setIsDirty] = useState(false);
   // `dirtyRef` mirrors `isDirty` synchronously. The unsaved-changes
   // blocker function reads the ref so we can suppress the prompt one
@@ -341,6 +344,19 @@ function EditorPageBody({ article }: { article: Article }) {
     setBodyHTML(html);
     setDirty(true);
   }, []);
+
+  // Chunk 2 — title edits flush straight to the store (not debounced).
+  // The title is a single field, not a Tiptap doc — there's no perf cost
+  // to writing every keystroke, and downstream listeners (breadcrumb,
+  // category page) reflect the change immediately.
+  const handleTitleChange = useCallback(
+    (next: string) => {
+      setTitleDraft(next);
+      dispatch({ type: 'editor/setTitle', articleId: article.id, title: next });
+      setDirty(true);
+    },
+    [article.id, dispatch],
+  );
 
   const handleSettingsChange = useCallback(
     (next: KbUiArticleSettings) => {
@@ -399,7 +415,7 @@ function EditorPageBody({ article }: { article: Article }) {
     //   - Dirty → open the styled ConfirmDialog; on confirm navigate
     //     (no save), on cancel stay.
     //   - Clean (existing article, no edits) → navigate immediately.
-    if (isUntouchedNewDraft(article, bodyHTML, titleSnapshot)) {
+    if (isUntouchedNewDraft(article, bodyHTML, titleDraft)) {
       dispatch({ type: 'editor/discardNew', articleId: article.id });
       showToast('Draft discarded.', 'info');
       navigate(categoryUrl);
@@ -413,7 +429,7 @@ function EditorPageBody({ article }: { article: Article }) {
   }, [
     article,
     bodyHTML,
-    titleSnapshot,
+    titleDraft,
     isDirty,
     dispatch,
     navigate,
@@ -438,18 +454,23 @@ function EditorPageBody({ article }: { article: Article }) {
    * one of its actual inputs changed — prevents the breadcrumb from
    * thrashing the editor controls slot on every keystroke.
    */
+  const isTitleEmpty = titleDraft.trim() === '';
   const editorControls = useMemo<EditorPageControls>(
     () => ({
       saveDisabled: !isDirty,
-      // Publish remains enabled even on a clean editor — the user can
-      // publish an existing draft as-is. PRD §7.3 lists no "publish
-      // disabled" state for the editor route.
-      publishDisabled: false,
+      // Publish is gated on the title field having content. An untitled
+      // article should not be publishable — the breadcrumb's Publish
+      // button greys out and surfaces a `title=` tooltip when the title
+      // is empty (see BreadcrumbBar's actions wrapper).
+      publishDisabled: isTitleEmpty,
+      publishDisabledReason: isTitleEmpty
+        ? 'Add a title to publish'
+        : undefined,
       onSaveAsDraft: handleSaveAsDraft,
       onPublish: handlePublish,
       onClose: handleClose,
     }),
-    [isDirty, handleSaveAsDraft, handlePublish, handleClose],
+    [isDirty, isTitleEmpty, handleSaveAsDraft, handlePublish, handleClose],
   );
   useRegisterEditorPageControls(editorControls);
 
@@ -466,7 +487,7 @@ function EditorPageBody({ article }: { article: Article }) {
    * commit hasn't landed yet).
    */
   const armGuard =
-    isDirty && !isUntouchedNewDraft(article, bodyHTML, titleSnapshot);
+    isDirty && !isUntouchedNewDraft(article, bodyHTML, titleDraft);
   const guardElement = useUnsavedChangesGuard({
     isDirty: armGuard,
     isDirtyNow: () => dirtyRef.current,
@@ -506,10 +527,12 @@ function EditorPageBody({ article }: { article: Article }) {
   }, []);
 
   /* ── Render ─────────────────────────────────────────────────
-   * 2-column flush-edge layout per the kb-ui KBEditorPage `Default`
-   * story. Editor sits flush LEFT; settings panel hugs RIGHT via
-   * `justify-between`. The shell already pads `main` by 24px, so this
-   * row carries no horizontal padding of its own.
+   * Intercom-style editor layout: white body card sitting on a soft
+   * `slate-50` page background. The outer wrapper bleeds past the
+   * AppShell `<main>`'s built-in padding (`pt-[12px] pr-6 pb-6 pl-6`)
+   * via negative margins so the slate tone fills edge-to-edge. The
+   * inner wrapper restores comfortable padding for the columns; the
+   * editor column is the white body card.
    */
   return (
     <div
@@ -518,47 +541,38 @@ function EditorPageBody({ article }: { article: Article }) {
       data-article-slug={article.slug}
       data-article-status={article.status}
       data-dirty={isDirty ? 'true' : 'false'}
-      className="flex flex-row justify-between items-start gap-6"
+      className="-mx-6 -mt-3 -mb-6 min-h-[calc(100vh-56px)] bg-slate-50"
     >
-      <div
-        ref={editorColumnRef}
-        data-kb-part="editor-column"
-        className="max-w-[720px] w-full"
-      >
-        <ContentEditor
-          initialContent={article.bodyHTML}
-          onChange={handleEditorChange}
-          placeholder="Start writing your article…"
-          className="w-full max-w-full"
-        />
-      </div>
+      <div className="flex flex-row items-start gap-6 px-8 py-8">
+        <div className="flex flex-1 justify-center min-w-0">
+          <div
+            ref={editorColumnRef}
+            data-kb-part="editor-column"
+          >
+            <ContentEditor
+              initialContent={article.bodyHTML}
+              onChange={handleEditorChange}
+              placeholder="Start writing your article…"
+              header={
+                <ArticleTitleInput
+                  value={titleDraft}
+                  onChange={handleTitleChange}
+                />
+              }
+            />
+          </div>
+        </div>
 
-      <div
-        data-kb-part="settings-column"
-        className="flex w-[380px] shrink-0 flex-col gap-4"
-      >
-        <ArticleSettingsPanel
-          value={kbSettings}
-          onChange={handleSettingsChange}
-          compact
-        />
-        <ArticleSeoCard
-          value={{
-            metaDescription: storeSettings.metaDescription ?? '',
-            canonicalUrlOverride: storeSettings.canonicalUrlOverride ?? '',
-          }}
-          onChange={(next) => {
-            setStoreSettings((prev) => ({
-              ...prev,
-              metaDescription: next.metaDescription,
-              canonicalUrlOverride: next.canonicalUrlOverride,
-            }));
-            setDirty(true);
-          }}
-          bodyHTML={bodyHTML}
-          title={article.title}
-          slug={storeSettings.slug}
-        />
+        <div
+          data-kb-part="settings-column"
+          className="flex w-[380px] shrink-0 flex-col gap-4"
+        >
+          <ArticleSettingsPanel
+            value={kbSettings}
+            onChange={handleSettingsChange}
+            compact
+          />
+        </div>
       </div>
 
       {/* Close-with-unsaved-changes confirm — opened by handleClose */}

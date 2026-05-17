@@ -44,6 +44,7 @@ import {
 } from '../../store/selectors';
 import type { Article, Category, User } from '../../store/types';
 import { DEFAULT_KB_CATEGORY_SLUG, routes } from '../../lib/routes';
+import { formatArticleTitle } from '../../lib/articleDisplay';
 import { formatRelativeDate } from '../../lib/relativeDate';
 import { EmptyStateGallery } from '../../components/EmptyStateVariants';
 import { useCreateArticle } from '../../hooks/useCreateArticle';
@@ -235,7 +236,7 @@ function toArticleRow(
 ): ArticleRow {
   return {
     id: article.id,
-    title: article.title,
+    title: formatArticleTitle(article.title),
     status: article.status,
     authorInitials: author?.initials,
     lastUpdated: formatRelativeDate(article.lastUpdatedAt),

@@ -32,6 +32,7 @@ import {
   selectSuggestionsForArticle,
 } from '../store/selectors';
 import { routes } from '../lib/routes';
+import { formatArticleTitle } from '../lib/articleDisplay';
 import { useEditorPageControls } from './EditorPageController';
 import { useToast } from '../components/Toast';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -113,7 +114,7 @@ export function BreadcrumbBar() {
       return {
         items: [
           ...ancestors.map((c) => ({ id: c.id, label: c.title })),
-          { id: article.id, label: article.title },
+          { id: article.id, label: formatArticleTitle(article.title) },
         ],
         collapsed: true,
       };
@@ -133,7 +134,7 @@ export function BreadcrumbBar() {
       return {
         items: [
           ...ancestors.map((c) => ({ id: c.id, label: c.title })),
-          { id: article.id, label: article.title },
+          { id: article.id, label: formatArticleTitle(article.title) },
         ],
         collapsed: true,
       };
@@ -277,19 +278,34 @@ export function BreadcrumbBar() {
         onCollapse={handleLeadingClick}
         onToggleSidebar={handleLeadingClick}
         actions={config.collapsed ? (
-          <EditorBreadcrumbActions
-            onSaveAsDraft={activeHandlers ? activeHandlers.onSaveAsDraft : placeholderSave}
-            onPublish={activeHandlers ? activeHandlers.onPublish : placeholderPublish}
-            onClose={activeHandlers ? activeHandlers.onClose : handleHomeClick}
-            publishDisabled={
-              editorHandlers
-                ? editorHandlers.publishDisabled
-                : aiGapsHandlers
-                  ? aiGapsPublishDisabled
-                  : false
+          // Wrapping span carries the native `title=` tooltip so a disabled
+          // Publish button still surfaces a hover hint (disabled buttons
+          // don't dispatch their own pointer events in every browser, but
+          // hover over the wrapper still resolves the tooltip). `display:
+          // contents` so the wrapper has no box of its own and the inner
+          // `EditorBreadcrumbActions` flex layout is unaffected.
+          <span
+            style={{ display: 'contents' }}
+            title={
+              editorHandlers?.publishDisabled && editorHandlers.publishDisabledReason
+                ? editorHandlers.publishDisabledReason
+                : undefined
             }
-            saveDisabled={editorHandlers ? editorHandlers.saveDisabled : undefined}
-          />
+          >
+            <EditorBreadcrumbActions
+              onSaveAsDraft={activeHandlers ? activeHandlers.onSaveAsDraft : placeholderSave}
+              onPublish={activeHandlers ? activeHandlers.onPublish : placeholderPublish}
+              onClose={activeHandlers ? activeHandlers.onClose : handleHomeClick}
+              publishDisabled={
+                editorHandlers
+                  ? editorHandlers.publishDisabled
+                  : aiGapsHandlers
+                    ? aiGapsPublishDisabled
+                    : false
+              }
+              saveDisabled={editorHandlers ? editorHandlers.saveDisabled : undefined}
+            />
+          </span>
         ) : undefined}
       />
 
