@@ -35,7 +35,7 @@ import {
 import { routes } from '../lib/routes';
 import { useEditorPageControls } from './EditorPageController';
 import { useToast } from '../components/Toast';
-import { ConfirmDialog } from '../components/ConfirmDialog';
+import { ConfirmDialog } from '@test-kb-ui/kb-ui';
 import { useSidebarCollapse } from './SidebarCollapseContext';
 
 type BreadcrumbConfig = {

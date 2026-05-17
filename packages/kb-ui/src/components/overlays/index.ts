@@ -15,3 +15,5 @@ export type {
   NewCategoryFormValues,
   ParentCategoryOption,
 } from './NewCategoryModal';
+export { ConfirmDialog } from './ConfirmDialog';
+export type { ConfirmDialogProps } from './ConfirmDialog';
