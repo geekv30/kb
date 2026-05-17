@@ -29,7 +29,12 @@ const BEACON_Z_INDEX = 8502; // above ring (8500)
 const BEACON_DIAMETER = 14;
 const BEACON_COLOR = '#0ea5e9'; // sky-500 (matches the ring)
 const BEACON_PULSE_DURATION_MS = 1800;
-const BEACON_PULSE_DELAY_MS = 1200;
+/* Half the duration so the two rings interlock perfectly (one
+ * starting just as the other reaches the half-way fade-out point).
+ * Previously 1200ms left a visible ~600ms gap each cycle where
+ * neither ring was expanding — the rhythm felt staggered then
+ * paused, instead of continuous. */
+const BEACON_PULSE_DELAY_MS = 900;
 /* Floor for the beacon's Y anchor — keeps the 14px dot fully visible
  * when the target extends to / above the viewport top (e.g. file
  * explorer column). 20px gives ~13px of headroom above the dot's

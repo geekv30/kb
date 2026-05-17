@@ -40,18 +40,47 @@
   }
 }
 
-/* CompletionCard — continuous sparkle shimmer. Runs after the
- * initial `completion-sparkle-in` pop completes. Subtle scale +
- * opacity loop so the sparkles feel alive without being noisy. */
+/* CompletionCard — finite sparkle shimmer. Runs after the initial
+ * `completion-sparkle-in` pop completes. Subtle scale + opacity loop
+ * so the sparkles feel alive without being noisy. Capped at 5
+ * iterations (~17.5s at 3500ms) so the cue settles instead of
+ * looping forever — once seen, the celebration is over. `forwards`
+ * locks the final frame at scale 1 / opacity 1 so the sparkles stay
+ * visible after the shimmer ends. */
 @keyframes completion-sparkle-shimmer {
   0%, 100% {
     transform: scale(1);
     opacity: 1;
   }
   50% {
-    transform: scale(1.18);
-    opacity: 0.55;
+    transform: scale(1.10);
+    opacity: 0.6;
   }
+}
+
+/* Shared per-sparkle transform setup. The element is a <g> with its
+ * own `transform: translate(x,y)` baked in (positioning), and the
+ * shimmer keyframe applies `scale(...)`. `transform-box: fill-box`
+ * makes the local transform origin behave around the sparkle path's
+ * own bbox rather than the SVG root. The static transform-box +
+ * transform-origin used to live inline on every sparkle render —
+ * promoting them to a class de-dupes the inline style and keeps the
+ * markup readable. */
+.completion-sparkle {
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+/* Gate the shimmer behind reduced-motion preference. The pop-in
+ * (`completion-sparkle-in`) is gentle enough to keep — it lasts
+ * 300ms and only crossfades from scale(0.6) to scale(1). The
+ * shimmer is the looping decoration we drop for users who have
+ * asked for less motion. */
+@media (prefers-reduced-motion: no-preference) {
+  /* Shimmer is composed at the call-site via inline `animation`
+   * (CompletionCard.tsx) so individual delays + iteration count
+   * can be set per-sparkle. The class above is the structural
+   * piece; the animation itself is opt-in by author intent. */
 }
 
 /* Spotlight beacon — radial pulse rings expanding outward from the

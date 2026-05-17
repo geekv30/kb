@@ -185,19 +185,29 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
     };
   };
 
-  /* Sparkle animation — initial pop then a continuous shimmer loop.
-     The shimmer phase offset is per-sparkle so they twinkle out of
-     unison. reduceMotion users get a plain fade and no shimmer. */
+  /* Sparkle animation — initial pop, then a finite shimmer loop that
+   * settles after 5 iterations (~17.5s at 3500ms). Infinite shimmer
+   * is visual noise once the celebration moment has passed; capping
+   * iterations lets the sparkles read as "alive" without becoming
+   * permanent fixtures. `forwards` keeps the final keyframe so they
+   * don't snap back at the end of the last iteration.
+   *
+   * reduceMotion users still get the plain fade-in (no shimmer at all).
+   * Per-element delays land via `SPARKLE_SHIMMER_PHASE_MS` so the
+   * four sparkles twinkle out of unison.
+   *
+   * Static transform-box + transform-origin moved to
+   * `.completion-sparkle` class in welcome-tour-animations.css — only
+   * the dynamic `animation` (which carries the per-element delay)
+   * stays inline here. */
   const sparkleStyle = (index: number): CSSProperties => ({
     animation: reduceMotion
       ? `welcome-fade-in 100ms ease-out both`
       : (
           `completion-sparkle-in 300ms ease-out ${SPARKLE_DELAYS_MS[index]}ms both, ` +
           `completion-sparkle-shimmer ${SPARKLE_SHIMMER_DURATION_MS}ms ease-in-out ` +
-          `${SPARKLE_DELAYS_MS[index] + 300 + SPARKLE_SHIMMER_PHASE_MS[index]}ms infinite`
+          `${SPARKLE_DELAYS_MS[index] + 300 + SPARKLE_SHIMMER_PHASE_MS[index]}ms 5 forwards`
         ),
-    transformOrigin: 'center',
-    transformBox: 'fill-box',
   });
 
   /* Checkmark draw-in. */
@@ -300,24 +310,43 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
               style={checkStyle}
             />
 
-            {/* Sparkles at four corners — scaled for the 56px viewBox. */}
+            {/* Sparkles at four corners — scaled for the 56px viewBox.
+                Outer pair (top-right + bottom-left, the larger amber
+                star paths) carry the visual weight; inner pair (the
+                smaller slate stars) reads as supporting detail. */}
             <g transform="translate(46,14)">
-              <g style={sparkleStyle(3)} fill="#fbbf24">
+              <g
+                className="completion-sparkle"
+                style={sparkleStyle(3)}
+                fill="#fbbf24"
+              >
                 <path d="M0 -4 L1 -1 L4 0 L1 1 L0 4 L-1 1 L-4 0 L-1 -1 Z" />
               </g>
             </g>
             <g transform="translate(45,44)">
-              <g style={sparkleStyle(0)} fill="#94a3b8">
+              <g
+                className="completion-sparkle"
+                style={sparkleStyle(0)}
+                fill="#94a3b8"
+              >
                 <path d="M0 -3 L0.8 -0.8 L3 0 L0.8 0.8 L0 3 L-0.8 0.8 L-3 0 L-0.8 -0.8 Z" />
               </g>
             </g>
             <g transform="translate(11,42)">
-              <g style={sparkleStyle(1)} fill="#fbbf24">
+              <g
+                className="completion-sparkle"
+                style={sparkleStyle(1)}
+                fill="#fbbf24"
+              >
                 <path d="M0 -4 L1 -1 L4 0 L1 1 L0 4 L-1 1 L-4 0 L-1 -1 Z" />
               </g>
             </g>
             <g transform="translate(12,14)">
-              <g style={sparkleStyle(2)} fill="#94a3b8">
+              <g
+                className="completion-sparkle"
+                style={sparkleStyle(2)}
+                fill="#94a3b8"
+              >
                 <path d="M0 -3 L0.8 -0.8 L3 0 L0.8 0.8 L0 3 L-0.8 0.8 L-3 0 L-0.8 -0.8 Z" />
               </g>
             </g>
