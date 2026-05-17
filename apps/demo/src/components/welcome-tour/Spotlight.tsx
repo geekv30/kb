@@ -42,6 +42,13 @@ const BEACON_PULSE_DELAY_MS = 900;
 const BEACON_SAFE_TOP = 20;
 
 const FADE_IN_DUR = 240;
+/* Exit should ALWAYS be faster than enter — the user already saw
+ * the surface, so dismissing it shouldn't feel laborious. ~50% of
+ * the enter duration keeps the asymmetry clearly perceptible without
+ * feeling abrupt. Per Emil Kowalski's review checklist:
+ *   "Same enter/exit transition speed → make exit faster than enter".
+ */
+const FADE_OUT_DUR = 120;
 const FADE_IN_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
 /* Strong ease-out from easings.dev — replaces bare `ease-out` for ring +
@@ -166,6 +173,13 @@ export function Spotlight({
   /* ── Ring overlay — anchored to the target's bounding rect ──── */
 
   const ringOpacity = phase === 'in' && rect !== null ? 1 : 0;
+  // Asymmetric opacity timing — slower in (200ms) so the ring lands
+  // deliberately on the new target, faster out (120ms) so dismissal
+  // feels snappy. Branching by `phase` lets the transition value
+  // itself carry the asymmetry; with a single duration the
+  // overlay's unmount timer would have to "cut off" a longer fade,
+  // which reads as glitchy.
+  const ringOpacityDur = phase === 'in' ? 200 : FADE_OUT_DUR;
   const ringStyle: CSSProperties = rect
     ? {
         position: 'fixed',
@@ -183,12 +197,12 @@ export function Spotlight({
         // route swaps the ring snaps to the new position while invisible
         // so it pops in cleanly instead of smearing from the old rect.
         transition: slideMode
-          ? `opacity 200ms ${STRONG_EASE_OUT}, ` +
+          ? `opacity ${ringOpacityDur}ms ${STRONG_EASE_OUT}, ` +
             `top 250ms cubic-bezier(0.16, 1, 0.3, 1), ` +
             `left 250ms cubic-bezier(0.16, 1, 0.3, 1), ` +
             `width 250ms cubic-bezier(0.16, 1, 0.3, 1), ` +
             `height 250ms cubic-bezier(0.16, 1, 0.3, 1)`
-          : `opacity 200ms ${STRONG_EASE_OUT}`,
+          : `opacity ${ringOpacityDur}ms ${STRONG_EASE_OUT}`,
       }
     : { display: 'none' };
 
@@ -208,6 +222,8 @@ export function Spotlight({
   // keeps the dot fully visible (14px diameter + small breathing margin).
   const beaconCy = rect ? Math.max(rect.top, BEACON_SAFE_TOP) : 0;
 
+  // Same enter/exit asymmetry as the ring — 200ms in, 120ms out.
+  const beaconOpacityDur = phase === 'in' ? 200 : FADE_OUT_DUR;
   const beaconWrapperStyle: CSSProperties = rect
     ? {
         position: 'fixed',
@@ -221,10 +237,10 @@ export function Spotlight({
         // Same slide-vs-snap policy as the ring — beacon slides on
         // same-pathname swaps, snaps on cross-route swaps.
         transition: slideMode
-          ? `opacity 200ms ${STRONG_EASE_OUT}, ` +
+          ? `opacity ${beaconOpacityDur}ms ${STRONG_EASE_OUT}, ` +
             `top 250ms cubic-bezier(0.16, 1, 0.3, 1), ` +
             `left 250ms cubic-bezier(0.16, 1, 0.3, 1)`
-          : `opacity 200ms ${STRONG_EASE_OUT}`,
+          : `opacity ${beaconOpacityDur}ms ${STRONG_EASE_OUT}`,
       }
     : { display: 'none' };
 
@@ -271,7 +287,12 @@ export function Spotlight({
     : {
         ...beaconPulseBase,
         animation: `welcome-beacon-pulse ${BEACON_PULSE_DURATION_MS}ms ease-out infinite`,
-        animationDelay: `${BEACON_PULSE_DELAY_MS}ms`,
+        // Negative delay starts the second ring 900ms INTO its cycle
+        // on the very first frame — instead of waiting 900ms before
+        // the first emission. Combined with the 900ms = duration/2
+        // interlock from finding #3, the two rings present a continuous
+        // pulse rhythm from t=0 with no "leading silence".
+        animationDelay: `-${BEACON_PULSE_DELAY_MS}ms`,
       };
 
   const beacon = (
@@ -301,8 +322,32 @@ export function Spotlight({
     }
   }
 
+  // Whether the card sits to the right of the target — used by both
+  // the slide-in direction (below) and the pointer arrow placement
+  // (further down). Hoisted here so the coach-mark style can read it.
+  const cardIsRightOfTarget = rect ? coachLeft > rect.left : true;
+
   const coachOpacity = phase === 'in' ? 1 : 0;
-  const coachTransform = `translate3d(${coachLeft}px, ${coachTop + (phase === 'in' ? 0 : 4)}px, 0)`;
+
+  /* Slide-in direction depends on coach-mark placement relative to
+   * the target (`cardIsRightOfTarget`). The 8px lead-in nudges the
+   * card from the side OPPOSITE its anchor, so the motion implies
+   * "this content is attaching to that target" rather than the
+   * generic 4px Y-axis slide every step used to use.
+   *
+   * - Card right of target → slide from translateX(-8) → 0 (enters from the left)
+   * - Card left of target  → slide from translateX(+8) → 0 (enters from the right)
+   *
+   * Above/below placements would fall back to a Y-axis slide, but
+   * the current geometry never places the card above/below — it's
+   * always left/right anchored — so we only need the X-axis branch.
+   */
+  const slideOffset = phase === 'in' ? 0 : (cardIsRightOfTarget ? -8 : 8);
+  const coachTransform = `translate3d(${coachLeft + slideOffset}px, ${coachTop}px, 0)`;
+
+  // Asymmetric in/out timing — 240ms in (deliberate landing) vs
+  // 120ms out (snappy dismiss). Same pattern as the ring and beacon.
+  const coachDur = phase === 'in' ? FADE_IN_DUR : FADE_OUT_DUR;
 
   const coachMarkStyle: CSSProperties = rect
     ? {
@@ -323,17 +368,17 @@ export function Spotlight({
         // On cross-route swaps the coach-mark also snaps to its new
         // anchor (transform transition disabled) so the fade-in lands
         // at the new spot instead of smearing from the prior step's
-        // location. The tiny 4px slide-on-mount (phase 'out' → 'in'
-        // translation) only plays for same-pathname swaps + first mount.
+        // location. The directional 8px slide-on-mount (phase 'out' →
+        // 'in' translation) only plays for same-pathname swaps + first
+        // mount.
         transition: slideMode
-          ? `opacity ${FADE_IN_DUR}ms ${FADE_IN_EASE}, transform ${FADE_IN_DUR}ms ${FADE_IN_EASE}`
-          : `opacity ${FADE_IN_DUR}ms ${FADE_IN_EASE}`,
+          ? `opacity ${coachDur}ms ${FADE_IN_EASE}, transform ${coachDur}ms ${FADE_IN_EASE}`
+          : `opacity ${coachDur}ms ${FADE_IN_EASE}`,
       }
     : { display: 'none' };
 
   /* ── Pointer arrow — anchored to the side facing the target ────── */
 
-  const cardIsRightOfTarget = rect ? coachLeft > rect.left : true;
   const arrowVerticalCenter = rect
     ? rect.top + rect.height / 2 - coachTop - 6
     : 0;
