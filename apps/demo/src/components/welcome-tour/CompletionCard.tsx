@@ -192,9 +192,14 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
           type="button"
           aria-label="Close"
           onClick={onDismiss}
+          // 160ms strong ease-out on transform so the press-scale feels
+          // instant. Pairs with `active:scale-[0.97]` for the standard
+          // button-feedback pattern from Emil Kowalski's principles.
+          style={{ transition: 'background-color 160ms ease, color 160ms ease, transform 160ms cubic-bezier(0.23, 1, 0.32, 1)' }}
           className={cn(
             'absolute right-4 top-4 inline-flex h-6 w-6 items-center justify-center rounded-md',
-            'text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700',
+            'text-slate-400 hover:bg-slate-100 hover:text-slate-700',
+            'active:scale-[0.97]',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300',
           )}
         >

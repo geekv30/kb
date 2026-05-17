@@ -138,9 +138,14 @@ export function WelcomeCard({ onStart, onSkip }: WelcomeCardProps) {
           type="button"
           aria-label="Close welcome tour"
           onClick={onSkip}
+          // 160ms strong ease-out on transform so the press-scale feels
+          // instant. `active:scale-[0.97]` adds the responsive press
+          // feedback that the raw <button> was missing.
+          style={{ transition: 'background-color 160ms ease, color 160ms ease, transform 160ms cubic-bezier(0.23, 1, 0.32, 1)' }}
           className={cn(
             'absolute right-4 top-4 inline-flex h-6 w-6 items-center justify-center rounded-md',
-            'text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700',
+            'text-slate-400 hover:bg-slate-100 hover:text-slate-700',
+            'active:scale-[0.97]',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300',
           )}
         >
