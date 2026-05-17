@@ -83,6 +83,46 @@ function isStepState(state: TourState): state is StepKey {
   );
 }
 
+/**
+ * Compute the spotlight rect for a given step. Most steps use the
+ * registered target's full bounding rect — but `step-explorer`
+ * unions the header + tree elements inside the FileExplorerNav so
+ * the ring hugs the visible UI instead of the full-height aside.
+ */
+function computeRectForStep(
+  step: StepKey,
+  registeredNode: HTMLElement,
+): SpotlightRect | null {
+  if (step === 'step-explorer') {
+    const header = registeredNode.querySelector<HTMLElement>(
+      '[data-kb-part="explorer-header"]',
+    );
+    const body =
+      registeredNode.querySelector<HTMLElement>(
+        '[data-kb-part="explorer-tree"]',
+      ) ??
+      registeredNode.querySelector<HTMLElement>(
+        '[data-kb-part="explorer-flat"]',
+      );
+    if (header !== null && body !== null) {
+      const h = header.getBoundingClientRect();
+      const b = body.getBoundingClientRect();
+      const top = Math.min(h.top, b.top);
+      const left = Math.min(h.left, b.left);
+      const right = Math.max(h.right, b.right);
+      const bottom = Math.max(h.bottom, b.bottom);
+      if (right > left && bottom > top) {
+        return { top, left, width: right - left, height: bottom - top };
+      }
+    }
+    // Fall through to the registered node's full rect if either
+    // sub-element is missing — better to show something than nothing.
+  }
+  const r = registeredNode.getBoundingClientRect();
+  if (r.width === 0 && r.height === 0) return null;
+  return { top: r.top, left: r.left, width: r.width, height: r.height };
+}
+
 export function WelcomeTourOverlay() {
   const tour = useWelcomeTour();
   const navigate = useNavigate();
@@ -185,13 +225,13 @@ export function WelcomeTourOverlay() {
       if (cycle !== measureCycleRef.current) return true; // cancelled
       const node = tour.getTarget(targetId);
       if (node === null) return false;
-      const r = node.getBoundingClientRect();
-      if (r.width === 0 && r.height === 0) return false;
+      const nextRect = computeRectForStep(nextState, node);
+      if (nextRect === null) return false;
       // Force phase='out' before placing the new content. This ensures
       // the Spotlight's initial render uses opacity:0 so the next-tick
       // 'in' flip actually animates.
       setPhase('out');
-      setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+      setRect(nextRect);
       setTargetNode(node);
       setRenderedStep(nextState);
       // Two rAFs: one to flush layout for the ring's initial transform,
@@ -246,20 +286,16 @@ export function WelcomeTourOverlay() {
   useEffect(() => {
     if (!isStepState(renderedStep)) return;
     const targetId = STEP_TARGET[renderedStep];
+    const step = renderedStep;
     let timer: number | null = null;
     const handle = () => {
       if (timer !== null) window.clearTimeout(timer);
       timer = window.setTimeout(() => {
         const node = tour.getTarget(targetId);
         if (node === null) return;
-        const r = node.getBoundingClientRect();
-        if (r.width === 0 && r.height === 0) return;
-        setRect({
-          top: r.top,
-          left: r.left,
-          width: r.width,
-          height: r.height,
-        });
+        const nextRect = computeRectForStep(step, node);
+        if (nextRect === null) return;
+        setRect(nextRect);
       }, 150);
     };
     window.addEventListener('resize', handle);

@@ -1,19 +1,11 @@
-// Anchored coach-mark card with a visible sky-500 ring on the target.
-//
-// v6 redesign:
-//   - Uniform page-wide dim at rgba(15, 23, 42, 0.40) covering the
-//     entire viewport, including the target.
-//   - A separate fixed-position ring overlay sits above the dim,
-//     traced around the target's bounding rect with 8px of padding.
-//     The ring uses sky-500 (#0ea5e9) — a high-contrast, recognizable
-//     focus-indicator color that reads cleanly over the slate dim.
-//   - No DOM mutation on the target (no z-index lift, no inline-style
-//     overrides). The target stays in its natural position.
-//   - Coach-mark card lives above the ring (z-index 8501) with an
-//     arrow pointing at the target.
-//
-// Three layered cues — dim + ring + arrow — make "look here"
-// unambiguous on both large and small targets.
+// Anchored coach-mark card with a clean sky-500 ring + pulsing beacon
+// on the target. No page dim — the rest of the UI reads at full opacity.
+// The ring is a single 2px solid border (no glow halo) traced around
+// the target's bounding rect with 8px of padding. The beacon sits on
+// the target's top-right corner to draw peripheral attention.
+// The coach-mark card lives above the ring with an arrow pointing at
+// the target. The page underneath is interactive — users dismiss via
+// X / Skip in the card.
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { ChevronLeft, X } from '@untitledui/icons';
@@ -25,25 +17,24 @@ const COACHMARK_GAP = 16;
 const COACH_MARK_WIDTH = 360; // ~max-w-sm
 const COACH_MARK_EST_HEIGHT = 180;
 
-/* Uniform page-wide dim. */
-const DIM_COLOR = 'rgba(15, 23, 42, 0.40)';
-const DIM_Z_INDEX = 8499; // just below the ring + coach-mark wrapper
-
-/* Ring around the target — sits ABOVE the dim. */
+/* Ring around the target. */
 const RING_Z_INDEX = 8500;
 const RING_PADDING = 8; // px outside the target's bounding rect
 const RING_COLOR = '#0ea5e9'; // sky-500
-const RING_GLOW = 'rgba(14, 165, 233, 0.20)';
-const RING_GLOW_OUTER = 'rgba(14, 165, 233, 0.25)';
 
 /* Beacon — pulsing dot anchored to the target's top-right corner,
  * layered ABOVE the ring. Reads as a "badge" hovering half-on/half-off
  * the target. Two staggered pulse rings sit behind the solid core. */
-const BEACON_Z_INDEX = 8502; // above ring (8500), above dim (8499)
+const BEACON_Z_INDEX = 8502; // above ring (8500)
 const BEACON_DIAMETER = 14;
 const BEACON_COLOR = '#0ea5e9'; // sky-500 (matches the ring)
 const BEACON_PULSE_DURATION_MS = 1800;
 const BEACON_PULSE_DELAY_MS = 1200;
+/* Floor for the beacon's Y anchor — keeps the 14px dot fully visible
+ * when the target extends to / above the viewport top (e.g. file
+ * explorer column). 20px gives ~13px of headroom above the dot's
+ * top edge (dot is centred via translate(-50%, -50%)). */
+const BEACON_SAFE_TOP = 20;
 
 const FADE_IN_DUR = 240;
 const FADE_IN_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
@@ -115,11 +106,11 @@ export function Spotlight({
     };
   }, []);
 
-  /* No DOM mutation on the target — the ring sits above the dim
-   * via a separate fixed-position overlay, positioned against the
-   * target's bounding rect. targetNode + targetNeedsBackgroundFill
-   * are intentionally unused now but kept in the prop type to avoid
-   * churn in the parent overlay's call site.
+  /* No DOM mutation on the target — the ring is a separate
+   * fixed-position overlay positioned against the target's bounding
+   * rect. targetNode + targetNeedsBackgroundFill are intentionally
+   * unused now but kept in the prop type to avoid churn in the
+   * parent overlay's call site.
    */
   void targetNode;
   void targetNeedsBackgroundFill;
@@ -154,26 +145,7 @@ export function Spotlight({
     }
   };
 
-  /* ── Uniform page-wide dim ─────────────────────────────────── */
-
-  const dimOpacity = phase === 'in' && rect !== null ? 1 : 0;
-  const dim = (
-    <div
-      aria-hidden="true"
-      onClick={onSkip}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: DIM_COLOR,
-        opacity: dimOpacity,
-        transition: `opacity ${FADE_IN_DUR}ms ease-out`,
-        pointerEvents: 'auto',
-        zIndex: DIM_Z_INDEX,
-      }}
-    />
-  );
-
-  /* ── Ring overlay — sits ABOVE the dim, pointed at the target ── */
+  /* ── Ring overlay — anchored to the target's bounding rect ──── */
 
   const ringOpacity = phase === 'in' && rect !== null ? 1 : 0;
   const ringStyle: CSSProperties = rect
@@ -185,7 +157,6 @@ export function Spotlight({
         height: rect.height + RING_PADDING * 2,
         border: `2px solid ${RING_COLOR}`,
         borderRadius: 12,
-        boxShadow: `0 0 0 4px ${RING_GLOW}, 0 0 24px 4px ${RING_GLOW_OUTER}`,
         pointerEvents: 'none',
         zIndex: RING_Z_INDEX,
         opacity: ringOpacity,
@@ -204,7 +175,10 @@ export function Spotlight({
   // and small rail icons because it tracks the corner, not the centre.
   const beaconOpacity = phase === 'in' && rect !== null ? 1 : 0;
   const beaconCx = rect ? rect.left + rect.width : 0;
-  const beaconCy = rect ? rect.top : 0;
+  // Clamp Y so the beacon stays in view when the target extends to /
+  // above the viewport top (e.g. the file explorer column). 20px floor
+  // keeps the dot fully visible (14px diameter + small breathing margin).
+  const beaconCy = rect ? Math.max(rect.top, BEACON_SAFE_TOP) : 0;
 
   const beaconWrapperStyle: CSSProperties = rect
     ? {
@@ -304,8 +278,8 @@ export function Spotlight({
         width: COACH_MARK_WIDTH,
         transform: coachTransform,
         opacity: coachOpacity,
-        // Explicitly above the dim (8499) AND above the lifted target
-        // (8500) so the user can always click footer buttons.
+        // Above the ring (8500) so the user can always click footer
+        // buttons even when the card overlaps the ring's bounds.
         zIndex: 8501,
         willChange: 'transform, opacity',
         transition: `opacity ${FADE_IN_DUR}ms ease-out, transform ${FADE_IN_DUR}ms ${FADE_IN_EASE}`,
@@ -353,14 +327,14 @@ export function Spotlight({
   const showBack = coachMark.stepIndex > 0;
 
   return (
-    // Wrapper is pointer-events:none so the dim child can opt-in to
-    // pointer-events:auto and we don't fight z-index on the rest of the page.
+    // Wrapper is pointer-events:none so the page underneath stays
+    // interactive by default. Only the coach-mark card opts back in
+    // via pointer-events-auto. No dim — ring + beacon are the only cues.
     <div className="pointer-events-none fixed inset-0 z-[8500]">
-      {dim}
       {ring}
       {beacon}
 
-      {/* Coach-mark card — sits above the dim. */}
+      {/* Coach-mark card — floats next to the target. */}
       <div
         ref={cardRef}
         role="dialog"

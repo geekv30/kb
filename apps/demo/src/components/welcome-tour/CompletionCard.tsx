@@ -73,6 +73,11 @@ const SPARKLE_DELAYS_MS = [700, 800, 900, 1000];
 const CHECK_DRAW_DELAY_MS = 200;
 const CHECK_DRAW_DUR_MS = 500;
 
+/* Per-sparkle phase offsets so the shimmer feels organic (not all
+   pulsing in unison). Values in ms. */
+const SPARKLE_SHIMMER_PHASE_MS = [0, 700, 1400, 350];
+const SPARKLE_SHIMMER_DURATION_MS = 2800;
+
 export type CompletionCardProps = {
   onDismiss: () => void;
 };
@@ -133,11 +138,17 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
       : `completion-tile-in 350ms ease-out ${TILE_DELAYS_MS[index]}ms both`,
   });
 
-  /* Sparkle animation delays. */
+  /* Sparkle animation — initial pop then a continuous shimmer loop.
+     The shimmer phase offset is per-sparkle so they twinkle out of
+     unison. reduceMotion users get a plain fade and no shimmer. */
   const sparkleStyle = (index: number): CSSProperties => ({
     animation: reduceMotion
       ? `welcome-fade-in 100ms ease-out both`
-      : `completion-sparkle-in 300ms ease-out ${SPARKLE_DELAYS_MS[index]}ms both`,
+      : (
+          `completion-sparkle-in 300ms ease-out ${SPARKLE_DELAYS_MS[index]}ms both, ` +
+          `completion-sparkle-shimmer ${SPARKLE_SHIMMER_DURATION_MS}ms ease-in-out ` +
+          `${SPARKLE_DELAYS_MS[index] + 300 + SPARKLE_SHIMMER_PHASE_MS[index]}ms infinite`
+        ),
     transformOrigin: 'center',
     transformBox: 'fill-box',
   });

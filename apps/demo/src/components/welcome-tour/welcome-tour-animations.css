@@ -60,6 +60,20 @@
   }
 }
 
+/* CompletionCard — continuous sparkle shimmer. Runs after the
+ * initial `completion-sparkle-in` pop completes. Subtle scale +
+ * opacity loop so the sparkles feel alive without being noisy. */
+@keyframes completion-sparkle-shimmer {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 0.55;
+  }
+}
+
 /* Spotlight beacon — radial pulse rings expanding outward from the
  * core dot. Two rings run on a staggered cycle (via animation-delay)
  * so the pulses overlap and read as a continuous attention cue.
