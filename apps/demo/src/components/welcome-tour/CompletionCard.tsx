@@ -76,9 +76,11 @@ const CHECK_DRAW_DELAY_MS = 200;
 const CHECK_DRAW_DUR_MS = 500;
 
 /* Per-sparkle phase offsets so the shimmer feels organic (not all
-   pulsing in unison). Values in ms. */
+   pulsing in unison). Values in ms. Duration bumped to 3500ms (from
+   2800) — gives the scale + opacity cycle more breathing room so the
+   shimmer reads as a gentle "alive" beat rather than a fast pulse. */
 const SPARKLE_SHIMMER_PHASE_MS = [0, 700, 1400, 350];
-const SPARKLE_SHIMMER_DURATION_MS = 2800;
+const SPARKLE_SHIMMER_DURATION_MS = 3500;
 
 export type CompletionCardProps = {
   onDismiss: () => void;
@@ -311,10 +313,13 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
             />
 
             {/* Sparkles at four corners — scaled for the 56px viewBox.
-                Outer pair (top-right + bottom-left, the larger amber
-                star paths) carry the visual weight; inner pair (the
-                smaller slate stars) reads as supporting detail. */}
-            <g transform="translate(46,14)">
+                Outer pair (amber 4-radius stars) carry the visual
+                weight at scale(1.10); inner pair (slate 3-radius
+                stars) reads as supporting detail at scale(1.0). The
+                base scale composes with the shimmer keyframe's
+                scale() via SVG transform stacking — outer pair peaks
+                at ~1.21, inner pair at ~1.10. */}
+            <g transform="translate(46,14) scale(1.10)">
               <g
                 className="completion-sparkle"
                 style={sparkleStyle(3)}
@@ -332,7 +337,7 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
                 <path d="M0 -3 L0.8 -0.8 L3 0 L0.8 0.8 L0 3 L-0.8 0.8 L-3 0 L-0.8 -0.8 Z" />
               </g>
             </g>
-            <g transform="translate(11,42)">
+            <g transform="translate(11,42) scale(1.10)">
               <g
                 className="completion-sparkle"
                 style={sparkleStyle(1)}
