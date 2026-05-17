@@ -17,3 +17,9 @@ export type {
 } from './NewCategoryModal';
 export { ConfirmDialog } from './ConfirmDialog';
 export type { ConfirmDialogProps } from './ConfirmDialog';
+export { ShortcutsModal } from './ShortcutsModal';
+export type {
+  ShortcutsModalProps,
+  Shortcut,
+  ShortcutGroup,
+} from './ShortcutsModal';
