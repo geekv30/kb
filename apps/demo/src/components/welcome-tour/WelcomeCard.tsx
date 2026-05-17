@@ -120,12 +120,15 @@ export function WelcomeCard({ onStart, onSkip }: WelcomeCardProps) {
     transition: `opacity ${backdropDuration}ms cubic-bezier(0.23, 1, 0.32, 1)`,
   };
 
-  /* Card: opacity 0→1 + scale 0.96→1, staged after backdrop via
-   * transition-delay. Transition (not keyframe) so a rapid dismiss
-   * during the mount-in cleanly reverses instead of restarting. */
+  /* Card: opacity 0→1 + scale 0.94→1, staged after backdrop via
+   * transition-delay. Starting scale dropped from 0.96 → 0.94 so the
+   * "growing in" motion reads more clearly — 0.96 was almost
+   * imperceptible on a fast display. Transition (not keyframe) so a
+   * rapid dismiss during the mount-in cleanly reverses instead of
+   * restarting. */
   const cardStyle: CSSProperties = {
     opacity: mounted ? 1 : 0,
-    transform: mounted ? 'scale(1)' : 'scale(0.96)',
+    transform: mounted ? 'scale(1)' : 'scale(0.94)',
     transition: reduceMotion
       ? `opacity ${cardDuration}ms ${SMOOTH_CUBIC} ${cardDelay}ms`
       : `opacity ${cardDuration}ms ${SMOOTH_CUBIC} ${cardDelay}ms, transform ${cardDuration}ms ${SMOOTH_CUBIC} ${cardDelay}ms`,
@@ -152,7 +155,12 @@ export function WelcomeCard({ onStart, onSkip }: WelcomeCardProps) {
         onKeyDown={handleKeyDown}
         style={cardStyle}
         className={cn(
-          'relative w-full max-w-md rounded-2xl bg-white p-7 shadow-2xl',
+          'relative w-full max-w-md rounded-2xl bg-white p-7',
+          // Matches CompletionCard's custom shadow — cohesive with
+          // (but stronger than) the Spotlight coach-mark's
+          // `0_20px_48px_-12px_rgba(15,23,42,0.18)`. See CompletionCard
+          // for the full rationale.
+          'shadow-[0_24px_64px_-16px_rgba(15,23,42,0.24)]',
           'focus:outline-none',
         )}
       >

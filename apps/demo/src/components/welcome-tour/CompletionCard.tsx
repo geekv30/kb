@@ -69,16 +69,25 @@ const TILES: ChangelogTile[] = [
   },
 ];
 
-/* Tighter cadence than v3 since there's more to reveal. */
-const TILE_DELAYS_MS = [300, 350, 400, 450, 500, 550];
+/* Tile stagger — starts at 200ms so the cascade kicks in shortly
+ * after the card lands (card itself transitions in over ~350ms,
+ * with 200ms the first tile begins under the headline before the
+ * card fully settles). 60ms between tiles keeps the cascade tight
+ * — long enough to read as a sequence, short enough to avoid
+ * blocking interaction. Previously front-loaded at 300ms with 50ms
+ * steps, which pushed the last tile (550ms) past the user's
+ * attention window. */
+const TILE_DELAYS_MS = [200, 260, 320, 380, 440, 500];
 const SPARKLE_DELAYS_MS = [700, 800, 900, 1000];
 const CHECK_DRAW_DELAY_MS = 200;
 const CHECK_DRAW_DUR_MS = 500;
 
 /* Per-sparkle phase offsets so the shimmer feels organic (not all
-   pulsing in unison). Values in ms. */
+   pulsing in unison). Values in ms. Duration bumped to 3500ms (from
+   2800) — gives the scale + opacity cycle more breathing room so the
+   shimmer reads as a gentle "alive" beat rather than a fast pulse. */
 const SPARKLE_SHIMMER_PHASE_MS = [0, 700, 1400, 350];
-const SPARKLE_SHIMMER_DURATION_MS = 2800;
+const SPARKLE_SHIMMER_DURATION_MS = 3500;
 
 export type CompletionCardProps = {
   onDismiss: () => void;
@@ -87,7 +96,30 @@ export type CompletionCardProps = {
 export function CompletionCard({ onDismiss }: CompletionCardProps) {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
+  const checkPathRef = useRef<SVGPathElement | null>(null);
   const reduceMotion = useReducedMotion();
+
+  /* Measured length of the check stroke. Read from the DOM via
+   * `getTotalLength()` so the keyframe's `stroke-dashoffset: from`
+   * matches the actual path length exactly — previously hard-coded
+   * to 36 in CSS, which would silently break if the path's `d` ever
+   * changed. The measurement runs once on mount; we publish it as a
+   * CSS variable on the path so the keyframe (which uses
+   * `var(--check-path-length, 36)`) picks it up automatically. */
+  const [checkLength, setCheckLength] = useState<number | null>(null);
+  useLayoutEffect(() => {
+    const path = checkPathRef.current;
+    if (path === null) return;
+    // getTotalLength is a DOM method on SVGGeometryElement — covers
+    // every browser we care about. Wrapping in a try/catch avoids
+    // SSR pre-paint errors if this ever ran outside the browser.
+    try {
+      const len = path.getTotalLength();
+      if (len > 0) setCheckLength(len);
+    } catch {
+      /* leave checkLength null — keyframe fallback (36) kicks in */
+    }
+  }, []);
 
   /* Focus trap — keep Tab cycling within the card. */
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
@@ -152,11 +184,14 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
     transition: `opacity ${backdropDuration}ms cubic-bezier(0.23, 1, 0.32, 1)`,
   };
 
-  /* Card — opacity + scale transition. Same target as the previous
-   * `welcome-card-in` keyframe (scale 0.96 → 1) but interruptible. */
+  /* Card — opacity + scale transition. Starting scale dropped from
+   * 0.96 → 0.94 so the "growing in" motion reads more clearly.
+   * 0.96 was so close to 1 that the scale step was barely
+   * perceptible on a fast monitor; 0.94 gives the entrance enough
+   * visual travel without crossing into "feels like a popup". */
   const cardStyle: CSSProperties = {
     opacity: mounted ? 1 : 0,
-    transform: mounted ? 'scale(1)' : 'scale(0.96)',
+    transform: mounted ? 'scale(1)' : 'scale(0.94)',
     transition: reduceMotion
       ? `opacity ${cardDuration}ms ${SMOOTH_CUBIC}`
       : `opacity ${cardDuration}ms ${SMOOTH_CUBIC}, transform ${cardDuration}ms ${SMOOTH_CUBIC}`,
@@ -185,28 +220,54 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
     };
   };
 
-  /* Sparkle animation — initial pop then a continuous shimmer loop.
-     The shimmer phase offset is per-sparkle so they twinkle out of
-     unison. reduceMotion users get a plain fade and no shimmer. */
+  /* Sparkle animation — initial pop, then a finite shimmer loop that
+   * settles after 5 iterations (~17.5s at 3500ms). Infinite shimmer
+   * is visual noise once the celebration moment has passed; capping
+   * iterations lets the sparkles read as "alive" without becoming
+   * permanent fixtures. `forwards` keeps the final keyframe so they
+   * don't snap back at the end of the last iteration.
+   *
+   * reduceMotion users still get the plain fade-in (no shimmer at all).
+   * Per-element delays land via `SPARKLE_SHIMMER_PHASE_MS` so the
+   * four sparkles twinkle out of unison.
+   *
+   * Static transform-box + transform-origin moved to
+   * `.completion-sparkle` class in welcome-tour-animations.css — only
+   * the dynamic `animation` (which carries the per-element delay)
+   * stays inline here. */
   const sparkleStyle = (index: number): CSSProperties => ({
     animation: reduceMotion
       ? `welcome-fade-in 100ms ease-out both`
       : (
           `completion-sparkle-in 300ms ease-out ${SPARKLE_DELAYS_MS[index]}ms both, ` +
           `completion-sparkle-shimmer ${SPARKLE_SHIMMER_DURATION_MS}ms ease-in-out ` +
-          `${SPARKLE_DELAYS_MS[index] + 300 + SPARKLE_SHIMMER_PHASE_MS[index]}ms infinite`
+          `${SPARKLE_DELAYS_MS[index] + 300 + SPARKLE_SHIMMER_PHASE_MS[index]}ms 5 forwards`
         ),
-    transformOrigin: 'center',
-    transformBox: 'fill-box',
   });
 
-  /* Checkmark draw-in. */
+  /* Checkmark draw-in. Uses the measured path length (or 36 fallback
+   * until the layout effect commits) so the dasharray/dashoffset
+   * match the real geometry exactly. The keyframe pulls the start
+   * offset from `--check-path-length` so we don't have to inject the
+   * measurement into the animation string — it stays a stable CSS
+   * keyframe across renders.
+   *
+   * Easing changed from bare `ease-out` to a strong ease-in-out
+   * (movement curve from easings.dev / Emil Kowalski's principles).
+   * Stroke draws are "on-screen movement", not entrance fades, so
+   * the in-out acceleration profile gives the check a confident
+   * sweep through its middle instead of a soft start. */
+  const measuredLength = checkLength ?? 36;
   const checkStyle: CSSProperties = reduceMotion
     ? { strokeDashoffset: 0 }
     : {
-        strokeDasharray: 36,
-        strokeDashoffset: 36,
-        animation: `completion-check-draw ${CHECK_DRAW_DUR_MS}ms ease-out ${CHECK_DRAW_DELAY_MS}ms forwards`,
+        strokeDasharray: measuredLength,
+        strokeDashoffset: measuredLength,
+        // Published as a CSS variable so the keyframe's `from`
+        // resolves to the real length. Cast through CSSProperties so
+        // TS accepts the custom property.
+        ['--check-path-length' as keyof CSSProperties]: measuredLength,
+        animation: `completion-check-draw ${CHECK_DRAW_DUR_MS}ms cubic-bezier(0.77, 0, 0.175, 1) ${CHECK_DRAW_DELAY_MS}ms forwards`,
       };
 
   return (
@@ -230,7 +291,15 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
         onKeyDown={handleKeyDown}
         style={cardStyle}
         className={cn(
-          'relative w-full max-w-xl rounded-2xl bg-white p-7 shadow-2xl',
+          'relative w-full max-w-xl rounded-2xl bg-white p-7',
+          // Custom shadow tuned to the modal's size + prominence,
+          // cohesive with (but stronger than) the Spotlight coach-
+          // mark's `0_20px_48px_-12px_rgba(15,23,42,0.18)`. Tailwind's
+          // generic `shadow-2xl` is a heavy preset designed for
+          // elevated cards in light themes — it reads as a bit too
+          // diffuse against the dark backdrop here. The custom value
+          // gives the modal a definite lift without the diffuse halo.
+          'shadow-[0_24px_64px_-16px_rgba(15,23,42,0.24)]',
           'focus:outline-none',
         )}
       >
@@ -289,8 +358,12 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
               strokeWidth={1}
             />
 
-            {/* Drawn-in check (green-600 #16a34a). */}
+            {/* Drawn-in check (green-600 #16a34a). The ref is used
+                by the useLayoutEffect above to read the path's actual
+                `getTotalLength()` and publish it as a CSS variable —
+                replaces the previous hard-coded `36` magic number. */}
             <path
+              ref={checkPathRef}
               d="M20 29 L25.5 34.5 L36 24"
               fill="none"
               stroke="#16a34a"
@@ -300,24 +373,46 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
               style={checkStyle}
             />
 
-            {/* Sparkles at four corners — scaled for the 56px viewBox. */}
-            <g transform="translate(46,14)">
-              <g style={sparkleStyle(3)} fill="#fbbf24">
+            {/* Sparkles at four corners — scaled for the 56px viewBox.
+                Outer pair (amber 4-radius stars) carry the visual
+                weight at scale(1.10); inner pair (slate 3-radius
+                stars) reads as supporting detail at scale(1.0). The
+                base scale composes with the shimmer keyframe's
+                scale() via SVG transform stacking — outer pair peaks
+                at ~1.21, inner pair at ~1.10. */}
+            <g transform="translate(46,14) scale(1.10)">
+              <g
+                className="completion-sparkle"
+                style={sparkleStyle(3)}
+                fill="#fbbf24"
+              >
                 <path d="M0 -4 L1 -1 L4 0 L1 1 L0 4 L-1 1 L-4 0 L-1 -1 Z" />
               </g>
             </g>
             <g transform="translate(45,44)">
-              <g style={sparkleStyle(0)} fill="#94a3b8">
+              <g
+                className="completion-sparkle"
+                style={sparkleStyle(0)}
+                fill="#94a3b8"
+              >
                 <path d="M0 -3 L0.8 -0.8 L3 0 L0.8 0.8 L0 3 L-0.8 0.8 L-3 0 L-0.8 -0.8 Z" />
               </g>
             </g>
-            <g transform="translate(11,42)">
-              <g style={sparkleStyle(1)} fill="#fbbf24">
+            <g transform="translate(11,42) scale(1.10)">
+              <g
+                className="completion-sparkle"
+                style={sparkleStyle(1)}
+                fill="#fbbf24"
+              >
                 <path d="M0 -4 L1 -1 L4 0 L1 1 L0 4 L-1 1 L-4 0 L-1 -1 Z" />
               </g>
             </g>
             <g transform="translate(12,14)">
-              <g style={sparkleStyle(2)} fill="#94a3b8">
+              <g
+                className="completion-sparkle"
+                style={sparkleStyle(2)}
+                fill="#94a3b8"
+              >
                 <path d="M0 -3 L0.8 -0.8 L3 0 L0.8 0.8 L0 3 L-0.8 0.8 L-3 0 L-0.8 -0.8 Z" />
               </g>
             </g>

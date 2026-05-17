@@ -267,6 +267,22 @@ export function WelcomeTourOverlay() {
       // in-place on the same pathname AND the prior step was already
       // mounted (first-mount always pops, never slides).
       setSlideMode(samePathname && wasRenderingStep);
+
+      // Reduced-motion path — single atomic commit, no rAF dance, no
+      // post-fade re-enable timer. The user has asked for less motion;
+      // we honour that at the orchestration level by skipping the
+      // staged opacity flip entirely. Child components already drop
+      // their own transitions inside Spotlight/cards via
+      // `useReducedMotion`, so the swap reads as an instant snap with
+      // zero "phase out → phase in" choreography from the overlay.
+      if (reduceMotion) {
+        setRect(nextRect);
+        setTargetNode(node);
+        setRenderedStep(nextState);
+        setPhase('in');
+        return;
+      }
+
       if (samePathname && wasRenderingStep) {
         // Same-pathname slide: keep phase='in' the whole way. The
         // ring/beacon's positional CSS transitions and the coach-mark's
@@ -317,6 +333,18 @@ export function WelcomeTourOverlay() {
         // Navigate (no-op if already on the route).
         if (!samePathname) {
           navigate(targetPath);
+        }
+        // Reduced-motion path skips the rAF dance + retry array
+        // entirely. A single immediate measure attempt is enough —
+        // if the target isn't ready, the next tour.state change will
+        // re-trigger this whole effect. The retry array exists to
+        // glide over slow-mounting React routes for users who CAN
+        // see the fade-in, but those users have asked for less
+        // motion, so we don't sit in a retry loop waiting for a
+        // fade-in we're not going to show.
+        if (reduceMotion) {
+          tryMeasure();
+          return;
         }
         // First attempt after 2 rAFs — gives React + router a chance
         // to commit the new route content.
