@@ -20,6 +20,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   EditorBreadcrumbActions,
+  formatArticleTitle,
   isPublishEnabled,
   KBBreadcrumbBar,
   type KBBreadcrumbItem,
@@ -32,7 +33,6 @@ import {
   selectSuggestionsForArticle,
 } from '../store/selectors';
 import { routes } from '../lib/routes';
-import { formatArticleTitle } from '../lib/articleDisplay';
 import { useEditorPageControls } from './EditorPageController';
 import { useToast } from '../components/Toast';
 import { ConfirmDialog } from '../components/ConfirmDialog';

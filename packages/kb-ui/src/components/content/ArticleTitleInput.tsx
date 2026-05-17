@@ -1,25 +1,5 @@
-// Chunk 2 — Notion-style title input that lives inside the ContentEditor
-// card chrome via the editor's `header` slot.
-//
-// Visual contract:
-//   - Large display heading (36/44, bold, text-text-primary).
-//   - Placeholder "Untitled" in slate-300 — same typography as the value.
-//   - Transparent chrome (no border, no background, no shadow).
-//   - Auto-grows vertically as the value wraps.
-//   - 24px margin below so the title visually separates from body content.
-//
-// Behaviour:
-//   - Enter key inserts no newline — instead the textarea blurs. The user
-//     can then click into the body or press Tab to continue typing. Blur
-//     (rather than focus-jump to the body) keeps the component decoupled
-//     from the editor instance — the body's `.ProseMirror` element isn't
-//     reachable from here without prop drilling.
-//   - Autofocus on mount when the value is empty (new-article landing).
-//     Skipped for existing articles so we don't steal focus.
-//
-// The autosize hook re-measures on every value change by collapsing the
-// height to `auto` then snapping it back to `scrollHeight`. This is the
-// canonical Notion-style trick.
+// Notion-style autosize title input. Mounts in ContentEditor's `header` slot.
+// Enter blurs (no newline); autofocus only when value is empty on mount.
 
 import { useEffect, useLayoutEffect, useRef } from 'react';
 
