@@ -12,6 +12,8 @@ export { Divider } from './Divider';
 export type { DividerProps } from './Divider';
 export { Field } from './Field';
 export type { FieldProps } from './Field';
+export { Kbd } from './Kbd';
+export type { KbdProps } from './Kbd';
 export { Textarea } from './Textarea';
 export type { TextareaProps } from './Textarea';
 export { TextInput } from './TextInput';
