@@ -1,11 +1,16 @@
 // Portal-rendered overlay that orchestrates the welcome tour.
 //
+// Driven entirely by the steps[] / welcome / completion config the
+// consumer passed to <WelcomeTourProvider>. No hardcoded step ids,
+// routes, or copy.
+//
 // v2 responsibilities:
 //   - Portals to document.body so it's not clipped by the shell.
 //   - Cross-fades between steps: when state changes, fades out the
-//     current ring + coach mark (180ms), navigates, waits for the new
-//     target to be measurable (2x rAF), then fades the new ring + card
-//     in at their final positions (240ms).
+//     current ring + coach mark (120ms), navigates (if the step has
+//     a `route`), waits for the new target to be measurable (2x rAF
+//     + spaced retries), then fades the new ring + card in at their
+//     final positions (240ms).
 //   - Re-measures on debounced window resize (150ms) — no
 //     ResizeObserver.
 //   - No celebration. "Got it" just transitions to 'done' which fades
@@ -18,54 +23,15 @@ import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   useWelcomeTour,
-  type TourState,
-  type TourTargetId,
   isActiveTourState,
+  type TourState,
+  type TourStep,
 } from './WelcomeTourContext';
 import { WelcomeCard } from './WelcomeCard';
 import { CompletionCard } from './CompletionCard';
 import { Spotlight, type SpotlightRect, type CoachMarkContent } from './Spotlight';
 import { useReducedMotion } from './useReducedMotion';
-import { DEFAULT_KB_CATEGORY_SLUG, routes } from '../../lib/routes';
 import './welcome-tour-animations.css';
-
-type StepKey = 'step-explorer' | 'step-ai' | 'step-analytics';
-
-/* Step → target id mapping. */
-const STEP_TARGET: Record<StepKey, TourTargetId> = {
-  'step-explorer': 'sidebar-explorer',
-  'step-ai': 'rail-ai',
-  'step-analytics': 'rail-analytics',
-};
-
-/* Step → route path mapping. */
-const STEP_ROUTE: Record<StepKey, string> = {
-  'step-explorer': routes.kb.category(DEFAULT_KB_CATEGORY_SLUG),
-  'step-ai': routes.aiOptimise.hub(),
-  'step-analytics': routes.analytics.articlePerformance(),
-};
-
-/* Coach-mark content per step. */
-const STEP_CONTENT: Record<
-  StepKey,
-  { title: string; body: string; stepIndex: number }
-> = {
-  'step-explorer': {
-    title: 'Browse like files',
-    body: 'Your articles and categories now live in a tree on the left. Click to open, drag to reorganize.',
-    stepIndex: 0,
-  },
-  'step-ai': {
-    title: 'AI Gaps & Suggestions',
-    body: 'We surface missing or thin content based on real customer questions. Tackle the highest-impact gaps first.',
-    stepIndex: 1,
-  },
-  'step-analytics': {
-    title: 'Analytics for every article',
-    body: 'See views, helpful votes, search performance, and how AI is using your content to answer tickets.',
-    stepIndex: 2,
-  },
-};
 
 /** Cross-route fade-out duration before we navigate + remeasure.
  *  Compressed from the previous 180ms (out) + 240ms (in) ≥ 400ms total
@@ -83,55 +49,29 @@ const REDUCED_MOTION_SWAP_MS = 60;
  *  catches second-render targets without dragging the happy path. */
 const MEASURE_RETRY_DELAYS = [80, 180, 320];
 
-/** Total step count surfaced to the coach mark indicator. */
-const TOTAL_STEPS = 3;
-
-function isStepState(state: TourState): state is StepKey {
-  return (
-    state === 'step-explorer' ||
-    state === 'step-ai' ||
-    state === 'step-analytics'
-  );
-}
-
 /**
- * Compute the spotlight rect for a given step. Most steps use the
- * registered target's full bounding rect — but `step-explorer`
- * unions the header + tree elements inside the FileExplorerNav so
- * the ring hugs the visible UI instead of the full-height aside.
+ * Default spotlight rect computation — used when a step doesn't
+ * provide its own `computeRect`. Returns the registered node's
+ * bounding rect, or null if the node is detached / collapsed.
  */
-function computeRectForStep(
-  step: StepKey,
-  registeredNode: HTMLElement,
-): SpotlightRect | null {
-  if (step === 'step-explorer') {
-    const header = registeredNode.querySelector<HTMLElement>(
-      '[data-kb-part="explorer-header"]',
-    );
-    const body =
-      registeredNode.querySelector<HTMLElement>(
-        '[data-kb-part="explorer-tree"]',
-      ) ??
-      registeredNode.querySelector<HTMLElement>(
-        '[data-kb-part="explorer-flat"]',
-      );
-    if (header !== null && body !== null) {
-      const h = header.getBoundingClientRect();
-      const b = body.getBoundingClientRect();
-      const top = Math.min(h.top, b.top);
-      const left = Math.min(h.left, b.left);
-      const right = Math.max(h.right, b.right);
-      const bottom = Math.max(h.bottom, b.bottom);
-      if (right > left && bottom > top) {
-        return { top, left, width: right - left, height: bottom - top };
-      }
-    }
-    // Fall through to the registered node's full rect if either
-    // sub-element is missing — better to show something than nothing.
-  }
-  const r = registeredNode.getBoundingClientRect();
+function defaultComputeRect(node: HTMLElement): SpotlightRect | null {
+  const r = node.getBoundingClientRect();
   if (r.width === 0 && r.height === 0) return null;
   return { top: r.top, left: r.left, width: r.width, height: r.height };
+}
+
+function computeRectForStep(
+  step: TourStep,
+  registeredNode: HTMLElement,
+): SpotlightRect | null {
+  if (typeof step.computeRect === 'function') {
+    const rect = step.computeRect(registeredNode);
+    if (rect !== null) return rect;
+    // Fall through to default if the step's computeRect bailed out
+    // (e.g. expected sub-elements missing) — better to show something
+    // than nothing.
+  }
+  return defaultComputeRect(registeredNode);
 }
 
 export function WelcomeTourOverlay() {
@@ -200,23 +140,32 @@ export function WelcomeTourOverlay() {
    * old rect — a flash the user would catch.
    */
 
+  // Snapshot the step we're transitioning to. Hoisted out of the
+  // effect so it's stable for the closure cycle below.
+  const nextState = tour.state;
+  const nextStep: TourStep | null =
+    nextState.phase === 'step'
+      ? (tour.steps[nextState.stepIndex] ?? null)
+      : null;
+  const stepTargetId: string | null = nextStep?.id ?? null;
+  const stepRoute: string | null = nextStep?.route ?? null;
+
   useEffect(() => {
     const cycle = ++measureCycleRef.current;
-    const nextState = tour.state;
 
     // Non-step states.
-    if (!isStepState(nextState)) {
+    if (nextState.phase !== 'step') {
       // If we were rendering a step and the user just finished/skipped
       // out (or earned the completion card), play one final fade-out
       // before unmounting. We do NOT update renderedStep yet — keeping
       // it on the prior step keeps the Spotlight mounted while
       // phase='out' drives the fade.
-      const wasRenderingStep = isStepState(renderedStep);
+      const wasRenderingStep = renderedStep.phase === 'step';
       if (
         wasRenderingStep &&
-        (nextState === 'done' ||
-          nextState === 'closed' ||
-          nextState === 'completion')
+        (nextState.phase === 'done' ||
+          nextState.phase === 'closed' ||
+          nextState.phase === 'completion')
       ) {
         setPhase('out');
         // Tightened from 220ms to match the new compressed fade-out
@@ -237,11 +186,14 @@ export function WelcomeTourOverlay() {
       return;
     }
 
-    const targetId = STEP_TARGET[nextState];
-    const targetPath = STEP_ROUTE[nextState];
+    if (stepTargetId === null) {
+      // Defensive — the phase says 'step' but the step is missing.
+      return;
+    }
 
-    const wasRenderingStep = isStepState(renderedStep);
-    const samePathname = location.pathname === targetPath;
+    const wasRenderingStep = renderedStep.phase === 'step';
+    const samePathname =
+      stepRoute === null || location.pathname === stepRoute;
     // Same-pathname slide: skip fade-out, no opacity dip.
     // Cross-route swap: short fade-out (or 60ms in reduced-motion).
     const needsFadeOut = wasRenderingStep && !samePathname;
@@ -319,9 +271,12 @@ export function WelcomeTourOverlay() {
 
     const tryMeasure = (): boolean => {
       if (cycle !== measureCycleRef.current) return true; // cancelled
-      const node = tour.getTarget(targetId);
+      const node = tour.getTarget(stepTargetId);
       if (node === null) return false;
-      const nextRect = computeRectForStep(nextState, node);
+      // We just confirmed the step exists (nextState.phase === 'step'),
+      // so nextStep is non-null here.
+      const step = nextStep as TourStep;
+      const nextRect = computeRectForStep(step, node);
       if (nextRect === null) return false;
       applyMeasured(nextRect, node);
       return true;
@@ -330,9 +285,9 @@ export function WelcomeTourOverlay() {
     timers.push(
       window.setTimeout(() => {
         if (cycle !== measureCycleRef.current) return;
-        // Navigate (no-op if already on the route).
-        if (!samePathname) {
-          navigate(targetPath);
+        // Navigate (no-op if already on the route, or no route configured).
+        if (stepRoute !== null && !samePathname) {
+          navigate(stepRoute);
         }
         // Reduced-motion path skips the rAF dance + retry array
         // entirely. A single immediate measure attempt is enough —
@@ -370,23 +325,25 @@ export function WelcomeTourOverlay() {
     return () => {
       timers.forEach((t) => window.clearTimeout(t));
     };
-    // We intentionally exclude `location.pathname` and `renderedStep`
-    // from deps — the cycle is driven by tour.state changes only.
-    // (reduceMotion is also stable across a single tour run.)
+    // We intentionally exclude `location.pathname`, `renderedStep`, and
+    // `nextStep` from deps — the cycle is driven by tour.state changes
+    // only (nextState.phase + nextState.stepIndex). (reduceMotion is
+    // also stable across a single tour run.)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tour.state]);
+  }, [nextState.phase, nextState.stepIndex]);
 
   /* ── Window resize re-measure (debounced 150ms) ──────────── */
 
   useEffect(() => {
-    if (!isStepState(renderedStep)) return;
-    const targetId = STEP_TARGET[renderedStep];
-    const step = renderedStep;
+    if (renderedStep.phase !== 'step') return;
+    const step = tour.steps[renderedStep.stepIndex];
+    if (step === undefined) return;
+    const stepId = step.id;
     let timer: number | null = null;
     const handle = () => {
       if (timer !== null) window.clearTimeout(timer);
       timer = window.setTimeout(() => {
-        const node = tour.getTarget(targetId);
+        const node = tour.getTarget(stepId);
         if (node === null) return;
         const nextRect = computeRectForStep(step, node);
         if (nextRect === null) return;
@@ -402,15 +359,20 @@ export function WelcomeTourOverlay() {
 
   /* ── Build coach-mark content ────────────────────────────── */
 
-  const coachMark: CoachMarkContent | null = isStepState(renderedStep)
+  const renderedStepData: TourStep | null =
+    renderedStep.phase === 'step'
+      ? (tour.steps[renderedStep.stepIndex] ?? null)
+      : null;
+
+  const coachMark: CoachMarkContent | null = renderedStepData
     ? (() => {
-        const base = STEP_CONTENT[renderedStep];
-        const isLast = base.stepIndex === TOTAL_STEPS - 1;
+        const total = tour.totalSteps;
+        const isLast = renderedStep.stepIndex === total - 1;
         return {
-          title: base.title,
-          body: base.body,
-          stepIndex: base.stepIndex,
-          totalSteps: TOTAL_STEPS,
+          title: renderedStepData.title,
+          body: renderedStepData.body,
+          stepIndex: renderedStep.stepIndex,
+          totalSteps: total,
           primaryLabel: isLast ? 'Got it' : 'Next',
           primaryIsFinish: isLast,
         };
@@ -424,21 +386,27 @@ export function WelcomeTourOverlay() {
   // The visible state is renderedStep (which lags tour.state during
   // fade-out). This keeps the overlay mounted through the closing
   // fade after "Got it" / "Skip".
-  if (renderedStep === 'closed' || renderedStep === 'done') return null;
+  if (renderedStep.phase === 'closed' || renderedStep.phase === 'done') {
+    return null;
+  }
 
   let content: React.ReactNode = null;
 
-  if (renderedStep === 'welcome') {
-    content = <WelcomeCard onStart={tour.next} onSkip={tour.skip} />;
-  } else if (renderedStep === 'completion') {
-    content = <CompletionCard onDismiss={tour.next} />;
-  } else if (coachMark) {
-    // Rail icon buttons (rail-ai, rail-analytics) have transparent
-    // backgrounds — when we lift them above the dim, we need to paint
-    // a white background underneath so they read cleanly. The sidebar
-    // explorer is a full surface card and already has its own bg.
+  if (renderedStep.phase === 'welcome') {
+    content = (
+      <WelcomeCard
+        content={tour.welcome}
+        onStart={tour.next}
+        onSkip={tour.skip}
+      />
+    );
+  } else if (renderedStep.phase === 'completion') {
+    content = (
+      <CompletionCard content={tour.completion} onDismiss={tour.next} />
+    );
+  } else if (coachMark && renderedStepData) {
     const targetNeedsBackgroundFill =
-      renderedStep === 'step-ai' || renderedStep === 'step-analytics';
+      renderedStepData.targetNeedsBackgroundFill ?? false;
     content = (
       <Spotlight
         rect={rect}
