@@ -252,13 +252,28 @@ export function Modal({
 
   /* Portal mode — centered modal over a dimmed backdrop. Backdrop
    * uses text-primary/40 wash + z-90 to match the existing demo
-   * ConfirmDialog stacking; content sits on z-91. */
+   * ConfirmDialog stacking; content sits on z-91.
+   *
+   * Motion (Phase D1, emil-design-eng skill):
+   *   - Backdrop: opacity fade — 200ms enter / 140ms exit
+   *   - Content: scale 0.96 → 1 + opacity fade — 200ms enter / 140ms exit
+   *     transform-origin: center (skill confirms modals stay centered)
+   *   - Exit faster than enter (close feels snappy, not draggy)
+   *   - Keyframes (not transitions) so Radix can suspend unmount via
+   *     `animationend` while the exit animation plays out
+   *   - `motion-safe:` gates the animation — reduced-motion users get
+   *     instant mount/unmount (Radix detects no animation and unmounts
+   *     immediately, which is the correct accessible default) */
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay
           data-kb-part="modal-overlay"
-          className="fixed inset-0 z-[90] bg-text-primary/40"
+          className={cn(
+            'fixed inset-0 z-[90] bg-text-primary/40',
+            'motion-safe:data-[state=open]:animate-kb-backdrop-in',
+            'motion-safe:data-[state=closed]:animate-kb-backdrop-out',
+          )}
         />
 
         <Dialog.Content
@@ -269,7 +284,9 @@ export function Modal({
             'max-w-[calc(100vw-32px)]',
             'flex flex-col bg-white border border-card-border overflow-hidden',
             'shadow-[0_24px_48px_rgba(15,23,42,0.20)]',
-            'animate-toast-in focus:outline-none',
+            'focus:outline-none',
+            'motion-safe:data-[state=open]:animate-kb-modal-in',
+            'motion-safe:data-[state=closed]:animate-kb-modal-out',
             className,
           )}
           aria-describedby={undefined}

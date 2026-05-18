@@ -121,7 +121,20 @@ export function SideSheet({
     );
   }
 
-  /* Portal mode — original behavior, unchanged. */
+  /* Portal mode — right-docked sheet over a dimmed backdrop.
+   *
+   * Motion (Phase D1, emil-design-eng skill):
+   *   - Backdrop: opacity fade — 200ms enter / 140ms exit (same as Modal)
+   *   - Sheet: slide-in from right edge — 240ms strong ease-out
+   *     (Vaul-style timing for drawer-shaped surfaces)
+   *   - Sheet exit: 180ms (faster than enter)
+   *   - transform-origin: right — this is the SKILL EXCEPTION to the
+   *     modal-center rule; sheets are anchored to the edge they slide
+   *     from
+   *   - Keyframes (not transitions) so Radix suspends unmount via
+   *     `animationend` while the slide-out plays
+   *   - `motion-safe:` gates motion — reduced-motion users get instant
+   *     mount/unmount, which is the correct accessible default */
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -129,7 +142,11 @@ export function SideSheet({
          * dark wash so feature sheets composing on top look identical. */}
         <Dialog.Overlay
           data-kb-part="side-sheet-overlay"
-          className="fixed inset-0 z-40 bg-black/85"
+          className={cn(
+            'fixed inset-0 z-40 bg-black/85',
+            'motion-safe:data-[state=open]:animate-kb-backdrop-in',
+            'motion-safe:data-[state=closed]:animate-kb-backdrop-out',
+          )}
         />
 
         {/* Right-docked sheet. Width is dynamic so it lives on inline
@@ -142,6 +159,8 @@ export function SideSheet({
             'border-l border-card-border',
             'shadow-[-4px_0_16px_rgba(15,23,42,0.08)]',
             'focus:outline-none',
+            'motion-safe:data-[state=open]:animate-kb-sheet-in-right',
+            'motion-safe:data-[state=closed]:animate-kb-sheet-out-right',
             className,
           )}
           aria-describedby={undefined}
