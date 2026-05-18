@@ -67,7 +67,12 @@ function SortDropdown({ options, value, onChange }: SortDropdownProps) {
           className={cn(
             'inline-flex items-center gap-2 rounded-[6px] bg-surface-muted px-3 py-1.5',
             'text-[14px] font-medium leading-5 text-text-primary',
-            'hover:bg-card-border',
+            // Specific properties on the transition + strong ease-out curve.
+            // Emil-style press feedback: subtle 0.97 scale on `:active`
+            // confirms the click landed. `motion-safe:` gates the scale so
+            // reduced-motion users only see the colour flip.
+            'transition-[background-color,transform] duration-[160ms] [transition-timing-function:var(--ease-out-strong)]',
+            'hover:bg-card-border motion-safe:active:scale-[0.97]',
             'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
             'data-[state=open]:bg-card-border',
           )}
@@ -87,7 +92,20 @@ function SortDropdown({ options, value, onChange }: SortDropdownProps) {
           className={cn(
             'z-50 min-w-[160px] rounded-[8px] border border-card-border bg-white p-1',
             'shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_2px_4px_-2px_rgba(0,0,0,0.10)]',
+            // Origin-aware popover entrance — scales from the trigger.
+            // Radix exposes the computed origin as a CSS var; we set it
+            // via inline `transformOrigin` below. Opacity 0 → 1 + scale
+            // 0.96 → 1 (never scale from 0 — nothing in the real world
+            // appears from nothing). 150ms with the strong ease-out curve
+            // per Emil's framework. Uses the kb-ui-internal
+            // `kb-dropdown-in` keyframe (defined in tokens.css) which
+            // is gated by `prefers-reduced-motion: reduce` via the global
+            // `motion-safe:` mechanism at the call site.
+            'motion-safe:data-[state=open]:animate-kb-dropdown-in',
           )}
+          style={{
+            transformOrigin: 'var(--radix-dropdown-menu-content-transform-origin)',
+          }}
         >
           {options.map((opt) => (
             <DropdownMenu.Item
@@ -96,6 +114,11 @@ function SortDropdown({ options, value, onChange }: SortDropdownProps) {
               className={cn(
                 'flex cursor-pointer items-center rounded-[6px] px-2 py-1.5',
                 'text-[14px] leading-5 text-text-primary',
+                // Specific property on the highlight transition — never
+                // `transition-colors` catch-all. Quick 120ms feel for the
+                // row-by-row hover ripple as the user arrow-keys through
+                // the menu.
+                'transition-[background-color] duration-[120ms] [transition-timing-function:var(--ease-out-strong)]',
                 'data-[highlighted]:bg-surface-subtle focus:outline-none',
               )}
             >
@@ -186,12 +209,29 @@ export function AIConversationLogsCard({
                         onCheckedChange={onTicketCreatedToggle}
                         data-kb-part="ai-conversation-logs-ticket-toggle"
                         className={cn(
-                          'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors',
+                          // Specific property on the track transition (no
+                          // `transition-colors` catch-all). The strong
+                          // ease-out curve makes the state flip read as
+                          // intentional rather than a soft fade. 200ms
+                          // is the upper end of "feels responsive" for
+                          // toggles per Emil's framework.
+                          'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full',
+                          'transition-[background-color] duration-[200ms] [transition-timing-function:var(--ease-out-strong)]',
                           'data-[state=unchecked]:bg-card-border data-[state=checked]:bg-text-primary',
                           'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
                         )}
                       >
-                        <Switch.Thumb className="block size-4 translate-x-0.5 rounded-full bg-white shadow transition-transform data-[state=checked]:translate-x-[18px]" />
+                        <Switch.Thumb
+                          className={cn(
+                            'block size-4 translate-x-0.5 rounded-full bg-white shadow',
+                            // Thumb slide uses the same curve as the track
+                            // so the two motions land together. `motion-safe`
+                            // gates the slide; reduced-motion users still
+                            // see the position change instantly.
+                            'motion-safe:transition-transform motion-safe:duration-[200ms] [transition-timing-function:var(--ease-out-strong)]',
+                            'data-[state=checked]:translate-x-[18px]',
+                          )}
+                        />
                       </Switch.Root>
                       <span className="text-[14px] font-normal leading-5 text-text-meta">
                         Ticket Created
