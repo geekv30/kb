@@ -82,22 +82,45 @@ export function CompanyLogo({
     );
   }
 
+  // Default glyph variant — render the rounded-rect mask via a CSS
+  // `border-radius` wrapper rather than SVG `rx`. At small display sizes
+  // (e.g. the 16px favicon inside SerpPreview), SVG `rx` rasterizes
+  // unevenly across the four corners — the bottom-left corner visibly
+  // chunks sharper than the others because the curve only spans ~2.7
+  // device pixels and the rounding decisions diverge per-corner. CSS
+  // `border-radius` with `overflow: hidden` anti-aliases uniformly via
+  // the browser's compositor and gives all four corners the same shape.
+  // Same code path used by `src` and `glyph` variants above for
+  // consistency across consumers.
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
+    <span
       className={className}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: size,
+        height: size,
+        borderRadius: 4,
+        backgroundColor: bgColor,
+        overflow: 'hidden',
+      }}
       aria-hidden="true"
-      {...rest}
     >
-      <rect width="24" height="24" rx="4" fill={bgColor} />
-      <path
-        d="M12.855 11.2344C14.7431 11.2345 16.2739 12.7661 16.2739 14.6543V18.7949C14.3857 18.7949 12.8551 17.2642 12.855 15.376V11.2344ZM7.72607 5.20508C9.61434 5.20508 11.145 6.73575 11.145 8.62402V18.4346C9.25685 18.4345 7.72607 16.9038 7.72607 15.0156V5.20508Z"
-        fill="white"
-      />
-    </svg>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        style={{ display: 'block' }}
+        {...rest}
+      >
+        <path
+          d="M12.855 11.2344C14.7431 11.2345 16.2739 12.7661 16.2739 14.6543V18.7949C14.3857 18.7949 12.8551 17.2642 12.855 15.376V11.2344ZM7.72607 5.20508C9.61434 5.20508 11.145 6.73575 11.145 8.62402V18.4346C9.25685 18.4345 7.72607 16.9038 7.72607 15.0156V5.20508Z"
+          fill="white"
+        />
+      </svg>
+    </span>
   );
 }
