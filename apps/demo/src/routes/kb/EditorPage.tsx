@@ -37,7 +37,6 @@ import {
   ContentEditor,
   type ArticleSettings as KbUiArticleSettings,
   type ArticleSettingsPerson,
-  type ArticleVisibility as KbUiArticleVisibility,
 } from '@test-kb-ui/kb-ui';
 import { useMockStore } from '../../store/MockStoreContext';
 import {
@@ -69,34 +68,19 @@ const SAVE_DEBOUNCE_MS = 200;
 /* ─────────────────────────────────────────────────────────────
  * Adapters — store ArticleSettings ↔ kb-ui ArticleSettings
  *
- * The shapes diverge intentionally (TRD §5.1 uses domain primitives;
+ * The shapes diverge intentionally (the store uses domain primitives;
  * the kb-ui panel uses presentational types). These two functions are
  * the only place the conversion happens.
+ *
+ * Chunk 2 of the SEO panel scaffold trims the kb-ui panel down to the
+ * General tab (author + category + slug). Tags/publishDate/seoTitle/
+ * visibility/reviewers are no longer surfaced on the kb-ui side — chunk
+ * 3 will reintroduce the SEO-relevant fields on the SEO tab.
  * ───────────────────────────────────────────────────────────── */
-
-function toKbVisibility(v: StoreArticleSettings['visibility']): KbUiArticleVisibility {
-  return v === 'public' ? 'Public' : 'Internal';
-}
-
-function fromKbVisibility(v?: KbUiArticleVisibility): StoreArticleSettings['visibility'] {
-  // 'Draft' has no analogue in the store's `'public' | 'private'` axis;
-  // treat it as private (the closest "not yet visible to readers" value).
-  return v === 'Public' ? 'public' : 'private';
-}
 
 function toPerson(user: User | undefined): ArticleSettingsPerson | undefined {
   if (!user) return undefined;
   return { name: user.name, initials: user.initials };
-}
-
-function findUserByPerson(
-  users: Record<string, User>,
-  person: ArticleSettingsPerson | undefined,
-): User | undefined {
-  if (!person) return undefined;
-  return Object.values(users).find(
-    (u) => u.name === person.name && u.initials === person.initials,
-  );
 }
 
 function adaptStoreToKbSettings(
@@ -106,61 +90,27 @@ function adaptStoreToKbSettings(
   storeSettings: StoreArticleSettings,
 ): KbUiArticleSettings {
   const author = users[article.authorId];
-  const reviewers = storeSettings.reviewerIds
-    .map((id) => users[id])
-    .filter((u): u is User => Boolean(u))
-    .map((u) => ({ name: u.name, initials: u.initials }));
   return {
     author: toPerson(author),
     category: category?.title,
     slug: storeSettings.slug,
-    tags: storeSettings.tags,
-    publishDate: storeSettings.publishDate
-      ? formatPublishDate(storeSettings.publishDate)
-      : undefined,
-    seoTitle: storeSettings.seoTitle,
-    visibility: toKbVisibility(storeSettings.visibility),
-    reviewers,
   };
 }
 
 /**
  * Project edits made inside the kb-ui ArticleSettingsPanel back into the
  * store's settings shape. Only the fields the panel can actually mutate
- * (slug, tags, seoTitle, visibility, reviewers) are written; author /
- * category / publishDate stay frozen — those are surfaced as read-only
- * dropdowns in v1 (per `apps/demo/_diff-report.md` settings spec).
+ * (slug, post-chunk-2) are written; author / category stay frozen —
+ * those are surfaced as read-only dropdowns in v1.
  */
 function adaptKbToStoreSettings(
   prev: StoreArticleSettings,
   next: KbUiArticleSettings,
-  users: Record<string, User>,
 ): StoreArticleSettings {
-  const reviewerIds = (next.reviewers ?? [])
-    .map((p) => findUserByPerson(users, p))
-    .filter((u): u is User => Boolean(u))
-    .map((u) => u.id);
   return {
     ...prev,
     slug: next.slug ?? prev.slug,
-    tags: next.tags ?? prev.tags,
-    seoTitle: next.seoTitle ?? prev.seoTitle,
-    visibility: next.visibility
-      ? fromKbVisibility(next.visibility)
-      : prev.visibility,
-    reviewerIds,
   };
-}
-
-function formatPublishDate(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  // "Apr 12, 2026" — matches the kb-ui panel's expected display.
-  return d.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -360,12 +310,10 @@ function EditorPageBody({ article }: { article: Article }) {
 
   const handleSettingsChange = useCallback(
     (next: KbUiArticleSettings) => {
-      setStoreSettings((prev) =>
-        adaptKbToStoreSettings(prev, next, state.users),
-      );
+      setStoreSettings((prev) => adaptKbToStoreSettings(prev, next));
       setDirty(true);
     },
-    [state.users],
+    [],
   );
 
   const handleSaveAsDraft = useCallback(() => {

@@ -172,21 +172,9 @@ const populatedSettings: ArticleSettings = {
   author: { name: 'Varun K', initials: 'A' },
   category: 'Hiver in Incognito',
   slug: 'how-to-reset-your-password',
-  tags: ['Security', 'Account', 'Password'],
-  publishDate: 'Apr 12, 2026',
-  seoTitle: 'Reset Your Password — Hiver Help',
-  visibility: 'Public',
-  reviewers: [
-    { name: 'Aditya Kapoor', initials: 'AK' },
-    { name: 'Maya Rao', initials: 'MR' },
-    { name: 'Tanvi Shah', initials: 'TS' },
-  ],
 };
 
-const emptySettings: ArticleSettings = {
-  tags: [],
-  reviewers: [],
-};
+const emptySettings: ArticleSettings = {};
 
 /* ─────────────────────────────────────────────────────────────
  * Composition wrapper
@@ -223,7 +211,7 @@ function EditorPage({ sidebarCollapsed, populated }: EditorPageProps) {
   // Sync local state with control changes: toggling `sidebarCollapsed` or
   // `populated` from the Storybook controls panel should reset the local
   // wrapper state to match — otherwise the user's prior in-component
-  // edits (e.g. tags they added) shadow the new arg value.
+  // edits shadow the new arg value.
   React.useEffect(() => {
     setCollapsed(sidebarCollapsed);
   }, [sidebarCollapsed]);

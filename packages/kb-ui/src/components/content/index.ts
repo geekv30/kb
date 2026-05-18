@@ -14,21 +14,14 @@ export type {
   ArticleSettingsPanelProps,
   ArticleSettingsPerson,
   ArticleSettingsSection,
-  ArticleVisibility,
 } from './ArticleSettingsPanel';
 export {
   FieldLabel,
   FieldBox,
   ChevronSuffix,
   CharCounter,
-  Placeholder,
-  TagChip,
-  AddChipButton,
 } from './ArticleSettingsPanelAtoms';
-export type {
-  FieldBoxProps,
-  TagChipProps,
-} from './ArticleSettingsPanelAtoms';
+export type { FieldBoxProps } from './ArticleSettingsPanelAtoms';
 export { SuggestionCard, DEFAULT_SUGGESTION_KINDS } from './SuggestionCard';
 export type {
   SuggestionCardProps,

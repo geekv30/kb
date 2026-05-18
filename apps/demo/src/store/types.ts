@@ -37,17 +37,14 @@ export type Category = {
   depth: CategoryDepth;
 };
 
-export type ArticleVisibility = 'public' | 'private';
-
 export type ArticleSettings = {
   slug: string;
-  tags: string[];
-  /** ISO date string when published, null when draft. */
-  publishDate: string | null;
+  /**
+   * SEO meta title. Chunk 3 of the SEO panel build will rename this to
+   * `metaTitle` and surface it as a first-class field; for now it stays
+   * on the store so seed/fixture data round-trips intact.
+   */
   seoTitle: string;
-  visibility: ArticleVisibility;
-  /** Reviewer user IDs — never includes the article's author. */
-  reviewerIds: string[];
   /**
    * Free-text meta description (≤160 chars). Empty/undefined falls back
    * to the search-engine auto-generated snippet.

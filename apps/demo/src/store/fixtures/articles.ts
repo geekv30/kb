@@ -60,11 +60,7 @@ export const articles: Article[] = [
 <p>Once Hiver is loaded, you'll see the shared-inbox list under your personal labels. If the rail is missing, disable and re-enable the extension from <code>chrome://extensions</code>, then refresh Gmail. Most install issues come from a stale Gmail tab — closing every Gmail tab and re-opening one fresh resolves them.</p>`,
     settings: {
       slug: 'installing-the-hiver-chrome-extension',
-      tags: ['onboarding', 'chrome-extension'],
-      publishDate: daysAgo(2),
       seoTitle: 'How to install the Hiver Chrome extension',
-      visibility: 'public',
-      reviewerIds: ['user-mira'],
     },
   },
   {
@@ -87,11 +83,7 @@ export const articles: Article[] = [
 <p>The invitee receives an email with a one-click link that drops them straight into the Hiver onboarding flow. Once they accept, they'll appear in the agent list with a green "Online" dot the next time they open Gmail. For tips on a smooth first day, read <a href="#">Onboarding new agents</a>.</p>`,
     settings: {
       slug: 'inviting-your-first-teammate',
-      tags: ['onboarding', 'team'],
-      publishDate: null,
       seoTitle: 'How to invite your first teammate to Hiver',
-      visibility: 'public',
-      reviewerIds: ['user-aanya'],
     },
   },
   {
@@ -114,11 +106,7 @@ export const articles: Article[] = [
 <p>If the connection appears successful but no conversations sync, check your tenant's conditional access rules — Hiver's IP range needs to be allowlisted on tenants that block "third-party connectors." See <a href="#">Microsoft 365 conditional access</a> for the IP list.</p>`,
     settings: {
       slug: 'connecting-an-outlook-mailbox',
-      tags: ['outlook', 'inbox-setup'],
-      publishDate: daysAgo(3),
       seoTitle: 'Connect an Outlook mailbox to Hiver',
-      visibility: 'public',
-      reviewerIds: [],
     },
   },
   {
@@ -142,11 +130,7 @@ export const articles: Article[] = [
 <p>The first new email to that address shows up as a Hiver conversation within 30 seconds. If you don't see one within five minutes, double-check the alias is forwarding correctly. See <a href="#">Diagnosing a quiet inbox</a>.</p>`,
     settings: {
       slug: 'creating-your-first-shared-inbox',
-      tags: ['shared-inboxes', 'getting-started'],
-      publishDate: daysAgo(1),
       seoTitle: 'Create your first shared inbox in Hiver',
-      visibility: 'public',
-      reviewerIds: ['user-tarun'],
     },
   },
   {
@@ -172,11 +156,7 @@ export const articles: Article[] = [
 <p>If you don't receive the email within five minutes, the most likely cause is that your team's mail server is quarantining no-reply addresses. Ask your IT admin to allowlist <code>noreply@hiverhq.com</code>. For more help, see <a href="#">Login troubleshooting</a>.</p>`,
     settings: {
       slug: 'how-to-reset-your-password',
-      tags: ['account', 'security'],
-      publishDate: daysAgo(5),
       seoTitle: 'How to reset your Hiver password',
-      visibility: 'public',
-      reviewerIds: ['user-aanya', 'user-devika'],
     },
     aiGapsSummary:
       'Refining the article with updated instruction set, updating link and by removing legacy instructions',
@@ -201,11 +181,7 @@ export const articles: Article[] = [
 <p>Every add/remove on a restricted inbox writes an entry to the audit log under <strong>Settings → Audit log</strong>. Filter by inbox ID to review the full access history. See <a href="#">Audit log filters</a> for advanced queries.</p>`,
     settings: {
       slug: 'restricting-an-inbox-to-specific-agents',
-      tags: ['permissions', 'security'],
-      publishDate: daysAgo(6),
       seoTitle: 'Restrict a Hiver inbox to specific agents',
-      visibility: 'public',
-      reviewerIds: ['user-mira'],
     },
   },
   {
@@ -228,11 +204,7 @@ export const articles: Article[] = [
 <p>By default templates are scoped to the inbox they were created in. Move a template to the workspace-level <em>Shared</em> folder to make it available everywhere. See <a href="#">Template variables reference</a> for the full placeholder list.</p>`,
     settings: {
       slug: 'creating-a-shared-template-library',
-      tags: ['templates'],
-      publishDate: daysAgo(2),
       seoTitle: 'Build a shared template library in Hiver',
-      visibility: 'public',
-      reviewerIds: ['user-mira'],
     },
   },
   {
@@ -255,11 +227,7 @@ export const articles: Article[] = [
 <p>Round-robin works for teams where every conversation takes roughly the same time — high-volume tier-1 support is the canonical fit. Load-balanced is better when complexity varies wildly — billing or technical support tend to need it. See <a href="#">Skill-based assignment</a> to layer skills on top.</p>`,
     settings: {
       slug: 'round-robin-vs-load-balanced-assignment',
-      tags: ['auto-assignment', 'rules'],
-      publishDate: daysAgo(3),
       seoTitle: 'Round-robin vs load-balanced auto-assignment',
-      visibility: 'public',
-      reviewerIds: ['user-aanya'],
     },
   },
   {
@@ -286,11 +254,7 @@ export const articles: Article[] = [
 <p>Beyond visual customisation, the widget has behavioural toggles for proactive messages, quiet hours, and offline-mode forms. Most teams start with all toggles off and enable them as they observe their chat traffic patterns. See <a href="#">Proactive chat playbook</a> for what to try first.</p>`,
     settings: {
       slug: 'customizing-the-chat-widget',
-      tags: ['live-chat', 'widget', 'branding'],
-      publishDate: daysAgo(4),
       seoTitle: 'Customize the Hiver chat widget',
-      visibility: 'public',
-      reviewerIds: ['user-aanya'],
     },
     aiGapsSummary:
       'Adding accessibility best-practices guidance, renaming the color picker to theme selector and removing legacy iframe embed instructions',
@@ -316,11 +280,7 @@ export const articles: Article[] = [
 <p>Inbound WhatsApp messages appear as conversations in the inbox you map them to. Agents can reply through the same composer they use for email. Outbound proactive messages need a pre-approved template per Meta's policy. See <a href="#">WhatsApp message templates</a>.</p>`,
     settings: {
       slug: 'connecting-whatsapp-business-to-hiver',
-      tags: ['whatsapp', 'multi-channel'],
-      publishDate: daysAgo(5),
       seoTitle: 'Connect WhatsApp Business to Hiver',
-      visibility: 'public',
-      reviewerIds: ['user-mira'],
     },
   },
   {
@@ -343,11 +303,7 @@ export const articles: Article[] = [
 <p>Inbound SMS to the number appears as conversations in the inbox you map. Outbound SMS uses message templates with character-aware previews — Hiver tells you when a message will split into multiple SMS segments. See <a href="#">SMS character limits</a>.</p>`,
     settings: {
       slug: 'adding-sms-as-a-support-channel',
-      tags: ['sms', 'multi-channel'],
-      publishDate: daysAgo(7),
       seoTitle: 'Add SMS support to Hiver',
-      visibility: 'public',
-      reviewerIds: ['user-aanya'],
     },
   },
   {
@@ -376,11 +332,7 @@ export const articles: Article[] = [
 <p>Once saved, send a test email from outside your team to the trigger inbox. The auto-reply should arrive within a few seconds. If it doesn't, check the rule's run log — every rule has a per-run history showing why it did or didn't fire. See <a href="#">Rule run logs</a>.</p>`,
     settings: {
       slug: 'setting-up-auto-reply-rules',
-      tags: ['automations', 'rules', 'auto-reply'],
-      publishDate: daysAgo(6),
       seoTitle: 'Set up auto-reply rules in Hiver',
-      visibility: 'public',
-      reviewerIds: ['user-mira', 'user-tarun'],
     },
     aiGapsSummary:
       'Adding timezone guidance for rule schedules, clarifying the ambiguous Recent trigger and removing the deprecated sender-domain toggle',
@@ -406,11 +358,7 @@ export const articles: Article[] = [
 <p>Hiver measures from conversation arrival to first outbound agent reply. Internal notes don't count by default; flip the toggle if you want notes to stop the clock. See <a href="#">SLA measurement details</a>.</p>`,
     settings: {
       slug: 'defining-first-response-targets',
-      tags: ['sla', 'metrics'],
-      publishDate: daysAgo(2),
       seoTitle: 'Define first-response SLA targets in Hiver',
-      visibility: 'public',
-      reviewerIds: ['user-mira'],
     },
   },
   {
@@ -434,11 +382,7 @@ export const articles: Article[] = [
 <p>For severe breaches you can chain escalations — escalate to manager at breach, then to director if still unanswered after another hour. See <a href="#">Escalation chains</a> for the full pattern.</p>`,
     settings: {
       slug: 'escalating-to-a-manager-on-sla-breach',
-      tags: ['escalations', 'sla'],
-      publishDate: daysAgo(4),
       seoTitle: 'Escalate to a manager on SLA breach',
-      visibility: 'public',
-      reviewerIds: ['user-aanya'],
     },
   },
   {
@@ -461,11 +405,7 @@ export const articles: Article[] = [
 <p>The default profile is "Browser push for assigned-to-me, hourly email digest for everything else, Slack off." Most agents leave the defaults; power users tune them aggressively. See <a href="#">Notification profiles</a> for preset bundles.</p>`,
     settings: {
       slug: 'personal-notification-preferences',
-      tags: ['notifications'],
-      publishDate: daysAgo(3),
       seoTitle: 'Personal notification preferences in Hiver',
-      visibility: 'public',
-      reviewerIds: ['user-aanya'],
     },
   },
   {
@@ -489,11 +429,7 @@ export const articles: Article[] = [
 <p>Email the report to yourself or your manager on a recurring schedule — daily, weekly, monthly. PDF and CSV both supported. See <a href="#">Report scheduling</a>.</p>`,
     settings: {
       slug: 'volume-and-response-time-reports',
-      tags: ['reports'],
-      publishDate: daysAgo(1),
       seoTitle: 'Volume and response-time reports in Hiver',
-      visibility: 'public',
-      reviewerIds: ['user-mira'],
     },
   },
   {
@@ -517,11 +453,7 @@ export const articles: Article[] = [
 <p>Custom dashboards can be private (just you), team-scoped (specific roles or agents), or public to the workspace. See <a href="#">Sharing custom dashboards</a>.</p>`,
     settings: {
       slug: 'building-your-first-custom-dashboard',
-      tags: ['dashboards', 'reports'],
-      publishDate: daysAgo(6),
       seoTitle: 'Build your first custom dashboard in Hiver',
-      visibility: 'public',
-      reviewerIds: ['user-aanya'],
     },
   },
   {
@@ -550,11 +482,7 @@ export const articles: Article[] = [
 <p>Notifications are the lightweight third primitive — no triggers, no deadlines, just per-agent preferences for what events should ping them and through which channel. Most agents tune their own notifications; managers tune team-wide defaults. Use notifications when you want awareness without action — "tell me when I'm mentioned in a note" rather than "auto-assign this to me." The three primitives compose: a rule routes a conversation, an SLA times it, and a notification pings the right agent the moment either fires.</p>`,
     settings: {
       slug: 'choosing-the-right-automation-type',
-      tags: ['automations', 'overview', 'workflows'],
-      publishDate: daysAgo(3),
       seoTitle: 'When to use rules, SLAs, and notifications in Hiver',
-      visibility: 'public',
-      reviewerIds: ['user-mira'],
     },
   },
 ];

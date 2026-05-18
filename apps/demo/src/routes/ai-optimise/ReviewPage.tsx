@@ -174,32 +174,13 @@ function buildPanelSettings(
 ): KbUiArticleSettings {
   const author = store.users[article.authorId];
   const category = selectCategoryById(store, article.categoryId);
-  const reviewers = article.settings.reviewerIds
-    .map((id) => store.users[id])
-    .filter(Boolean)
-    .map((u) => ({ name: u.name, initials: u.initials }));
-  const visibility =
-    article.settings.visibility === 'public' ? 'Public' : 'Internal';
   return {
     author: author
       ? { name: author.name, initials: author.initials }
       : undefined,
     category: category?.title,
     slug: article.settings.slug,
-    tags: article.settings.tags,
-    publishDate: article.settings.publishDate
-      ? formatPublishDate(article.settings.publishDate)
-      : undefined,
-    seoTitle: article.settings.seoTitle,
-    visibility,
-    reviewers,
   };
-}
-
-function formatPublishDate(iso: string): string {
-  const d = new Date(iso);
-  const month = d.toLocaleString('en-US', { month: 'short' });
-  return `${month} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
 }
 
 /* ─────────────────────────────────────────────────────────────
