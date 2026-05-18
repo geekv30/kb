@@ -268,6 +268,18 @@ html {
    * (without it, scale-from-center looks wrong per the popover rule). */
   --animate-kb-dropdown-in:   kb-dropdown-in 150ms var(--ease-out-strong);
 
+  /* Skeleton shimmer sweep (chunk 1 of SEO panel).
+   * Registered as `--animate-*` so Tailwind v4 auto-generates the
+   * `animate-kb-skeleton-shimmer` utility AND composes with the
+   * `motion-safe:` variant — same pattern as the overlay tokens
+   * above. The shimmer is applied to a pseudo-element overlay; the
+   * keyframe translates a left-to-right gradient sweep across the
+   * skeleton bar. 1.6s linear infinite is the "fast enough to feel
+   * loading, slow enough to not flicker" sweet spot per the Emil
+   * playbook. Reduced-motion users see a flat slate-100 fill
+   * (the overlay is skipped via `motion-safe:`). */
+  --animate-kb-skeleton-shimmer: kb-skeleton-shimmer 1.6s linear infinite;
+
   @keyframes kb-modal-in {
     from {
       opacity: 0;
@@ -313,6 +325,10 @@ html {
       opacity: 1;
       transform: scale(1);
     }
+  }
+  @keyframes kb-skeleton-shimmer {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(100%); }
   }
 
   /* Font family */

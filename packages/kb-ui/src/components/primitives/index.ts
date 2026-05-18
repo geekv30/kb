@@ -20,3 +20,16 @@ export { TextInput } from './TextInput';
 export type { TextInputProps } from './TextInput';
 export { Dropdown } from './Dropdown';
 export type { DropdownProps } from './Dropdown';
+export { Tabs, TabsList, TabsTrigger, TabsContent } from './Tabs';
+export type {
+  TabsProps,
+  TabsListProps,
+  TabsTriggerProps,
+  TabsContentProps,
+} from './Tabs';
+export { Switch } from './Switch';
+export type { SwitchProps } from './Switch';
+export { Skeleton } from './Skeleton';
+export type { SkeletonProps } from './Skeleton';
+export { CodeChip } from './CodeChip';
+export type { CodeChipProps } from './CodeChip';
