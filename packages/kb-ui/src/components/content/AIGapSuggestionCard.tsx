@@ -381,9 +381,13 @@ export function AIGapSuggestionCard({
         isIdle ? 'bg-canvas' : 'bg-white',
         // Click-to-activate surface for idle cards. Pointer cursor + soft
         // hover lift indicate clickability without breaking the recessed
-        // visual treatment.
+        // visual treatment. Tightened to specific properties + strong
+        // ease-out curve so the hover feels intentional (not the bare
+        // CSS `ease-out`). Subtle `:active:scale-[0.995]` confirms
+        // the click landed without competing with the card's own
+        // shadow lift. All transforms gated `motion-safe:`.
         isIdle && handleIdleActivate &&
-          'cursor-pointer transition-shadow hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/15',
+          'cursor-pointer transition-[box-shadow,transform] duration-[200ms] [transition-timing-function:var(--ease-out-strong)] hover:shadow-xl motion-safe:active:scale-[0.995] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/15',
         className,
       )}
       onClick={handleIdleActivate}
