@@ -221,8 +221,14 @@ function ToolbarButton({ onClick, active, disabled, label, children }: ToolbarBu
       aria-label={label}
       title={label}
       aria-pressed={active}
+      // Toolbar buttons are pressed often during editing — keep motion
+      // tight: 120ms bg/color with strong ease-out + a subtle 0.96
+      // press scale (motion-safe). Replaces Tailwind's catch-all
+      // `transition-colors` so the curve and properties are explicit.
+      style={{ transition: 'background-color 120ms cubic-bezier(0.23, 1, 0.32, 1), color 120ms cubic-bezier(0.23, 1, 0.32, 1), transform 100ms cubic-bezier(0.23, 1, 0.32, 1)' }}
       className={cn(
-        'inline-flex h-6 w-6 items-center justify-center rounded-[6px] transition-colors',
+        'inline-flex h-6 w-6 items-center justify-center rounded-[6px]',
+        !disabled && 'motion-safe:active:scale-[0.96]',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
         '[&>svg]:h-[14px] [&>svg]:w-[14px]',
         active
@@ -290,8 +296,12 @@ function ParagraphDropdown({ editor }: { editor: Editor }) {
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label="Text style"
+        // Mirrors ToolbarButton motion: explicit 120ms bg/color/transform
+        // with strong ease-out + motion-safe press scale.
+        style={{ transition: 'background-color 120ms cubic-bezier(0.23, 1, 0.32, 1), color 120ms cubic-bezier(0.23, 1, 0.32, 1), transform 100ms cubic-bezier(0.23, 1, 0.32, 1)' }}
         className={cn(
-          'inline-flex h-6 items-center gap-0.5 pl-1.5 pr-0.5 rounded-[6px] transition-colors',
+          'inline-flex h-6 items-center gap-0.5 pl-1.5 pr-0.5 rounded-[6px]',
+          'motion-safe:active:scale-[0.96]',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
           open ? 'bg-surface-subtle text-text-primary' : 'bg-transparent text-text-meta hover:bg-surface-subtle hover:text-text-primary',
         )}
