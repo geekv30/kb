@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as Tooltip from '@radix-ui/react-tooltip';
-import { ChevronDown, ChevronUp, Copy01, InfoCircle } from '@untitledui/icons';
+import { Check, ChevronDown, ChevronUp, Copy01, InfoCircle } from '@untitledui/icons';
 import { cn } from '../../utils/cn';
 import { Field } from '../primitives/Field';
 import { TextInput } from '../primitives/TextInput';
@@ -74,12 +74,6 @@ export type SeoTabBodyValue = {
 export type SeoTabBodyProps = {
   value: SeoTabBodyValue;
   onChange: (patch: Partial<SeoTabBodyValue>) => void;
-  /** Optional callback when the URL copy button is clicked. Demo
-   *  shells dispatch a toast here. */
-  onCopyUrl?: (url: string) => void;
-  /** Optional callback when the canonical-override copy button is
-   *  clicked. */
-  onCopyCanonical?: (url: string) => void;
   /**
    * Optional async hook to "refine" the description via an AI service.
    * The current description is passed in; the resolved string replaces
@@ -134,40 +128,101 @@ function buildAutoUrl(value: SeoTabBodyValue): string {
 /* ─────────────────────────────────────────────────────────────
  * Copy-suffix button — reused by the URL field + canonical
  * override field.
+ *
+ * Self-contained: copies to clipboard on click, swaps the icon
+ * in place from Copy01 → Check for ~1.5s as visual confirmation,
+ * then reverts. No toast hook needed (this is the standard
+ * inline-confirmation pattern used by GitHub, Linear, Vercel,
+ * etc.).
+ *
+ * Motion (per emil-design-eng): 120ms ease-out opacity crossfade
+ * — sub-200ms so it reads as instant confirmation. Both icons
+ * are stacked absolutely so the swap is byte-aligned (no layout
+ * shift). `motion-safe:` gates the transition so reduced-motion
+ * users see an instant swap.
+ *
+ * Color: stays on the neutral text-muted / text-primary token
+ * for both idle and copied states. A green tint here would add
+ * noise to a 6×6 icon nested in a dense settings panel — the
+ * shape change (copy → check) already carries the signal.
  * ───────────────────────────────────────────────────────────── */
+
+const COPY_REVERT_MS = 1500;
 
 function CopyButton({
   url,
-  onCopy,
   ariaLabel,
 }: {
   url: string;
-  onCopy?: (url: string) => void;
   ariaLabel: string;
 }) {
+  const [copied, setCopied] = React.useState(false);
+  const timeoutRef = React.useRef<number | null>(null);
+
+  // Clean up any in-flight revert timer on unmount so we don't
+  // setState after teardown (e.g. tab swap during the 1.5s window).
+  React.useEffect(() => {
+    return () => {
+      if (timeoutRef.current !== null) {
+        window.clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
       navigator.clipboard.writeText(url).catch(() => {
-        /* clipboard errors are non-fatal here — demo still shows the
-           toast via the callback. */
+        /* clipboard errors are non-fatal — keep the icon swap so the
+           user still gets the same visual feedback they expect. */
       });
     }
-    onCopy?.(url);
+    // Clear any pending revert and restart the 1.5s window. This
+    // makes repeated clicks feel responsive — each click extends
+    // the check icon's dwell time instead of racing the prior timer.
+    if (timeoutRef.current !== null) {
+      window.clearTimeout(timeoutRef.current);
+    }
+    setCopied(true);
+    timeoutRef.current = window.setTimeout(() => {
+      setCopied(false);
+      timeoutRef.current = null;
+    }, COPY_REVERT_MS);
   };
+
   return (
     <button
       type="button"
       onClick={handleClick}
       aria-label={ariaLabel}
+      aria-live="polite"
       className={cn(
-        'inline-flex h-6 w-6 items-center justify-center rounded-[4px]',
+        'relative inline-flex h-6 w-6 items-center justify-center rounded-[4px]',
         'text-text-muted hover:text-text-primary hover:bg-surface-muted',
         'transition-colors',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-border-faint',
       )}
     >
-      <Copy01 size={14} aria-hidden="true" />
+      {/* Stacked icons — both rendered, opacity toggled so the swap
+          is layout-stable. 120ms opacity crossfade, motion-safe-gated. */}
+      <Copy01
+        size={14}
+        aria-hidden="true"
+        className={cn(
+          'absolute',
+          'motion-safe:transition-opacity motion-safe:duration-[120ms] motion-safe:ease-out',
+          copied ? 'opacity-0' : 'opacity-100',
+        )}
+      />
+      <Check
+        size={14}
+        aria-hidden="true"
+        className={cn(
+          'absolute',
+          'motion-safe:transition-opacity motion-safe:duration-[120ms] motion-safe:ease-out',
+          copied ? 'opacity-100' : 'opacity-0',
+        )}
+      />
     </button>
   );
 }
@@ -187,11 +242,9 @@ const DISCLOSURE_DURATION_MS = 220;
 function CanonicalOverrideDisclosure({
   canonicalUrl,
   onChange,
-  onCopy,
 }: {
   canonicalUrl: string;
   onChange: (next: string) => void;
-  onCopy?: (url: string) => void;
 }) {
   // Auto-open if already populated; otherwise default closed.
   const [open, setOpen] = React.useState(() => canonicalUrl.trim() !== '');
@@ -243,7 +296,6 @@ function CanonicalOverrideDisclosure({
               suffix={
                 <CopyButton
                   url={canonicalUrl}
-                  onCopy={onCopy}
                   ariaLabel="Copy canonical URL"
                 />
               }
@@ -316,8 +368,6 @@ function RefineWithAIButton({
 export function SeoTabBody({
   value,
   onChange,
-  onCopyUrl,
-  onCopyCanonical,
   onRefineDescription,
   onToastError,
   className,
@@ -550,7 +600,6 @@ export function SeoTabBody({
             suffix={
               <CopyButton
                 url={autoUrl}
-                onCopy={onCopyUrl}
                 ariaLabel="Copy URL"
               />
             }
@@ -559,7 +608,6 @@ export function SeoTabBody({
         <CanonicalOverrideDisclosure
           canonicalUrl={value.canonicalUrl ?? ''}
           onChange={(next) => onChange({ canonicalUrl: next })}
-          onCopy={onCopyCanonical}
         />
       </div>
 

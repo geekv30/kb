@@ -103,17 +103,6 @@ export type ArticleSettingsPanelProps = {
    */
   footerSlot?: React.ReactNode;
   /**
-   * Optional callback fired when the SEO tab's URL copy button is
-   * clicked. The component already writes to `navigator.clipboard` —
-   * this is for downstream toast wiring. Receives the URL that was
-   * copied.
-   */
-  onCopyUrl?: (url: string) => void;
-  /**
-   * Same as `onCopyUrl`, but for the canonical-URL override field.
-   */
-  onCopyCanonical?: (url: string) => void;
-  /**
    * Optional async hook to "refine" the SEO description via an AI
    * service. When supplied, the SEO tab renders a "✦ Refine with AI"
    * affordance pinned to the bottom-right of the Description textarea.
@@ -270,8 +259,6 @@ export function ArticleSettingsPanel({
   sections,
   headerSlot,
   footerSlot,
-  onCopyUrl,
-  onCopyCanonical,
   onRefineDescription,
   onToastError,
 }: ArticleSettingsPanelProps) {
@@ -445,8 +432,6 @@ export function ArticleSettingsPanel({
                 <SeoTabBody
                   value={toSeoTabValue(current)}
                   onChange={(patch) => update(patch)}
-                  onCopyUrl={onCopyUrl}
-                  onCopyCanonical={onCopyCanonical}
                   onRefineDescription={onRefineDescription}
                   onToastError={onToastError}
                 />

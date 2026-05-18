@@ -354,14 +354,6 @@ function EditorPageBody({ article }: { article: Article }) {
     [],
   );
 
-  // Toast wiring for the SEO panel's URL / canonical copy buttons.
-  // navigator.clipboard is already invoked inside the SEO panel; this
-  // callback just surfaces the visual confirmation.
-  const handleCopyUrl = useCallback(
-    () => showToast('URL copied to clipboard.', 'success'),
-    [showToast],
-  );
-
   // Toast wiring for the SEO panel's Refine-with-AI failure path.
   // The mock service never rejects, but a real backend will — this
   // is the error sink for that case.
@@ -572,8 +564,6 @@ function EditorPageBody({ article }: { article: Article }) {
           <ArticleSettingsPanel
             value={kbSettings}
             onChange={handleSettingsChange}
-            onCopyUrl={handleCopyUrl}
-            onCopyCanonical={handleCopyUrl}
             onRefineDescription={refineDescription}
             onToastError={handleRefineError}
             compact
