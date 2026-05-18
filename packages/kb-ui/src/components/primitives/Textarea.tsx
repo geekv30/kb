@@ -198,6 +198,15 @@ export function Textarea({
             // Drag-to-resize via `resize-y` still works; only the
             // grip glyph is suppressed. See HIDE_NATIVE_RESIZE_GRIP_CLASS.
             HIDE_NATIVE_RESIZE_GRIP_CLASS,
+            // Reserve bottom space when the absolutely-positioned
+            // `refineSlot` is present (e.g. SEO panel's "✦ Refine
+            // with AI" CTA). The slot is `h-7` (28px) pinned at
+            // `bottom-2` (8px), so its vertical range is 8 → 36px
+            // from the bottom edge. `pb-12` (48px) keeps wrapped text
+            // from sliding under the button. Without a slot we keep
+            // the textarea flush so existing single-textarea consumers
+            // (CategoryDescription, generic forms) don't grow.
+            refineSlot && 'pb-12',
             // Fade out the contents on entering refining state.
             // 100ms opacity 1 → 0 is fast enough to read as "the
             // text vanished" without flashing through unparsed copy.
