@@ -81,6 +81,15 @@ const resizeClassMap: Record<NonNullable<TextareaProps['resize']>, string> = {
   none: 'resize-none',
 };
 
+/* Always hide the native browser resize handle (the diagonal grip at the
+ * bottom-right). The `resize` prop controls user-resize behaviour via the
+ * resize-* utility above; when `resize='vertical'` users can still drag the
+ * textarea taller, the grip just isn't drawn. Removing the grip is critical
+ * inside the SEO panel where it visually collides with the pinned
+ * `refineSlot` button (Figma 2949:7844). */
+const HIDE_NATIVE_RESIZE_GRIP_CLASS =
+  '[&::-webkit-resizer]:hidden';
+
 export function Textarea({
   value,
   onChange,
@@ -185,6 +194,10 @@ export function Textarea({
           className={cn(
             'block w-full min-w-0 flex-1 border-0 bg-transparent p-0 text-[14px] font-normal leading-5 text-text-primary outline-none placeholder:text-text-muted disabled:cursor-not-allowed',
             resizeClassMap[resize],
+            // Hide the native diagonal resize grip (WebKit/Blink).
+            // Drag-to-resize via `resize-y` still works; only the
+            // grip glyph is suppressed. See HIDE_NATIVE_RESIZE_GRIP_CLASS.
+            HIDE_NATIVE_RESIZE_GRIP_CLASS,
             // Fade out the contents on entering refining state.
             // 100ms opacity 1 → 0 is fast enough to read as "the
             // text vanished" without flashing through unparsed copy.

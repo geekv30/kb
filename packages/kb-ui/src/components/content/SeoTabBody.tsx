@@ -7,6 +7,7 @@ import { TextInput } from '../primitives/TextInput';
 import { Textarea } from '../primitives/Textarea';
 import { Switch } from '../primitives/Switch';
 import { CodeChip } from '../primitives/CodeChip';
+import { Button } from '../primitives/Button';
 import { AiIcon } from '../brand/AiIcon';
 import {
   MetaLengthMeter,
@@ -204,8 +205,11 @@ function CanonicalOverrideDisclosure({
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-controls={panelId}
+        // Figma 2949:7932 — 13px font-medium #64758b. Sits flush against
+        // the URL input above (parent column owns the 6px gap), so no
+        // additional top padding here.
         className={cn(
-          'inline-flex items-center gap-1.5 self-start text-[13px] font-normal leading-[19px]',
+          'inline-flex items-center gap-1 self-start px-0.5 text-[13px] font-medium leading-[19px]',
           'text-text-muted hover:text-text-secondary transition-colors',
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-border-faint rounded-[4px]',
         )}
@@ -244,7 +248,7 @@ function CanonicalOverrideDisclosure({
                 />
               }
             />
-            <p className="text-[12px] font-normal leading-[18px] text-text-muted">
+            <p className="text-[13px] font-normal leading-[19px] text-text-muted">
               Use this when the same content lives on another domain you own
               (e.g. a developer docs site). Leave empty to use the
               auto-generated URL.
@@ -261,26 +265,23 @@ function CanonicalOverrideDisclosure({
  * ───────────────────────────────────────────────────────────── */
 
 /* ─────────────────────────────────────────────────────────────
- * RefineWithAIButton — private to the SEO panel (no premature
- * abstraction per emil-design-eng: ship inside the consumer first
- * and extract only when a second caller materializes).
+ * RefineWithAIButton — pinned bottom-right inside the Description
+ * textarea. Built on the Button primitive's `subtle` variant per
+ * user direction so it reads as a real pressable pill (slate-100
+ * background) instead of the prior plain text+icon affordance,
+ * which visually collided with the now-hidden native resize handle.
  *
- * Visual (Figma 2949:7886 → 2949:8109):
- *   - 4-point AI sparkle (magenta→peach gradient via `AiIcon`)
- *     + "Refine with AI" text.
- *   - 12px sparkle, 13px text, weight 400, color `text-muted`
- *     (#475569). No background, no border — sits flush against
- *     the textarea body.
- *   - On `disabled`, the wrapper opacity-50s. The parent Textarea
- *     ALSO dims the slot via pointer-events-none + opacity-50, so
- *     the button can stay visually neutral while refining and we
- *     don't double-dim.
+ * Size override: the default Button is h-8 / px-3 (32×N) — too tall
+ * to sit cleanly inside the textarea's bottom-right inset. We
+ * shrink to h-7 / px-2.5 (28×N) via className so the pill nests
+ * inside the textarea's 8px inset without crowding the text rows
+ * above it. Text size + sparkle size stay on the Button's defaults
+ * so this stays close to the design system.
  *
- * Motion (per emil-design-eng — "buttons must feel responsive"):
- *   - `:active` scale-down 0.97 with a 160ms ease-out transition.
- *     Gates behind `motion-safe:`.
- *   - Color transition on hover/focus (200ms ease) for the muted
- *     → primary text crossfade.
+ * Motion: inherited from Button — `motion-safe:active:scale-[0.97]`
+ * + 120ms strong ease-out transition on transform/colors. Disabled
+ * state (during refining) is handled by Button (opacity-50 +
+ * pointer-events-none).
  * ───────────────────────────────────────────────────────────── */
 
 function RefineWithAIButton({
@@ -291,38 +292,20 @@ function RefineWithAIButton({
   disabled?: boolean;
 }) {
   return (
-    <button
-      type="button"
+    <Button
+      variant="subtle"
       onClick={onClick}
       disabled={disabled}
       aria-label="Refine description with AI"
       data-kb-part="refine-with-ai-button"
-      className={cn(
-        'inline-flex items-center gap-1 px-0 py-0.5',
-        // No background. Text reads as a muted CTA; rgb #475569
-        // matches Figma 2949:7888 (text/neutral/subtle).
-        'text-[13px] font-normal leading-[19px] text-text-secondary',
-        // Hover/focus crossfade to primary, 200ms ease (color only).
-        'hover:text-text-primary focus-visible:text-text-primary',
-        'motion-safe:transition-colors motion-safe:duration-200 motion-safe:ease-linear',
-        // Responsive press feedback. 160ms ease-out scale-down 0.97
-        // gives the CTA a tactile feel without overshooting.
-        'motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-out',
-        'active:scale-[0.97]',
-        // Focus ring — uses the same faint outline as CopyButton
-        // for visual consistency across the SEO panel.
-        'rounded-[4px] focus:outline-none focus-visible:ring-2 focus-visible:ring-border-faint',
-        // When the consumer passes `disabled`, the underlying
-        // <button> ignores clicks AND the wrapper dims. The parent
-        // Textarea ALSO dims (opacity-50 + pointer-events-none) via
-        // the `refining` flag, so visually they compose to a single
-        // dim layer (50% × 1.0 = 50%, not 25%).
-        disabled && 'cursor-default',
-      )}
+      icon={<AiIcon size={12} aria-hidden="true" />}
+      // Shrink Button's default h-8 / px-3 to h-7 / px-2.5 / text-[13px]
+      // so the pill nests neatly inside the textarea inset (Figma
+      // 2949:7886). Stays a subtle slate-100 pill on the surface.
+      className="h-7 px-2.5 text-[13px] font-medium leading-[19px]"
     >
-      <AiIcon size={12} aria-hidden="true" className="shrink-0" />
-      <span>Refine with AI</span>
-    </button>
+      Refine with AI
+    </Button>
   );
 }
 
@@ -493,7 +476,12 @@ export function SeoTabBody({
   );
 
   return (
-    <div className={cn('flex flex-col gap-5', className)}>
+    // Section-to-section rhythm: 28px (Figma --scale/space/5xl). Sections
+    // that internally span two visual rows (URL + canonical disclosure,
+    // Exclude row + helper text) collapse their internal gap to 8px so
+    // they read as a single unit; the 28px outer gap then separates them
+    // from neighbouring sections at the same beat as every other field.
+    <div className={cn('flex flex-col gap-7', className)}>
       {/* ── 1. Meta title ─────────────────────────────────────── */}
       <Field
         label="Meta title"
@@ -547,36 +535,46 @@ export function SeoTabBody({
         />
       </Field>
 
-      {/* ── 3. URL (read-only + copy) ────────────────────────── */}
-      <Field label="URL" tooltip={URL_TOOLTIP} htmlFor={urlId}>
-        <TextInput
-          id={urlId}
-          value={autoUrl}
-          readOnly
-          suffix={
-            <CopyButton
-              url={autoUrl}
-              onCopy={onCopyUrl}
-              ariaLabel="Copy URL"
-            />
-          }
+      {/* ── 3+4. URL (read-only + copy) and Advanced canonical override
+          live in one column. The disclosure trigger reads as sub-text
+          immediately under the URL input rather than as a standalone
+          section — 6px gap between the URL input and the trigger keeps
+          them visually paired. The outer column gap then separates this
+          pair from the next section at the standard 28px beat. */}
+      <div className="flex flex-col gap-1.5">
+        <Field label="URL" tooltip={URL_TOOLTIP} htmlFor={urlId}>
+          <TextInput
+            id={urlId}
+            value={autoUrl}
+            readOnly
+            suffix={
+              <CopyButton
+                url={autoUrl}
+                onCopy={onCopyUrl}
+                ariaLabel="Copy URL"
+              />
+            }
+          />
+        </Field>
+        <CanonicalOverrideDisclosure
+          canonicalUrl={value.canonicalUrl ?? ''}
+          onChange={(next) => onChange({ canonicalUrl: next })}
+          onCopy={onCopyCanonical}
         />
-      </Field>
-
-      {/* ── 4. Advanced : override canonical URL ─────────────── */}
-      <CanonicalOverrideDisclosure
-        canonicalUrl={value.canonicalUrl ?? ''}
-        onChange={(next) => onChange({ canonicalUrl: next })}
-        onCopy={onCopyCanonical}
-      />
+      </div>
 
       {/* ── 5. Exclude from search engines ───────────────────── */}
-      <div className="flex flex-col gap-2">
+      {/* Inner gap matches every other section's label-to-content beat
+          (Field uses gap-1.5 / 6px). The helper paragraph reads at
+          13px so the inline CodeChips (which are 13px medium) match
+          the surrounding text weight — without this match, the chips
+          look visually larger than their wrapping copy. */}
+      <div className="flex flex-col gap-1.5">
         <ExcludeFromSearchRow
           checked={excluded}
           onChange={(next) => onChange({ excludeFromSearch: next })}
         />
-        <p className="text-[12px] font-normal leading-[18px] text-text-muted">
+        <p className="text-[13px] font-normal leading-[19px] text-text-muted">
           When enabled, this article will include{' '}
           <CodeChip>noindex</CodeChip> and <CodeChip>nofollow</CodeChip> and
           will not appear in Google, Bing, or other search results.
