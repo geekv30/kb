@@ -248,8 +248,21 @@ html {
    * rather than snapping back to zero. */
   --animate-kb-modal-in:      kb-modal-in 200ms var(--ease-out-strong);
   --animate-kb-modal-out:     kb-modal-out 140ms var(--ease-out-strong);
-  --animate-kb-backdrop-in:   kb-backdrop-in 200ms ease;
-  --animate-kb-backdrop-out:  kb-backdrop-out 140ms ease;
+  --animate-kb-backdrop-in:   kb-backdrop-in 200ms var(--ease-out-strong);
+  --animate-kb-backdrop-out:  kb-backdrop-out 140ms var(--ease-out-strong);
+
+  /* Reduced-motion fallbacks. Modal/backdrop should NEVER hard-pop
+   * into existence even for reduce-motion users — Emil's rule:
+   * suppress *transforms* (the movement), not all motion. A short
+   * opacity-only fade is still in the a11y safe zone and prevents
+   * the "stutter into existence" jank that prompted this fix.
+   * Applied via `motion-reduce:` variants at the call site so the
+   * full-motion (transform+opacity) path is preserved for everyone
+   * who hasn't set the OS reduce-motion preference. */
+  --animate-kb-modal-in-reduced:     kb-fade-in 100ms ease-out;
+  --animate-kb-modal-out-reduced:    kb-fade-out 80ms ease-out;
+  --animate-kb-backdrop-in-reduced:  kb-fade-in 100ms ease-out;
+  --animate-kb-backdrop-out-reduced: kb-fade-out 80ms ease-out;
   --animate-kb-sheet-in-right:  kb-sheet-in-right 240ms var(--ease-out-strong);
   --animate-kb-sheet-out-right: kb-sheet-out-right 180ms var(--ease-out-strong);
 
@@ -305,6 +318,18 @@ html {
     to   { opacity: 1; }
   }
   @keyframes kb-backdrop-out {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+  }
+  /* Generic opacity-only fades — used by the reduced-motion fallback
+   * animations for Modal + backdrop above. Kept generic so future
+   * reduce-motion overrides (toasts, dropdowns) can reuse them
+   * instead of redefining identical keyframes per component. */
+  @keyframes kb-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes kb-fade-out {
     from { opacity: 1; }
     to   { opacity: 0; }
   }
@@ -392,6 +417,32 @@ html {
   }
   .animate-kb-tabs-content-in {
     animation: kb-tabs-content-in 150ms var(--ease-out-strong);
+  }
+
+  /* TabsContent fade-out — paired with kb-tabs-content-in for cases
+   * where the exit phase needs to play out before unmount (e.g. the
+   * Textarea refine flow's Skeleton overlay: when `refining` flips
+   * false, the host keeps the Skeleton mounted for one short cycle
+   * while this keyframe runs, then unmounts). 100ms is fast enough
+   * to feel like the skeleton "vanishes" the instant the new text
+   * lands but slow enough to mask the two-objects-overlapping
+   * crossfade smell. Strong ease-out matches the entrance curve. */
+  @keyframes kb-tabs-content-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+  /* `animation-fill-mode: forwards` pins the final keyframe state after
+   * the animation completes — without it the overlay would briefly
+   * snap back to opacity:1 (its CSS default) before the host unmounts
+   * it, producing a visible flash. The host owns unmount on a timer
+   * sized to the animation duration, so `forwards` cleanly holds the
+   * exit pose during that handoff. */
+  .animate-kb-tabs-content-out {
+    animation: kb-tabs-content-out 100ms var(--ease-out-strong) forwards;
   }
 
   /* AI Gaps — collapsed decision chip enter.

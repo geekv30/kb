@@ -236,8 +236,28 @@ function CopyButton({
  * populated on mount (controlled toggle thereafter).
  * ───────────────────────────────────────────────────────────── */
 
-const DISCLOSURE_EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
+// Canonical strong ease-out — wires to `--ease-out-strong` in tokens.css.
+// Chunk 12: dropped the literal `cubic-bezier(...)` in favor of the var
+// so disclosure motion stays in lockstep with the rest of the system.
+const DISCLOSURE_EASE_OUT = 'var(--ease-out-strong)';
 const DISCLOSURE_DURATION_MS = 220;
+
+/* SerpPreview ↔ NoPreviewState crossfade transition (Section 6).
+ *
+ * Inline style instead of an arbitrary Tailwind class because
+ * `transition-property: opacity, filter` needs an explicit comma-
+ * separated list — Tailwind v4's `transition-[a,b]` arbitrary syntax
+ * is ambiguous around comma handling and underscores get rewritten
+ * to spaces, so the inline style is the most predictable surface.
+ *
+ * `motion-reduce:!transition-none` at the call site overrides this
+ * for reduce-motion users, so they get an instant swap (the content
+ * swap is a state change, not navigation — instant is the a11y default). */
+const CROSSFADE_TRANSITION_STYLE: React.CSSProperties = {
+  transitionProperty: 'opacity, filter',
+  transitionDuration: '200ms',
+  transitionTimingFunction: 'var(--ease-out-strong)',
+};
 
 function CanonicalOverrideDisclosure({
   canonicalUrl,
@@ -631,26 +651,63 @@ export function SeoTabBody({
 
       {/* ── 6. Search result live preview ────────────────────── */}
       <Field label="Search result live preview" tooltip={SEARCH_PREVIEW_TOOLTIP}>
-        {/* Keyed wrapper drives the cross-fade: when `excluded` flips,
-            Radix-style remount replays `kb-tabs-content-in` (150ms
-            opacity-only fade, strong ease-out) so the swap reads as
-            a clean fade rather than a snap. Emil's rule: occasional
-            swaps deserve a short, opacity-only animation to prevent
-            jarring changes (motion-safe-gated for a11y). */}
-        <div
-          key={excluded ? 'empty' : 'preview'}
-          className="motion-safe:animate-kb-tabs-content-in"
-        >
-          {excluded ? (
-            <NoPreviewState />
-          ) : (
+        {/* Stable-mount cross-fade between SerpPreview and NoPreviewState.
+            Chunk 12 / emil-design-eng: the previous keyed-remount pattern
+            unmounted one child and re-mounted the other on every flip —
+            which played `kb-tabs-content-in` on the incoming child but
+            left no exit animation on the outgoing one, producing a hard
+            cut from the eye's perspective even though a fade was applied
+            to one side. The textbook crossfade is BOTH children mounted
+            at the same time, with the inactive one absolutely positioned
+            and opacity-0, the active one at opacity-1, both transitioning
+            simultaneously. A `min-h` floor (88px ≈ SerpPreview's natural
+            height) prevents the wrapper from collapsing to the smaller
+            child's height mid-transition. The outgoing child gets a soft
+            `blur(2px)` for textbook crossfade quality — masks the
+            two-objects-overlapping smell without being heavy-handed.
+            All motion is `motion-safe:`-gated; reduce-motion users get
+            an instant swap (this is a content swap, not a navigation, so
+            the a11y default of "no motion" is fine here). */}
+        <div className="relative min-h-[88px]">
+          <div
+            data-kb-part="serp-preview-slot"
+            aria-hidden={excluded || undefined}
+            style={CROSSFADE_TRANSITION_STYLE}
+            className={cn(
+              // Active child takes the layout; inactive is absolute on
+              // top of the same space so they crossfade in place.
+              excluded
+                ? 'pointer-events-none absolute inset-0'
+                : 'relative',
+              'motion-reduce:!transition-none',
+              excluded
+                ? 'opacity-0 motion-safe:blur-[2px]'
+                : 'opacity-100 motion-safe:blur-0',
+            )}
+          >
             <SerpPreview
               title={value.metaTitle}
               description={value.metaDescription}
               baseUrl={value.urlBase}
               breadcrumbPath={value.categoryPath}
             />
-          )}
+          </div>
+          <div
+            data-kb-part="serp-preview-empty-slot"
+            aria-hidden={!excluded || undefined}
+            style={CROSSFADE_TRANSITION_STYLE}
+            className={cn(
+              excluded
+                ? 'relative'
+                : 'pointer-events-none absolute inset-0',
+              'motion-reduce:!transition-none',
+              excluded
+                ? 'opacity-100 motion-safe:blur-0'
+                : 'opacity-0 motion-safe:blur-[2px]',
+            )}
+          >
+            <NoPreviewState />
+          </div>
         </div>
       </Field>
     </div>

@@ -35,12 +35,13 @@ import { cn } from '../../utils/cn';
  *  - Knob:      white, with a subtle shadow that doesn't bleed
  *    past the track on either edge.
  *
- * Motion (per emil-design-eng — toggle = "decisive flip"):
- *  - Knob travel: 160ms with a slight overshoot curve
- *    `cubic-bezier(0.34, 1.4, 0.64, 1)`. Snappier than the prior
- *    200ms strong ease-out, and the overshoot lands the knob
- *    against its destination edge with a confident "thunk" instead
- *    of a soft glide.
+ * Motion (per emil-design-eng — toggle motion vocabulary):
+ *  - Knob travel: 160ms with the canonical `ease-out-strong` curve
+ *    (`cubic-bezier(0.23, 1, 0.32, 1)`). Aligns with the rest of the
+ *    motion vocabulary (overlays, dropdowns, tabs) — chunk 12 dropped
+ *    the prior overshoot curve so all motion in the product speaks the
+ *    same language; the strong ease-out still feels snappy without an
+ *    overshoot-bounce that's hard to mimic across the broader system.
  *  - Track bg crossfade: 140ms strong ease-out — slightly faster
  *    than the knob travel so the destination color is ready when
  *    the knob arrives.
@@ -50,12 +51,14 @@ import { cn } from '../../utils/cn';
  *    with no transitions.
  * ───────────────────────────────────────────────────────────── */
 
+// Canonical strong ease-out curve — matches `--ease-out-strong` in
+// kb-ui's design tokens. Inlined here because the `transition` shorthand
+// is set via the `style` prop and CSS variables aren't reliably resolved
+// inline (Radix's Switch renders into a forwarded ref before style
+// computation), so we mirror the literal value to stay consistent with
+// the rest of the motion vocabulary.
 const SWITCH_EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
-// Mild overshoot curve — peaks at ~1.04 then settles. Gives the
-// knob a confident "thunk" against the destination edge instead
-// of a soft glide. Lower than a true bouncy spring so it still
-// reads as polished, not playful.
-const SWITCH_KNOB_CURVE = 'cubic-bezier(0.34, 1.4, 0.64, 1)';
+const SWITCH_KNOB_CURVE = SWITCH_EASE_OUT;
 
 export type SwitchProps = React.ComponentPropsWithoutRef<typeof SwitchPrimitive.Root>;
 
@@ -86,9 +89,10 @@ export const Switch = React.forwardRef<
   >
     <SwitchPrimitive.Thumb
       style={{
-        // Knob travel uses the overshoot curve for the "decisive
-        // flip". 160ms is in emil's 150–180ms snappy band for
-        // toggles. Absolute positioning + `translate-x` keeps the
+        // Knob travel uses the canonical `ease-out-strong` curve to
+        // stay aligned with the rest of the motion vocabulary (modals,
+        // dropdowns, tabs). 160ms is in emil's 150–180ms snappy band
+        // for toggles. Absolute positioning + `translate-x` keeps the
         // knob's vertical center on a fixed `top: 2px` so flexbox
         // sub-pixel math can never push it off-axis.
         transition: `transform 160ms ${SWITCH_KNOB_CURVE}`,
