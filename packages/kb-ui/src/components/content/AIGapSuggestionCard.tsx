@@ -280,6 +280,11 @@ export function AIGapSuggestionCard({
           // collapsed default (px-3 py-2). Do not re-add the 22/24
           // override — see comment above.
           'bg-canvas',
+          // Gentle settle on mount — fires when the active card flips
+          // to a decision chip. 200ms opacity+scale via the kb-ui
+          // `kb-chip-enter` keyframe. `motion-safe:` gates the animation
+          // so reduced-motion users see the chip mount instantly.
+          'motion-safe:animate-kb-chip-enter',
           className,
         )}
         data-kb-component="ai-gap-suggestion-card"

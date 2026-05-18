@@ -244,4 +244,42 @@ html {
   .animate-toast-in {
     animation: kb-toast-in 200ms ease-out;
   }
+
+  /* AI Gaps — SuggestionBlock highlight wash mount.
+   * Fires when an inline suggestion region transitions from inactive
+   * to active and the colored highlight DOM mounts. Subtle (opacity
+   * + 4px lift); gated by `motion-safe:` at call site so reduced-motion
+   * users get an instant mount. Custom strong ease-out curve. */
+  @keyframes kb-suggestion-mount {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-kb-suggestion-mount {
+    animation: kb-suggestion-mount 220ms var(--ease-out-strong);
+  }
+
+  /* AI Gaps — collapsed decision chip enter.
+   * Fires when an AIGapSuggestionCard flips into its `accepted` or
+   * `dismissed` chip after the user's decision. Gentle "settle" —
+   * 0.96 scale lift + opacity fade so the chip arrives with a hint
+   * of confirmation rather than a hard swap. */
+  @keyframes kb-chip-enter {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  .animate-kb-chip-enter {
+    animation: kb-chip-enter 200ms var(--ease-out-strong);
+  }
 }
