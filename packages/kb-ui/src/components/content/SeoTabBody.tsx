@@ -7,6 +7,7 @@ import { TextInput } from '../primitives/TextInput';
 import { Textarea } from '../primitives/Textarea';
 import { Switch } from '../primitives/Switch';
 import { CodeChip } from '../primitives/CodeChip';
+import { AiIcon } from '../brand/AiIcon';
 import {
   MetaLengthMeter,
   computeMetaLengthVerdict,
@@ -78,6 +79,28 @@ export type SeoTabBodyProps = {
   /** Optional callback when the canonical-override copy button is
    *  clicked. */
   onCopyCanonical?: (url: string) => void;
+  /**
+   * Optional async hook to "refine" the description via an AI service.
+   * The current description is passed in; the resolved string replaces
+   * the description and a fresh `aiRefinedAt` timestamp is written via
+   * `onChange` (which bumps the verdict +1 toward optimal until the
+   * user types again).
+   *
+   * When this prop is undefined the "✦ Refine with AI" CTA is not
+   * rendered — the description renders as a plain Textarea. Consumers
+   * (e.g. apps/demo) supply this via a mock or real service.
+   *
+   * Errors thrown from the promise are surfaced via `onToastError` if
+   * provided; otherwise they are logged via `console.warn` and the
+   * description is left untouched.
+   */
+  onRefineDescription?: (currentDescription: string) => Promise<string>;
+  /**
+   * Optional error toast hook. Used when `onRefineDescription` rejects.
+   * kb-ui ships no toast primitive, so this is the demo's wiring seam.
+   * The implementation receives a short user-facing message.
+   */
+  onToastError?: (message: string) => void;
   className?: string;
 };
 
@@ -237,11 +260,83 @@ function CanonicalOverrideDisclosure({
  * Main component
  * ───────────────────────────────────────────────────────────── */
 
+/* ─────────────────────────────────────────────────────────────
+ * RefineWithAIButton — private to the SEO panel (no premature
+ * abstraction per emil-design-eng: ship inside the consumer first
+ * and extract only when a second caller materializes).
+ *
+ * Visual (Figma 2949:7886 → 2949:8109):
+ *   - 4-point AI sparkle (magenta→peach gradient via `AiIcon`)
+ *     + "Refine with AI" text.
+ *   - 12px sparkle, 13px text, weight 400, color `text-muted`
+ *     (#475569). No background, no border — sits flush against
+ *     the textarea body.
+ *   - On `disabled`, the wrapper opacity-50s. The parent Textarea
+ *     ALSO dims the slot via pointer-events-none + opacity-50, so
+ *     the button can stay visually neutral while refining and we
+ *     don't double-dim.
+ *
+ * Motion (per emil-design-eng — "buttons must feel responsive"):
+ *   - `:active` scale-down 0.97 with a 160ms ease-out transition.
+ *     Gates behind `motion-safe:`.
+ *   - Color transition on hover/focus (200ms ease) for the muted
+ *     → primary text crossfade.
+ * ───────────────────────────────────────────────────────────── */
+
+function RefineWithAIButton({
+  onClick,
+  disabled,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label="Refine description with AI"
+      data-kb-part="refine-with-ai-button"
+      className={cn(
+        'inline-flex items-center gap-1 px-0 py-0.5',
+        // No background. Text reads as a muted CTA; rgb #475569
+        // matches Figma 2949:7888 (text/neutral/subtle).
+        'text-[13px] font-normal leading-[19px] text-text-secondary',
+        // Hover/focus crossfade to primary, 200ms ease (color only).
+        'hover:text-text-primary focus-visible:text-text-primary',
+        'motion-safe:transition-colors motion-safe:duration-200 motion-safe:ease-linear',
+        // Responsive press feedback. 160ms ease-out scale-down 0.97
+        // gives the CTA a tactile feel without overshooting.
+        'motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-out',
+        'active:scale-[0.97]',
+        // Focus ring — uses the same faint outline as CopyButton
+        // for visual consistency across the SEO panel.
+        'rounded-[4px] focus:outline-none focus-visible:ring-2 focus-visible:ring-border-faint',
+        // When the consumer passes `disabled`, the underlying
+        // <button> ignores clicks AND the wrapper dims. The parent
+        // Textarea ALSO dims (opacity-50 + pointer-events-none) via
+        // the `refining` flag, so visually they compose to a single
+        // dim layer (50% × 1.0 = 50%, not 25%).
+        disabled && 'cursor-default',
+      )}
+    >
+      <AiIcon size={12} aria-hidden="true" className="shrink-0" />
+      <span>Refine with AI</span>
+    </button>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * Main component
+ * ───────────────────────────────────────────────────────────── */
+
 export function SeoTabBody({
   value,
   onChange,
   onCopyUrl,
   onCopyCanonical,
+  onRefineDescription,
+  onToastError,
   className,
 }: SeoTabBodyProps) {
   const metaTitle = value.metaTitle ?? '';
@@ -281,10 +376,14 @@ export function SeoTabBody({
     onChange(patch);
   };
 
+  // Only Description has a Refine-with-AI path, so only its verdict
+  // is eligible for the +1 bump. The Meta title's verdict ignores
+  // `aiBumpActive` — otherwise refining the description would also
+  // bump the title's verdict, which is a scope leak across fields.
   const titleVerdict: MetaLengthVerdict = computeMetaLengthVerdict({
     count: metaTitle.length,
     field: 'metaTitle',
-    aiBumpActive,
+    aiBumpActive: false,
   });
   const descVerdict: MetaLengthVerdict = computeMetaLengthVerdict({
     count: metaDescription.length,
@@ -298,6 +397,100 @@ export function SeoTabBody({
   const metaTitleId = React.useId();
   const metaDescId = React.useId();
   const urlId = React.useId();
+
+  /* ── Refine-with-AI in-flight state ─────────────────────────
+   * Local: tracks whether `onRefineDescription` is currently
+   * resolving. Drives:
+   *   - Textarea `refining` (Skeleton overlay + readOnly)
+   *   - RefineWithAIButton disabled (prevents re-fire)
+   *   - MetaLengthMeter freeze (renders last-known count+verdict,
+   *     does NOT recompute while the content is shimmering)
+   *
+   * The freeze is critical for perceived correctness: if the meter
+   * recomputed against the live `value.metaDescription` (which is
+   * stale during the refine — we haven't called onChange yet) the
+   * user would see the verdict jiggle as the skeleton shimmers.
+   * Worse: if a parent prematurely cleared the description while
+   * refining was true, the meter would flash to "Short / red" mid-
+   * flight, then snap back to a fresh verdict when the AI lands.
+   *
+   * `frozenMeterRef` captures the count+verdict snapshot at the
+   * moment refining flips true. We render the snapshot via the
+   * `hintEnd` slot while refining; once refining flips false we
+   * resume rendering live values (which now reflect the AI patch).
+   */
+  const [refining, setRefining] = React.useState(false);
+  const frozenMeterRef = React.useRef<{
+    count: number;
+    verdict: MetaLengthVerdict;
+  } | null>(null);
+
+  // Capture the snapshot one render BEFORE the Textarea starts
+  // showing the Skeleton. We do this synchronously inside the
+  // handleRefine callback so the snapshot reflects the pre-click
+  // state, not whatever React might land on the next render.
+  const handleRefine = React.useCallback(async () => {
+    if (!onRefineDescription || refining) return;
+    // Freeze the meter at the pre-refine state so it doesn't
+    // recompute while the Skeleton is animating.
+    frozenMeterRef.current = {
+      count: metaDescription.length,
+      verdict: descVerdict,
+    };
+    setRefining(true);
+    try {
+      const newText = await onRefineDescription(metaDescription);
+      // Land the new text + bump the verdict via `aiRefinedAt`.
+      // We bypass `handlePatchWithBumpInvalidation` here — that
+      // helper clears the AI bump on metaDescription patches, but
+      // THIS patch is the bump itself. Reset the staleness
+      // watermark so `aiBumpActive` evaluates to true on the very
+      // next render.
+      setAiBumpStaleAt(undefined);
+      onChange({ metaDescription: newText, aiRefinedAt: Date.now() });
+    } catch (err) {
+      // Surface the error to the demo's toast layer if wired;
+      // otherwise log + keep the original text in place.
+      const message = "Couldn't refine. Try again.";
+      if (onToastError) {
+        onToastError(message);
+      } else if (typeof console !== 'undefined' && console.warn) {
+        console.warn('[SeoTabBody] refineDescription failed:', err);
+      }
+    } finally {
+      // Clear refining + drop the snapshot. The hintEnd slot
+      // re-renders against fresh live values on the next render.
+      setRefining(false);
+      frozenMeterRef.current = null;
+    }
+  }, [
+    onRefineDescription,
+    refining,
+    metaDescription,
+    descVerdict,
+    onChange,
+    onToastError,
+  ]);
+
+  // While refining, the meter renders the snapshot. Otherwise it
+  // renders live values. This is a pure render-time switch — no
+  // extra state.
+  const liveDescMeter = (
+    <MetaLengthMeter
+      count={metaDescription.length}
+      max={META_DESC_MAX}
+      verdict={descVerdict}
+    />
+  );
+  const frozenDescMeter = frozenMeterRef.current ? (
+    <MetaLengthMeter
+      count={frozenMeterRef.current.count}
+      max={META_DESC_MAX}
+      verdict={frozenMeterRef.current.verdict}
+    />
+  ) : (
+    liveDescMeter
+  );
 
   return (
     <div className={cn('flex flex-col gap-5', className)}>
@@ -330,13 +523,7 @@ export function SeoTabBody({
         label="Description"
         tooltip={META_DESC_TOOLTIP}
         htmlFor={metaDescId}
-        hintEnd={
-          <MetaLengthMeter
-            count={metaDescription.length}
-            max={META_DESC_MAX}
-            verdict={descVerdict}
-          />
-        }
+        hintEnd={refining ? frozenDescMeter : liveDescMeter}
       >
         <Textarea
           id={metaDescId}
@@ -348,6 +535,15 @@ export function SeoTabBody({
           error={descHardCap}
           initialHeight={80}
           resize="vertical"
+          refining={refining}
+          refineSlot={
+            onRefineDescription ? (
+              <RefineWithAIButton
+                onClick={handleRefine}
+                disabled={refining}
+              />
+            ) : undefined
+          }
         />
       </Field>
 

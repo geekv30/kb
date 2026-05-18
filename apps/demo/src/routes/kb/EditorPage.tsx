@@ -58,6 +58,7 @@ import {
 import { useUnsavedChangesGuard } from '../../hooks/useUnsavedChangesGuard';
 import { useToast } from '../../components/Toast';
 import { ConfirmDialog } from '@test-kb-ui/kb-ui';
+import { refineDescription } from '../../lib/refineDescriptionMock';
 
 /* ─────────────────────────────────────────────────────────────
  * Constants
@@ -361,6 +362,14 @@ function EditorPageBody({ article }: { article: Article }) {
     [showToast],
   );
 
+  // Toast wiring for the SEO panel's Refine-with-AI failure path.
+  // The mock service never rejects, but a real backend will — this
+  // is the error sink for that case.
+  const handleRefineError = useCallback(
+    (message: string) => showToast(message, 'error'),
+    [showToast],
+  );
+
   const handleSaveAsDraft = useCallback(() => {
     justSavedRef.current = true;
     dispatch({
@@ -565,6 +574,8 @@ function EditorPageBody({ article }: { article: Article }) {
             onChange={handleSettingsChange}
             onCopyUrl={handleCopyUrl}
             onCopyCanonical={handleCopyUrl}
+            onRefineDescription={refineDescription}
+            onToastError={handleRefineError}
             compact
           />
         </div>

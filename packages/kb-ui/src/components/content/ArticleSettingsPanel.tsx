@@ -113,6 +113,23 @@ export type ArticleSettingsPanelProps = {
    * Same as `onCopyUrl`, but for the canonical-URL override field.
    */
   onCopyCanonical?: (url: string) => void;
+  /**
+   * Optional async hook to "refine" the SEO description via an AI
+   * service. When supplied, the SEO tab renders a "✦ Refine with AI"
+   * affordance pinned to the bottom-right of the Description textarea.
+   * Clicking it disables the CTA, replaces the textarea with a
+   * shimmer skeleton, and on resolve patches `metaDescription` +
+   * `aiRefinedAt`. Errors are surfaced via `onToastError`.
+   *
+   * Forwarded as-is to `<SeoTabBody>`.
+   */
+  onRefineDescription?: (currentDescription: string) => Promise<string>;
+  /**
+   * Optional error toast hook for the Refine-with-AI flow. kb-ui
+   * ships no toast primitive, so the demo wires this to its own
+   * toast system.
+   */
+  onToastError?: (message: string) => void;
 };
 
 // Figma `53:8464` shows the slug counter reading `14/32` — the slug field
@@ -255,6 +272,8 @@ export function ArticleSettingsPanel({
   footerSlot,
   onCopyUrl,
   onCopyCanonical,
+  onRefineDescription,
+  onToastError,
 }: ArticleSettingsPanelProps) {
   const [collapsed, setCollapsed] = React.useState(defaultCollapsed);
   // Tabs are panel-internal for now (chunk 2). If a future chunk needs
@@ -428,6 +447,8 @@ export function ArticleSettingsPanel({
                   onChange={(patch) => update(patch)}
                   onCopyUrl={onCopyUrl}
                   onCopyCanonical={onCopyCanonical}
+                  onRefineDescription={onRefineDescription}
+                  onToastError={onToastError}
                 />
               </TabsContent>
             </Tabs>
