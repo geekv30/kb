@@ -153,9 +153,11 @@ function SourcesButton({
         // visual baseline alignment with the icon + adjacent NavArrow
         // / accept-reject pills (medium gave a heavier optical feel).
         'text-[14px] font-normal leading-[20px] text-text-meta',
+        // Specific properties on the transition (no `transition-colors`
+        // catch-all). Strong ease-out curve for instant hover feedback.
         disabled
           ? 'cursor-default'
-          : 'transition-colors hover:bg-surface-muted hover:text-text-primary',
+          : 'transition-[background-color,color,transform] duration-[160ms] [transition-timing-function:var(--ease-out-strong)] hover:bg-surface-muted hover:text-text-primary motion-safe:active:scale-[0.96]',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
       )}
     >
@@ -180,11 +182,17 @@ function RejectButton({
       aria-hidden={disabled || undefined}
       tabIndex={disabled ? -1 : undefined}
       aria-label={disabled ? undefined : 'Reject suggestion'}
+      // Emil-style press feedback: 0.94 scale on `:active`. Subtle but
+      // present, confirming the click landed. Specific property names
+      // on the transition (no `transition: all`). `motion-safe` gates
+      // the scale so reduced-motion users get the color flip only.
       className={cn(
         'inline-flex size-6 items-center justify-center rounded-full bg-[var(--color-btn-danger-bg)]',
         // Hover bg derived from --color-ai-removal (#d52c1f) at ~12% over white.
         'text-ai-removal',
-        disabled ? 'cursor-default' : 'transition-colors hover:bg-[#fad9d6]',
+        disabled
+          ? 'cursor-default'
+          : 'transition-[background-color,transform] duration-[160ms] [transition-timing-function:var(--ease-out-strong)] hover:bg-[#fad9d6] motion-safe:active:scale-[0.94]',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
       )}
     >
@@ -215,7 +223,12 @@ function AcceptButton({
         // step to keep affordance visible on the light fill.
         'inline-flex size-6 items-center justify-center rounded-full bg-surface-muted',
         'text-text-primary',
-        disabled ? 'cursor-default' : 'transition-colors hover:bg-card-border',
+        // Emil-style press feedback: 0.94 scale on `:active` + strong
+        // ease-out curve for instant feedback. Specific property names
+        // on the transition. `motion-safe` gates the scale.
+        disabled
+          ? 'cursor-default'
+          : 'transition-[background-color,transform] duration-[160ms] [transition-timing-function:var(--ease-out-strong)] hover:bg-card-border motion-safe:active:scale-[0.94]',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
       )}
     >
@@ -287,7 +300,9 @@ export function AIGapSuggestionCard({
           aria-label={`Undo ${state} for ${suggestion.title}`}
           className={cn(
             'ml-auto inline-flex size-7 items-center justify-center rounded-full',
-            'text-text-primary transition-colors',
+            // Specific properties on the transition + Emil-style press scale
+            // (motion-safe — reduced-motion users only see the color flip).
+            'text-text-primary transition-[background-color,transform] duration-[160ms] [transition-timing-function:var(--ease-out-strong)] motion-safe:active:scale-[0.92]',
             'hover:bg-surface-muted',
             'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
           )}
