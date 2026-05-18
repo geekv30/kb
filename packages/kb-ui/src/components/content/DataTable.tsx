@@ -188,11 +188,18 @@ export function DataTable<T>({
               <tr
                 key={key}
                 onClick={interactive ? () => onRowClick?.(row, idx) : undefined}
+                // Row hover: explicit 120ms bg-color transition with the
+                // strong ease-out curve. Non-interactive rows get no
+                // motion at all — "you don't need that animation" (Emil).
+                style={
+                  interactive
+                    ? { transition: 'background-color 120ms cubic-bezier(0.23, 1, 0.32, 1)' }
+                    : undefined
+                }
                 className={cn(
                   'h-12 align-middle',
                   idx < rows.length - 1 && 'border-b border-card-border',
-                  interactive &&
-                    'cursor-pointer transition-colors duration-150 hover:bg-[#fafafa]',
+                  interactive && 'cursor-pointer hover:bg-[#fafafa]',
                 )}
               >
                 {columns.map((c) => (

@@ -66,9 +66,16 @@ export function SideNavRail({
               aria-current={isActive ? 'page' : undefined}
               onClick={() => onItemClick?.(item.id)}
               data-kb-part="rail-item"
+              // Hover/active uses an explicit 150ms strong ease-out for
+              // bg/color/transform — `transition-colors` was Tailwind's
+              // catch-all which couldn't include transform. Press scale
+              // (0.96) gives the same physical feedback as Button, gated
+              // behind motion-safe.
+              style={{ transition: 'background-color 150ms cubic-bezier(0.23, 1, 0.32, 1), color 150ms cubic-bezier(0.23, 1, 0.32, 1), transform 120ms cubic-bezier(0.23, 1, 0.32, 1)' }}
               className={cn(
                 // 42 × 36 hit area, centered in 54 rail (6L / 6R gutter)
-                'flex h-9 items-center justify-center mx-[6px] rounded-[8px] transition-colors duration-150 cursor-pointer',
+                'flex h-9 items-center justify-center mx-[6px] rounded-[8px] cursor-pointer',
+                'motion-safe:active:scale-[0.96]',
                 isActive
                   ? // Active pill matches Figma `1:4350` (.menu-items active):
                     // bg-[rgba(230,230,230,0.44)]. Previously used #f8fafc

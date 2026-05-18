@@ -92,8 +92,14 @@ export function AppShell({
           data-kb-part="shell-explorer"
           aria-hidden={sidebarCollapsed ? 'true' : undefined}
           {...(sidebarCollapsed ? { inert: '' } : {})}
+          // Sidebar collapse — 200ms width transition with the strong
+          // ease-out curve (replaces Tailwind's weak built-in ease-out).
+          // This is the same vocabulary used elsewhere in kb-ui for
+          // entering/exiting motion. Reduced-motion users get an
+          // instant snap because we gate transitions behind motion-safe.
+          style={{ transition: 'width 200ms cubic-bezier(0.23, 1, 0.32, 1)' }}
           className={cn(
-            'shrink-0 h-full overflow-hidden transition-[width] duration-200 ease-out',
+            'shrink-0 h-full overflow-hidden motion-reduce:transition-none',
             sidebarCollapsed ? 'w-0' : 'w-[288px]',
           )}
         >
