@@ -40,11 +40,10 @@ export type Category = {
 export type ArticleSettings = {
   slug: string;
   /**
-   * SEO meta title. Chunk 3 of the SEO panel build will rename this to
-   * `metaTitle` and surface it as a first-class field; for now it stays
-   * on the store so seed/fixture data round-trips intact.
+   * SEO meta title (renamed from `seoTitle` in chunk 3 of the SEO panel
+   * build). Shown in search engine results + browser tabs.
    */
-  seoTitle: string;
+  metaTitle: string;
   /**
    * Free-text meta description (≤160 chars). Empty/undefined falls back
    * to the search-engine auto-generated snippet.
@@ -55,6 +54,17 @@ export type ArticleSettings = {
    * canonical URL is auto-generated from the primary domain + slug.
    */
   canonicalUrlOverride?: string;
+  /**
+   * When `true`, the article emits `noindex` / `nofollow` meta tags and
+   * is excluded from search-engine indexing. Default `false`.
+   */
+  excludeFromSearch: boolean;
+  /**
+   * Ms timestamp of the last AI refine on the meta title / description.
+   * Drives the SEO panel's verdict-bump behaviour while staleness is
+   * tracked client-side. Unset until the first refine fires.
+   */
+  aiRefinedAt?: number;
 };
 
 export type ArticleStatus = 'draft' | 'published';

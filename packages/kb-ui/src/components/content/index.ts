@@ -15,6 +15,16 @@ export type {
   ArticleSettingsPerson,
   ArticleSettingsSection,
 } from './ArticleSettingsPanel';
+export { SeoTabBody } from './SeoTabBody';
+export type { SeoTabBodyProps, SeoTabBodyValue } from './SeoTabBody';
+export {
+  MetaLengthMeter,
+  computeMetaLengthVerdict,
+} from './MetaLengthMeter';
+export type {
+  MetaLengthMeterProps,
+  MetaLengthVerdict,
+} from './MetaLengthMeter';
 export {
   FieldLabel,
   FieldBox,

@@ -12,15 +12,42 @@ const meta: Meta<typeof TextInput> = {
 export default meta;
 
 function TextInputPlayground() {
-  const [value, setValue] = useState('');
+  const [a, setA] = useState('');
+  const [b, setB] = useState('Search, filter, and create email views & other things');
 
   return (
-    <div className="w-80 font-sans">
-      <TextInput
-        placeholder="Enter value..."
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-      />
+    <div className="flex flex-col gap-4 font-sans w-80">
+      <div className="flex flex-col gap-1">
+        <span className="text-[13px] font-medium leading-[19px] text-text-primary">
+          Default
+        </span>
+        <TextInput
+          placeholder="Enter value..."
+          value={a}
+          onChange={(e) => setA(e.target.value)}
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <span className="text-[13px] font-medium leading-[19px] text-text-primary">
+          Error variant — border flips to red (#dc2626)
+        </span>
+        <TextInput
+          value={b}
+          onChange={(e) => setB(e.target.value)}
+          error
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <span className="text-[13px] font-medium leading-[19px] text-text-primary">
+          Read-only — used by the SEO panel's URL field
+        </span>
+        <TextInput
+          value="help.hiverhq.com/getting-started/setting-up-shared-inboxes"
+          readOnly
+        />
+      </div>
     </div>
   );
 }
