@@ -376,10 +376,14 @@ export function SeoTabBody({
     onChange(patch);
   };
 
+  // Only Description has a Refine-with-AI path, so only its verdict
+  // is eligible for the +1 bump. The Meta title's verdict ignores
+  // `aiBumpActive` — otherwise refining the description would also
+  // bump the title's verdict, which is a scope leak across fields.
   const titleVerdict: MetaLengthVerdict = computeMetaLengthVerdict({
     count: metaTitle.length,
     field: 'metaTitle',
-    aiBumpActive,
+    aiBumpActive: false,
   });
   const descVerdict: MetaLengthVerdict = computeMetaLengthVerdict({
     count: metaDescription.length,
