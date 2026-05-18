@@ -2,7 +2,6 @@ import * as React from 'react';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import {
   ChevronRight,
-  ChevronDown,
   Folder,
   File02,
   SearchLg,
@@ -10,6 +9,14 @@ import {
   DotsVertical,
 } from '@untitledui/icons';
 import { cn } from '../../utils/cn';
+
+// Emil-style strong ease-out — punchier than the built-in CSS easings.
+// Used for chevron rotation + grid-template-rows reveal.
+const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
+const EXPAND_DURATION_MS = 220;
+const COLLAPSE_DURATION_MS = 180; // Exit faster than enter — Emil rule.
+const OPACITY_DURATION_MS = 160;
+const OPACITY_ENTER_DELAY_MS = 60; // Children fade in slightly behind the height reveal.
 
 export type NavItem = {
   id: string;
@@ -214,7 +221,6 @@ function FolderRow({
   rowAction,
 }: FolderRowProps) {
   const state: RowState = isActive ? 'active' : isActiveSub ? 'active-sub' : 'default';
-  const ChevronIcon = isExpanded ? ChevronDown : ChevronRight;
 
   // Per Figma `6:438`: folder/sub-folder rows use font-normal in every state.
   // Only `type=category, state=hover` uses font-medium on the label. Keep regular
@@ -244,8 +250,15 @@ function FolderRow({
         <div
           className={cn('flex items-center gap-1 flex-1 min-w-0', CONTENT_PL[depth])}
         >
-          <span className="flex size-6 items-center justify-center rounded-[6px] shrink-0 text-text-muted">
-            <ChevronIcon size={16} />
+          <span
+            className="flex size-6 items-center justify-center rounded-[6px] shrink-0 text-text-muted motion-reduce:transition-none"
+            style={{
+              transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+              transition: `transform ${EXPAND_DURATION_MS}ms ${EASE_OUT}`,
+            }}
+            aria-hidden
+          >
+            <ChevronRight size={16} />
           </span>
           <span className="flex size-6 items-center justify-center rounded-[6px] shrink-0 text-text-muted">
             <Folder size={16} />
