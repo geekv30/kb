@@ -190,7 +190,17 @@ export function Textarea({
             minHeight: `${
               refining && measuredHeight ? measuredHeight : initialHeight
             }px`,
-          }}
+            // Autosize: grow the textarea to fit content past the
+            // `minHeight` floor. CSS-native, no JS / no re-renders.
+            // Falls back gracefully to a fixed `minHeight` frame on
+            // Firefox <144 (the textarea simply stops growing — the
+            // user can still scroll). While `refining`, content is
+            // hidden (opacity-0) so field-sizing has nothing to
+            // measure and the `min-height` floor (latched to the
+            // pre-refine measured height) keeps the frame stable for
+            // the Skeleton overlay.
+            fieldSizing: 'content',
+          } as React.CSSProperties}
           className={cn(
             'block w-full min-w-0 flex-1 border-0 bg-transparent p-0 text-[14px] font-normal leading-5 text-text-primary outline-none placeholder:text-text-muted disabled:cursor-not-allowed',
             resizeClassMap[resize],
