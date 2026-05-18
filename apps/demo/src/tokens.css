@@ -25,25 +25,98 @@
  * Toast entrance animation + the indeterminate progress slide here.
  * Both are scoped to `@layer utilities` so they sit alongside the
  * generated atomic classes and stay JIT-tree-shakeable.
+ *
+ * Phase D3 (motion pass): toast motion vocabulary expanded to support
+ * exit + reduced-motion variants; progress bar gets a gentle fade-in
+ * so it doesn't pop; empty-state template cards get staggered mount.
  * ───────────────────────────────────────────────────────────── */
 
 @layer utilities {
-  /* Toast entrance — fade-in + 8px slide from above (~200ms) */
-  @keyframes kb-toast-in {
+  /* Toast enter — slide-down from above + opacity, anchored to top-right.
+   * Starts from translateY(-12px) scale(0.97) (never from scale(0); per
+   * Emil's "nothing in the real world appears from nothing"). Uses the
+   * strong ease-out curve from kb-ui tokens for an intentional feel. */
+  @keyframes kb-toast-enter {
     from {
       opacity: 0;
-      transform: translateY(-8px);
+      transform: translateY(-12px) scale(0.97);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: translateY(0) scale(1);
     }
   }
-  .animate-toast-in {
-    animation: kb-toast-in 200ms ease-out;
+  .animate-kb-toast-enter {
+    animation: kb-toast-enter 240ms var(--ease-out-strong);
   }
 
-  /* Indeterminate progress bar — slides a 30%-wide band L → R in a loop. */
+  /* Toast exit — exit beats enter so close feels snappy rather than
+   * draggy. Reverses to translateY(-8px) (slightly less travel than
+   * enter; the toast is acknowledging dismissal, not retreating). */
+  @keyframes kb-toast-exit {
+    from {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.98);
+    }
+  }
+  .animate-kb-toast-exit {
+    animation: kb-toast-exit 160ms var(--ease-out-strong) forwards;
+  }
+
+  /* Reduced-motion variants — opacity only, no transform.
+   * Motion sickness fix: remove the slide, keep the fade so the user
+   * still gets the state-change cue. */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-kb-toast-enter {
+      animation: kb-toast-enter-reduced 180ms ease-out;
+    }
+    .animate-kb-toast-exit {
+      animation: kb-toast-exit-reduced 120ms ease-out forwards;
+    }
+  }
+  @keyframes kb-toast-enter-reduced {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes kb-toast-exit-reduced {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+  }
+
+  /* Toast auto-dismiss timer indicator — countdown bar at the bottom
+   * of the toast. CSS animation drives the width from 100% → 0 over
+   * the toast's visible lifetime. We expose the duration via a CSS
+   * custom property `--toast-duration` set inline so success (3s),
+   * info (3s), and error (5s) all share one rule. The animation is
+   * paused on hover via `[data-paused] &` so the visual matches the
+   * timer pause behavior already implemented in Toast.tsx. */
+  @keyframes kb-toast-countdown {
+    from { transform: scaleX(1); }
+    to   { transform: scaleX(0); }
+  }
+  .animate-kb-toast-countdown {
+    animation: kb-toast-countdown var(--toast-duration, 3000ms) linear forwards;
+    transform-origin: left center;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    /* Don't run a constantly-shrinking bar for motion-sensitive users.
+     * The toast still auto-dismisses; we just hide the visualization. */
+    .animate-kb-toast-countdown {
+      animation: none;
+      opacity: 0;
+    }
+  }
+
+  /* Indeterminate progress bar — slides a 30%-wide band L → R in a loop.
+   * Linear timing because constant motion (per Emil's framework: linear
+   * is correct for spinners/marquees/indeterminate progress; ease would
+   * make the band look like it's accelerating/decelerating each cycle).
+   * 1.4s feels less frantic than the legacy 1.1s and reads as "working"
+   * rather than "panicking". */
   @keyframes kb-progress-slide {
     0% {
       left: -30%;
@@ -53,7 +126,62 @@
     }
   }
   .animate-progress-slide {
-    animation: kb-progress-slide 1.1s linear infinite;
+    animation: kb-progress-slide 1.4s linear infinite;
+  }
+
+  /* Progress bar mount — gentle fade-in so the bar doesn't pop into
+   * existence at full opacity. 180ms is short enough that we still
+   * communicate "loading" instantly but the appearance feels intentional. */
+  @keyframes kb-progress-bar-mount {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  .animate-kb-progress-bar-mount {
+    animation: kb-progress-bar-mount 180ms ease-out;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    /* Keep the bar visible (it's a functional loading indicator) but
+     * stop the indeterminate slide — the bar's presence alone signals
+     * loading; motion is decorative here, not required. */
+    .animate-progress-slide {
+      animation: none;
+      left: 0;
+      width: 100%;
+      opacity: 0.5;
+    }
+    .animate-kb-progress-bar-mount {
+      animation: none;
+    }
+  }
+
+  /* Empty-state template card mount — staggered fade + 6px lift.
+   * Each card uses the same keyframe but its `animation-delay` is set
+   * inline via a CSS custom property so the cascade is data-driven
+   * (per Emil: stagger reads as natural; everything-at-once feels
+   * cheap). Custom strong ease-out curve. */
+  @keyframes kb-empty-card-mount {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-kb-empty-card-mount {
+    animation: kb-empty-card-mount 320ms var(--ease-out-strong) both;
+    animation-delay: var(--kb-empty-card-delay, 0ms);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-kb-empty-card-mount {
+      animation: kb-empty-card-mount-reduced 200ms ease-out both;
+      animation-delay: 0ms;
+    }
+  }
+  @keyframes kb-empty-card-mount-reduced {
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
 
   /* Suppress the stray focus outline on programmatically-focused
