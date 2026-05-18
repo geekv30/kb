@@ -206,6 +206,18 @@ html {
   --shadow-md: 0px 4px 6px -1px rgba(0, 0, 0, 0.05), 0px 2px 4px -2px rgba(0, 0, 0, 0.10);
   --shadow-lg: 0px 8px 12px -4px rgba(0, 0, 0, 0.05), 0px 4px 6px -2px rgba(0, 0, 0, 0.10);
 
+  /* ── Motion easings ─────────────────────────────
+   * Strong custom curves for UI motion. The built-in CSS easings feel
+   * weak; these add the punch that makes animations feel intentional.
+   * Source: easing.dev / Emil Kowalski's design-eng playbook.
+   *   --ease-out-strong   for entering/exiting elements (instant feedback)
+   *   --ease-in-out-strong for on-screen movement (rail reflow, position changes)
+   *   --ease-press        for button :active feedback (snappy)
+   */
+  --ease-out-strong:    cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-press:         cubic-bezier(0.34, 1.56, 0.64, 1);
+
   /* Font family */
   --font-sans: Inter, system-ui, sans-serif;
 }
@@ -231,5 +243,43 @@ html {
   }
   .animate-toast-in {
     animation: kb-toast-in 200ms ease-out;
+  }
+
+  /* AI Gaps — SuggestionBlock highlight wash mount.
+   * Fires when an inline suggestion region transitions from inactive
+   * to active and the colored highlight DOM mounts. Subtle (opacity
+   * + 4px lift); gated by `motion-safe:` at call site so reduced-motion
+   * users get an instant mount. Custom strong ease-out curve. */
+  @keyframes kb-suggestion-mount {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-kb-suggestion-mount {
+    animation: kb-suggestion-mount 220ms var(--ease-out-strong);
+  }
+
+  /* AI Gaps — collapsed decision chip enter.
+   * Fires when an AIGapSuggestionCard flips into its `accepted` or
+   * `dismissed` chip after the user's decision. Gentle "settle" —
+   * 0.96 scale lift + opacity fade so the chip arrives with a hint
+   * of confirmation rather than a hard swap. */
+  @keyframes kb-chip-enter {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  .animate-kb-chip-enter {
+    animation: kb-chip-enter 200ms var(--ease-out-strong);
   }
 }

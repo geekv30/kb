@@ -153,9 +153,11 @@ function SourcesButton({
         // visual baseline alignment with the icon + adjacent NavArrow
         // / accept-reject pills (medium gave a heavier optical feel).
         'text-[14px] font-normal leading-[20px] text-text-meta',
+        // Specific properties on the transition (no `transition-colors`
+        // catch-all). Strong ease-out curve for instant hover feedback.
         disabled
           ? 'cursor-default'
-          : 'transition-colors hover:bg-surface-muted hover:text-text-primary',
+          : 'transition-[background-color,color,transform] duration-[160ms] [transition-timing-function:var(--ease-out-strong)] hover:bg-surface-muted hover:text-text-primary motion-safe:active:scale-[0.96]',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
       )}
     >
@@ -180,11 +182,17 @@ function RejectButton({
       aria-hidden={disabled || undefined}
       tabIndex={disabled ? -1 : undefined}
       aria-label={disabled ? undefined : 'Reject suggestion'}
+      // Emil-style press feedback: 0.94 scale on `:active`. Subtle but
+      // present, confirming the click landed. Specific property names
+      // on the transition (no `transition: all`). `motion-safe` gates
+      // the scale so reduced-motion users get the color flip only.
       className={cn(
         'inline-flex size-6 items-center justify-center rounded-full bg-[var(--color-btn-danger-bg)]',
         // Hover bg derived from --color-ai-removal (#d52c1f) at ~12% over white.
         'text-ai-removal',
-        disabled ? 'cursor-default' : 'transition-colors hover:bg-[#fad9d6]',
+        disabled
+          ? 'cursor-default'
+          : 'transition-[background-color,transform] duration-[160ms] [transition-timing-function:var(--ease-out-strong)] hover:bg-[#fad9d6] motion-safe:active:scale-[0.94]',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
       )}
     >
@@ -215,7 +223,12 @@ function AcceptButton({
         // step to keep affordance visible on the light fill.
         'inline-flex size-6 items-center justify-center rounded-full bg-surface-muted',
         'text-text-primary',
-        disabled ? 'cursor-default' : 'transition-colors hover:bg-card-border',
+        // Emil-style press feedback: 0.94 scale on `:active` + strong
+        // ease-out curve for instant feedback. Specific property names
+        // on the transition. `motion-safe` gates the scale.
+        disabled
+          ? 'cursor-default'
+          : 'transition-[background-color,transform] duration-[160ms] [transition-timing-function:var(--ease-out-strong)] hover:bg-card-border motion-safe:active:scale-[0.94]',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
       )}
     >
@@ -267,6 +280,11 @@ export function AIGapSuggestionCard({
           // collapsed default (px-3 py-2). Do not re-add the 22/24
           // override — see comment above.
           'bg-canvas',
+          // Gentle settle on mount — fires when the active card flips
+          // to a decision chip. 200ms opacity+scale via the kb-ui
+          // `kb-chip-enter` keyframe. `motion-safe:` gates the animation
+          // so reduced-motion users see the chip mount instantly.
+          'motion-safe:animate-kb-chip-enter',
           className,
         )}
         data-kb-component="ai-gap-suggestion-card"
@@ -287,7 +305,9 @@ export function AIGapSuggestionCard({
           aria-label={`Undo ${state} for ${suggestion.title}`}
           className={cn(
             'ml-auto inline-flex size-7 items-center justify-center rounded-full',
-            'text-text-primary transition-colors',
+            // Specific properties on the transition + Emil-style press scale
+            // (motion-safe — reduced-motion users only see the color flip).
+            'text-text-primary transition-[background-color,transform] duration-[160ms] [transition-timing-function:var(--ease-out-strong)] motion-safe:active:scale-[0.92]',
             'hover:bg-surface-muted',
             'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
           )}
@@ -358,12 +378,22 @@ export function AIGapSuggestionCard({
         // Override AICard's `p-4` default → Figma padding.
         'border-border shadow-lg px-[22px] py-[24px]',
         // Idle differs from active only by bg (canvas grey vs white).
+        // Transition the bg colour so the idle→active flip reads as a
+        // smooth state change rather than a hard flash. 200ms with the
+        // strong ease-out curve — same family as the other AI-Gap
+        // motion. Specific property (background-color) per Emil's rule
+        // against `transition: all` / `transition-colors`.
+        'transition-[background-color] duration-[200ms] [transition-timing-function:var(--ease-out-strong)]',
         isIdle ? 'bg-canvas' : 'bg-white',
         // Click-to-activate surface for idle cards. Pointer cursor + soft
         // hover lift indicate clickability without breaking the recessed
-        // visual treatment.
+        // visual treatment. Tightened to specific properties + strong
+        // ease-out curve so the hover feels intentional (not the bare
+        // CSS `ease-out`). Subtle `:active:scale-[0.995]` confirms
+        // the click landed without competing with the card's own
+        // shadow lift. All transforms gated `motion-safe:`.
         isIdle && handleIdleActivate &&
-          'cursor-pointer transition-shadow hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/15',
+          'cursor-pointer transition-[box-shadow,transform] duration-[200ms] [transition-timing-function:var(--ease-out-strong)] hover:shadow-xl motion-safe:active:scale-[0.995] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/15',
         className,
       )}
       onClick={handleIdleActivate}

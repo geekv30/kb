@@ -224,6 +224,14 @@ export function SuggestionBlock({
     ...(suggestionId ? { 'data-suggestion-id': suggestionId } : {}),
   } as const;
 
+  // Gentle 220ms fade-in + 4px lift on mount — fires when an inline
+  // suggestion region transitions from inactive (plain text) to active
+  // (colored wash). Without this the highlight appears as an instant
+  // flash, which feels jarring against the rest of the surface motion.
+  // `motion-safe:` gates the keyframe so reduced-motion users see the
+  // wash mount instantly.
+  const mountAnimClass = 'motion-safe:animate-kb-suggestion-mount';
+
   /* ── Replace ─────────────────────────────────────────────── */
 
   if (type === 'replace') {
@@ -233,7 +241,7 @@ export function SuggestionBlock({
 
     if (hasSentencePair) {
       return (
-        <div {...rootProps} className={cn('flex flex-col gap-2', className)}>
+        <div {...rootProps} className={cn('flex flex-col gap-2', mountAnimClass, className)}>
           {oldSentences && oldSentences.length > 0 && (
             <SentenceList variant="removal" sentences={oldSentences} />
           )}
@@ -246,7 +254,7 @@ export function SuggestionBlock({
 
     // Legacy block-mode replace.
     return (
-      <div {...rootProps} className={cn('flex flex-col gap-2', className)}>
+      <div {...rootProps} className={cn('flex flex-col gap-2', mountAnimClass, className)}>
         <BlockHalf variant="removal">{oldContent}</BlockHalf>
         <BlockHalf variant="addition">{newContent}</BlockHalf>
       </div>
@@ -257,7 +265,7 @@ export function SuggestionBlock({
 
   if (sentences && sentences.length > 0) {
     return (
-      <div {...rootProps} className={className}>
+      <div {...rootProps} className={cn(mountAnimClass, className)}>
         <SentenceList variant={type} sentences={sentences} />
       </div>
     );
@@ -270,6 +278,7 @@ export function SuggestionBlock({
       className={cn(
         'rounded-[8px] px-4 py-3',
         BLOCK_VARIANT_CLASS[type],
+        mountAnimClass,
         className,
       )}
     >

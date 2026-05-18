@@ -35,9 +35,13 @@ export function NavArrow({ direction, onClick, disabled, className }: NavArrowPr
       className={cn(
         'inline-flex size-6 items-center justify-center rounded-[4px]',
         // Idle baseline. Hover affordances dropped when disabled.
+        // Emil-style press feedback: scale-down on `:active`. Specific
+        // property names on the transition (no `transition: all`).
+        // `motion-safe` gates the scale so reduced-motion users only
+        // see the color flip.
         disabled
           ? 'cursor-not-allowed text-text-disabled'
-          : 'text-text-muted transition-colors hover:bg-surface-muted hover:text-text-primary',
+          : 'text-text-muted transition-[background-color,color,transform] duration-[160ms] [transition-timing-function:var(--ease-out-strong)] hover:bg-surface-muted hover:text-text-primary motion-safe:active:scale-[0.92]',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
         className,
       )}
