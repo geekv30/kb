@@ -321,8 +321,27 @@ export function SuggestionCard({
         'flex w-full flex-col gap-[12px]',
         'rounded-[12px] border border-card-border bg-white',
         'px-[20px] py-[20px]',
-        'transition-colors duration-150',
-        clickable && 'cursor-pointer hover:bg-surface-subtle',
+        // Gentle mount — opacity + 4px lift on first appear. Same keyframe
+        // family as the inline SuggestionBlock highlight (Phase C) so cards
+        // and inline highlights settle in with one consistent motion vocab.
+        // `motion-safe:` gates the transform so reduced-motion users get
+        // an instant mount.
+        'motion-safe:animate-kb-suggestion-mount',
+        // Clickable cards lift on hover and press on :active. Non-clickable
+        // cards stay static (no false affordance). Specific properties on
+        // the transition — never `transition-colors` catch-all — and the
+        // custom strong ease-out curve per Emil's framework. Press scale
+        // gated `motion-safe:` so reduced-motion users get the color flip
+        // only. Hover gated with `(hover: hover)` via Tailwind's default
+        // hover variant (it already skips touch via the underlying media
+        // query in Tailwind v4 — verified during Phase C).
+        clickable && [
+          'cursor-pointer',
+          'transition-[background-color,box-shadow,transform] duration-[160ms]',
+          '[transition-timing-function:var(--ease-out-strong)]',
+          'hover:bg-surface-subtle hover:shadow-md motion-safe:hover:-translate-y-[1px]',
+          'motion-safe:active:scale-[0.99] motion-safe:active:translate-y-0',
+        ],
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/20',
         className,
       )}
