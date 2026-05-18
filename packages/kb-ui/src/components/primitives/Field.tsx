@@ -80,8 +80,8 @@ export function Field({
       )}
       {children}
       {showHintRow && (
-        <div className="flex items-center justify-between gap-2 text-[12px] font-normal leading-[18px] text-text-muted">
-          <span>{hint}</span>
+        <div className="flex items-center justify-start gap-2 text-[12px] font-normal leading-[18px] text-text-muted">
+          {hint !== undefined && <span>{hint}</span>}
           {hintEnd !== undefined && <span>{hintEnd}</span>}
         </div>
       )}
