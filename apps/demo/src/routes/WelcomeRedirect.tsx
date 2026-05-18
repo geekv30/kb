@@ -12,7 +12,7 @@
 import { useEffect, useRef } from 'react';
 import { Navigate } from 'react-router-dom';
 import { DEFAULT_KB_CATEGORY_SLUG, routes } from '../lib/routes';
-import { STORAGE_KEY } from '../components/welcome-tour/WelcomeTourContext';
+import { HIVER_TOUR_STORAGE_KEY } from '../components/welcome-tour-config';
 
 export default function WelcomeRedirect() {
   // Strict-mode runs effects twice in dev — gate so we only clear once.
@@ -22,7 +22,7 @@ export default function WelcomeRedirect() {
     if (clearedRef.current) return;
     clearedRef.current = true;
     try {
-      window.localStorage.removeItem(STORAGE_KEY);
+      window.localStorage.removeItem(HIVER_TOUR_STORAGE_KEY);
     } catch {
       // Storage may be unavailable (private mode) — the ?welcome=1
       // query param path will still trigger the tour.

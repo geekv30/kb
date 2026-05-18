@@ -27,6 +27,12 @@ import {
   WelcomeTourProvider,
   useTourTarget,
 } from '../components/welcome-tour';
+import {
+  HIVER_COMPLETION,
+  HIVER_TOUR_STEPS,
+  HIVER_TOUR_STORAGE_KEY,
+  HIVER_WELCOME,
+} from '../components/welcome-tour-config';
 
 function RouteAwareExplorer() {
   const { pathname } = useLocation();
@@ -109,7 +115,12 @@ export default function ShellLayout() {
   useFocusOnRouteChange();
   return (
     <SidebarCollapseProvider storageKey="kb-demo.sidebar.collapsed">
-      <WelcomeTourProvider>
+      <WelcomeTourProvider
+        steps={HIVER_TOUR_STEPS}
+        welcome={HIVER_WELCOME}
+        completion={HIVER_COMPLETION}
+        storageKey={HIVER_TOUR_STORAGE_KEY}
+      >
         <ShellLayoutInner />
       </WelcomeTourProvider>
     </SidebarCollapseProvider>

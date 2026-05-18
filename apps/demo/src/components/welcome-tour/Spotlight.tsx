@@ -67,7 +67,7 @@ export type SpotlightRect = {
 
 export type CoachMarkContent = {
   title: string;
-  body: string;
+  body: React.ReactNode;
   stepIndex: number; // 0-based — 0 = first step
   totalSteps: number;
   primaryLabel: string;

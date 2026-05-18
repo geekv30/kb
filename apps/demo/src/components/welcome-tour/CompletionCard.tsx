@@ -1,9 +1,12 @@
-// Completion card — shown after the user clicks "Got it" on step 3.
+// Completion card — shown after the user clicks "Got it" on the
+// final step.
 //
-// v4: unified visual language with WelcomeCard. Same width (max-w-md),
-// same chip pattern ("YOU'RE ALL SET"), same tile styling, same
-// typography (20px headline), same spacing rhythm (p-7, mt-5, mt-1,
-// mt-6, mt-7). Now surfaces 6 distinct features in a 2x3 grid.
+// v5: copy + feature tiles externalized to the `content` prop.
+// Visual chrome (chip, headline scale, tile structure, check-draw,
+// sparkles, animations, focus trap, backdrop) is unchanged. Tile
+// stagger delays now derive from feature count so 1, 2, 3, … N tiles
+// all read the same (200ms initial delay + 60ms per tile), preserving
+// the cascade rhythm the original 6-tile timing established.
 
 import {
   useEffect,
@@ -13,71 +16,28 @@ import {
   type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
-import {
-  AlertCircle,
-  Command,
-  Keyboard01,
-  MessageChatCircle,
-  Pencil02,
-  ShieldTick,
-  X,
-} from '@untitledui/icons';
+import { X } from '@untitledui/icons';
 import { Button } from '@test-kb-ui/kb-ui';
 import { cn } from '../../lib/cn';
 import { useReducedMotion } from './useReducedMotion';
+import type { CompletionContent, WelcomeFeature } from './WelcomeTourContext';
 
 const SMOOTH_CUBIC = 'cubic-bezier(0.16, 1, 0.3, 1)';
-
-type ChangelogTile = {
-  icon: React.ReactNode;
-  title: string;
-  body: string;
-};
-
-/* 6 distinct features — all real per kb-mcp/product/feature-map.md.
-   No overlap with WelcomeCard's File explorer / AI Gaps / Analytics tiles. */
-const TILES: ChangelogTile[] = [
-  {
-    icon: <Command className="h-[18px] w-[18px] text-slate-700" />,
-    title: 'Slash-command editor',
-    body: 'Type / anywhere to insert headings, lists, code, tables, and more',
-  },
-  {
-    icon: <Pencil02 className="h-[18px] w-[18px] text-slate-700" />,
-    title: 'Selection bubble menu',
-    body: 'Select text for instant formatting, links, and AI actions',
-  },
-  {
-    icon: <ShieldTick className="h-[18px] w-[18px] text-slate-700" />,
-    title: 'Smart publish gate',
-    body: 'Publishing stays disabled until your AI suggestions are reviewed',
-  },
-  {
-    icon: <MessageChatCircle className="h-[18px] w-[18px] text-slate-700" />,
-    title: 'Conversation sources',
-    body: 'Every AI suggestion shows the customer tickets behind it',
-  },
-  {
-    icon: <AlertCircle className="h-[18px] w-[18px] text-slate-700" />,
-    title: 'Articles needing attention',
-    body: 'Analytics flags low-helpfulness articles automatically',
-  },
-  {
-    icon: <Keyboard01 className="h-[18px] w-[18px] text-slate-700" />,
-    title: 'Keyboard-first workflow',
-    body: 'Press ? for shortcuts; navigate AI review with j/k, decide with y/n',
-  },
-];
 
 /* Tile stagger — starts at 200ms so the cascade kicks in shortly
  * after the card lands (card itself transitions in over ~350ms,
  * with 200ms the first tile begins under the headline before the
  * card fully settles). 60ms between tiles keeps the cascade tight
  * — long enough to read as a sequence, short enough to avoid
- * blocking interaction. Previously front-loaded at 300ms with 50ms
- * steps, which pushed the last tile (550ms) past the user's
- * attention window. */
-const TILE_DELAYS_MS = [200, 260, 320, 380, 440, 500];
+ * blocking interaction. The original config was [200, 260, 320, 380,
+ * 440, 500] for 6 tiles; derived form preserves that rhythm for any
+ * tile count. */
+const TILE_DELAY_BASE_MS = 200;
+const TILE_DELAY_STEP_MS = 60;
+function tileDelayMs(index: number): number {
+  return TILE_DELAY_BASE_MS + index * TILE_DELAY_STEP_MS;
+}
+
 const SPARKLE_DELAYS_MS = [700, 800, 900, 1000];
 const CHECK_DRAW_DELAY_MS = 200;
 const CHECK_DRAW_DUR_MS = 500;
@@ -90,14 +50,18 @@ const SPARKLE_SHIMMER_PHASE_MS = [0, 700, 1400, 350];
 const SPARKLE_SHIMMER_DURATION_MS = 3500;
 
 export type CompletionCardProps = {
+  content: CompletionContent;
   onDismiss: () => void;
 };
 
-export function CompletionCard({ onDismiss }: CompletionCardProps) {
+export function CompletionCard({ content, onDismiss }: CompletionCardProps) {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
   const checkPathRef = useRef<SVGPathElement | null>(null);
   const reduceMotion = useReducedMotion();
+
+  const ctaLabel = content.ctaLabel ?? 'Got it';
+  const features: WelcomeFeature[] = content.features ?? [];
 
   /* Measured length of the check stroke. Read from the DOM via
    * `getTotalLength()` so the keyframe's `stroke-dashoffset: from`
@@ -210,12 +174,13 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
         transition: `opacity 100ms cubic-bezier(0.23, 1, 0.32, 1)`,
       };
     }
+    const delay = tileDelayMs(index);
     return {
       opacity: mounted ? 1 : 0,
       transform: mounted ? 'translateY(0)' : 'translateY(6px)',
       transition:
-        `opacity 350ms cubic-bezier(0.23, 1, 0.32, 1) ${TILE_DELAYS_MS[index]}ms, ` +
-        `transform 350ms cubic-bezier(0.23, 1, 0.32, 1) ${TILE_DELAYS_MS[index]}ms`,
+        `opacity 350ms cubic-bezier(0.23, 1, 0.32, 1) ${delay}ms, ` +
+        `transform 350ms cubic-bezier(0.23, 1, 0.32, 1) ${delay}ms`,
       willChange: 'opacity, transform',
     };
   };
@@ -440,40 +405,44 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
           id="completion-title"
           className="mt-5 text-center text-[20px] font-semibold leading-7 text-slate-900"
         >
-          Tour complete
+          {content.title}
         </h2>
         <p
           id="completion-subtitle"
           className="mt-1 text-center text-[14px] leading-relaxed text-slate-600"
         >
-          A few other improvements you&rsquo;ll notice as you go
+          {content.body}
         </p>
 
-        {/* 2x3 changelog grid — 6 tiles. */}
-        <div className="mt-6 grid grid-cols-2 gap-3">
-          {TILES.map((tile, i) => (
-            <div
-              key={tile.title}
-              style={tileStyle(i)}
-              className={cn(
-                'rounded-lg border border-slate-200 bg-white p-3',
-                'transition-colors hover:bg-slate-50',
-              )}
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100">
-                  {tile.icon}
+        {/* 2-column changelog grid — driven by features count. */}
+        {features.length > 0 && (
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            {features.map((feature, i) => (
+              <div
+                key={feature.id}
+                style={tileStyle(i)}
+                className={cn(
+                  'rounded-lg border border-slate-200 bg-white p-3',
+                  'transition-colors hover:bg-slate-50',
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100">
+                    {feature.icon}
+                  </div>
+                  <div className="text-[13px] font-semibold leading-5 text-slate-900">
+                    {feature.title}
+                  </div>
                 </div>
-                <div className="text-[13px] font-semibold leading-5 text-slate-900">
-                  {tile.title}
-                </div>
+                {feature.body !== undefined && (
+                  <p className="mt-1 text-[12px] leading-relaxed text-slate-500">
+                    {feature.body}
+                  </p>
+                )}
               </div>
-              <p className="mt-1 text-[12px] leading-relaxed text-slate-500">
-                {tile.body}
-              </p>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Footer — single primary CTA. */}
         <div className="mt-7 flex items-center justify-end">
@@ -482,7 +451,7 @@ export function CompletionCard({ onDismiss }: CompletionCardProps) {
             onClick={onDismiss}
             data-completion-primary="true"
           >
-            Got it
+            {ctaLabel}
           </Button>
         </div>
       </div>

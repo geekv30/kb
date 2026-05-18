@@ -1,8 +1,8 @@
 // Step 0 — the centered welcome modal that introduces the tour.
 //
-// v5: drop the abstract glyph illustration entirely. Cards lead with the
-// "WHAT'S NEW" chip — same pattern Lovable/Relume/Linear use for "what's
-// new" surfaces. No mystery symbol; the chip + headline carry the moment.
+// v6: copy + feature tiles externalized to the `content` prop. Visual
+// chrome (chip, headline scale, tile structure, animations, focus
+// trap, backdrop) is unchanged.
 
 import {
   useEffect,
@@ -11,24 +11,21 @@ import {
   useState,
   type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
 } from 'react';
-import {
-  ArrowRight,
-  BarChartSquare02,
-  Folder,
-  XClose,
-} from '@untitledui/icons';
-import { AiIcon, Button } from '@test-kb-ui/kb-ui';
+import { ArrowRight, XClose } from '@untitledui/icons';
+import { Button } from '@test-kb-ui/kb-ui';
 import { cn } from '../../lib/cn';
 import { useReducedMotion } from './useReducedMotion';
+import type { WelcomeContent, WelcomeFeature } from './WelcomeTourContext';
 
 /* Smooth Apple-style cubic for entrance animations. */
 const SMOOTH_CUBIC = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
 type FeatureRowProps = {
-  icon: React.ReactNode;
+  icon: ReactNode;
   title: string;
-  description: string;
+  description?: string;
 };
 
 function FeatureRow({ icon, title, description }: FeatureRowProps) {
@@ -49,22 +46,29 @@ function FeatureRow({ icon, title, description }: FeatureRowProps) {
           {title}
         </div>
       </div>
-      <p className="mt-1 text-[12px] leading-relaxed text-slate-500">
-        {description}
-      </p>
+      {description !== undefined && (
+        <p className="mt-1 text-[12px] leading-relaxed text-slate-500">
+          {description}
+        </p>
+      )}
     </div>
   );
 }
 
 export type WelcomeCardProps = {
+  content: WelcomeContent;
   onStart: () => void;
   onSkip: () => void;
 };
 
-export function WelcomeCard({ onStart, onSkip }: WelcomeCardProps) {
+export function WelcomeCard({ content, onStart, onSkip }: WelcomeCardProps) {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
   const reduceMotion = useReducedMotion();
+
+  const ctaLabel = content.ctaLabel ?? 'Show me around';
+  const skipLabel = content.skipLabel ?? 'Skip';
+  const features: WelcomeFeature[] = content.features ?? [];
 
   /* Focus trap — keep Tab cycling within the card. */
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
@@ -204,47 +208,41 @@ export function WelcomeCard({ onStart, onSkip }: WelcomeCardProps) {
           id="welcome-tour-title"
           className="mt-5 text-center text-[20px] font-semibold leading-7 text-slate-900"
         >
-          Welcome back, your KB just got a refresh
+          {content.title}
         </h2>
 
         <p
           id="welcome-tour-subtitle"
           className="mt-1 text-center text-[14px] leading-relaxed text-slate-600"
         >
-          A few things moved around. Here&rsquo;s a quick tour of what&rsquo;s
-          new &mdash; under a minute.
+          {content.body}
         </p>
 
         {/* Feature tiles — full-width rows. Same internal structure as
             CompletionCard tiles, just in single-column layout. */}
-        <div className="mt-6 flex flex-col gap-3">
-          <FeatureRow
-            icon={<Folder className="text-slate-700" />}
-            title="File explorer in the sidebar"
-            description="Browse your categories and articles like files in a tree."
-          />
-          <FeatureRow
-            icon={<AiIcon size={18} />}
-            title="AI Gaps & Suggestions"
-            description="See where your content needs improvement, powered by real ticket conversations."
-          />
-          <FeatureRow
-            icon={<BarChartSquare02 className="text-slate-700" />}
-            title="Detailed analytics"
-            description="Per-article performance, search insights, and AI answer quality."
-          />
-        </div>
+        {features.length > 0 && (
+          <div className="mt-6 flex flex-col gap-3">
+            {features.map((feature) => (
+              <FeatureRow
+                key={feature.id}
+                icon={feature.icon}
+                title={feature.title}
+                description={feature.body}
+              />
+            ))}
+          </div>
+        )}
 
         <div className="mt-7 flex items-center justify-end gap-2">
           <Button variant="ghost" onClick={onSkip}>
-            I&rsquo;ll explore on my own
+            {skipLabel}
           </Button>
           <Button
             variant="primary"
             onClick={onStart}
             data-welcome-primary="true"
           >
-            Show me what&rsquo;s new
+            {ctaLabel}
             <ArrowRight className="h-[14px] w-[14px]" />
           </Button>
         </div>
