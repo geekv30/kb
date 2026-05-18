@@ -254,16 +254,24 @@ export function Modal({
    * uses text-primary/40 wash + z-90 to match the existing demo
    * ConfirmDialog stacking; content sits on z-91.
    *
-   * Motion (Phase D1, emil-design-eng skill):
-   *   - Backdrop: opacity fade — 200ms enter / 140ms exit
+   * Motion (Phase D1 + Chunk 12 reduced-motion fix, emil-design-eng skill):
+   *   - Backdrop: opacity fade — 200ms enter / 140ms exit, `var(--ease-out-strong)`
    *   - Content: scale 0.96 → 1 + opacity fade — 200ms enter / 140ms exit
    *     transform-origin: center (skill confirms modals stay centered)
    *   - Exit faster than enter (close feels snappy, not draggy)
    *   - Keyframes (not transitions) so Radix can suspend unmount via
    *     `animationend` while the exit animation plays out
-   *   - `motion-safe:` gates the animation — reduced-motion users get
-   *     instant mount/unmount (Radix detects no animation and unmounts
-   *     immediately, which is the correct accessible default) */
+   *
+   *   Reduced-motion users (`prefers-reduced-motion: reduce`):
+   *     The previous version relied on `motion-safe:` alone, which suppresses
+   *     the animation entirely and made the modal "stutter into existence"
+   *     (Radix mounts instantly + no opacity fade = hard pop). Emil's rule
+   *     for reduced-motion is to drop *movement* (transforms), not all motion.
+   *     `motion-reduce:` variants apply opacity-only fades (kb-modal-*-reduced
+   *     keyframes in tokens.css) at 100ms enter / 80ms exit so the mount/
+   *     unmount still has a perceptible cushion without any scale or slide.
+   *     Radix detects an animation is running on both code paths, so
+   *     `animationend` correctly suspends unmount in either branch. */
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -273,6 +281,8 @@ export function Modal({
             'fixed inset-0 z-[90] bg-text-primary/40',
             'motion-safe:data-[state=open]:animate-kb-backdrop-in',
             'motion-safe:data-[state=closed]:animate-kb-backdrop-out',
+            'motion-reduce:data-[state=open]:animate-kb-backdrop-in-reduced',
+            'motion-reduce:data-[state=closed]:animate-kb-backdrop-out-reduced',
           )}
         />
 
@@ -287,6 +297,8 @@ export function Modal({
             'focus:outline-none',
             'motion-safe:data-[state=open]:animate-kb-modal-in',
             'motion-safe:data-[state=closed]:animate-kb-modal-out',
+            'motion-reduce:data-[state=open]:animate-kb-modal-in-reduced',
+            'motion-reduce:data-[state=closed]:animate-kb-modal-out-reduced',
             className,
           )}
           aria-describedby={undefined}
