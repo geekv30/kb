@@ -20,7 +20,14 @@ import { cn } from '../../utils/cn';
  *   - short/long/   → --color-trend-down (#d52c1f) — red
  *     hard-cap
  *
- * Static — no motion, no internal state.
+ * Motion (per emil-design-eng — "prevent jarring changes"):
+ *   - The verdict word color transitions over 200ms ease-out so
+ *     that rapid typing across threshold boundaries doesn't strobe
+ *     red → amber → green. The 200ms duration is slow enough to
+ *     read as a smooth gradient between adjacent verdicts, fast
+ *     enough not to lag behind the typist's next keystroke.
+ *   - `motion-safe`-gated. Reduced-motion users see instant
+ *     color swaps (which is the prior behavior).
  * ───────────────────────────────────────────────────────────── */
 
 export type MetaLengthVerdict =
@@ -80,7 +87,17 @@ export function MetaLengthMeter({
       <span className="text-text-muted" aria-hidden="true">
         ·
       </span>
-      <span className={VERDICT_CLASS[verdict]}>{VERDICT_LABEL[verdict]}</span>
+      <span
+        className={cn(
+          VERDICT_CLASS[verdict],
+          // 200ms ease-out color crossfade. The verdict word reads
+          // as a smooth fade between adjacent states rather than a
+          // hard snap as the user types across thresholds.
+          'motion-safe:transition-colors motion-safe:duration-200 motion-safe:ease-out',
+        )}
+      >
+        {VERDICT_LABEL[verdict]}
+      </span>
     </span>
   );
 }

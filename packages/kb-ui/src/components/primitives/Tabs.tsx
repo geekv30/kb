@@ -12,13 +12,15 @@ import { cn } from '../../utils/cn';
  * with white "lifted" active trigger — radix exposes
  * `data-state="active|inactive"` which we style against.
  *
- * Motion: the active trigger crossfades its bg/shadow over 150ms
- * with the strong ease-out curve (matches Button's transition
- * vocabulary). Transform isn't animated — Radix mounts each
- * trigger statically, so a CSS sliding "indicator" would require
- * a measured-rect approach that's out of scope for chunk 1.
- * `motion-safe:` gates the transition; reduced-motion users get
- * an instant state swap.
+ * Motion (per emil-design-eng audit): the active trigger
+ * crossfades bg/shadow over 150ms with the strong ease-out curve.
+ * Considered a measured-rect sliding indicator (Vercel/Linear
+ * style) but for a 2-tab pill, the crossfade reads as restrained
+ * and consistent with the rest of the kb-ui motion vocabulary
+ * (Button, Switch). A sliding indicator would also add a measure
+ * pass + ResizeObserver per consumer — overkill for the SEO
+ * panel's single use. `motion-safe:` gates the transition;
+ * reduced-motion users get an instant state swap.
  * ───────────────────────────────────────────────────────────── */
 
 export type TabsProps = React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root>;

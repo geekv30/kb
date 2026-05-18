@@ -387,9 +387,23 @@ export function ArticleSettingsPanel({
                 <TabsTrigger value="seo">SEO</TabsTrigger>
               </TabsList>
 
+              {/* TabsContent mount fade: per emil-design-eng, content
+                  swap without transition reads as a hard snap. Radix
+                  unmounts the inactive panel on every state flip, so
+                  a CSS transition between data-states won't fire (the
+                  outgoing element is removed from the DOM before any
+                  transition can complete). Instead, we use a 150ms
+                  ease-out keyframe (`animate-kb-tabs-content-in`) that
+                  runs once on mount of the newly-active panel.
+                  `motion-safe:` gates the animation; reduced-motion
+                  users get an instant swap. */}
               <TabsContent
                 value="general"
-                className={cn('flex flex-col', compact ? 'gap-3' : 'gap-5')}
+                className={cn(
+                  'flex flex-col',
+                  compact ? 'gap-3' : 'gap-5',
+                  'motion-safe:animate-kb-tabs-content-in',
+                )}
               >
                 <AuthorField author={current.author} />
                 <CategoryField category={current.category} />
@@ -405,7 +419,10 @@ export function ArticleSettingsPanel({
                 ) : null}
               </TabsContent>
 
-              <TabsContent value="seo">
+              <TabsContent
+                value="seo"
+                className="motion-safe:animate-kb-tabs-content-in"
+              >
                 <SeoTabBody
                   value={toSeoTabValue(current)}
                   onChange={(patch) => update(patch)}
