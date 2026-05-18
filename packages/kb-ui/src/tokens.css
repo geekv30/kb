@@ -282,4 +282,119 @@ html {
   .animate-kb-chip-enter {
     animation: kb-chip-enter 200ms var(--ease-out-strong);
   }
+
+  /* ─────────────────────────────────────────────────────────────
+   * Overlay motion — Phase D1 (Emil's overlays pass)
+   *
+   * Modals and side sheets share a tight motion vocabulary:
+   *  - Enter: strong ease-out, 200-240ms, transform + opacity only
+   *  - Exit:  same curve, faster (140-180ms) — exit is faster than
+   *           enter so the close feels snappy rather than draggy
+   *  - Modals scale from 0.96 (never 0) with `transform-origin: center`
+   *    because modals aren't anchored to a trigger
+   *  - Sheets slide from their edge (translateX 100%) with
+   *    `transform-origin: right` — the EXCEPTION to the modal-center
+   *    rule from the emil-design-eng skill
+   *
+   * Keyframes (not transitions) are used here for one specific
+   * reason: Radix Dialog suspends unmount via `animationend`, not
+   * `transitionend`. Transitions would unmount the content
+   * instantly on close. Keyframes are short enough (≤240ms) that
+   * mid-animation interruption is rarely visible; for the cases
+   * where it matters, `data-state` change retargets the next
+   * animation rather than snapping back to zero.
+   * ───────────────────────────────────────────────────────────── */
+
+  /* Modal content — center scale-in from 0.96 + opacity fade.
+   * 200ms strong ease-out per Emil's playbook (modals 200-500ms,
+   * staying on the snappy end keeps the UI feeling responsive). */
+  @keyframes kb-modal-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+  .animate-kb-modal-in {
+    animation: kb-modal-in 200ms var(--ease-out-strong);
+    transform-origin: center;
+  }
+
+  /* Modal content — exit. Faster than enter (140ms vs 200ms) so
+   * close feels snappy. Same scale curve in reverse. */
+  @keyframes kb-modal-out {
+    from {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.96);
+    }
+  }
+  .animate-kb-modal-out {
+    animation: kb-modal-out 140ms var(--ease-out-strong);
+    transform-origin: center;
+  }
+
+  /* Backdrop fade — opacity only, matches the content's timing on
+   * enter (200ms) and exit (140ms). Slightly weaker curve (`ease`)
+   * because opacity-only fades don't need the same punch as scale. */
+  @keyframes kb-backdrop-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  .animate-kb-backdrop-in {
+    animation: kb-backdrop-in 200ms ease;
+  }
+
+  @keyframes kb-backdrop-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+  .animate-kb-backdrop-out {
+    animation: kb-backdrop-out 140ms ease;
+  }
+
+  /* Side sheet (right-docked) — slide in from the right edge.
+   * 240ms strong ease-out per Vaul's drawer timing. Origin is the
+   * right edge of the sheet because that's where it's "attached"
+   * — the emil-design-eng skill EXCEPTION to the modal-center rule. */
+  @keyframes kb-sheet-in-right {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+  .animate-kb-sheet-in-right {
+    animation: kb-sheet-in-right 240ms var(--ease-out-strong);
+    transform-origin: right;
+  }
+
+  /* Side sheet exit — faster than enter (180ms vs 240ms). */
+  @keyframes kb-sheet-out-right {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+  .animate-kb-sheet-out-right {
+    animation: kb-sheet-out-right 180ms var(--ease-out-strong);
+    transform-origin: right;
+  }
 }
