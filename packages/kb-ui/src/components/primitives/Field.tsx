@@ -41,7 +41,7 @@ export function Field({
           {label !== undefined && (
             <label
               htmlFor={htmlFor}
-              className="text-[14px] font-medium leading-5 text-text-primary"
+              className="text-[13px] font-medium leading-[19px] text-text-primary"
             >
               {label}
               {required && (

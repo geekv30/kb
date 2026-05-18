@@ -16,7 +16,7 @@ import { cn } from '../../utils/cn';
 
 export function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <label className="text-[14px] font-medium leading-[20px] text-text-primary">
+    <label className="text-[13px] font-medium leading-[19px] text-text-primary">
       {children}
     </label>
   );
