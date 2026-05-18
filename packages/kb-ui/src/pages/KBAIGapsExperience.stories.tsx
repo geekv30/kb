@@ -330,14 +330,6 @@ const dummySettings: ArticleSettings = {
   author: { name: 'Aileen Kelly', initials: 'AK' },
   category: 'Getting Started',
   slug: 'reset-password',
-  tags: ['password', 'security'],
-  publishDate: 'Apr 12, 2026',
-  seoTitle: 'How to reset your password — Hiver KB',
-  visibility: 'Public',
-  reviewers: [
-    { name: 'Mara Reyes', initials: 'MR' },
-    { name: 'Tom Singh', initials: 'TS' },
-  ],
 };
 
 /* ─────────────────────────────────────────────────────────────

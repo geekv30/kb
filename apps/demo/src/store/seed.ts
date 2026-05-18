@@ -89,20 +89,10 @@ function runIntegrityAsserts(state: MockStoreState): void {
     }
   }
 
-  // Reviewer ids on article settings must resolve and must NOT include
-  // the author themselves (per TRD types comment).
-  for (const a of Object.values(state.articles)) {
-    for (const rid of a.settings.reviewerIds) {
-      if (!state.users[rid]) {
-        errors.push(`article ${a.id} → unknown reviewer ${rid}`);
-      }
-      if (rid === a.authorId) {
-        errors.push(
-          `article ${a.id} → reviewer ${rid} is also the author (forbidden)`,
-        );
-      }
-    }
-  }
+  // Reviewer ids on article settings were validated here in pre-SEO-panel
+  // chunks. Chunk 2 of the SEO panel scaffold removed reviewer/visibility/
+  // tags/publishDate fields from the store; chunk 3 will reintroduce the
+  // SEO-specific fields it needs.
 
   // Current user is a real user
   if (!state.users[state.currentUserId]) {

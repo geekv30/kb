@@ -267,10 +267,6 @@ export function rootReducer(
         ...article,
         status: 'published',
         lastUpdatedAt: nowIso,
-        settings: {
-          ...article.settings,
-          publishDate: article.settings.publishDate ?? nowIso,
-        },
       };
       return {
         ...state,
@@ -293,11 +289,7 @@ export function rootReducer(
         bodyHTML: '',
         settings: {
           slug: action.newSlug,
-          tags: [],
-          publishDate: null,
           seoTitle: 'Untitled article',
-          visibility: 'public',
-          reviewerIds: [],
         },
       };
       return {
@@ -375,10 +367,6 @@ export function rootReducer(
         bodyHTML: newBody,
         status: 'published',
         lastUpdatedAt: action.now,
-        settings: {
-          ...article.settings,
-          publishDate: article.settings.publishDate ?? action.now,
-        },
       };
 
       // 4. Drop the per-article reducer slot.
