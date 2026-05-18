@@ -253,6 +253,21 @@ html {
   --animate-kb-sheet-in-right:  kb-sheet-in-right 240ms var(--ease-out-strong);
   --animate-kb-sheet-out-right: kb-sheet-out-right 180ms var(--ease-out-strong);
 
+  /* Origin-aware dropdown entrance (Phase D2).
+   * Used by Radix Dropdown/Popover content where the trigger's
+   * computed origin is exposed via
+   * `--radix-dropdown-menu-content-transform-origin` (or the popover
+   * equivalent). Opacity 0 → 1 + scale 0.96 → 1 — never from 0, so the
+   * menu doesn't appear out of nowhere. 150ms with the strong ease-out
+   * curve is the dropdown sweet spot per Emil's framework. Apply via
+   * `motion-safe:data-[state=open]:animate-kb-dropdown-in` so reduced-
+   * motion users see no transform.
+   *
+   * Caller must set `transform-origin: var(--radix-*-content-transform-
+   * origin)` on the same element so the scale anchors to the trigger
+   * (without it, scale-from-center looks wrong per the popover rule). */
+  --animate-kb-dropdown-in:   kb-dropdown-in 150ms var(--ease-out-strong);
+
   @keyframes kb-modal-in {
     from {
       opacity: 0;
@@ -288,6 +303,16 @@ html {
   @keyframes kb-sheet-out-right {
     from { transform: translateX(0); }
     to   { transform: translateX(100%); }
+  }
+  @keyframes kb-dropdown-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 
   /* Font family */
