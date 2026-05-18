@@ -378,6 +378,12 @@ export function AIGapSuggestionCard({
         // Override AICard's `p-4` default → Figma padding.
         'border-border shadow-lg px-[22px] py-[24px]',
         // Idle differs from active only by bg (canvas grey vs white).
+        // Transition the bg colour so the idle→active flip reads as a
+        // smooth state change rather than a hard flash. 200ms with the
+        // strong ease-out curve — same family as the other AI-Gap
+        // motion. Specific property (background-color) per Emil's rule
+        // against `transition: all` / `transition-colors`.
+        'transition-[background-color] duration-[200ms] [transition-timing-function:var(--ease-out-strong)]',
         isIdle ? 'bg-canvas' : 'bg-white',
         // Click-to-activate surface for idle cards. Pointer cursor + soft
         // hover lift indicate clickability without breaking the recessed
