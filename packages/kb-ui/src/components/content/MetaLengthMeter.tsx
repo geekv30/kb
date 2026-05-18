@@ -58,9 +58,11 @@ const VERDICT_CLASS: Record<MetaLengthVerdict, string> = {
   // Reuses --color-success-text — same green as addition badges.
   optimal: 'text-success-text',
   // Amber. No `text-amber-*` token in kb-ui (token sweep candidate:
-  // promote `#d97706` to e.g. --color-warning-text when a second
-  // amber consumer lands).
-  acceptable: 'text-[#d97706]',
+  // promote `#d55206` to e.g. --color-warning-text when a second
+  // amber consumer lands). #d55206 matches Figma --text/warning/default
+  // (2949:7901). Previously #d97706 — the prior pick was visually
+  // similar but a half-step lighter than Figma.
+  acceptable: 'text-[#d55206]',
   // Reuses --color-trend-down — same red as removal/down trend.
   short: 'text-trend-down',
   long: 'text-trend-down',
