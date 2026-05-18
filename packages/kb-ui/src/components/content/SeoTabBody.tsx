@@ -12,25 +12,29 @@ import {
   computeMetaLengthVerdict,
   type MetaLengthVerdict,
 } from './MetaLengthMeter';
+import { SerpPreview } from './SerpPreview';
 
 /* ─────────────────────────────────────────────────────────────
  * SeoTabBody — the SEO tab body of `ArticleSettingsPanel`.
  *
- * Renders the 5 SEO sections in order:
+ * Renders the 6 SEO sections in order:
  *   1. Meta title          (TextInput + MetaLengthMeter, max 70)
  *   2. Description         (Textarea + MetaLengthMeter, max 160)
  *   3. URL                 (read-only TextInput + copy button)
  *   4. Advanced disclosure (collapsible canonical URL override)
  *   5. Exclude toggle      (Switch + helper paragraph w/ CodeChips)
+ *   6. Search result live preview  (SerpPreview, swaps with NoPreviewState
+ *      when excludeFromSearch is ON — cross-fade via kb-tabs-content-in)
  *
  * Figma references:
- *   - 2949:7844 — default state
+ *   - 2949:7844 — default state (preview rendered)
  *   - 2949:8306 — canonical URL disclosure expanded
- *   - 2949:9407 — exclude toggle ON
+ *   - 2949:9407 — exclude toggle ON (preview replaced by empty state)
  *
- * Chunk 3 scope: static fields only. The "✦ Refine with AI"
- * affordance on Description (chunk 5) and the Google SERP preview
- * card (chunk 4) are intentionally NOT rendered here.
+ * Chunk 3 scope: static fields only.
+ * Chunk 4 adds the SERP preview card + empty state.
+ * The "✦ Refine with AI" affordance on Description (chunk 5) is
+ * intentionally NOT rendered here yet.
  *
  * Verdict algorithm + AI bump logic lives in `MetaLengthMeter.ts`
  * (`computeMetaLengthVerdict`). This component owns the "is the AI
@@ -88,6 +92,8 @@ const URL_TOOLTIP =
   'The web address where this article will be published, derived from your article slug.';
 const EXCLUDE_TOOLTIP =
   'When enabled, this article won\'t appear in Google, Bing, or other search results.';
+const SEARCH_PREVIEW_TOOLTIP =
+  'How this article will appear in a Google search result.';
 
 /* ─────────────────────────────────────────────────────────────
  * Helpers
@@ -380,6 +386,58 @@ export function SeoTabBody({
           will not appear in Google, Bing, or other search results.
         </p>
       </div>
+
+      {/* ── 6. Search result live preview ────────────────────── */}
+      <Field label="Search result live preview" tooltip={SEARCH_PREVIEW_TOOLTIP}>
+        {/* Keyed wrapper drives the cross-fade: when `excluded` flips,
+            Radix-style remount replays `kb-tabs-content-in` (150ms
+            opacity-only fade, strong ease-out) so the swap reads as
+            a clean fade rather than a snap. Emil's rule: occasional
+            swaps deserve a short, opacity-only animation to prevent
+            jarring changes (motion-safe-gated for a11y). */}
+        <div
+          key={excluded ? 'empty' : 'preview'}
+          className="motion-safe:animate-kb-tabs-content-in"
+        >
+          {excluded ? (
+            <NoPreviewState />
+          ) : (
+            <SerpPreview
+              title={value.metaTitle}
+              description={value.metaDescription}
+              baseUrl={value.urlBase}
+              breadcrumbPath={value.categoryPath}
+            />
+          )}
+        </div>
+      </Field>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * NoPreviewState — internal-only empty state for Section 6.
+ *
+ * Same card chrome as SerpPreview (#fcfcfc bg, surface-muted
+ * border, 12px radius, 16/12 padding) with a single centered
+ * muted line. Not exported — strictly paired with SeoTabBody's
+ * preview-section swap.
+ *
+ * Figma 2949:9552 / 2949:9555.
+ * ───────────────────────────────────────────────────────────── */
+
+function NoPreviewState() {
+  return (
+    <div
+      data-kb-part="serp-preview-empty"
+      className={cn(
+        'flex w-full items-center justify-center rounded-[12px]',
+        'border border-surface-muted bg-[#fcfcfc] px-4 py-3',
+      )}
+    >
+      <span className="text-[13px] font-normal leading-[19px] text-text-muted">
+        no preview available
+      </span>
     </div>
   );
 }
