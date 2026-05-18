@@ -423,14 +423,21 @@ function RailCard({
         // Absolute position so multiple cards can coexist in a tall
         // rail without flexbox squashing them together.
         'absolute left-0 right-0',
-        // 200ms ease-out per the chunk 3 spec — chunk 4/5 reflows
-        // (activation / accept / reject) inherit this animation.
-        'transition-[top,opacity] duration-200 ease-out',
+        // 260ms with strong custom in-out curve. Rail-card reflow is
+        // on-screen MOVEMENT (existing card moving to a new pinned top
+        // when neighbours accept/dismiss/activate), so `ease-in-out` is
+        // the right family per Emil's framework — natural accel/decel.
+        // The custom `--ease-in-out-strong` curve has more punch than
+        // bare `ease-in-out` and makes the reflow feel intentional.
+        // `prefers-reduced-motion: reduce` is honoured via the global
+        // gate in tokens.css.
+        'motion-safe:transition-[top,opacity] motion-safe:duration-[260ms]',
         ready ? 'opacity-100' : 'opacity-0',
       )}
       style={{
         top: `${top}px`,
         willChange: willChange ? 'top' : undefined,
+        transitionTimingFunction: 'var(--ease-in-out-strong)',
       }}
     >
       {showConnector && (
