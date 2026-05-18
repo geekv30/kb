@@ -51,13 +51,12 @@ export type SerpPreviewProps = {
 /* ─────────────────────────────────────────────────────────────
  * Multi-color Google "G" mark — inlined SVG with the full
  * 0–48 viewBox so all four color quadrants render without edge-
- * cropping. Default size 14 matches the Figma header glyph
- * (2949:7984). The previous version used a 0–18 viewBox that
- * clipped against the path geometry at small sizes, producing a
- * visibly chopped "G". Standard 4-color brand swatches.
+ * cropping. Default size 16 matches the bumped favicon below
+ * (see comment on the favicon row for why we run at 16, not 14).
+ * Standard 4-color brand swatches.
  * ───────────────────────────────────────────────────────────── */
 
-function GoogleGMark({ size = 14 }: { size?: number }) {
+function GoogleGMark({ size = 16 }: { size?: number }) {
   return (
     <svg
       width={size}
@@ -141,7 +140,7 @@ export function SerpPreview({
     >
       {/* Header row — "G" + "Google search preview" */}
       <div className="flex w-full items-center gap-1.5">
-        <GoogleGMark size={14} />
+        <GoogleGMark size={16} />
         <span className="text-[13px] font-normal leading-[19px] text-text-muted">
           Google search preview
         </span>
@@ -153,9 +152,14 @@ export function SerpPreview({
         <div className="flex w-full items-center gap-1.5">
           {/* Hiver's own favicon — yellow product variant `#FEC32A` to match
               Figma 2949:8003 (which uses `imgHiverLogo`, not the dark app-rail
-              variant). 14×14 wrapper, 14×14 svg — same dimensions as the
-              Google G glyph above so the two icons read at identical weight. */}
-          <CompanyLogo size={14} bgColor="#FEC32A" className="shrink-0" />
+              variant). Rendered at 16px (rather than the Figma frame's 14×14)
+              because CompanyLogo's inner Hiver glyph paths sit close to the
+              rounded-rect edges of the 24-unit viewBox — at 14px the corner
+              curve visibly clips against the white glyph's tips. Bumping to
+              16 gives ~2 extra rendered pixels per side, restoring the
+              breathing room shown in Figma without changing the shared SVG.
+              Google G is bumped in lockstep so the two icons stay paired. */}
+          <CompanyLogo size={16} bgColor="#FEC32A" className="shrink-0" />
           {/* Crumb stack — flex-1 so it can truncate; title-as-crumb
               is the only flex-grow element. */}
           <div className="flex min-w-0 flex-1 items-center gap-0.5">
