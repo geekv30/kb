@@ -19,7 +19,7 @@ export function Dropdown({
 }: DropdownProps) {
   const trigger = (
     <div className={cn('flex flex-col gap-2', className)}>
-      <label className="text-[14px] font-medium leading-5 text-text-primary">{label}</label>
+      <label className="text-[13px] font-medium leading-[19px] text-text-primary">{label}</label>
       <TextInput
         {...inputProps}
         suffix={<ChevronDown size={14} className="text-text-meta" />}
