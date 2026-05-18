@@ -33,6 +33,15 @@ const populatedSettings: ArticleSettings = {
   author: { name: 'Varun Kelkar', initials: 'VK' },
   category: 'Managing emails',
   slug: 'how-to-reset-your-password',
+  // SEO seeds — verdict-locked to Optimal green for both meters per
+  // the chunk-3 brief.
+  metaTitle: 'How to reset your Hiver password — quick step-by-step',
+  metaDescription:
+    'Reset your Hiver password from the sign-in page in under a minute. Email or SMS verification supported with one-time codes.',
+  urlBase: 'help.hiverhq.com',
+  categoryPath: ['managing-emails'],
+  canonicalUrl: '',
+  excludeFromSearch: false,
 };
 
 const meta: Meta<typeof ArticleSettingsPanel> = {

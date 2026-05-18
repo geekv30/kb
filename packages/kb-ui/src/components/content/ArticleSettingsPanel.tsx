@@ -9,6 +9,7 @@ import {
   ChevronSuffix,
   CharCounter,
 } from './ArticleSettingsPanelAtoms';
+import { SeoTabBody, type SeoTabBodyValue } from './SeoTabBody';
 
 /* ─────────────────────────────────────────────────────────────
  * Types
@@ -23,6 +24,29 @@ export type ArticleSettings = {
   author?: ArticleSettingsPerson;
   category?: string;
   slug?: string;
+  /* ── SEO tab fields (chunk 3) ─────────────────────────────── */
+  /** Meta title displayed in search results / browser tab. ≤70 chars
+   *  for the verdict to stay out of the hard-cap red state. */
+  metaTitle?: string;
+  /** Meta description shown in the search snippet. ≤160 chars. */
+  metaDescription?: string;
+  /** Base URL used for the auto-generated URL field — e.g.
+   *  `"help.hiverhq.com"`. The full URL becomes
+   *  `${urlBase}/${categoryPath.join('/')}/${slug}`. */
+  urlBase?: string;
+  /** Category-path crumbs that appear between the base and the slug
+   *  in the auto-URL. */
+  categoryPath?: string[];
+  /** Admin-only override for the canonical URL. When non-empty, the
+   *  disclosure opens automatically. */
+  canonicalUrl?: string;
+  /** When true, the article emits `noindex` / `nofollow` meta tags
+   *  and the SERP preview is suppressed. */
+  excludeFromSearch?: boolean;
+  /** Ms timestamp of the last AI refine on the meta title /
+   *  description. Drives the SEO panel's verdict-bump behaviour
+   *  while staleness is true. */
+  aiRefinedAt?: number;
 };
 
 /**
@@ -78,6 +102,17 @@ export type ArticleSettingsPanelProps = {
    * zero extra DOM and the default render path is preserved exactly.
    */
   footerSlot?: React.ReactNode;
+  /**
+   * Optional callback fired when the SEO tab's URL copy button is
+   * clicked. The component already writes to `navigator.clipboard` —
+   * this is for downstream toast wiring. Receives the URL that was
+   * copied.
+   */
+  onCopyUrl?: (url: string) => void;
+  /**
+   * Same as `onCopyUrl`, but for the canonical-URL override field.
+   */
+  onCopyCanonical?: (url: string) => void;
 };
 
 // Figma `53:8464` shows the slug counter reading `14/32` — the slug field
@@ -188,22 +223,21 @@ function SlugField({
 }
 
 /* ─────────────────────────────────────────────────────────────
- * SEO tab placeholder
- *
- * Chunk 2 of 5 of the SEO panel scaffold — the SEO tab body is wired up
- * but content is intentionally deferred to chunk 3. The placeholder uses
- * the same vertical rhythm as the field stack so swapping it for real
- * content in chunk 3 doesn't visibly shift the panel chrome.
+ * Adapt the panel's ArticleSettings value to SeoTabBody's value
+ * shape. Only the SEO-relevant fields flow through.
  * ───────────────────────────────────────────────────────────── */
 
-function SeoTabPlaceholder() {
-  return (
-    <div className="flex min-h-[120px] items-center justify-center px-2 py-6">
-      <p className="text-center text-[13px] leading-[20px] font-normal text-text-muted">
-        SEO settings will appear here in the next iteration.
-      </p>
-    </div>
-  );
+function toSeoTabValue(s: ArticleSettings): SeoTabBodyValue {
+  return {
+    metaTitle: s.metaTitle,
+    metaDescription: s.metaDescription,
+    urlBase: s.urlBase,
+    slug: s.slug,
+    categoryPath: s.categoryPath,
+    canonicalUrl: s.canonicalUrl,
+    excludeFromSearch: s.excludeFromSearch,
+    aiRefinedAt: s.aiRefinedAt,
+  };
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -219,6 +253,8 @@ export function ArticleSettingsPanel({
   sections,
   headerSlot,
   footerSlot,
+  onCopyUrl,
+  onCopyCanonical,
 }: ArticleSettingsPanelProps) {
   const [collapsed, setCollapsed] = React.useState(defaultCollapsed);
   // Tabs are panel-internal for now (chunk 2). If a future chunk needs
@@ -351,9 +387,23 @@ export function ArticleSettingsPanel({
                 <TabsTrigger value="seo">SEO</TabsTrigger>
               </TabsList>
 
+              {/* TabsContent mount fade: per emil-design-eng, content
+                  swap without transition reads as a hard snap. Radix
+                  unmounts the inactive panel on every state flip, so
+                  a CSS transition between data-states won't fire (the
+                  outgoing element is removed from the DOM before any
+                  transition can complete). Instead, we use a 150ms
+                  ease-out keyframe (`animate-kb-tabs-content-in`) that
+                  runs once on mount of the newly-active panel.
+                  `motion-safe:` gates the animation; reduced-motion
+                  users get an instant swap. */}
               <TabsContent
                 value="general"
-                className={cn('flex flex-col', compact ? 'gap-3' : 'gap-5')}
+                className={cn(
+                  'flex flex-col',
+                  compact ? 'gap-3' : 'gap-5',
+                  'motion-safe:animate-kb-tabs-content-in',
+                )}
               >
                 <AuthorField author={current.author} />
                 <CategoryField category={current.category} />
@@ -369,8 +419,16 @@ export function ArticleSettingsPanel({
                 ) : null}
               </TabsContent>
 
-              <TabsContent value="seo">
-                <SeoTabPlaceholder />
+              <TabsContent
+                value="seo"
+                className="motion-safe:animate-kb-tabs-content-in"
+              >
+                <SeoTabBody
+                  value={toSeoTabValue(current)}
+                  onChange={(patch) => update(patch)}
+                  onCopyUrl={onCopyUrl}
+                  onCopyCanonical={onCopyCanonical}
+                />
               </TabsContent>
             </Tabs>
           )}

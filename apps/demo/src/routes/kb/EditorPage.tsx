@@ -83,25 +83,40 @@ function toPerson(user: User | undefined): ArticleSettingsPerson | undefined {
   return { name: user.name, initials: user.initials };
 }
 
+/** Hardcoded SEO base — the demo's articles all live under help.hiverhq.com. */
+const DEMO_URL_BASE = 'help.hiverhq.com';
+
 function adaptStoreToKbSettings(
   article: Article,
   category: Category | undefined,
+  ancestors: Category[],
   users: Record<string, User>,
   storeSettings: StoreArticleSettings,
 ): KbUiArticleSettings {
   const author = users[article.authorId];
+  // Build the URL path crumbs from the article's category ancestry,
+  // top-down. The SEO panel renders these as `base/crumb1/crumb2/slug`.
+  const categoryPath = ancestors.map((c) => c.slug);
   return {
     author: toPerson(author),
     category: category?.title,
     slug: storeSettings.slug,
+    metaTitle: storeSettings.metaTitle,
+    metaDescription: storeSettings.metaDescription,
+    urlBase: DEMO_URL_BASE,
+    categoryPath,
+    canonicalUrl: storeSettings.canonicalUrlOverride,
+    excludeFromSearch: storeSettings.excludeFromSearch,
+    aiRefinedAt: storeSettings.aiRefinedAt,
   };
 }
 
 /**
  * Project edits made inside the kb-ui ArticleSettingsPanel back into the
- * store's settings shape. Only the fields the panel can actually mutate
- * (slug, post-chunk-2) are written; author / category stay frozen —
- * those are surfaced as read-only dropdowns in v1.
+ * store's settings shape. SEO field edits flow through here too — each
+ * one becomes a targeted reducer action in EditorPageBody via the panel's
+ * onChange callback (we don't write directly to the store in this adapter;
+ * the caller dispatches per-field).
  */
 function adaptKbToStoreSettings(
   prev: StoreArticleSettings,
@@ -110,6 +125,12 @@ function adaptKbToStoreSettings(
   return {
     ...prev,
     slug: next.slug ?? prev.slug,
+    metaTitle: next.metaTitle ?? prev.metaTitle,
+    metaDescription: next.metaDescription ?? prev.metaDescription,
+    canonicalUrlOverride: next.canonicalUrl ?? prev.canonicalUrlOverride,
+    excludeFromSearch:
+      next.excludeFromSearch ?? prev.excludeFromSearch ?? false,
+    aiRefinedAt: next.aiRefinedAt ?? prev.aiRefinedAt,
   };
 }
 
@@ -284,8 +305,14 @@ function EditorPageBody({ article }: { article: Article }) {
    */
   const kbSettings = useMemo<KbUiArticleSettings>(
     () =>
-      adaptStoreToKbSettings(article, category, state.users, storeSettings),
-    [article, category, state.users, storeSettings],
+      adaptStoreToKbSettings(
+        article,
+        category,
+        ancestors,
+        state.users,
+        storeSettings,
+      ),
+    [article, category, ancestors, state.users, storeSettings],
   );
 
   /* ── Handlers ──────────────────────────────────────────────── */
@@ -310,10 +337,28 @@ function EditorPageBody({ article }: { article: Article }) {
 
   const handleSettingsChange = useCallback(
     (next: KbUiArticleSettings) => {
+      // The panel emits the FULL merged shape; we project back into the
+      // store's settings shape via the adapter. The dirty flag flips on
+      // any settings mutation (matches General-tab behaviour pre-chunk-3).
+      //
+      // We intentionally write through `setStoreSettings` rather than
+      // dispatching per-field actions — keeping a single source of truth
+      // for the panel's value (local state, mirrored to the store via
+      // the debounced saveDraft path). Per-field reducer actions exist
+      // for direct callers (e.g. tests, future automations) but the live
+      // panel does not need them.
       setStoreSettings((prev) => adaptKbToStoreSettings(prev, next));
       setDirty(true);
     },
     [],
+  );
+
+  // Toast wiring for the SEO panel's URL / canonical copy buttons.
+  // navigator.clipboard is already invoked inside the SEO panel; this
+  // callback just surfaces the visual confirmation.
+  const handleCopyUrl = useCallback(
+    () => showToast('URL copied to clipboard.', 'success'),
+    [showToast],
   );
 
   const handleSaveAsDraft = useCallback(() => {
@@ -518,6 +563,8 @@ function EditorPageBody({ article }: { article: Article }) {
           <ArticleSettingsPanel
             value={kbSettings}
             onChange={handleSettingsChange}
+            onCopyUrl={handleCopyUrl}
+            onCopyCanonical={handleCopyUrl}
             compact
           />
         </div>

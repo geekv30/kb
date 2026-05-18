@@ -8,6 +8,13 @@ export type TextInputProps = {
   suffix?: React.ReactNode;
   charCount?: { current: number; max: number };
   disabled?: boolean;
+  /** When true the input renders read-only (no focus border on click,
+   *  not user-editable). Used by the SEO panel's URL field. */
+  readOnly?: boolean;
+  /** When true the input border flips to red. Used by the SEO panel
+   *  when the meta-title/description exceeds its hard cap (Honey-DS
+   *  6322:25311). Default false. */
+  error?: boolean;
   id?: string;
   name?: string;
   className?: string;
@@ -25,6 +32,8 @@ export function TextInput({
   suffix,
   charCount,
   disabled,
+  readOnly,
+  error,
   id,
   name,
   className,
@@ -33,7 +42,10 @@ export function TextInput({
   return (
     <div
       className={cn(
-        'flex h-10 items-center gap-1.5 overflow-hidden rounded-lg border border-[#e5e5e5] bg-white px-3 py-2',
+        'flex h-10 items-center gap-1.5 overflow-hidden rounded-lg border bg-white px-3 py-2',
+        // Border swaps to red on error (Honey-DS 6322:25311 — #dc2626).
+        // Default neutral border (#e5e5e5) preserved when error is false.
+        error ? 'border-[#dc2626]' : 'border-[#e5e5e5]',
         disabled && 'opacity-50 cursor-not-allowed',
         className,
       )}
@@ -47,8 +59,11 @@ export function TextInput({
         onChange={onChange}
         placeholder={placeholder}
         disabled={disabled}
+        readOnly={readOnly}
+        aria-invalid={error || undefined}
         className={cn(
           'min-w-0 flex-1 border-0 bg-transparent p-0 text-[14px] font-normal leading-5 text-text-primary outline-none placeholder:text-text-disabled disabled:cursor-not-allowed',
+          readOnly && 'cursor-default',
           inputClassName,
         )}
       />

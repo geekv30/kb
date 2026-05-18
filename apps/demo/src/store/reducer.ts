@@ -32,6 +32,23 @@ export type StoreAction =
     }
   | { type: 'editor/publish'; articleId: string }
   | { type: 'editor/setTitle'; articleId: string; title: string }
+  | { type: 'editor/setMetaTitle'; articleId: string; metaTitle: string }
+  | {
+      type: 'editor/setMetaDescription';
+      articleId: string;
+      metaDescription: string;
+    }
+  | {
+      type: 'editor/setCanonicalOverride';
+      articleId: string;
+      canonicalUrlOverride: string;
+    }
+  | {
+      type: 'editor/setExcludeFromSearch';
+      articleId: string;
+      excludeFromSearch: boolean;
+    }
+  | { type: 'editor/markAiRefined'; articleId: string; at: number }
   | {
       type: 'editor/createNew';
       categoryId: string;
@@ -259,6 +276,92 @@ export function rootReducer(
       };
     }
 
+    case 'editor/setMetaTitle': {
+      const article = state.articles[action.articleId];
+      if (!article) return state;
+      if (article.settings.metaTitle === action.metaTitle) return state;
+      const next: Article = {
+        ...article,
+        settings: { ...article.settings, metaTitle: action.metaTitle },
+      };
+      return {
+        ...state,
+        articles: { ...state.articles, [action.articleId]: next },
+      };
+    }
+
+    case 'editor/setMetaDescription': {
+      const article = state.articles[action.articleId];
+      if (!article) return state;
+      if (article.settings.metaDescription === action.metaDescription) {
+        return state;
+      }
+      const next: Article = {
+        ...article,
+        settings: {
+          ...article.settings,
+          metaDescription: action.metaDescription,
+        },
+      };
+      return {
+        ...state,
+        articles: { ...state.articles, [action.articleId]: next },
+      };
+    }
+
+    case 'editor/setCanonicalOverride': {
+      const article = state.articles[action.articleId];
+      if (!article) return state;
+      if (
+        article.settings.canonicalUrlOverride === action.canonicalUrlOverride
+      ) {
+        return state;
+      }
+      const next: Article = {
+        ...article,
+        settings: {
+          ...article.settings,
+          canonicalUrlOverride: action.canonicalUrlOverride,
+        },
+      };
+      return {
+        ...state,
+        articles: { ...state.articles, [action.articleId]: next },
+      };
+    }
+
+    case 'editor/setExcludeFromSearch': {
+      const article = state.articles[action.articleId];
+      if (!article) return state;
+      if (article.settings.excludeFromSearch === action.excludeFromSearch) {
+        return state;
+      }
+      const next: Article = {
+        ...article,
+        settings: {
+          ...article.settings,
+          excludeFromSearch: action.excludeFromSearch,
+        },
+      };
+      return {
+        ...state,
+        articles: { ...state.articles, [action.articleId]: next },
+      };
+    }
+
+    case 'editor/markAiRefined': {
+      const article = state.articles[action.articleId];
+      if (!article) return state;
+      const next: Article = {
+        ...article,
+        settings: { ...article.settings, aiRefinedAt: action.at },
+      };
+      return {
+        ...state,
+        articles: { ...state.articles, [action.articleId]: next },
+      };
+    }
+
     case 'editor/publish': {
       const article = state.articles[action.articleId];
       if (!article) return state;
@@ -289,7 +392,8 @@ export function rootReducer(
         bodyHTML: '',
         settings: {
           slug: action.newSlug,
-          seoTitle: 'Untitled article',
+          metaTitle: 'Untitled article',
+          excludeFromSearch: false,
         },
       };
       return {
