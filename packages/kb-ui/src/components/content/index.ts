@@ -17,6 +17,8 @@ export type {
 } from './ArticleSettingsPanel';
 export { SeoTabBody } from './SeoTabBody';
 export type { SeoTabBodyProps, SeoTabBodyValue } from './SeoTabBody';
+export { SerpPreview } from './SerpPreview';
+export type { SerpPreviewProps } from './SerpPreview';
 export {
   MetaLengthMeter,
   computeMetaLengthVerdict,
