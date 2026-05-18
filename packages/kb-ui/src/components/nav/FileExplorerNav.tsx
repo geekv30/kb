@@ -389,6 +389,74 @@ function ArticleRow({ item, depth, isActive, onClick, rowAction }: ArticleRowPro
   );
 }
 
+/* -------------------------- expand container -------------------------- */
+//
+// Keeps children mounted and animates the reveal/collapse via the
+// `grid-template-rows: 0fr → 1fr` trick. This works for content of any
+// height without needing a magic `max-height` number, and stays pure
+// CSS (interruptible, off main thread).
+//
+// We also fade the children's opacity slightly behind the height reveal
+// (Emil-style stagger). The first time the consumer renders an
+// already-expanded folder, we skip the animation entirely so the tree
+// doesn't "open up" on page load (only subsequent toggles animate).
+
+type ExpandContainerProps = {
+  expanded: boolean;
+  children: React.ReactNode;
+};
+
+function ExpandContainer({ expanded, children }: ExpandContainerProps) {
+  // `mountedExpandedRef` captures the "started expanded?" question without
+  // causing a re-render. If a folder is expanded on first render, we paint
+  // it open instantly (no entrance animation). After the first paint, we
+  // allow the transition to run on any future state change.
+  const mountedExpandedRef = useRef(expanded);
+  const [animationEnabled, setAnimationEnabled] = useState(!mountedExpandedRef.current);
+
+  useEffect(() => {
+    // Enable animations after first commit, regardless of starting state.
+    // Using rAF instead of a flag flip on the same tick guarantees the
+    // initial `1fr` paints before the transition definition takes effect.
+    if (!animationEnabled) {
+      const id = requestAnimationFrame(() => setAnimationEnabled(true));
+      return () => cancelAnimationFrame(id);
+    }
+    return undefined;
+  }, [animationEnabled]);
+
+  const duration = expanded ? EXPAND_DURATION_MS : COLLAPSE_DURATION_MS;
+  const opacityDelay = expanded ? OPACITY_ENTER_DELAY_MS : 0;
+
+  return (
+    <div
+      aria-hidden={!expanded}
+      style={{
+        display: 'grid',
+        gridTemplateRows: expanded ? '1fr' : '0fr',
+        transition: animationEnabled
+          ? `grid-template-rows ${duration}ms ${EASE_OUT}`
+          : 'none',
+      }}
+      className="motion-reduce:transition-none"
+    >
+      <div style={{ overflow: 'hidden', minHeight: 0 }}>
+        <div
+          style={{
+            opacity: expanded ? 1 : 0,
+            transition: animationEnabled
+              ? `opacity ${OPACITY_DURATION_MS}ms ${EASE_OUT} ${opacityDelay}ms`
+              : 'none',
+          }}
+          className="flex flex-col gap-[2px] motion-reduce:transition-none"
+        >
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ---------------------------- main component -------------------------- */
 
 export function FileExplorerNav({
@@ -488,8 +556,10 @@ export function FileExplorerNav({
                 rowAction={renderRowAction?.(item)}
               />
             )}
-            {isExpanded && item.children && item.children.length > 0 && (
-              <div className="flex flex-col gap-[2px]">{renderItems(item.children, depth + 1)}</div>
+            {item.children && item.children.length > 0 && (
+              <ExpandContainer expanded={isExpanded}>
+                {renderItems(item.children, depth + 1)}
+              </ExpandContainer>
             )}
           </div>
         );
