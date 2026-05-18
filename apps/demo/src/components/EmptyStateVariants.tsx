@@ -10,7 +10,7 @@
 // unused — the page-header "+ New article" remains the only
 // blank-start entrypoint.
 
-import type { ComponentType, SVGProps } from 'react';
+import type { ComponentType, CSSProperties, SVGProps } from 'react';
 import {
   BookOpen01,
   FileShield02,
@@ -33,6 +33,14 @@ type TemplateCardProps = {
   containerClass: string;
   iconClass: string;
   onClick: () => void;
+  /**
+   * Mount delay in ms, fed to the CSS `--kb-empty-card-delay` variable
+   * to produce a staggered entrance across the 2×2 grid. Stagger feels
+   * natural; everything-at-once feels cheap (Emil's framework). Kept
+   * under 80ms-per-card so the cascade stays under 300ms total — never
+   * blocks interaction.
+   */
+  mountDelayMs: number;
 };
 
 function TemplateCard({
@@ -42,12 +50,20 @@ function TemplateCard({
   containerClass,
   iconClass,
   onClick,
+  mountDelayMs,
 }: TemplateCardProps) {
+  // Per-card delay flows through a CSS var so the shared utility class
+  // can drive the stagger without per-card style sheets.
+  const style = {
+    '--kb-empty-card-delay': `${mountDelayMs}ms`,
+  } as CSSProperties;
+
   return (
     <button
       type="button"
       onClick={onClick}
-      className="group flex cursor-pointer flex-col rounded-[12px] border border-[#e2e8f0] bg-white p-5 text-left transition-all hover:-translate-y-[1px] hover:border-[#cbd5e1] hover:shadow-sm"
+      style={style}
+      className={cardClass}
     >
       <div
         className={`flex h-10 w-10 items-center justify-center rounded-full ${containerClass}`}
@@ -63,6 +79,21 @@ function TemplateCard({
     </button>
   );
 }
+
+// Card class extracted so the `transition-all` → `transition-[transform,box-shadow,border-color]`
+// swap and the mount-animation class live in one place. We narrow the
+// transition properties because `transition-all` would also animate the
+// mount-translate, fighting the keyframe (Emil's checklist: "Specify
+// exact properties; avoid transition: all"). The active:scale press
+// gives buttons a snappy "heard you" feel.
+const cardClass = [
+  'group flex cursor-pointer flex-col rounded-[12px] border border-[#e2e8f0]',
+  'bg-white p-5 text-left',
+  'transition-[transform,box-shadow,border-color] duration-200 ease-out',
+  'hover:-translate-y-[1px] hover:border-[#cbd5e1] hover:shadow-sm',
+  'active:scale-[0.99] active:transition-none',
+  'animate-kb-empty-card-mount',
+].join(' ');
 
 export function EmptyStateGallery({
   onCreate: _onCreate,
@@ -89,7 +120,10 @@ export function EmptyStateGallery({
           the structure.
         </p>
 
-        {/* 2×2 template grid */}
+        {/* 2×2 template grid.
+         * Stagger delays are 0/60/120/180ms — under 80ms-per-card per
+         * Emil's stagger guidance, total cascade ≈300ms. Reading order
+         * is left-to-right, top-to-bottom (matches users' eye path). */}
         <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
           <TemplateCard
             Icon={BookOpen01}
@@ -98,6 +132,7 @@ export function EmptyStateGallery({
             containerClass="bg-sky-50 border border-sky-100"
             iconClass="text-sky-600"
             onClick={() => console.log('template:step-by-step-guide')}
+            mountDelayMs={0}
           />
           <TemplateCard
             Icon={MessageQuestionCircle}
@@ -106,6 +141,7 @@ export function EmptyStateGallery({
             containerClass="bg-violet-50 border border-violet-100"
             iconClass="text-violet-600"
             onClick={() => console.log('template:faq-collection')}
+            mountDelayMs={60}
           />
           <TemplateCard
             Icon={FileShield02}
@@ -114,6 +150,7 @@ export function EmptyStateGallery({
             containerClass="bg-emerald-50 border border-emerald-100"
             iconClass="text-emerald-600"
             onClick={() => console.log('template:policy-overview')}
+            mountDelayMs={120}
           />
           <TemplateCard
             Icon={Tool01}
@@ -122,6 +159,7 @@ export function EmptyStateGallery({
             containerClass="bg-amber-50 border border-amber-100"
             iconClass="text-amber-600"
             onClick={() => console.log('template:troubleshooting')}
+            mountDelayMs={180}
           />
         </div>
 
