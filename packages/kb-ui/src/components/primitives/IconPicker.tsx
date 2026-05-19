@@ -227,9 +227,10 @@ import { cn } from '../../utils/cn';
  * IconPicker — dashed-border tile + click-to-open icon grid.
  *
  * At rest the tile shows the currently-selected glyph inside a
- * dashed-border square (default 48px). On hover the resting
- * glyph dims and a `Pencil02` overlay fades in over it. On click
- * a popover opens beneath the tile containing:
+ * dashed-border square (default 48px). On hover the resting glyph
+ * is *replaced* by a `Pencil02` (single-element swap — see Tile
+ * section below for why this is not a cross-fade). On click a
+ * popover opens beneath the tile containing:
  *   - a search input (auto-focused on open)
  *   - a scrollable 7-column grid of icons (`ICON_CATALOG`)
  *   - empty state when the query matches nothing
@@ -245,7 +246,11 @@ import { cn } from '../../utils/cn';
  *     enter so close feels snappy rather than draggy).
  *   - Reduce-motion: opacity-only fade — suppress the *transform*
  *     (the movement), not all motion (per Emil's rule).
- *   - Tile hover: glyph + Pencil cross-dim via opacity, 160ms.
+ *   - Tile hover: instant single-glyph swap (Plus/selected ↔
+ *     Pencil02). Border + bg crossfade (150ms) carries the hover
+ *     affordance; the glyph swap is the "you can edit" cue. We
+ *     do NOT cross-fade two stacked glyphs — that architecture
+ *     can't guarantee overlap-free rendering (see component body).
  *   - Grid item hover: bg color crossfade 100ms — frequent enough
  *     to need instant feedback.
  *   - Press feedback: active:scale-[0.97] on grid items.
@@ -562,6 +567,24 @@ export function IconPicker({
   const [mounted, setMounted] = React.useState(false);
   const [query, setQuery] = React.useState('');
   const [position, setPosition] = React.useState<{ top: number; left: number } | null>(null);
+  /** Hover/focus flag for the trigger tile. Drives a single-glyph
+   *  swap (resting → Pencil02) using React state — NOT pure CSS —
+   *  because rendering ONE element at a time is the only way to
+   *  guarantee zero glyph overlap by construction.
+   *
+   *  Why this isn't an opacity tween: the previous architecture
+   *  cross-faded two stacked elements (a flex-centered TileIcon
+   *  and an `absolute h-4 w-4` Pencil02 with NO offsets / no flex
+   *  centering). The Pencil02 fell back to its "static position"
+   *  (top-left of the button) instead of overlapping the centered
+   *  resting glyph, so even with opacity perfectly swapping 1↔0
+   *  the user saw two glyphs in different parts of the tile.
+   *  PR #130's `group-hover:opacity-0` made the swap clean
+   *  arithmetically but did nothing about position — verified by
+   *  Playwright in the demo: opacities WERE 1/0 ↔ 0/1, yet the
+   *  glyphs still rendered in different locations. One element in
+   *  the DOM at a time = no overlap, no positioning math, no caveat. */
+  const [tileHover, setTileHover] = React.useState(false);
 
   const triggerRef = React.useRef<HTMLButtonElement>(null);
   const popoverRef = React.useRef<HTMLDivElement>(null);
@@ -572,6 +595,17 @@ export function IconPicker({
    *  uses a neutral gray so the Plus glyph reads as "tap to pick",
    *  not as a stylized brand mark. */
   const isEmpty = !value;
+  /** Single element that actually renders inside the tile. While the
+   *  popover is open we lock to Pencil02 too — the trigger reads as
+   *  "currently editing" rather than reverting to the resting glyph
+   *  the moment the cursor crosses into the popover. */
+  const showPencil = tileHover || open;
+  const DisplayIcon = showPencil ? Pencil02 : TileIcon;
+  const displayColor = showPencil
+    ? 'text-text-secondary'
+    : isEmpty
+      ? 'text-text-meta'
+      : 'text-[#6634ef]';
 
   /* Compute popover position relative to the trigger.
    * Anchored top-left of the trigger + sideOffset 8 to mirror the
@@ -693,9 +727,13 @@ export function IconPicker({
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => (open ? handleClose() : handleOpen())}
+        onMouseEnter={() => setTileHover(true)}
+        onMouseLeave={() => setTileHover(false)}
+        onFocus={() => setTileHover(true)}
+        onBlur={() => setTileHover(false)}
         style={{ width: tileSize, height: tileSize }}
         className={cn(
-          'group relative flex items-center justify-center rounded-[7px]',
+          'relative flex items-center justify-center rounded-[7px]',
           'border-[1.5px] border-dashed border-[#cbd5e1]',
           'hover:border-[#94a3b8] hover:bg-sky-50/50',
           // Background tween is frequent enough that we keep it short.
@@ -703,27 +741,25 @@ export function IconPicker({
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
         )}
       >
-        {/* Resting glyph — fades out on hover so the Pencil overlay
-         *  fully replaces it (no visible glyph overlap). Cross-fade
-         *  durations on the two glyphs match (150ms) so the swap reads
-         *  as one motion instead of a stutter. */}
-        <TileIcon
+        {/* Single glyph at any moment — Pencil02 swaps in on hover/focus
+         *  (and stays for the duration the popover is open). We do NOT
+         *  cross-fade two stacked glyphs: that architecture is one
+         *  centering bug away from a visible overlap (the user reported
+         *  the bug twice; PR #130's opacity tweak masked it
+         *  arithmetically but the Pencil02's `absolute` positioning
+         *  with no offsets still rendered it at the button's static
+         *  top-left, not at the center).
+         *
+         *  An instant swap reads as decisive here. The button's own
+         *  border+bg crossfade carries the hover affordance; the glyph
+         *  swap is the confirming "you can edit" cue. */}
+        <DisplayIcon
+          key={showPencil ? 'pencil' : 'tile'}
           aria-hidden="true"
           className={cn(
-            'h-[22px] w-[22px]',
-            isEmpty ? 'text-text-meta' : 'text-[#6634ef]',
-            'motion-safe:transition-opacity motion-safe:duration-150 motion-safe:ease-out',
-            'group-hover:opacity-0',
-          )}
-        />
-        {/* Hover overlay — Pencil02 at 16px. Absolute-positioned so it
-         *  doesn't shift the tile's layout when it appears. */}
-        <Pencil02
-          aria-hidden="true"
-          className={cn(
-            'absolute h-4 w-4 text-text-secondary',
-            'opacity-0 group-hover:opacity-100',
-            'motion-safe:transition-opacity motion-safe:duration-150 motion-safe:ease-out',
+            // Pencil rides at 16px (matches Figma); resting glyph at 22px.
+            showPencil ? 'h-4 w-4' : 'h-[22px] w-[22px]',
+            displayColor,
           )}
         />
       </button>
