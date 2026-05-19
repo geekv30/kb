@@ -35,6 +35,7 @@ import {
   ArticleSettingsPanel,
   ArticleTitleInput,
   ContentEditor,
+  PublishingIndicator,
   type ArticleSettings as KbUiArticleSettings,
   type ArticleSettingsPerson,
 } from '@test-kb-ui/kb-ui';
@@ -276,6 +277,15 @@ function EditorPageBody({ article }: { article: Article }) {
   // Save-just-fired guards an extra debounce flush from racing the
   // navigation that happens immediately after publish.
   const justSavedRef = useRef(false);
+  // `publishing` drives the PublishingIndicator overlay AND disables
+  // the breadcrumb Publish button so a frantic second click can't
+  // double-fire the action mid-1200ms-latency window.
+  const [publishing, setPublishing] = useState(false);
+  // Mirror `publishing` synchronously so the handler's re-entry guard
+  // is correct even if React hasn't committed the state update yet
+  // (the publish handler returns synchronously after setPublishing(true)
+  // — the next click can land before the commit).
+  const publishingRef = useRef(false);
 
   /* ── Debounced body write ──────────────────────────────────
    * 200ms idle window per TRD §7.4. Keeps the store roughly in sync
@@ -378,10 +388,22 @@ function EditorPageBody({ article }: { article: Article }) {
     }, 0);
   }, [article.id, bodyHTML, storeSettings, dispatch, showToast]);
 
-  const handlePublish = useCallback(() => {
-    // Persist current edits first, then flip status. This matches a
-    // real product's save-on-publish — the user's last edits before
-    // hitting Publish should be part of the published version.
+  const handlePublish = useCallback(async () => {
+    // Two-stage flow:
+    //   1. Persist current edits + show the PublishingIndicator overlay
+    //      immediately (the user's last keystrokes are part of the
+    //      published version).
+    //   2. After a 1200ms simulated publish latency, flip status →
+    //      'published', dismiss the overlay, fire the success toast,
+    //      and navigate back to the category.
+    //
+    // Re-entry guard: the breadcrumb Publish button is also `disabled`
+    // while publishing is true, so the synchronous ref + the disabled
+    // attribute together make a second click during the 1200ms window
+    // a no-op.
+    if (publishingRef.current) return;
+    publishingRef.current = true;
+    setPublishing(true);
     justSavedRef.current = true;
     dispatch({
       type: 'editor/saveDraft',
@@ -389,8 +411,11 @@ function EditorPageBody({ article }: { article: Article }) {
       bodyHTML,
       settings: storeSettings,
     });
+    await new Promise<void>((resolve) => window.setTimeout(resolve, 1200));
     dispatch({ type: 'editor/publish', articleId: article.id });
     setDirty(false);
+    publishingRef.current = false;
+    setPublishing(false);
     showToast('Article published.', 'success');
     navigate(categoryUrl);
   }, [
@@ -451,20 +476,33 @@ function EditorPageBody({ article }: { article: Article }) {
   const isTitleEmpty = titleDraft.trim() === '';
   const editorControls = useMemo<EditorPageControls>(
     () => ({
-      saveDisabled: !isDirty,
-      // Publish is gated on the title field having content. An untitled
-      // article should not be publishable — the breadcrumb's Publish
-      // button greys out and surfaces a `title=` tooltip when the title
-      // is empty (see BreadcrumbBar's actions wrapper).
-      publishDisabled: isTitleEmpty,
+      saveDisabled: !isDirty || publishing,
+      // Publish is gated on:
+      //   (a) the title field having content — an untitled article
+      //       should not be publishable; the breadcrumb greys out and
+      //       surfaces a `title=` tooltip when empty.
+      //   (b) `publishing` — during the 1200ms simulated latency window
+      //       a second click must be a no-op. The ref-based guard in
+      //       handlePublish covers the race; the `disabled` attribute
+      //       covers the visual + accessibility surface.
+      publishDisabled: isTitleEmpty || publishing,
       publishDisabledReason: isTitleEmpty
         ? 'Add a title to publish'
-        : undefined,
+        : publishing
+          ? 'Publishing in progress…'
+          : undefined,
       onSaveAsDraft: handleSaveAsDraft,
       onPublish: handlePublish,
       onClose: handleClose,
     }),
-    [isDirty, isTitleEmpty, handleSaveAsDraft, handlePublish, handleClose],
+    [
+      isDirty,
+      isTitleEmpty,
+      publishing,
+      handleSaveAsDraft,
+      handlePublish,
+      handleClose,
+    ],
   );
   useRegisterEditorPageControls(editorControls);
 
@@ -585,6 +623,10 @@ function EditorPageBody({ article }: { article: Article }) {
 
       {/* In-app navigation guard (rail clicks, breadcrumb, browser back). */}
       {guardElement}
+
+      {/* Two-stage publish overlay — dims the page + shows a
+       * "Publishing..." card for the 1200ms simulated latency window. */}
+      <PublishingIndicator open={publishing} />
     </div>
   );
 }

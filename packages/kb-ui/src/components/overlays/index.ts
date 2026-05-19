@@ -9,6 +9,8 @@ export { SideSheet } from './SideSheet';
 export type { SideSheetProps } from './SideSheet';
 export { Modal } from './Modal';
 export type { ModalProps } from './Modal';
+export { PublishingIndicator } from './PublishingIndicator';
+export type { PublishingIndicatorProps } from './PublishingIndicator';
 export { NewCategoryModal } from './NewCategoryModal';
 export type {
   NewCategoryModalProps,
