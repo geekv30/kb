@@ -31,6 +31,23 @@ File: `https://www.figma.com/design/251DTRmxl2L6jmXd3FWzHe/kb-gaps`
 
 **Rule:** Always `get_design_context` + `get_screenshot` on the relevant screen node before building any component from that screen.
 
+### Phase 17 nodes (SEO panel — 2026-05-19)
+
+| Surface | Node ID | Used for |
+| --- | --- | --- |
+| General tab (3 fields, no Slug chevron) | `2945:7756` | `ArticleSettingsPanel` General tab — Author + Category + Article Slug. Tabs primitive renders General/SEO pill switcher above. |
+| SEO tab default state | `2949:7844` | `SeoTabBody` composition — Meta title + Description (w/ Refine-with-AI) + URL + canonical disclosure + Exclude toggle + Google SERP preview. CodeChip `noindex`/`nofollow` in helper text. |
+| Canonical URL override (expanded) | `2949:8306` | `CanonicalOverrideDisclosure` (private to `SeoTabBody`) — collapsible reveal under URL field, nested TextInput + copy + helper paragraph on inset surface. |
+| Exclude from search ON state | `2949:9407` | `Switch` ON variant (black track, white knob right) + SerpPreview swaps to `NoPreviewState`. |
+| Refine-with-AI shimmer | `2949:8067` | `Textarea.refining=true` — content-aware `Skeleton` overlay (kb-skeleton-shimmer 1.6s linear), CTA dimmed via `Button.disabled`, counter frozen at last verdict via `frozenMeterRef`. |
+
+**Verdict algorithm** (locked, not from Figma — emil-aligned semantic SEO bands + AI quality bump):
+- Meta title (max 70): 0-29 Short · 30-49 Acceptable · 50-60 Optimal · 61-70 Long · >70 hard-cap red + TextInput error variant
+- Description (max 160): 0-99 Short · 100-119 Acceptable · 120-155 Optimal · 156-160 Long · >160 hard-cap
+- `aiRefinedAt` (timestamp) bumps verdict +1 toward Optimal until next keystroke clears bump. Scoped per-field — Description's bump never affects Meta title verdict.
+
+**Reduced-motion fallback** (PR #121, load-bearing): every kb-ui keyframe must ship `motion-safe:` (full transform+opacity) AND `motion-reduce:` (opacity-only cushion, 100ms enter / 80ms exit). Bare `motion-safe:` is an a11y bug — fully suppresses → hard pop. See memory `feedback_reduced_motion_diagnostic`.
+
 ### Phase 16 nodes (category authoring entry points — 2026-05-14)
 
 | Surface | Node ID | Used for |
