@@ -34,7 +34,8 @@
     "./styles": {
       "types": "./dist/styles.d.ts",
       "default": "./dist/tokens.css"
-    }
+    },
+    "./welcome-tour.css": "./dist/welcome-tour.css"
   },
   "files": [
     "dist"
@@ -56,13 +57,7 @@
   },
   "peerDependencies": {
     "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "react-router-dom": "^6.0.0"
-  },
-  "peerDependenciesMeta": {
-    "react-router-dom": {
-      "optional": true
-    }
+    "react-dom": "^18.0.0"
   },
   "devDependencies": {
     "@storybook/addon-docs": "^10.3.5",

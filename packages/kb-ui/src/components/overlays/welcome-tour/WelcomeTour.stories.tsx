@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { MemoryRouter } from 'react-router-dom';
 import { Folder, BarChartSquare02, Stars02 } from '@untitledui/icons';
 import '../../../tokens.css';
 import {
@@ -132,46 +131,44 @@ function TourControls() {
 
 function WelcomeTourPlayground() {
   return (
-    <MemoryRouter initialEntries={['/']}>
-      <WelcomeTourProvider
-        steps={DEMO_STEPS}
-        welcome={DEMO_WELCOME}
-        completion={DEMO_COMPLETION}
-        storageKey={STORYBOOK_STORAGE_KEY}
-      >
-        <div className="flex flex-col items-center gap-6 p-8">
-          <p className="max-w-md text-center text-sm text-text-meta">
-            On first visit, the welcome card auto-shows after ~700ms. Use
-            <span className="mx-1 font-medium text-text-primary">
-              Start tour
-            </span>
-            to trigger it manually, or
-            <span className="mx-1 font-medium text-text-primary">
-              Reset tour
-            </span>
-            to clear the seen flag and reload.
-          </p>
-          <div className="flex gap-4">
-            <TourTargetTile
-              id="demo-1"
-              label="Sidebar"
-              icon={<Folder />}
-            />
-            <TourTargetTile
-              id="demo-2"
-              label="AI Hub"
-              icon={<Stars02 />}
-            />
-            <TourTargetTile
-              id="demo-3"
-              label="Analytics"
-              icon={<BarChartSquare02 />}
-            />
-          </div>
-          <TourControls />
+    <WelcomeTourProvider
+      steps={DEMO_STEPS}
+      welcome={DEMO_WELCOME}
+      completion={DEMO_COMPLETION}
+      storageKey={STORYBOOK_STORAGE_KEY}
+    >
+      <div className="flex flex-col items-center gap-6 p-8">
+        <p className="max-w-md text-center text-sm text-text-meta">
+          On first visit, the welcome card auto-shows after ~700ms. Use
+          <span className="mx-1 font-medium text-text-primary">
+            Start tour
+          </span>
+          to trigger it manually, or
+          <span className="mx-1 font-medium text-text-primary">
+            Reset tour
+          </span>
+          to clear the seen flag and reload.
+        </p>
+        <div className="flex gap-4">
+          <TourTargetTile
+            id="demo-1"
+            label="Sidebar"
+            icon={<Folder />}
+          />
+          <TourTargetTile
+            id="demo-2"
+            label="AI Hub"
+            icon={<Stars02 />}
+          />
+          <TourTargetTile
+            id="demo-3"
+            label="Analytics"
+            icon={<BarChartSquare02 />}
+          />
         </div>
-      </WelcomeTourProvider>
-    </MemoryRouter>
+        <TourControls />
+      </div>
+    </WelcomeTourProvider>
   );
 }
 

@@ -1,5 +1,5 @@
 import { defineConfig } from 'tsup';
-import { readFile, writeFile } from 'node:fs/promises';
+import { copyFile } from 'node:fs/promises';
 
 export default defineConfig({
   entry: ['src/index.ts'],
@@ -8,20 +8,20 @@ export default defineConfig({
   splitting: false,
   sourcemap: true,
   clean: true,
-  external: ['react', 'react-dom', 'react-router-dom'],
+  external: ['react', 'react-dom'],
   onSuccess: async () => {
-    // Concatenate component-scoped CSS (currently the welcome-tour
-    // keyframes) onto the bottom of dist/tokens.css so consumers'
-    // single `@import '@test-kb-ui/kb-ui/styles'` line keeps wiring
-    // every CSS asset the bundle needs at runtime.
-    const tokens = await readFile('src/tokens.css', 'utf8');
-    const welcomeTour = await readFile(
+    // Ship tokens.css as the canonical design-tokens CSS export
+    // (`@test-kb-ui/kb-ui/styles`). Keep this file scoped to tokens only —
+    // component-scoped CSS lives at its own sub-path (see welcome-tour
+    // copy below).
+    await copyFile('src/tokens.css', 'dist/tokens.css');
+    // Component-scoped CSS shipped as its own sub-path. Consumers opt in
+    // via `import '@test-kb-ui/kb-ui/welcome-tour.css'`. Storybook (which
+    // resolves source) picks up the same keyframes via the
+    // `import './welcome-tour-animations.css'` inside WelcomeTourOverlay.
+    await copyFile(
       'src/components/overlays/welcome-tour/welcome-tour-animations.css',
-      'utf8',
-    );
-    await writeFile(
-      'dist/tokens.css',
-      `${tokens}\n/* welcome-tour animations */\n${welcomeTour}`,
+      'dist/welcome-tour.css',
     );
   },
 });

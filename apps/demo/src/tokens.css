@@ -5,6 +5,11 @@
  * identically to how Storybook does in `packages/kb-ui/.storybook/preview.ts`.
  */
 @import '@test-kb-ui/kb-ui/styles';
+/* Welcome Tour component-scoped CSS (keyframes for spotlight beacon,
+ * completion-card sparkle + checkmark, etc.). kb-ui keeps this as a
+ * separate sub-path so `tokens.css` stays scoped to design tokens
+ * only — the file name finally matches its contents. */
+@import '@test-kb-ui/kb-ui/welcome-tour.css';
 
 /* Tailwind v4's content auto-discovery skips `node_modules` by default.
  * Our shell + nav components live in the `@test-kb-ui/kb-ui` package and

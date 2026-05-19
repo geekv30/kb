@@ -52,11 +52,6 @@ export type TourStep = {
   title: string;
   body: ReactNode;
   /**
-   * Optional route the overlay should navigate to when this step
-   * becomes active. Omit for steps that should not navigate.
-   */
-  route?: string;
-  /**
    * Optional custom rect computation. When provided, replaces the
    * default `getBoundingClientRect()` on the registered node — useful
    * for unions of header + body sub-elements, or any rect that
@@ -71,6 +66,19 @@ export type TourStep = {
   targetNeedsBackgroundFill?: boolean;
   /** Optional opaque payload step cards may want (preview image, etc.). */
   meta?: Record<string, unknown>;
+  /**
+   * Called when this step becomes active (Provider transitions to
+   * this index). Use this for app-side side effects like router
+   * navigation, focus management, or analytics. Errors are swallowed
+   * with a console.warn — never breaks the tour state machine.
+   */
+  onEnter?: () => void;
+  /**
+   * Called when leaving this step (next/back/skip/finish that exits
+   * the step). Use for cleanup if needed. Errors are swallowed with
+   * a console.warn — never breaks the tour state machine.
+   */
+  onLeave?: () => void;
 };
 
 export type WelcomeFeature = {
@@ -261,6 +269,62 @@ export function WelcomeTourProvider({
     return () => {
       document.body.style.overflow = prevOverflow;
     };
+  }, [state]);
+
+  /* ── Step lifecycle callbacks (onEnter / onLeave) ─────────── */
+  //
+  // Fires app-side effects when the active step changes. The previous
+  // step's onLeave is invoked BEFORE the next step's onEnter so apps
+  // can cleanly tear down focus traps, listeners, etc. before the next
+  // setup runs. Errors thrown inside user callbacks are swallowed with
+  // a console.warn — the tour state machine must never break because
+  // of an unrelated app-side handler.
+  //
+  // The previous step ref tracks (phase, stepIndex) so we can detect
+  // transitions OUT of a step (e.g. step→completion, step→done,
+  // step→welcome via back-from-step-0) and still fire its onLeave.
+
+  const prevStepRef = useRef<{ phase: TourPhase; stepIndex: number }>({
+    phase: 'closed',
+    stepIndex: 0,
+  });
+
+  useEffect(() => {
+    const prev = prevStepRef.current;
+    const cur = state;
+    const stepsList = stepsRef.current;
+
+    const safeCall = (label: string, fn: (() => void) | undefined) => {
+      if (typeof fn !== 'function') return;
+      try {
+        fn();
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn(`[WelcomeTour] ${label} threw`, err);
+      }
+    };
+
+    const wasOnStep = prev.phase === 'step';
+    const isOnStep = cur.phase === 'step';
+    const stepChanged = prev.stepIndex !== cur.stepIndex;
+
+    // OUT-of-step transitions: leaving the previous step.
+    // Covers: step→step (different index), step→welcome (back from 0),
+    // step→completion, step→done (skip/finish), step→closed.
+    if (wasOnStep && (!isOnStep || stepChanged)) {
+      const leavingStep = stepsList[prev.stepIndex];
+      safeCall(`step[${prev.stepIndex}].onLeave`, leavingStep?.onLeave);
+    }
+
+    // INTO-step transitions: entering a (new) step.
+    // Covers: welcome→step 0, step→step (different index),
+    // completion→step (back from completion), closed→step (start mid-flow).
+    if (isOnStep && (!wasOnStep || stepChanged)) {
+      const enteringStep = stepsList[cur.stepIndex];
+      safeCall(`step[${cur.stepIndex}].onEnter`, enteringStep?.onEnter);
+    }
+
+    prevStepRef.current = { phase: cur.phase, stepIndex: cur.stepIndex };
   }, [state]);
 
   /* ── Transition helpers ───────────────────────────────────── */
