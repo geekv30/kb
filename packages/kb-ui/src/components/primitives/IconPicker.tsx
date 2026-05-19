@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { createPortal } from 'react-dom';
 import {
   // Files & folders (~15)
   Folder,
@@ -535,13 +534,18 @@ const catalogByKey: Map<string, CatalogEntry> = new Map(
 
 /**
  * Resolves the icon component to render in the tile at rest.
- * Falls back to `Image01` when the value doesn't match a catalog
- * entry (or is undefined) so the tile is never empty.
+ * - No value → `Plus` (the universal "add" affordance, paired with
+ *   neutral `text-text-meta` at the call site so the tile reads as
+ *   "click to pick", not as a filled selection).
+ * - Unknown key → also `Plus`, since we have nothing meaningful to
+ *   display and the brand-purple `Image01` framed icon would falsely
+ *   imply "your selected image" (the original bug).
+ * - Known key → its catalog `Icon`, paired with brand purple.
  */
 function resolveTileIcon(value: string | undefined): IconComponent {
-  if (!value) return Image01;
+  if (!value) return Plus;
   const entry = catalogByKey.get(value);
-  return entry?.Icon ?? Image01;
+  return entry?.Icon ?? Plus;
 }
 
 export function IconPicker({
@@ -564,17 +568,26 @@ export function IconPicker({
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const TileIcon = React.useMemo(() => resolveTileIcon(value), [value]);
+  /** Brand purple only when there's a real selection. Empty state
+   *  uses a neutral gray so the Plus glyph reads as "tap to pick",
+   *  not as a stylized brand mark. */
+  const isEmpty = !value;
 
   /* Compute popover position relative to the trigger.
    * Anchored top-left of the trigger + sideOffset 8 to mirror the
-   * align="start", sideOffset=8 contract in the brief. */
+   * align="start", sideOffset=8 contract in the brief.
+   *
+   * We use viewport coordinates (no scroll offsets) because the
+   * popover is rendered INLINE with `position: fixed` — fixed is
+   * viewport-anchored, so adding scrollX/scrollY would double the
+   * offset. (See the inline render below for why we don't portal.) */
   const updatePosition = React.useCallback(() => {
     const trigger = triggerRef.current;
     if (!trigger) return;
     const rect = trigger.getBoundingClientRect();
     setPosition({
-      top: rect.bottom + 8 + window.scrollY,
-      left: rect.left + window.scrollX,
+      top: rect.bottom + 8,
+      left: rect.left,
     });
   }, []);
 
@@ -696,7 +709,8 @@ export function IconPicker({
         <TileIcon
           aria-hidden="true"
           className={cn(
-            'h-[22px] w-[22px] text-[#6634ef]',
+            'h-[22px] w-[22px]',
+            isEmpty ? 'text-text-meta' : 'text-[#6634ef]',
             'motion-safe:transition-opacity motion-safe:duration-150 motion-safe:ease-out',
             'group-hover:opacity-40',
           )}
@@ -713,105 +727,146 @@ export function IconPicker({
         />
       </button>
 
-      {mounted &&
-        position &&
-        createPortal(
-          <div
-            ref={popoverRef}
-            data-state={open ? 'open' : 'closed'}
-            role="dialog"
-            aria-label="Icon picker"
-            style={{
-              position: 'absolute',
-              top: position.top,
-              left: position.left,
-              width: POPOVER_WIDTH,
-              transformOrigin: 'top left',
-              // Must outrank Modal's z-[91] content layer so the popover
-              // renders above its hosting modal when used inside one
-              // (the NewCategoryModal Field is the canonical case).
-              zIndex: 200,
-              // `pointer-events: auto` is required because Radix Dialog's
-              // scroll-lock disables pointer events on every `body > *`
-              // sibling while open. The popover is portaled to `body`
-              // outside the Dialog's own portal subtree, so it inherits
-              // the lock and silently becomes click-through. This line is
-              // the workaround — without it, clicking an icon inside the
-              // grid falls through to the modal backdrop behind.
-              pointerEvents: 'auto',
-            }}
-            className={cn(
-              'rounded-lg border border-[#e5e5e5] bg-white p-2 shadow-md',
-              // Motion vocabulary: matches the kb-dropdown-in/out keyframes
-              // in tokens.css. Reduce-motion path is opacity-only fade so we
-              // suppress the transform (the movement), not all motion.
-              'motion-safe:data-[state=open]:animate-kb-dropdown-in',
-              'motion-safe:data-[state=closed]:animate-kb-dropdown-out',
-              'motion-reduce:data-[state=open]:animate-kb-fade-in',
-              'motion-reduce:data-[state=closed]:animate-kb-fade-out',
-            )}
-          >
-            {/* Search */}
-            <div className="flex items-center gap-1.5 rounded-md border border-[#e5e5e5] bg-white px-2.5 py-1.5">
-              <SearchMd aria-hidden="true" className="h-4 w-4 shrink-0 text-text-meta" />
-              <input
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search icons"
-                aria-label="Search icons"
-                className={cn(
-                  'min-w-0 flex-1 border-0 bg-transparent p-0 text-[13px] leading-5',
-                  'text-text-primary outline-none placeholder:text-text-disabled',
-                )}
-              />
-            </div>
+      {/* Popover is rendered INLINE (sibling of trigger), not portaled.
+       *
+       * Why not portal to body: when the IconPicker is opened from
+       * inside a Radix Dialog (the NewCategoryModal case), Dialog's
+       * FocusScope reclaims focus the instant focus escapes its content
+       * subtree. A portaled popover lives outside that subtree, so the
+       * search input would never hold focus and keystrokes would be
+       * eaten. Rendering inline keeps the popover inside Dialog.Content,
+       * so FocusScope is happy and the input behaves normally.
+       *
+       * Why `position: fixed` is safe despite the parent Dialog.Content
+       * having `overflow-hidden`: `position: fixed` descendants are
+       * clipped by overflow:hidden only when an ancestor establishes a
+       * containing block via `transform` / `filter` / `perspective` /
+       * `contain`. Dialog.Content only sets `transform-origin: center`
+       * (NOT a transform), and its `kb-modal-in` enter keyframe runs
+       * for 200ms and lands on no final transform. The picker is opened
+       * well after the enter animation has completed, so no containing
+       * block exists and `fixed` resolves to the viewport as intended.
+       * Do not add `transform:` to Dialog.Content without re-testing.
+       *
+       * The `pointer-events: auto` override is no longer strictly needed
+       * (we're inside Dialog.Content now, not a sibling caught by the
+       * scroll-lock), but it's harmless and keeps the standalone case
+       * (popover used outside any modal) robust if a future ancestor
+       * disables pointer events. */}
+      {mounted && position && (
+        <div
+          ref={popoverRef}
+          data-state={open ? 'open' : 'closed'}
+          role="dialog"
+          aria-label="Icon picker"
+          style={{
+            position: 'fixed',
+            top: position.top,
+            left: position.left,
+            width: POPOVER_WIDTH,
+            transformOrigin: 'top left',
+            // Must outrank Modal's z-[91] content layer so the popover
+            // renders above its hosting modal when used inside one
+            // (the NewCategoryModal Field is the canonical case).
+            zIndex: 200,
+            pointerEvents: 'auto',
+          }}
+          className={cn(
+            'rounded-lg border border-[#e5e5e5] bg-white p-2 shadow-md',
+            // Motion vocabulary: matches the kb-dropdown-in/out keyframes
+            // in tokens.css. Reduce-motion path is opacity-only fade so we
+            // suppress the transform (the movement), not all motion.
+            'motion-safe:data-[state=open]:animate-kb-dropdown-in',
+            'motion-safe:data-[state=closed]:animate-kb-dropdown-out',
+            'motion-reduce:data-[state=open]:animate-kb-fade-in',
+            'motion-reduce:data-[state=closed]:animate-kb-fade-out',
+          )}
+        >
+          {/* Search */}
+          <div className="flex items-center gap-1.5 rounded-md border border-[#e5e5e5] bg-white px-2.5 py-1.5">
+            <SearchMd aria-hidden="true" className="h-4 w-4 shrink-0 text-text-meta" />
+            <input
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search icons"
+              aria-label="Search icons"
+              className={cn(
+                'min-w-0 flex-1 border-0 bg-transparent p-0 text-[13px] leading-5',
+                'text-text-primary outline-none placeholder:text-text-disabled',
+              )}
+            />
+            {/* Count chip — small right-aligned hint so the user knows
+             *  the catalog is much bigger than the visible window. Kills
+             *  the "where are the rest?" ambiguity for good. */}
+            <span
+              aria-hidden="true"
+              className="shrink-0 text-[11px] tabular-nums text-text-meta"
+            >
+              {filtered.length}/{ICON_CATALOG.length}
+            </span>
+          </div>
 
-            {/* Grid / empty state */}
-            {filtered.length === 0 ? (
-              <div className="px-3 py-6 text-center text-sm text-text-meta">
-                No icons match &ldquo;{query}&rdquo;
-              </div>
-            ) : (
-              <div
-                className={cn(
-                  'mt-2 grid grid-cols-7 gap-1',
-                  'max-h-[280px] overflow-y-auto',
-                )}
-              >
-                {filtered.map(({ key, label, Icon }) => {
-                  const isSelected = key === value;
-                  return (
-                    <button
-                      key={key}
-                      type="button"
-                      title={label}
-                      aria-label={label}
-                      aria-pressed={isSelected}
-                      onClick={() => handleSelect(key)}
-                      className={cn(
-                        'flex aspect-square w-full items-center justify-center rounded-md',
-                        // Frequent hover; 100ms color crossfade is instant
-                        // without flashing. active:scale-[0.97] is the
-                        // canonical press feedback from Button/Switch.
-                        'motion-safe:transition-[background-color,color] motion-safe:duration-100 motion-safe:ease-out',
-                        'motion-safe:active:scale-[0.97]',
-                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
-                        isSelected
-                          ? 'bg-sky-50 text-sky-600 ring-1 ring-inset ring-sky-500'
-                          : 'text-text-secondary hover:bg-sky-50 hover:text-text-primary',
-                      )}
-                    >
-                      <Icon aria-hidden="true" className="h-5 w-5" />
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>,
-          document.body,
-        )}
+          {/* Grid / empty state */}
+          {filtered.length === 0 ? (
+            <div className="px-3 py-6 text-center text-sm text-text-meta">
+              No icons match &ldquo;{query}&rdquo;
+            </div>
+          ) : (
+            <div
+              className={cn(
+                'mt-2 grid grid-cols-7 gap-1',
+                // ~11 visible rows at ~40px each = 440px. Was 280px (~7
+                // rows), which made a 165-entry catalog look like ~35.
+                'max-h-[440px]',
+                // overflow-y-scroll (not -auto) always reserves the
+                // gutter so the layout doesn't shift between scrollable
+                // and non-scrollable states. scrollbar-gutter:stable
+                // hardens that behavior on Firefox.
+                'overflow-y-scroll [scrollbar-gutter:stable]',
+                // Thin slate scrollbar — always-visible affordance on
+                // macOS (where overlay scrollbars hide at rest and the
+                // user otherwise has no signal that more icons exist).
+                // Tailwind arbitrary properties + ::-webkit selectors.
+                '[scrollbar-width:thin] [scrollbar-color:#cbd5e1_transparent]',
+                '[&::-webkit-scrollbar]:w-1.5',
+                '[&::-webkit-scrollbar-track]:bg-transparent',
+                '[&::-webkit-scrollbar-thumb]:rounded-full',
+                '[&::-webkit-scrollbar-thumb]:bg-slate-300',
+              )}
+            >
+              {filtered.map(({ key, label, Icon }) => {
+                const isSelected = key === value;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    title={label}
+                    aria-label={label}
+                    aria-pressed={isSelected}
+                    onClick={() => handleSelect(key)}
+                    className={cn(
+                      'flex aspect-square w-full items-center justify-center rounded-md',
+                      // Frequent hover; 100ms color crossfade is instant
+                      // without flashing. active:scale-[0.97] is the
+                      // canonical press feedback from Button/Switch.
+                      'motion-safe:transition-[background-color,color] motion-safe:duration-100 motion-safe:ease-out',
+                      'motion-safe:active:scale-[0.97]',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
+                      isSelected
+                        ? 'bg-sky-50 text-sky-600 ring-1 ring-inset ring-sky-500'
+                        : 'text-text-secondary hover:bg-sky-50 hover:text-text-primary',
+                    )}
+                  >
+                    <Icon aria-hidden="true" className="h-5 w-5" />
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
