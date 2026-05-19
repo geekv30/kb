@@ -703,16 +703,17 @@ export function IconPicker({
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
         )}
       >
-        {/* Resting glyph — dims on hover so the Pencil overlay can fade
-         *  in over it. Keeps a small residual opacity (0.4) on hover so
-         *  the user still sees what's selected behind the edit affordance. */}
+        {/* Resting glyph — fades out on hover so the Pencil overlay
+         *  fully replaces it (no visible glyph overlap). Cross-fade
+         *  durations on the two glyphs match (150ms) so the swap reads
+         *  as one motion instead of a stutter. */}
         <TileIcon
           aria-hidden="true"
           className={cn(
             'h-[22px] w-[22px]',
             isEmpty ? 'text-text-meta' : 'text-[#6634ef]',
             'motion-safe:transition-opacity motion-safe:duration-150 motion-safe:ease-out',
-            'group-hover:opacity-40',
+            'group-hover:opacity-0',
           )}
         />
         {/* Hover overlay — Pencil02 at 16px. Absolute-positioned so it
