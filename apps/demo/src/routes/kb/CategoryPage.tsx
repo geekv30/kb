@@ -20,10 +20,13 @@ import * as RxDropdownMenu from '@radix-ui/react-dropdown-menu';
 import {
   BookOpen01,
   ChevronRight,
+  Copy01,
   DotsVertical,
   File02,
   Folder,
+  LinkExternal01,
   Plus,
+  Trash01,
 } from '@untitledui/icons';
 import {
   Avatar,
@@ -128,6 +131,98 @@ const subCategoryColumns: DataTableColumn<SubCategoryRow>[] = [
   },
 ];
 
+/* ─────────────────────────────────────────────────────────────
+ * ArticleRowKebab — per-row 3-dot menu inside the Articles table.
+ *
+ * Mirrors EditorExplorer's article-row menu (Preview / Copy link /
+ * Delete Article, danger tone on the last). Same Figma source
+ * (1958:34638) — keeping the two surfaces identical avoids muscle-
+ * memory mismatch when the user toggles between the explorer and the
+ * category page.
+ *
+ * Lives in the component layer (not module-level) so it can pull the
+ * article slug from the store via `useMockStore`. The trigger button
+ * preserves the previous inert kebab's chrome (h-6/w-6, slate hover bg,
+ * focus ring) so DataTable row geometry doesn't shift.
+ *
+ * Delete is a console-log TODO — `articles/delete` doesn't exist in the
+ * demo reducer yet (see EditorExplorer for the same pattern).
+ * ───────────────────────────────────────────────────────────── */
+
+function ArticleRowKebab({
+  articleId,
+  title,
+}: {
+  articleId: string;
+  title: string;
+}) {
+  const { state } = useMockStore();
+  const article = state.articles[articleId];
+
+  const onPreview = () => {
+    if (!article) return;
+    window.open(routes.article(article.slug), '_blank', 'noopener,noreferrer');
+  };
+  const onCopyLink = () => {
+    if (!article) return;
+    const url = window.location.origin + routes.article(article.slug);
+    try {
+      void navigator.clipboard?.writeText(url);
+    } catch {
+      // Swallow — clipboard API throws in non-HTTPS / sandboxed envs.
+    }
+  };
+  const onDelete = () => {
+    // eslint-disable-next-line no-console
+    console.log('TODO: delete article', articleId);
+  };
+
+  return (
+    <div className="flex items-center justify-center">
+      <RxDropdownMenu.Root>
+        <RxDropdownMenu.Trigger asChild>
+          <button
+            type="button"
+            aria-label={`More actions for ${title}`}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+            className={cn(
+              'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-text-disabled',
+              'hover:bg-surface-subtle focus:bg-surface-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-border-faint',
+            )}
+          >
+            <DotsVertical size={16} aria-hidden="true" />
+          </button>
+        </RxDropdownMenu.Trigger>
+        <RxDropdownMenu.Portal>
+          <RxDropdownMenu.Content
+            align="end"
+            sideOffset={4}
+            className={DROPDOWN_CONTENT_CLASSES}
+          >
+            <DropdownMenuItem
+              label="Preview"
+              icon={<LinkExternal01 aria-hidden="true" />}
+              onSelect={onPreview}
+            />
+            <DropdownMenuItem
+              label="Copy link"
+              icon={<Copy01 aria-hidden="true" />}
+              onSelect={onCopyLink}
+            />
+            <DropdownMenuItem
+              label="Delete Article"
+              icon={<Trash01 aria-hidden="true" />}
+              onSelect={onDelete}
+              tone="danger"
+            />
+          </RxDropdownMenu.Content>
+        </RxDropdownMenu.Portal>
+      </RxDropdownMenu.Root>
+    </div>
+  );
+}
+
 const articleColumns: DataTableColumn<ArticleRow>[] = [
   {
     id: 'title',
@@ -160,21 +255,7 @@ const articleColumns: DataTableColumn<ArticleRow>[] = [
     width: 48,
     headerClassName: 'px-0 py-0',
     className: 'px-0',
-    render: (a) => (
-      <div className="flex items-center justify-center">
-        <button
-          type="button"
-          aria-label={`More actions for ${a.title}`}
-          onClick={(e) => e.stopPropagation()}
-          className={cn(
-            'flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-text-disabled',
-            'hover:bg-surface-subtle focus:bg-surface-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-border-faint',
-          )}
-        >
-          <DotsVertical size={16} aria-hidden="true" />
-        </button>
-      </div>
-    ),
+    render: (a) => <ArticleRowKebab articleId={a.id} title={a.title} />,
   },
   {
     id: 'status',

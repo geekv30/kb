@@ -15,11 +15,17 @@
 //     category, navigate to its category page.
 //   - Article click → navigate to the editor URL for that article slug.
 //
-// Per-row actions (2026-05-14 — dispatch B + C):
-//   - `renderRowAction` → per-row 3-dot trigger + "Edit" item. On a
-//     folder row Edit opens NewCategoryModal in `edit` mode pre-filled
-//     from the matching category; on an article row Edit navigates to the
-//     article's editor URL.
+// Per-row actions (Figma node 1958:34638 article menu):
+//   - `renderRowAction` → per-row 3-dot trigger + tone-aware menu.
+//       Folder rows:  Edit / New article / Delete (danger).
+//       Article rows: Preview / Copy link / Delete Article (danger).
+//   - "Edit" (folder) opens NewCategoryModal in `edit` mode pre-filled
+//     from the matching category. "New article" and both "Delete" items
+//     stub via console.log — no `articles/create`, `articles/delete`,
+//     `categories/delete` actions exist in the demo store yet.
+//   - "Preview" opens the live editor URL in a new tab. "Copy link" writes
+//     the absolute article URL to the clipboard (try/catch — clipboard
+//     API throws in non-HTTPS contexts and some sandboxes).
 //   - Modal is edit-mode only here. The create-mode entry-point lives in
 //     CategoryPage's PageHeader "+ New" dropdown — see CategoryPage.tsx.
 //   - The dropdown chrome (container + item) is shared from
@@ -29,7 +35,14 @@
 import { useCallback, useMemo, useState } from 'react';
 import * as RxDropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { DotsVertical, Pencil02 } from '@untitledui/icons';
+import {
+  Copy01,
+  DotsVertical,
+  LinkExternal01,
+  Pencil02,
+  Plus,
+  Trash01,
+} from '@untitledui/icons';
 import {
   FileExplorerNav,
   NewCategoryModal,
@@ -217,15 +230,64 @@ export function EditorExplorer() {
 
   const renderRowAction = useCallback(
     (item: NavItem) => {
-      const onEdit = () => {
-        if (item.type === 'folder') {
-          openEditFolderModal(item.id);
-        } else {
-          // Article: navigate to its editor URL.
-          const article = state.articles[item.id];
-          if (article) navigate(routes.article(article.slug));
+      // Folder menu — Edit / New article / Delete (danger).
+      // Article menu — Preview / Copy link / Delete Article (danger).
+      // Item set matches Figma node 1958:34638 (article rows) and the
+      // spec call-out for folder rows. Destructive items lean on
+      // DropdownMenuItem's `tone="danger"` (red text + #feeeec hover wash).
+      //
+      // Wire-up notes:
+      //   - "Edit" (folder)        → preserves existing NewCategoryModal
+      //                              edit-mode behavior.
+      //   - "New article" (folder) → no `articles/create` action exists
+      //                              in the demo store; log TODO so the
+      //                              wire-up is obvious to reviewers.
+      //   - "Delete" (both rows)   → same — no delete action exists; log
+      //                              TODO. Faking a state mutation here
+      //                              would mask the missing reducer path.
+      //   - "Preview" (article)    → opens the live editor URL in a new
+      //                              tab. Folder rows have no Preview.
+      //   - "Copy link" (article)  → clipboard.writeText with try/catch;
+      //                              the API throws in non-HTTPS contexts
+      //                              and silently fails in some sandboxes.
+      const isFolder = item.type === 'folder';
+
+      const onEditFolder = () => openEditFolderModal(item.id);
+      const onNewArticle = () => {
+        // eslint-disable-next-line no-console
+        console.log('TODO: create article in', item.id);
+      };
+      const onDeleteFolder = () => {
+        // eslint-disable-next-line no-console
+        console.log('TODO: delete category', item.id);
+      };
+
+      const onPreviewArticle = () => {
+        const article = state.articles[item.id];
+        if (!article) return;
+        window.open(
+          routes.article(article.slug),
+          '_blank',
+          'noopener,noreferrer',
+        );
+      };
+      const onCopyArticleLink = () => {
+        const article = state.articles[item.id];
+        if (!article) return;
+        const url = window.location.origin + routes.article(article.slug);
+        try {
+          // navigator.clipboard is gated behind secure contexts and may
+          // be undefined in older test envs.
+          void navigator.clipboard?.writeText(url);
+        } catch {
+          // Swallow — TODO surface as toast once we wire toasts up here.
         }
       };
+      const onDeleteArticle = () => {
+        // eslint-disable-next-line no-console
+        console.log('TODO: delete article', item.id);
+      };
+
       return (
         <RxDropdownMenu.Root>
           <RxDropdownMenu.Trigger asChild>
@@ -251,17 +313,51 @@ export function EditorExplorer() {
               sideOffset={4}
               className={DROPDOWN_CONTENT_CLASSES}
             >
-              <DropdownMenuItem
-                label="Edit"
-                icon={<Pencil02 aria-hidden="true" />}
-                onSelect={onEdit}
-              />
+              {isFolder ? (
+                <>
+                  <DropdownMenuItem
+                    label="Edit"
+                    icon={<Pencil02 aria-hidden="true" />}
+                    onSelect={onEditFolder}
+                  />
+                  <DropdownMenuItem
+                    label="New article"
+                    icon={<Plus aria-hidden="true" />}
+                    onSelect={onNewArticle}
+                  />
+                  <DropdownMenuItem
+                    label="Delete"
+                    icon={<Trash01 aria-hidden="true" />}
+                    onSelect={onDeleteFolder}
+                    tone="danger"
+                  />
+                </>
+              ) : (
+                <>
+                  <DropdownMenuItem
+                    label="Preview"
+                    icon={<LinkExternal01 aria-hidden="true" />}
+                    onSelect={onPreviewArticle}
+                  />
+                  <DropdownMenuItem
+                    label="Copy link"
+                    icon={<Copy01 aria-hidden="true" />}
+                    onSelect={onCopyArticleLink}
+                  />
+                  <DropdownMenuItem
+                    label="Delete Article"
+                    icon={<Trash01 aria-hidden="true" />}
+                    onSelect={onDeleteArticle}
+                    tone="danger"
+                  />
+                </>
+              )}
             </RxDropdownMenu.Content>
           </RxDropdownMenu.Portal>
         </RxDropdownMenu.Root>
       );
     },
-    [openEditFolderModal, navigate, state.articles],
+    [openEditFolderModal, state.articles],
   );
 
   /* ── Render ────────────────────────────────────────────────── */
