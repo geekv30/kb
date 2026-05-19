@@ -226,11 +226,10 @@ function FolderRow({
   // Only `type=category, state=hover` uses font-medium on the label. Keep regular
   // weight across the board and let background + size carry the emphasis.
 
-  // Figma behavior: on ACTIVE the count stays visible (no kebab — see 6:508, 6:491).
-  // On HOVER (non-active) the kebab replaces the count (see 6:493 vs 6:484).
-  // We only install the `group-hover:hidden`/`group-hover:flex` swap when the row
-  // is not already active.
-  const showHoverSwap = state !== 'active';
+  // On hover the kebab/action replaces the count, regardless of active state.
+  // Previously suppressed on active rows (per Figma 6:508/6:491); user explicitly
+  // wants the affordance to remain reachable on the row they're viewing so the
+  // edit/delete actions on the current item are never one click away.
 
   return (
     <div
@@ -270,29 +269,26 @@ function FolderRow({
             <span
               className={cn(
                 'text-[14px] font-normal text-text-meta',
-                // Count badge hides on hover when there's a swappable action
-                // (either the built-in kebab or a consumer-supplied action).
-                // It also hides when keyboard focus is inside the action
-                // wrapper, so the action stays revealed for a11y.
-                showHoverSwap && 'group-hover:hidden group-focus-within:hidden',
+                // Count badge hides on hover so the kebab/action can take the slot.
+                // Also hides when keyboard focus is inside the action wrapper, so
+                // the action stays revealed for a11y.
+                'group-hover:hidden group-focus-within:hidden',
               )}
             >
               {item.count ?? ''}
             </span>
-            {showHoverSwap && (
-              rowAction !== undefined ? (
-                /* eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions */
-                <span
-                  className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {rowAction}
-                </span>
-              ) : (
-                <span className="hidden group-hover:flex group-focus-within:flex items-center justify-center text-text-meta">
-                  <DotsVertical size={16} />
-                </span>
-              )
+            {rowAction !== undefined ? (
+              /* eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions */
+              <span
+                className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {rowAction}
+              </span>
+            ) : (
+              <span className="hidden group-hover:flex group-focus-within:flex items-center justify-center text-text-meta">
+                <DotsVertical size={16} />
+              </span>
             )}
           </span>
         </div>
@@ -322,9 +318,9 @@ function ArticleRow({ item, depth, isActive, onClick, rowAction }: ArticleRowPro
         ? 'bg-[#898989]'
         : 'bg-transparent';
 
-  // Match folder behavior: on ACTIVE keep the status dot; on HOVER (non-active)
-  // swap dot → kebab affordance. See Figma `6:438` article states (6:574, 6:584).
-  const showHoverSwap = state !== 'active';
+  // On hover the kebab/action replaces the status dot, regardless of active state.
+  // Same rationale as FolderRow: user explicitly wants the edit/delete affordance
+  // to remain reachable on the article they're currently viewing.
 
   return (
     <div
@@ -361,26 +357,24 @@ function ArticleRow({ item, depth, isActive, onClick, rowAction }: ArticleRowPro
                 className={cn(
                   'size-[4px] rounded-full',
                   statusDotColor,
-                  // Status dot hides on hover when a swappable action is present.
+                  // Status dot hides on hover so the kebab/action can take the slot.
                   // Also hides while keyboard focus is inside the action wrapper.
-                  showHoverSwap && 'group-hover:hidden group-focus-within:hidden',
+                  'group-hover:hidden group-focus-within:hidden',
                 )}
               />
             )}
-            {showHoverSwap && (
-              rowAction !== undefined ? (
-                /* eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions */
-                <span
-                  className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {rowAction}
-                </span>
-              ) : (
-                <span className="hidden group-hover:flex group-focus-within:flex items-center justify-center text-text-meta">
-                  <DotsVertical size={16} />
-                </span>
-              )
+            {rowAction !== undefined ? (
+              /* eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions */
+              <span
+                className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {rowAction}
+              </span>
+            ) : (
+              <span className="hidden group-hover:flex group-focus-within:flex items-center justify-center text-text-meta">
+                <DotsVertical size={16} />
+              </span>
             )}
           </span>
         </div>
