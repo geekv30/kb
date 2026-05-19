@@ -1,9 +1,10 @@
 import * as React from 'react';
-import { ChevronDown, Mail01, XClose } from '@untitledui/icons';
+import { ChevronDown, XClose } from '@untitledui/icons';
 import { cn } from '../../utils/cn';
 import { Modal } from './Modal';
 import { Button } from '../primitives/Button';
 import { Field } from '../primitives/Field';
+import { IconPicker } from '../primitives/IconPicker';
 import { TextInput } from '../primitives/TextInput';
 import { Textarea } from '../primitives/Textarea';
 
@@ -23,9 +24,15 @@ import { Textarea } from '../primitives/Textarea';
  *      14px medium. Achieved via Field's `className` arbitrary
  *      selector — see field 4 below.
  *
- * v1 scope: icon picker and parent-category dropdown are click
- * stubs (console.log on click). No popover/menu UI. No form
- * validation. No required-field markers (Figma shows none).
+ * v1 scope: the parent-category dropdown is a click stub
+ * (console.log on click). No menu UI. No form validation. No
+ * required-field markers (Figma shows none).
+ *
+ * The icon field is wired to the real `IconPicker` primitive —
+ * see `../primitives/IconPicker.tsx`. Clicking the dashed tile
+ * opens a portal-mounted popover with a searchable grid of ~165
+ * curated `@untitledui/icons`. The selected `iconKey` flows into
+ * `NewCategoryFormValues.iconKey` on submit.
  * ───────────────────────────────────────────────────────────── */
 
 export type NewCategoryFormValues = {
@@ -157,25 +164,17 @@ export function NewCategoryModal({
       }
     >
       <div className="flex flex-col gap-5">
-        {/* Field 1 — Icon picker (click stub) */}
+        {/* Field 1 — Icon picker. Wired to the real IconPicker primitive.
+         *  The tile size is set to 44px to match the previous static
+         *  Mail01 stub (h-11 w-11). The purple notification dot is
+         *  intentionally removed — it was a v1 stand-in. */}
         <Field label="Icon">
-          <button
-            type="button"
-            aria-label="Pick an icon"
-            onClick={() => {
-              // v1: no real picker — log for prototype reviewers.
-              // eslint-disable-next-line no-console
-              console.log('icon-picker open');
-            }}
-            className={cn(
-              'flex h-11 w-11 items-center justify-center rounded-[7px]',
-              'border-[1.5px] border-dashed border-[#cbd5e1]',
-              'hover:border-[#94a3b8] transition-colors',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20',
-            )}
-          >
-            <Mail01 className="h-[22px] w-[22px] text-[#6634ef]" />
-          </button>
+          <IconPicker
+            value={state.iconKey || undefined}
+            onChange={(key) => setState((s) => ({ ...s, iconKey: key }))}
+            tileSize={44}
+            ariaLabel="Pick an icon"
+          />
         </Field>
 
         {/* Field 2 — Category Name */}

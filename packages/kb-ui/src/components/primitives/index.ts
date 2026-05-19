@@ -33,3 +33,5 @@ export { Skeleton } from './Skeleton';
 export type { SkeletonProps } from './Skeleton';
 export { CodeChip } from './CodeChip';
 export type { CodeChipProps } from './CodeChip';
+export { IconPicker, ICON_CATALOG } from './IconPicker';
+export type { IconPickerProps } from './IconPicker';
