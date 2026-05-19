@@ -2,25 +2,32 @@
 //
 // Driven entirely by the steps[] / welcome / completion config the
 // consumer passed to <WelcomeTourProvider>. No hardcoded step ids,
-// routes, or copy.
+// routes, or copy. Router-agnostic by design — app-side navigation
+// runs through `TourStep.onEnter` callbacks the consumer provides.
 //
-// v2 responsibilities:
+// v3 responsibilities:
 //   - Portals to document.body so it's not clipped by the shell.
 //   - Cross-fades between steps: when state changes, fades out the
-//     current ring + coach mark (120ms), navigates (if the step has
-//     a `route`), waits for the new target to be measurable (2x rAF
-//     + spaced retries), then fades the new ring + card in at their
-//     final positions (240ms).
+//     current ring + coach mark (120ms), waits for the new target to
+//     be measurable (2x rAF + spaced retries) — by the time we measure,
+//     the consumer's `onEnter()` (fired by the Provider) will have
+//     already kicked off any route change — then fades the new ring +
+//     card in at their final positions (240ms).
 //   - Re-measures on debounced window resize (150ms) — no
 //     ResizeObserver.
 //   - No celebration. "Got it" just transitions to 'done' which fades
 //     the overlay out (handled by the parent fade) and writes 'seen'.
 //   - The welcome step keeps its own modal backdrop (it's an interrupt
 //     modal — different surface from the in-page tour).
+//
+// "Cross-route" vs "same-pathname" is now inferred via DOM identity
+// of the registered target node: if the node we're about to spotlight
+// is the SAME element we just left, treat as same-pathname (in-place
+// slide); if it's a different element (or wasn't measurable yet),
+// treat as cross-route (fade out → measure-with-retries → fade in).
 
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useLocation, useNavigate } from 'react-router-dom';
 import {
   useWelcomeTour,
   isActiveTourState,
@@ -76,8 +83,6 @@ function computeRectForStep(
 
 export function WelcomeTourOverlay() {
   const tour = useWelcomeTour();
-  const navigate = useNavigate();
-  const location = useLocation();
   const reduceMotion = useReducedMotion();
 
   /* The rect that the Spotlight should render against. */
@@ -148,7 +153,6 @@ export function WelcomeTourOverlay() {
       ? (tour.steps[nextState.stepIndex] ?? null)
       : null;
   const stepTargetId: string | null = nextStep?.id ?? null;
-  const stepRoute: string | null = nextStep?.route ?? null;
 
   useEffect(() => {
     const cycle = ++measureCycleRef.current;
@@ -192,8 +196,15 @@ export function WelcomeTourOverlay() {
     }
 
     const wasRenderingStep = renderedStep.phase === 'step';
+    // Same-pathname detection (router-agnostic): if the target node
+    // for the new step is already registered AND is the same DOM
+    // element we just left, the swap is in-place. Otherwise (different
+    // node, or target not yet registered because a route change is
+    // about to remount the subtree), we treat it as a cross-route swap
+    // and use the fade-out → measure-with-retries → fade-in path.
+    const candidateNode = tour.getTarget(stepTargetId);
     const samePathname =
-      stepRoute === null || location.pathname === stepRoute;
+      wasRenderingStep && candidateNode !== null && candidateNode === targetNode;
     // Same-pathname slide: skip fade-out, no opacity dip.
     // Cross-route swap: short fade-out (or 60ms in reduced-motion).
     const needsFadeOut = wasRenderingStep && !samePathname;
@@ -285,10 +296,12 @@ export function WelcomeTourOverlay() {
     timers.push(
       window.setTimeout(() => {
         if (cycle !== measureCycleRef.current) return;
-        // Navigate (no-op if already on the route, or no route configured).
-        if (stepRoute !== null && !samePathname) {
-          navigate(stepRoute);
-        }
+        // Note: any route change for this step has already been kicked
+        // off by the consumer's `onEnter()` callback (fired by the
+        // Provider when the step became active). The overlay's job
+        // here is purely to wait until the target node is measurable
+        // — the rAF dance + retry array cover slow-mounting routes.
+        //
         // Reduced-motion path skips the rAF dance + retry array
         // entirely. A single immediate measure attempt is enough —
         // if the target isn't ready, the next tour.state change will

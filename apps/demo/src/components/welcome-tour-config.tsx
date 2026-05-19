@@ -1,10 +1,16 @@
 // Hiver-specific Welcome Tour configuration.
 //
 // All demo-specific copy, icons, routes, and rect-computation logic
-// lives here. The welcome-tour/ module itself is generic over this
-// config — moving the module to kb-ui in a follow-up PR will not
-// require any changes to this file (only the import path on line 1).
+// lives here. The generic WelcomeTour primitive (Provider, hooks,
+// types) lives in @test-kb-ui/kb-ui; this file feeds it Hiver's
+// steps[], welcome card, completion card, and storage key.
+//
+// Router-agnostic kb-ui: per-step navigation runs through the demo's
+// own `useNavigate()` injected at the step boundary via `onEnter`.
+// kb-ui itself never imports react-router-dom.
 
+import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   AlertCircle,
   BarChartSquare02,
@@ -15,13 +21,13 @@ import {
   Pencil02,
   ShieldTick,
 } from '@untitledui/icons';
-import { AiIcon } from '@test-kb-ui/kb-ui';
-import type {
-  CompletionContent,
-  TourStep,
-  WelcomeContent,
-} from './welcome-tour';
-import type { SpotlightRect } from './welcome-tour/Spotlight';
+import {
+  AiIcon,
+  type CompletionContent,
+  type SpotlightRect,
+  type TourStep,
+  type WelcomeContent,
+} from '@test-kb-ui/kb-ui';
 import { DEFAULT_KB_CATEGORY_SLUG, routes } from '../lib/routes';
 
 /* ── Step-specific rect helpers ─────────────────────────────── */
@@ -49,37 +55,6 @@ function explorerRect(node: HTMLElement): SpotlightRect | null {
   if (right <= left || bottom <= top) return null;
   return { top, left, width: right - left, height: bottom - top };
 }
-
-/* ── Steps ──────────────────────────────────────────────────── */
-
-export const HIVER_TOUR_STEPS: TourStep[] = [
-  {
-    id: 'sidebar-explorer',
-    title: 'Browse like files',
-    body:
-      'Your articles and categories now live in a tree on the left. Click to open, drag to reorganize.',
-    route: routes.kb.category(DEFAULT_KB_CATEGORY_SLUG),
-    computeRect: explorerRect,
-  },
-  {
-    id: 'rail-ai',
-    title: 'AI Gaps & Suggestions',
-    body:
-      'We surface missing or thin content based on real customer questions. Tackle the highest-impact gaps first.',
-    route: routes.aiOptimise.hub(),
-    // Rail icon buttons have transparent backgrounds — flag so the
-    // overlay can paint a white fill behind the lifted target.
-    targetNeedsBackgroundFill: true,
-  },
-  {
-    id: 'rail-analytics',
-    title: 'Analytics for every article',
-    body:
-      'See views, helpful votes, search performance, and how AI is using your content to answer tickets.',
-    route: routes.analytics.articlePerformance(),
-    targetNeedsBackgroundFill: true,
-  },
-];
 
 /* ── Welcome card content ───────────────────────────────────── */
 
@@ -168,3 +143,65 @@ export const HIVER_COMPLETION: CompletionContent = {
 /* ── Storage key (byte-identical to pre-refactor) ───────────── */
 
 export const HIVER_TOUR_STORAGE_KEY = 'hiver-kb-welcome-tour-v1';
+
+/* ── Steps (factory — needs `navigate` from react-router-dom) ─ */
+
+/**
+ * Hiver tour steps. Each step's `onEnter` callback drives router
+ * navigation — kb-ui itself is router-agnostic and never imports
+ * react-router-dom. The routes match the pre-refactor behavior
+ * (PR #101 + lift) exactly.
+ */
+export function useHiverTourSteps(): TourStep[] {
+  const navigate = useNavigate();
+  return useMemo<TourStep[]>(
+    () => [
+      {
+        id: 'sidebar-explorer',
+        title: 'Browse like files',
+        body:
+          'Your articles and categories now live in a tree on the left. Click to open, drag to reorganize.',
+        computeRect: explorerRect,
+        onEnter: () => navigate(routes.kb.category(DEFAULT_KB_CATEGORY_SLUG)),
+      },
+      {
+        id: 'rail-ai',
+        title: 'AI Gaps & Suggestions',
+        body:
+          'We surface missing or thin content based on real customer questions. Tackle the highest-impact gaps first.',
+        // Rail icon buttons have transparent backgrounds — flag so the
+        // overlay can paint a white fill behind the lifted target.
+        targetNeedsBackgroundFill: true,
+        onEnter: () => navigate(routes.aiOptimise.hub()),
+      },
+      {
+        id: 'rail-analytics',
+        title: 'Analytics for every article',
+        body:
+          'See views, helpful votes, search performance, and how AI is using your content to answer tickets.',
+        targetNeedsBackgroundFill: true,
+        onEnter: () => navigate(routes.analytics.articlePerformance()),
+      },
+    ],
+    [navigate],
+  );
+}
+
+/**
+ * Composite hook that returns the full Hiver tour config (steps,
+ * welcome, completion, storageKey) ready to spread onto
+ * <WelcomeTourProvider>. Lives here (not in ShellLayout) so all
+ * Hiver-specific tour wiring stays in one file.
+ */
+export function useHiverTourConfig() {
+  const steps = useHiverTourSteps();
+  return useMemo(
+    () => ({
+      steps,
+      welcome: HIVER_WELCOME,
+      completion: HIVER_COMPLETION,
+      storageKey: HIVER_TOUR_STORAGE_KEY,
+    }),
+    [steps],
+  );
+}

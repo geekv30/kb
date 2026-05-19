@@ -1,4 +1,4 @@
-// Public surface for the welcome-tour prototype module.
+// Public surface for the welcome-tour module.
 //
 // Consumers need:
 //   - <WelcomeTourProvider steps welcome completion storageKey>
@@ -22,3 +22,7 @@ export type {
   WelcomeFeature,
   WelcomeTourProviderProps,
 } from './WelcomeTourContext';
+// SpotlightRect is part of the public surface because step configs
+// can supply a `computeRect: (node) => SpotlightRect | null` callback
+// for custom spotlight geometry.
+export type { SpotlightRect } from './Spotlight';

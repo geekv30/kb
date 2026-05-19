@@ -23,3 +23,19 @@ export type {
   Shortcut,
   ShortcutGroup,
 } from './ShortcutsModal';
+export {
+  WelcomeTourProvider,
+  useWelcomeTour,
+  useTourTarget,
+  isActiveTourState,
+} from './welcome-tour';
+export type {
+  TourState,
+  TourPhase,
+  TourStep,
+  WelcomeContent,
+  CompletionContent,
+  WelcomeFeature,
+  WelcomeTourProviderProps,
+  SpotlightRect,
+} from './welcome-tour';

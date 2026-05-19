@@ -34,7 +34,8 @@
     "./styles": {
       "types": "./dist/styles.d.ts",
       "default": "./dist/tokens.css"
-    }
+    },
+    "./welcome-tour.css": "./dist/welcome-tour.css"
   },
   "files": [
     "dist"
