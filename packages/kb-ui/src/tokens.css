@@ -280,6 +280,18 @@ html {
    * origin)` on the same element so the scale anchors to the trigger
    * (without it, scale-from-center looks wrong per the popover rule). */
   --animate-kb-dropdown-in:   kb-dropdown-in 150ms var(--ease-out-strong);
+  /* Dropdown exit pair — same curve, faster (100ms < 150ms enter) so
+   * close feels snappy rather than draggy. Used by IconPicker's
+   * `motion-safe:data-[state=closed]:animate-kb-dropdown-out`. */
+  --animate-kb-dropdown-out:  kb-dropdown-out 100ms var(--ease-out-strong);
+  /* Generic fade tokens — used by IconPicker's reduced-motion path
+   * to fade the popover in/out without transform. Mirrors the
+   * vocabulary of `--animate-kb-modal-*-reduced` but exposed as
+   * standalone utilities so motion-bearing components can opt in
+   * to the opacity-only fallback (`motion-reduce:animate-kb-fade-in`).
+   * Reuses the existing `kb-fade-in` / `kb-fade-out` keyframes below. */
+  --animate-kb-fade-in:       kb-fade-in 100ms ease-out;
+  --animate-kb-fade-out:      kb-fade-out 80ms ease-out;
 
   /* Skeleton shimmer sweep (chunk 1 of SEO panel).
    * Registered as `--animate-*` so Tailwind v4 auto-generates the
@@ -356,6 +368,16 @@ html {
     to {
       opacity: 1;
       transform: scale(1);
+    }
+  }
+  @keyframes kb-dropdown-out {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.96);
     }
   }
   @keyframes kb-skeleton-shimmer {
