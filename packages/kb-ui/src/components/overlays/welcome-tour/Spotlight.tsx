@@ -9,8 +9,8 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { ChevronLeft, X } from '@untitledui/icons';
-import { Button } from '@test-kb-ui/kb-ui';
-import { cn } from '../../lib/cn';
+import { Button } from '../../primitives/Button';
+import { cn } from '../../../utils/cn';
 import { useReducedMotion } from './useReducedMotion';
 
 const COACHMARK_GAP = 16;

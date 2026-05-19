@@ -1,9 +1,9 @@
 // Hiver-specific Welcome Tour configuration.
 //
 // All demo-specific copy, icons, routes, and rect-computation logic
-// lives here. The welcome-tour/ module itself is generic over this
-// config — moving the module to kb-ui in a follow-up PR will not
-// require any changes to this file (only the import path on line 1).
+// lives here. The generic WelcomeTour primitive (Provider, hooks,
+// types) lives in @test-kb-ui/kb-ui; this file feeds it Hiver's
+// steps[], welcome card, completion card, and storage key.
 
 import {
   AlertCircle,
@@ -15,13 +15,13 @@ import {
   Pencil02,
   ShieldTick,
 } from '@untitledui/icons';
-import { AiIcon } from '@test-kb-ui/kb-ui';
-import type {
-  CompletionContent,
-  TourStep,
-  WelcomeContent,
-} from './welcome-tour';
-import type { SpotlightRect } from './welcome-tour/Spotlight';
+import {
+  AiIcon,
+  type CompletionContent,
+  type SpotlightRect,
+  type TourStep,
+  type WelcomeContent,
+} from '@test-kb-ui/kb-ui';
 import { DEFAULT_KB_CATEGORY_SLUG, routes } from '../lib/routes';
 
 /* ── Step-specific rect helpers ─────────────────────────────── */

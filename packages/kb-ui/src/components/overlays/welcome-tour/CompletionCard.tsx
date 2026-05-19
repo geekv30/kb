@@ -17,8 +17,8 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
 import { X } from '@untitledui/icons';
-import { Button } from '@test-kb-ui/kb-ui';
-import { cn } from '../../lib/cn';
+import { Button } from '../../primitives/Button';
+import { cn } from '../../../utils/cn';
 import { useReducedMotion } from './useReducedMotion';
 import type { CompletionContent, WelcomeFeature } from './WelcomeTourContext';
 

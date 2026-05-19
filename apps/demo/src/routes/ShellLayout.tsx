@@ -15,6 +15,8 @@ import {
   AppShell,
   SidebarCollapseProvider,
   useSidebarCollapse,
+  WelcomeTourProvider,
+  useTourTarget,
 } from '@test-kb-ui/kb-ui';
 import { AppRail } from '../shell/AppRail';
 import { EditorExplorer } from '../shell/EditorExplorer';
@@ -23,10 +25,6 @@ import { AISubNavbar } from '../shell/AISubNavbar';
 import { BreadcrumbBar } from '../shell/BreadcrumbBar';
 import { PageProgressBar } from '../components/PageProgressBar';
 import { useFocusOnRouteChange } from '../hooks/useFocusOnRouteChange';
-import {
-  WelcomeTourProvider,
-  useTourTarget,
-} from '../components/welcome-tour';
 import {
   HIVER_COMPLETION,
   HIVER_TOUR_STEPS,
