@@ -6,8 +6,15 @@
 // The coach-mark card lives above the ring with an arrow pointing at
 // the target. The page underneath is interactive — users dismiss via
 // X / Skip in the card.
+//
+// Positional morph (ring + beacon + coach-mark sliding between steps)
+// is driven by Framer Motion springs — interruptible, physics-based,
+// and snappier than CSS cubic-bezier under load. The beacon's pulse
+// keyframes + button press feedback stay on CSS (per emil-design-eng:
+// CSS animations run off main thread, ideal for predetermined motion).
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { motion, useReducedMotion as useFramerReducedMotion } from 'framer-motion';
 import { ChevronLeft, X } from '@untitledui/icons';
 import { Button } from '../../primitives/Button';
 import { cn } from '../../../utils/cn';
@@ -41,21 +48,32 @@ const BEACON_PULSE_DELAY_MS = 900;
  * top edge (dot is centred via translate(-50%, -50%)). */
 const BEACON_SAFE_TOP = 20;
 
-const FADE_IN_DUR = 240;
-/* Exit should ALWAYS be faster than enter — the user already saw
- * the surface, so dismissing it shouldn't feel laborious. ~50% of
- * the enter duration keeps the asymmetry clearly perceptible without
- * feeling abrupt. Per Emil Kowalski's review checklist:
- *   "Same enter/exit transition speed → make exit faster than enter".
- */
-const FADE_OUT_DUR = 120;
-const FADE_IN_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
+/* Spring config for the step-to-step position morph (ring + beacon +
+ * coach-mark). Apple-style { duration, bounce } per the skill:
+ *   - duration 0.32 keeps total swap well under the 300ms UI ceiling
+ *     while still letting the spring "land" naturally.
+ *   - bounce 0.15 — barely perceptible; this is a wayfinding overlay,
+ *     not a playful demo. The morph should feel decisive, not springy.
+ * Springs (vs cubic-bezier) win here because welcome-tour swaps can be
+ * interrupted by rapid Next clicks — springs maintain velocity through
+ * retargets, cubic-bezier restarts. */
+const SPRING_MORPH = { type: 'spring' as const, duration: 0.32, bounce: 0.15 };
 
-/* Strong ease-out from easings.dev — replaces bare `ease-out` for ring +
- * beacon opacity transitions. Bare ease-out lacks the punch that makes
- * fades feel intentional; this curve front-loads the animation so the
- * ring registers immediately on mount. */
-const STRONG_EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
+/* Opacity fades are duration-based (springs on opacity look weird —
+ * they overshoot 1.0). Asymmetric in/out per the skill's "exits
+ * faster than entrances" rule. */
+const FADE_IN_DUR_S = 0.2;
+const FADE_OUT_DUR_S = 0.12;
+/* Strong ease-out from easings.dev — replaces bare `ease-out` for
+ * opacity transitions. Bare ease-out lacks the punch that makes
+ * fades feel intentional; this curve front-loads the animation so
+ * the ring registers immediately on mount. */
+const STRONG_EASE_OUT = [0.23, 1, 0.32, 1] as const;
+
+/* Coach-mark slide-in offset (X axis, since the card is anchored
+ * left/right of the target). 8px nudges from the side OPPOSITE the
+ * card's anchor — "this card is attaching to that target". */
+const COACH_SLIDE_OFFSET = 8;
 
 export type SpotlightRect = {
   /** Target's bounding rect (raw). */
@@ -85,8 +103,8 @@ export type SpotlightProps = {
   coachMark: CoachMarkContent;
   /** Fade phase driven by the parent overlay. */
   phase: 'in' | 'out';
-  /** When true, the ring + beacon use positional CSS transitions so
-   *  changing `rect` slides them across the page in-place (used for
+  /** When true, the ring + beacon use the spring-driven position
+   *  morph so changing `rect` glides them across the page (used for
    *  same-pathname step swaps). When false, they snap to new
    *  positions instantly (cross-route swaps) so the fade-in pops at
    *  the new location instead of smearing from the old one. */
@@ -108,7 +126,13 @@ export function Spotlight({
   onSkip,
 }: SpotlightProps) {
   const cardRef = useRef<HTMLDivElement | null>(null);
+  /* Pulse-keyframe gate (CSS animation) uses the hand-rolled hook —
+   * keeping CSS and JS reduce-motion logic on the same boolean. */
   const prefersReducedMotion = useReducedMotion();
+  /* Framer's hook drives transform-vs-opacity branching for the
+   * position morph. Same media query, just framer-aware so any
+   * future Framer features (e.g. layout animations) auto-suppress. */
+  const framerReduceMotion = useFramerReducedMotion() ?? false;
 
   /* Viewport size — clamps coach-mark Y so it never overflows. */
   const [viewport, setViewport] = useState<{ w: number; h: number }>(() => ({
@@ -170,43 +194,76 @@ export function Spotlight({
     }
   };
 
+  /* ── Position-morph transition selector ──────────────────────
+   * Three transition modes feed the same animate target:
+   *   - same-pathname slide → spring morph
+   *   - cross-route swap (slideMode === false) → instant snap
+   *     (duration 0). The overlay's measure-then-fade-in pattern
+   *     handles the perceived continuity at the orchestration
+   *     level; the ring/beacon must NOT animate position while
+   *     they're invisible — otherwise the next visible frame
+   *     shows them mid-travel.
+   *   - reduced motion → instant snap, even for same-pathname.
+   *     The opacity transition still plays so the surface doesn't
+   *     teleport silently — per the skill's "suppress movement,
+   *     not all motion" guidance.
+   */
+  const positionTransition =
+    framerReduceMotion || !slideMode ? { duration: 0 } : SPRING_MORPH;
+
+  /* Opacity uses the same asymmetric in/out timing the prior CSS
+   * implementation used: slower in (deliberate landing), faster
+   * out (snappy dismiss). Framer's `transition` objects support
+   * per-key overrides via the property name. */
+  const opacityTransition = {
+    duration: phase === 'in' ? FADE_IN_DUR_S : FADE_OUT_DUR_S,
+    ease: STRONG_EASE_OUT,
+  };
+
   /* ── Ring overlay — anchored to the target's bounding rect ──── */
 
-  const ringOpacity = phase === 'in' && rect !== null ? 1 : 0;
-  // Asymmetric opacity timing — slower in (200ms) so the ring lands
-  // deliberately on the new target, faster out (120ms) so dismissal
-  // feels snappy. Branching by `phase` lets the transition value
-  // itself carry the asymmetry; with a single duration the
-  // overlay's unmount timer would have to "cut off" a longer fade,
-  // which reads as glitchy.
-  const ringOpacityDur = phase === 'in' ? 200 : FADE_OUT_DUR;
-  const ringStyle: CSSProperties = rect
-    ? {
-        position: 'fixed',
+  const ringVisible = phase === 'in' && rect !== null;
+
+  /* Static style (non-animated props). Position values flow through
+   * `animate` so Framer can spring them. */
+  const ringStaticStyle: CSSProperties = {
+    position: 'fixed',
+    border: `2px solid ${RING_COLOR}`,
+    borderRadius: 12,
+    pointerEvents: 'none',
+    zIndex: RING_Z_INDEX,
+    // Pre-allocate transform layer so the spring lands on a
+    // compositor-promoted element from the very first frame. Per the
+    // skill's hardware-acceleration caveat — even though we're not
+    // using motion.div's `x`/`y` shortcuts, hinting the layer helps
+    // when the route change is loading simultaneously.
+    willChange: 'top, left, width, height, opacity',
+  };
+
+  const ring = rect ? (
+    <motion.div
+      aria-hidden="true"
+      style={ringStaticStyle}
+      // animate target reads the live rect every render — Framer
+      // springs the delta on each commit. Position + size morph
+      // together (size in lockstep so the ring "wraps" the new
+      // target with the same single motion).
+      animate={{
         top: rect.top - RING_PADDING,
         left: rect.left - RING_PADDING,
         width: rect.width + RING_PADDING * 2,
         height: rect.height + RING_PADDING * 2,
-        border: `2px solid ${RING_COLOR}`,
-        borderRadius: 12,
-        pointerEvents: 'none',
-        zIndex: RING_Z_INDEX,
-        opacity: ringOpacity,
-        // Opacity always transitions. Positional transitions only when
-        // sliding in-place between same-pathname steps — for cross-
-        // route swaps the ring snaps to the new position while invisible
-        // so it pops in cleanly instead of smearing from the old rect.
-        transition: slideMode
-          ? `opacity ${ringOpacityDur}ms ${STRONG_EASE_OUT}, ` +
-            `top 250ms cubic-bezier(0.16, 1, 0.3, 1), ` +
-            `left 250ms cubic-bezier(0.16, 1, 0.3, 1), ` +
-            `width 250ms cubic-bezier(0.16, 1, 0.3, 1), ` +
-            `height 250ms cubic-bezier(0.16, 1, 0.3, 1)`
-          : `opacity ${ringOpacityDur}ms ${STRONG_EASE_OUT}`,
-      }
-    : { display: 'none' };
-
-  const ring = <div aria-hidden="true" style={ringStyle} />;
+        opacity: ringVisible ? 1 : 0,
+      }}
+      transition={{
+        top: positionTransition,
+        left: positionTransition,
+        width: positionTransition,
+        height: positionTransition,
+        opacity: opacityTransition,
+      }}
+    />
+  ) : null;
 
   /* ── Beacon — pulsing dot anchored to the target's top-right ──── */
 
@@ -215,7 +272,7 @@ export function Spotlight({
   // half overlapping) — gives it the "badge" feel called for in the
   // brief, and the same anchor works equally well for tall columns
   // and small rail icons because it tracks the corner, not the centre.
-  const beaconOpacity = phase === 'in' && rect !== null ? 1 : 0;
+  const beaconVisible = phase === 'in' && rect !== null;
   const beaconCx = rect ? rect.left + rect.width : 0;
   // Y anchoring rules:
   //   - Short targets (rail icons ~24-36px tall) — sit at the corner
@@ -235,27 +292,14 @@ export function Spotlight({
     ? Math.max(BEACON_SAFE_TOP, rect.top + Math.min(rect.height / 2, 40))
     : 0;
 
-  // Same enter/exit asymmetry as the ring — 200ms in, 120ms out.
-  const beaconOpacityDur = phase === 'in' ? 200 : FADE_OUT_DUR;
-  const beaconWrapperStyle: CSSProperties = rect
-    ? {
-        position: 'fixed',
-        top: beaconCy,
-        left: beaconCx,
-        width: 0,
-        height: 0,
-        pointerEvents: 'none',
-        zIndex: BEACON_Z_INDEX,
-        opacity: beaconOpacity,
-        // Same slide-vs-snap policy as the ring — beacon slides on
-        // same-pathname swaps, snaps on cross-route swaps.
-        transition: slideMode
-          ? `opacity ${beaconOpacityDur}ms ${STRONG_EASE_OUT}, ` +
-            `top 250ms cubic-bezier(0.16, 1, 0.3, 1), ` +
-            `left 250ms cubic-bezier(0.16, 1, 0.3, 1)`
-          : `opacity ${beaconOpacityDur}ms ${STRONG_EASE_OUT}`,
-      }
-    : { display: 'none' };
+  const beaconWrapperStaticStyle: CSSProperties = {
+    position: 'fixed',
+    width: 0,
+    height: 0,
+    pointerEvents: 'none',
+    zIndex: BEACON_Z_INDEX,
+    willChange: 'top, left, opacity',
+  };
 
   // Solid core dot — centered on the wrapper's (0,0) anchor via
   // translate(-50%, -50%). Stays at scale 1, fully visible.
@@ -275,6 +319,8 @@ export function Spotlight({
   // Pulse rings — same anchor as core. Animate scale + opacity only.
   // The translate(-50%, -50%) is included inside the keyframe's
   // transform so we don't lose centering when the scale changes.
+  // These stay on CSS keyframes (predetermined infinite animation —
+  // skill says CSS wins for off-main-thread animations like this).
   const beaconPulseBase: CSSProperties = {
     position: 'absolute',
     top: 0,
@@ -308,13 +354,26 @@ export function Spotlight({
         animationDelay: `-${BEACON_PULSE_DELAY_MS}ms`,
       };
 
-  const beacon = (
-    <div aria-hidden="true" style={beaconWrapperStyle}>
+  const beacon = rect ? (
+    <motion.div
+      aria-hidden="true"
+      style={beaconWrapperStaticStyle}
+      animate={{
+        top: beaconCy,
+        left: beaconCx,
+        opacity: beaconVisible ? 1 : 0,
+      }}
+      transition={{
+        top: positionTransition,
+        left: positionTransition,
+        opacity: opacityTransition,
+      }}
+    >
       <div style={beaconPulse1Style} />
       <div style={beaconPulse2Style} />
       <div style={beaconCoreStyle} />
-    </div>
-  );
+    </motion.div>
+  ) : null;
 
   /* ── Coach-mark card placement ───────────────────────────────── */
 
@@ -340,53 +399,36 @@ export function Spotlight({
   // (further down). Hoisted here so the coach-mark style can read it.
   const cardIsRightOfTarget = rect ? coachLeft > rect.left : true;
 
-  const coachOpacity = phase === 'in' ? 1 : 0;
-
   /* Slide-in direction depends on coach-mark placement relative to
-   * the target (`cardIsRightOfTarget`). The 8px lead-in nudges the
-   * card from the side OPPOSITE its anchor, so the motion implies
-   * "this content is attaching to that target" rather than the
-   * generic 4px Y-axis slide every step used to use.
-   *
-   * - Card right of target → slide from translateX(-8) → 0 (enters from the left)
-   * - Card left of target  → slide from translateX(+8) → 0 (enters from the right)
-   *
-   * Above/below placements would fall back to a Y-axis slide, but
-   * the current geometry never places the card above/below — it's
-   * always left/right anchored — so we only need the X-axis branch.
+   * the target. The 8px lead-in nudges the card from the side
+   * OPPOSITE its anchor, so the motion implies "this content is
+   * attaching to that target" rather than a generic Y-axis slide.
+   * Under reduced motion, drop the X offset entirely — opacity-only
+   * fade per the skill's "suppress movement, not all motion" rule.
    */
-  const slideOffset = phase === 'in' ? 0 : (cardIsRightOfTarget ? -8 : 8);
+  const slideOffset =
+    framerReduceMotion || phase === 'in'
+      ? 0
+      : cardIsRightOfTarget
+        ? -COACH_SLIDE_OFFSET
+        : COACH_SLIDE_OFFSET;
+
+  /* Build the transform string explicitly (per skill's hardware
+   * acceleration caveat — full `transform` string is compositor-
+   * promoted; Framer's `x`/`y` shortcuts run on rAF main thread
+   * and can drop frames during a route change). */
   const coachTransform = `translate3d(${coachLeft + slideOffset}px, ${coachTop}px, 0)`;
 
-  // Asymmetric in/out timing — 240ms in (deliberate landing) vs
-  // 120ms out (snappy dismiss). Same pattern as the ring and beacon.
-  const coachDur = phase === 'in' ? FADE_IN_DUR : FADE_OUT_DUR;
-
-  const coachMarkStyle: CSSProperties = rect
+  const coachMarkStaticStyle: CSSProperties = rect
     ? {
         position: 'fixed',
         top: 0,
         left: 0,
         width: COACH_MARK_WIDTH,
-        transform: coachTransform,
-        opacity: coachOpacity,
         // Above the ring (8500) so the user can always click footer
         // buttons even when the card overlaps the ring's bounds.
         zIndex: 8501,
         willChange: 'transform, opacity',
-        // Both properties use the SAME custom curve. Mixing bare `ease-out`
-        // on opacity with the smooth cubic on transform caused the fade
-        // and slide to feel out-of-sync.
-        //
-        // On cross-route swaps the coach-mark also snaps to its new
-        // anchor (transform transition disabled) so the fade-in lands
-        // at the new spot instead of smearing from the prior step's
-        // location. The directional 8px slide-on-mount (phase 'out' →
-        // 'in' translation) only plays for same-pathname swaps + first
-        // mount.
-        transition: slideMode
-          ? `opacity ${coachDur}ms ${FADE_IN_EASE}, transform ${coachDur}ms ${FADE_IN_EASE}`
-          : `opacity ${coachDur}ms ${FADE_IN_EASE}`,
       }
     : { display: 'none' };
 
@@ -438,89 +480,103 @@ export function Spotlight({
       {beacon}
 
       {/* Coach-mark card — floats next to the target. */}
-      <div
-        ref={cardRef}
-        role="dialog"
-        aria-modal="false"
-        aria-labelledby={`spotlight-title-${coachMark.stepIndex}`}
-        aria-describedby={`spotlight-body-${coachMark.stepIndex}`}
-        onKeyDown={handleKeyDown}
-        onClick={(e) => e.stopPropagation()}
-        style={coachMarkStyle}
-        className={cn(
-          'pointer-events-auto max-w-sm rounded-xl border border-slate-200 bg-white p-5',
-          'shadow-[0_20px_48px_-12px_rgba(15,23,42,0.18)]',
-          'focus:outline-none',
-        )}
-      >
-        {/* Pointer arrow toward the target. */}
-        <div aria-hidden="true" style={arrowStyle} />
-
-        {/* X close — top-right, acts as "Skip tour". */}
-        <button
-          type="button"
-          aria-label="Skip tour"
-          onClick={onSkip}
-          // `transition` (not `transition-colors`) so the press-scale
-          // transform animates too. 160ms strong ease-out matches Emil
-          // Kowalski's button-feedback rule. active:scale-[0.97] gives
-          // the instant "the UI heard me" feedback the raw <button>
-          // was missing.
-          style={{ transition: 'background-color 160ms ease, color 160ms ease, transform 160ms cubic-bezier(0.23, 1, 0.32, 1)' }}
+      {rect && (
+        <motion.div
+          ref={cardRef}
+          role="dialog"
+          aria-modal="false"
+          aria-labelledby={`spotlight-title-${coachMark.stepIndex}`}
+          aria-describedby={`spotlight-body-${coachMark.stepIndex}`}
+          onKeyDown={handleKeyDown}
+          onClick={(e) => e.stopPropagation()}
+          style={coachMarkStaticStyle}
+          // Full `transform` string per skill's hardware-acceleration
+          // caveat — `x`/`y` shortcuts run on rAF main thread and
+          // drop frames when the browser is busy (welcome tour
+          // routes change mid-animation, so this matters).
+          animate={{
+            transform: coachTransform,
+            opacity: phase === 'in' ? 1 : 0,
+          }}
+          transition={{
+            transform: positionTransition,
+            opacity: opacityTransition,
+          }}
           className={cn(
-            'absolute right-3 top-3 inline-flex h-6 w-6 items-center justify-center rounded-md',
-            'text-slate-400 hover:bg-slate-100 hover:text-slate-700',
-            'active:scale-[0.97]',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300',
+            'pointer-events-auto max-w-sm rounded-xl border border-slate-200 bg-white p-5',
+            'shadow-[0_20px_48px_-12px_rgba(15,23,42,0.18)]',
+            'focus:outline-none',
           )}
         >
-          <X className="h-[18px] w-[18px]" />
-        </button>
+          {/* Pointer arrow toward the target. */}
+          <div aria-hidden="true" style={arrowStyle} />
 
-        <h3
-          id={`spotlight-title-${coachMark.stepIndex}`}
-          className="pr-7 text-[15px] font-semibold leading-5 text-slate-900"
-        >
-          {coachMark.title}
-        </h3>
-
-        <p
-          id={`spotlight-body-${coachMark.stepIndex}`}
-          className="mt-2 text-[13px] leading-[1.55] text-slate-600"
-        >
-          {coachMark.body}
-        </p>
-
-        {/* Single-row footer: Skip | Back · Next 1/3 */}
-        <div className="mt-4 flex items-center justify-between gap-3">
-          <Button variant="ghost" onClick={onSkip}>
-            Skip
-          </Button>
-          <div className="flex items-center gap-2">
-            {showBack && (
-              <Button
-                variant="ghost"
-                onClick={onBack}
-                icon={<ChevronLeft />}
-              >
-                Back
-              </Button>
+          {/* X close — top-right, acts as "Skip tour". */}
+          <button
+            type="button"
+            aria-label="Skip tour"
+            onClick={onSkip}
+            // `transition` (not `transition-colors`) so the press-scale
+            // transform animates too. 160ms strong ease-out matches Emil
+            // Kowalski's button-feedback rule. active:scale-[0.97] gives
+            // the instant "the UI heard me" feedback the raw <button>
+            // was missing.
+            style={{ transition: 'background-color 160ms ease, color 160ms ease, transform 160ms cubic-bezier(0.23, 1, 0.32, 1)' }}
+            className={cn(
+              'absolute right-3 top-3 inline-flex h-6 w-6 items-center justify-center rounded-md',
+              'text-slate-400 hover:bg-slate-100 hover:text-slate-700',
+              'active:scale-[0.97]',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300',
             )}
-            <Button
-              variant="primary"
-              onClick={onNext}
-              data-spotlight-primary="true"
-            >
-              {coachMark.primaryLabel}
-              {!coachMark.primaryIsFinish && (
-                <span className="ml-1.5 text-[12px] opacity-70">
-                  {stepCountLabel}
-                </span>
-              )}
+          >
+            <X className="h-[18px] w-[18px]" />
+          </button>
+
+          <h3
+            id={`spotlight-title-${coachMark.stepIndex}`}
+            className="pr-7 text-[15px] font-semibold leading-5 text-slate-900"
+          >
+            {coachMark.title}
+          </h3>
+
+          <p
+            id={`spotlight-body-${coachMark.stepIndex}`}
+            className="mt-2 text-[13px] leading-[1.55] text-slate-600"
+          >
+            {coachMark.body}
+          </p>
+
+          {/* Single-row footer: Skip | Back · Next 1/3 */}
+          <div className="mt-4 flex items-center justify-between gap-3">
+            <Button variant="ghost" onClick={onSkip}>
+              Skip
             </Button>
+            <div className="flex items-center gap-2">
+              {showBack && (
+                <Button
+                  variant="ghost"
+                  onClick={onBack}
+                  icon={<ChevronLeft />}
+                >
+                  Back
+                </Button>
+              )}
+              <Button
+                variant="primary"
+                onClick={onNext}
+                data-spotlight-primary="true"
+              >
+                {coachMark.primaryLabel}
+                {!coachMark.primaryIsFinish && (
+                  <span className="ml-1.5 text-[12px] opacity-70">
+                    {stepCountLabel}
+                  </span>
+                )}
+              </Button>
+            </div>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      )}
     </div>
   );
 }
