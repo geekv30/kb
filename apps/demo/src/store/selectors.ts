@@ -205,6 +205,26 @@ export function selectExplorerTree(state: MockStoreState): NavItem[] {
 }
 
 /**
+ * Slug of the first top-level folder in the explorer tree. Drives the
+ * "land on first folder" routing contract — used by `RedirectToDefault`,
+ * `WelcomeRedirect`, and the Editor rail icon's click target. Returns
+ * `undefined` when the store has zero top-level categories (defensive;
+ * the demo's mock store always has at least one).
+ *
+ * Derived from the SAME `selectExplorerTree` ordering the FileExplorerNav
+ * renders, so "first folder" stays consistent across the redirect and
+ * the explorer's visual highlight/expand state.
+ */
+export function selectFirstCategorySlug(
+  state: MockStoreState,
+): string | undefined {
+  const tree = selectExplorerTree(state);
+  const firstFolder = tree.find((item) => item.type === 'folder');
+  if (!firstFolder) return undefined;
+  return state.categories[firstFolder.id]?.slug;
+}
+
+/**
  * Flat 3-item list consumed by `FileExplorerNav variant="flat"` for
  * the Analytics sub-nav. Hard-coded ids align with the routes built
  * in Phase 7.5.3.
