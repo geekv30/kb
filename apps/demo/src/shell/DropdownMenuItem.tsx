@@ -53,11 +53,18 @@ export function DropdownMenuItem({
   const isDanger = tone === 'danger';
   return (
     <RxDropdownMenu.Item
-      onSelect={(e) => {
-        // Default behavior closes the menu — that's what we want.
-        // Just guard against the synthetic event swallowing navigation
-        // by deferring to a microtask.
-        e.preventDefault();
+      onSelect={() => {
+        // Let Radix's default onSelect behavior run — it closes the
+        // menu after our handler fires. We previously called
+        // `e.preventDefault()` here, which suppressed the auto-close;
+        // the menu would stay open after a click, and any subsequent
+        // outside click landed on the underlying row button and
+        // navigated to the article. Removing the preventDefault is
+        // the entire fix.
+        //
+        // `onSelect` handles both keyboard (Enter/Space) AND click,
+        // so removing preventDefault preserves keyboard behavior
+        // (Enter still selects + closes the menu).
         onSelect();
       }}
       className={cn(
