@@ -252,7 +252,22 @@ export function Modal({
 
   /* Portal mode — centered modal over a dimmed backdrop. Backdrop
    * uses text-primary/40 wash + z-90 to match the existing demo
-   * ConfirmDialog stacking; content sits on z-91.
+   * ConfirmDialog stacking; content sits on z-91 (via wrapper).
+   *
+   * Positioning vs. animation (centering-drift fix):
+   *   Centering is delegated to a non-animated `grid place-items-center`
+   *   wrapper around `Dialog.Content`. The Content element itself
+   *   animates ONLY scale + opacity around an explicit
+   *   `transform-origin: center`. The previous implementation combined
+   *   `left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2` (positioning)
+   *   with a scale keyframe on the same transform stack, which surfaced
+   *   a visible "(-3, 3) → (0, 0)" drift on long /edit pages: Radix's
+   *   scroll-lock removes the body scrollbar and adds compensating
+   *   padding on open, shifting the viewport math for `left-1/2`/`top-1/2`
+   *   mid-paint while the scale animation is in flight.
+   *   The wrapper carries `pointer-events-none` so overlay clicks (which
+   *   close the dialog via Radix) still reach `Dialog.Overlay`; the
+   *   Content re-enables pointer events on itself.
    *
    * Motion (Phase D1 + Chunk 12 reduced-motion fix, emil-design-eng skill):
    *   - Backdrop: opacity fade — 200ms enter / 140ms exit, `var(--ease-out-strong)`
@@ -286,47 +301,55 @@ export function Modal({
           )}
         />
 
-        <Dialog.Content
-          data-kb-component="modal"
-          style={{ width: `${width}px`, borderRadius: radius }}
-          className={cn(
-            'fixed left-1/2 top-1/2 z-[91] -translate-x-1/2 -translate-y-1/2',
-            'max-w-[calc(100vw-32px)]',
-            'flex flex-col bg-white border border-card-border overflow-hidden',
-            'shadow-[0_24px_48px_rgba(15,23,42,0.20)]',
-            'focus:outline-none',
-            'motion-safe:data-[state=open]:animate-kb-modal-in',
-            'motion-safe:data-[state=closed]:animate-kb-modal-out',
-            'motion-reduce:data-[state=open]:animate-kb-modal-in-reduced',
-            'motion-reduce:data-[state=closed]:animate-kb-modal-out-reduced',
-            className,
-          )}
-          aria-describedby={undefined}
-        >
-          {/* Radix requires a `Dialog.Title` for a11y. When no title
-           * prop is supplied, mount a VisuallyHidden one so screen
-           * readers still announce the dialog correctly. When a
-           * title prop is supplied, the chrome below renders it as
-           * the real Dialog.Title. */}
-          {title === undefined ? (
-            <VisuallyHidden asChild>
-              <Dialog.Title>Modal</Dialog.Title>
-            </VisuallyHidden>
-          ) : null}
-
-          <ModalChrome
-            title={title}
-            titleIcon={titleIcon}
-            titleTrailing={titleTrailing}
-            footer={footer}
-            asDialogTitle={title !== undefined}
-            radius={radius}
-            bodyPadding={bodyPadding}
-            footerLayout={footerLayout}
+        {/* Centering wrapper — no animation, no transform. Grid
+         * place-items handles centering robustly across viewport
+         * changes (scroll lock, zoom). `pointer-events-none` lets
+         * overlay clicks pass through to `Dialog.Overlay` so
+         * overlay-click-to-close still works; `Dialog.Content` then
+         * re-enables pointer events on itself. */}
+        <div className="fixed inset-0 z-[91] grid place-items-center p-4 pointer-events-none">
+          <Dialog.Content
+            data-kb-component="modal"
+            style={{ width: `${width}px`, borderRadius: radius }}
+            className={cn(
+              'pointer-events-auto',
+              'max-w-[calc(100vw-32px)]',
+              'flex flex-col bg-white border border-card-border overflow-hidden',
+              'shadow-[0_24px_48px_rgba(15,23,42,0.20)]',
+              'focus:outline-none origin-center',
+              'motion-safe:data-[state=open]:animate-kb-modal-in',
+              'motion-safe:data-[state=closed]:animate-kb-modal-out',
+              'motion-reduce:data-[state=open]:animate-kb-modal-in-reduced',
+              'motion-reduce:data-[state=closed]:animate-kb-modal-out-reduced',
+              className,
+            )}
+            aria-describedby={undefined}
           >
-            {children}
-          </ModalChrome>
-        </Dialog.Content>
+            {/* Radix requires a `Dialog.Title` for a11y. When no title
+             * prop is supplied, mount a VisuallyHidden one so screen
+             * readers still announce the dialog correctly. When a
+             * title prop is supplied, the chrome below renders it as
+             * the real Dialog.Title. */}
+            {title === undefined ? (
+              <VisuallyHidden asChild>
+                <Dialog.Title>Modal</Dialog.Title>
+              </VisuallyHidden>
+            ) : null}
+
+            <ModalChrome
+              title={title}
+              titleIcon={titleIcon}
+              titleTrailing={titleTrailing}
+              footer={footer}
+              asDialogTitle={title !== undefined}
+              radius={radius}
+              bodyPadding={bodyPadding}
+              footerLayout={footerLayout}
+            >
+              {children}
+            </ModalChrome>
+          </Dialog.Content>
+        </div>
       </Dialog.Portal>
     </Dialog.Root>
   );

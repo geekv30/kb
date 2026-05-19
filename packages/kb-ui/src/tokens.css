@@ -293,24 +293,31 @@ html {
    * (the overlay is skipped via `motion-safe:`). */
   --animate-kb-skeleton-shimmer: kb-skeleton-shimmer 1.6s linear infinite;
 
+  /* Modal enter/exit — pure scale + opacity around `origin-center`.
+   * Positioning is handled by a grid `place-items-center` wrapper on
+   * the portal (Modal.tsx), NOT by `translate(-50%, -50%)`. This
+   * decouples centering from animation so Radix's scroll-lock-on-open
+   * (which removes the body scrollbar and adds compensating padding)
+   * can't surface as a "(-3, 3) → (0, 0)" drift during the scale ramp
+   * on long pages. */
   @keyframes kb-modal-in {
     from {
       opacity: 0;
-      transform: translate(-50%, -50%) scale(0.96);
+      transform: scale(0.96);
     }
     to {
       opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
+      transform: scale(1);
     }
   }
   @keyframes kb-modal-out {
     from {
       opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
+      transform: scale(1);
     }
     to {
       opacity: 0;
-      transform: translate(-50%, -50%) scale(0.96);
+      transform: scale(0.96);
     }
   }
   @keyframes kb-backdrop-in {
