@@ -20,7 +20,10 @@ import {
   type NavRailItem,
 } from '@test-kb-ui/kb-ui';
 import { useMockStore } from '../store/MockStoreContext';
-import { selectCurrentUser } from '../store/selectors';
+import {
+  selectCurrentUser,
+  selectFirstCategorySlug,
+} from '../store/selectors';
 import { DEFAULT_KB_CATEGORY_SLUG, routes } from '../lib/routes';
 
 /** Stable rail-item ids — used for active comparison and click routing. */
@@ -47,8 +50,18 @@ function activeSectionForPath(pathname: string): RailSection {
   return 'editor';
 }
 
-/** Click destination per rail icon (PRD §7.1 persistent shell table). */
-function destinationForSection(section: RailSection): string {
+/**
+ * Click destination per rail icon (PRD §7.1 persistent shell table).
+ *
+ * The Editor target is derived from `selectFirstCategorySlug(state)` so
+ * the rail click always lands on the SAME folder the FileExplorerNav
+ * highlights as first. `DEFAULT_KB_CATEGORY_SLUG` stays as a defensive
+ * fallback for the (impossible-in-practice) zero-folders state.
+ */
+function destinationForSection(
+  section: RailSection,
+  editorLandingSlug: string,
+): string {
   switch (section) {
     case 'ai':
       return routes.aiOptimise.hub();
@@ -57,7 +70,7 @@ function destinationForSection(section: RailSection): string {
     case 'settings':
       return routes.settings();
     case 'editor':
-      return routes.kb.category(DEFAULT_KB_CATEGORY_SLUG);
+      return routes.kb.category(editorLandingSlug);
   }
 }
 
@@ -67,6 +80,8 @@ export function AppRail() {
   const { state } = useMockStore();
   const currentUser = selectCurrentUser(state);
   const activeId = activeSectionForPath(pathname);
+  const editorLandingSlug =
+    selectFirstCategorySlug(state) ?? DEFAULT_KB_CATEGORY_SLUG;
 
   return (
     <SideNavRail
@@ -76,7 +91,7 @@ export function AppRail() {
       bottomSlot={<Avatar initials={currentUser?.initials ?? 'A'} />}
       onItemClick={(id) => {
         const section = id as RailSection;
-        navigate(destinationForSection(section));
+        navigate(destinationForSection(section, editorLandingSlug));
       }}
     />
   );

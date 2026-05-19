@@ -8,10 +8,16 @@
 //
 // Use the `replace` navigation so the back button doesn't return to
 // `/welcome` — that would just re-trigger the tour again.
+//
+// Landing slug is derived from the store's first folder via
+// `selectFirstCategorySlug` so it stays in lockstep with
+// RedirectToDefault and the AppRail Editor click target.
 
 import { useEffect, useRef } from 'react';
 import { Navigate } from 'react-router-dom';
-import { DEFAULT_KB_CATEGORY_SLUG, routes } from '../lib/routes';
+import { useMockStore } from '../store/MockStoreContext';
+import { selectFirstCategorySlug } from '../store/selectors';
+import { routes } from '../lib/routes';
 import { HIVER_TOUR_STORAGE_KEY } from '../components/welcome-tour-config';
 
 export default function WelcomeRedirect() {
@@ -29,10 +35,15 @@ export default function WelcomeRedirect() {
     }
   }, []);
 
+  const { state } = useMockStore();
+  const slug = selectFirstCategorySlug(state);
+
+  if (!slug) return null;
+
   return (
     <Navigate
       to={{
-        pathname: routes.kb.category(DEFAULT_KB_CATEGORY_SLUG),
+        pathname: routes.kb.category(slug),
         search: '?welcome=1',
       }}
       replace
