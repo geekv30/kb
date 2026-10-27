@@ -87,6 +87,8 @@
 
   /* AI suggestions review — removal / replaced-text wash. */
   --color-legacy-danger-bg: #fdecee;
+  /* Dismiss hover (kb-ui RejectButton hover). */
+  --color-legacy-danger-bg-hover: #fad9d6;
 
   /* AI suggestions entry points — table pill hover + impact pills.
    * High reuses danger / danger-bg, Low reuses meta / nav-active. */
@@ -94,8 +96,8 @@
   --color-legacy-impact-medium: #b26a00;
   --color-legacy-impact-medium-bg: #fff4e0;
 
-  /* AI suggestions review — blue is kept for the one primary action
-   * (Accept / Review / Publish). Replace reads as a diff "modified"
+  /* AI suggestions review — blue is kept for the page's primary action
+   * (Review / Publish). Replace reads as a diff "modified"
    * amber; the active card is marked by a neutral border + shadow. */
   --color-legacy-replace: #b26a00;
   --color-legacy-card-active: #94a3b8;

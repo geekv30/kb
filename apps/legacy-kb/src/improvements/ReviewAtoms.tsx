@@ -131,11 +131,10 @@ const DECISION_COPY = {
 } as const;
 
 /**
- * 32px outlined circle with a tooltip naming the keyboard shortcut.
- * Accept carries a green check, Dismiss a grey cross; each fills with
- * its own wash on hover. No blue — the page's Publish is the primary. Press
- * feedback is a 0.94 scale (motion-safe only); reduced motion keeps
- * the color change.
+ * 24px tinted circle (kb-ui Accept / Reject) with a tooltip naming the
+ * keyboard shortcut. Dismiss sits on a red wash, Accept on a neutral
+ * one — no blue; the page's Publish is the primary. Press feedback is
+ * a 0.94 scale (motion-safe only).
  */
 export function DecisionButton({ decision, suggestionTitle, onClick }: DecisionButtonProps) {
   const copy = DECISION_COPY[decision];
@@ -147,22 +146,18 @@ export function DecisionButton({ decision, suggestionTitle, onClick }: DecisionB
         aria-keyshortcuts={copy.shortcut}
         onClick={onClick}
         className={cn(
-          'm-0 flex size-[32px] cursor-pointer items-center justify-center rounded-full border border-solid p-0 outline-none',
-          'transition-[background-color,border-color,transform] duration-[160ms] ease-out-strong motion-safe:active:scale-[0.94]',
+          'm-0 flex size-[24px] cursor-pointer items-center justify-center rounded-full border-0 p-0 outline-none',
+          'transition-[background-color,transform] duration-[160ms] ease-out-strong motion-safe:active:scale-[0.94]',
           'focus-visible:shadow-[0_0_0_2px_#ffffff,0_0_0_4px_#1473e6]',
-          'group border-legacy-input-border bg-white',
           decision === 'accept'
-            ? 'hover:border-legacy-success hover:bg-legacy-success-bg'
-            : 'hover:border-legacy-danger hover:bg-legacy-danger-bg',
+            ? 'bg-legacy-nav-active hover:bg-legacy-disabled'
+            : 'bg-legacy-danger-bg hover:bg-legacy-danger-bg-hover',
         )}
       >
         <MaterialIcon
           name={copy.icon}
-          size={18}
-          className={cn(
-            'transition-colors duration-[160ms]',
-            decision === 'accept' ? 'text-legacy-success' : 'text-legacy-meta group-hover:text-legacy-danger',
-          )}
+          size={16}
+          className={decision === 'accept' ? 'text-legacy-ink' : 'text-legacy-danger'}
         />
       </button>
     </Tooltip>

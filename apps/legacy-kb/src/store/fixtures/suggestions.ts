@@ -35,7 +35,7 @@ export const suggestions: AISuggestion[] = [
     articleId: 'art-how-to-reset-your-password',
     type: 'addition',
     title: 'Mobile app password reset instructions',
-    description: 'Add detailed mobile app password reset instructions with proper steps.',
+    description: 'Customers keep asking how to reset on mobile.',
     anchorBlockId: 'reset-pw-intro',
     payload: {
       newHTML:
@@ -49,7 +49,7 @@ export const suggestions: AISuggestion[] = [
     articleId: 'art-how-to-reset-your-password',
     type: 'replace',
     title: 'Update outdated URL',
-    description: 'Replace the old admin panel link with the current one.',
+    description: 'The admin panel link moved to Settings › Users.',
     anchorBlockId: 'reset-pw-cta',
     payload: {
       oldHTML: RESET_PW_CTA_HTML,
@@ -64,7 +64,7 @@ export const suggestions: AISuggestion[] = [
     articleId: 'art-how-to-reset-your-password',
     type: 'removal',
     title: 'Legacy instructions',
-    description: 'Remove the outdated Chrome extension reset steps.',
+    description: 'These Chrome extension steps no longer work.',
     anchorBlockId: 'reset-pw-chrome',
     payload: {
       oldHTML: RESET_PW_TROUBLESHOOTING_HTML,
@@ -79,8 +79,7 @@ export const suggestions: AISuggestion[] = [
     articleId: 'art-setting-up-auto-reply-rules',
     type: 'addition',
     title: 'Timezone note for rule schedules',
-    description:
-      'Customers mix up the company timezone and each agent’s local timezone. A note after the schedule section prevents mistakes.',
+    description: 'Customers confuse company and agent time.',
     anchorBlockId: 'auto-reply-schedules',
     payload: {
       newHTML:
@@ -94,8 +93,7 @@ export const suggestions: AISuggestion[] = [
     articleId: 'art-setting-up-auto-reply-rules',
     type: 'replace',
     title: 'Clarify the “Recent” trigger',
-    description:
-      '“Recent” reads as “any recent message” but means “within the last 24 hours.” Rename it to remove the ambiguity.',
+    description: '“Recent” actually means the last 24 hours.',
     anchorBlockId: 'auto-reply-recent',
     payload: {
       oldHTML: AUTO_REPLY_RECENT_HTML,
@@ -110,8 +108,7 @@ export const suggestions: AISuggestion[] = [
     articleId: 'art-setting-up-auto-reply-rules',
     type: 'removal',
     title: 'Retired sender domain toggle',
-    description:
-      'The toggle was removed from the rule editor in March 2026. Filter groups now cover the same need.',
+    description: 'This toggle was removed in March 2026.',
     anchorBlockId: 'auto-reply-domain',
     payload: {
       oldHTML: AUTO_REPLY_DOMAIN_HTML,
@@ -126,8 +123,7 @@ export const suggestions: AISuggestion[] = [
     articleId: 'art-customizing-the-chat-widget',
     type: 'addition',
     title: 'Accessibility best practices',
-    description:
-      'Customers in regulated industries need WCAG 2.1 AA guidance up front. Add a section after the theme settings.',
+    description: 'Regulated teams need WCAG 2.1 AA guidance.',
     anchorBlockId: 'chat-widget-themes',
     payload: {
       newHTML:
@@ -141,8 +137,7 @@ export const suggestions: AISuggestion[] = [
     articleId: 'art-customizing-the-chat-widget',
     type: 'replace',
     title: 'Rename “Color picker” to “Theme selector”',
-    description:
-      'Version 4.1 replaced the color picker with a theme selector that checks contrast. Rename it and mention the check.',
+    description: 'Renamed in 4.1, now with a contrast check.',
     anchorBlockId: 'chat-widget-color',
     payload: {
       oldHTML: CHAT_WIDGET_COLOR_HTML,
@@ -157,8 +152,7 @@ export const suggestions: AISuggestion[] = [
     articleId: 'art-customizing-the-chat-widget',
     type: 'removal',
     title: 'Legacy iframe embed steps',
-    description:
-      'Embedding via iframe stops working in Q3 2026 and already misses real-time features. The article still documents it.',
+    description: 'Iframe embeds stop working in Q3 2026.',
     anchorBlockId: 'chat-widget-iframe',
     payload: {
       oldHTML: CHAT_WIDGET_IFRAME_HTML,
@@ -173,8 +167,7 @@ export const suggestions: AISuggestion[] = [
     articleId: 'art-setting-up-chat-routing',
     type: 'replace',
     title: 'Update the default routing method',
-    description:
-      'New chats now go round-robin by default, not to whoever answers first. The article still describes the old default.',
+    description: 'New chats now default to round-robin.',
     anchorBlockId: 'chat-routing-default',
     payload: {
       oldHTML: CHAT_ROUTING_DEFAULT_HTML,

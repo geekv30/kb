@@ -4,8 +4,8 @@
 //
 //   idle      → type + title; the whole card activates on click /
 //               Enter / Space.
-//   active    → type, "N of M" + prev/next, title, Sources, Dismiss,
-//               Accept.
+//   active    → type + "N / M", title, a one-line why, then prev/next
+//               and Sources, Dismiss, Accept (kb-ui card layout).
 //   accepted  → one-row chip with the decision and an Undo button.
 //   dismissed → same chip, "Dismissed".
 
@@ -132,32 +132,38 @@ function ReviewCard({
     >
       <div className="flex h-[20px] items-center justify-between">
         <SuggestionTypeLabel type={suggestion.type} />
-        {!isIdle ? (
-          // -10px: the arrow glyph sits 10px inside its 32px button; this
-          // puts the glyph on the card's right text edge.
-          <div className="-my-[6px] -mr-[10px] flex items-center gap-[4px]">
-            {position ? (
-              <span
-                aria-label={`Suggestion ${position.index} of ${position.total}`}
-                className="mr-[4px] text-[12px] leading-[20px] font-normal text-legacy-meta tabular-nums"
-              >
-                {position.index} of {position.total}
-              </span>
-            ) : null}
-            <NavArrows onPrev={onPrev} onNext={onNext} prevDisabled={!canGoPrev} nextDisabled={!canGoNext} />
-          </div>
+        {!isIdle && position ? (
+          <span
+            aria-label={`Suggestion ${position.index} of ${position.total}`}
+            className="text-[12px] leading-[20px] font-medium text-legacy-meta tabular-nums"
+          >
+            {position.index} / {position.total}
+          </span>
         ) : null}
       </div>
-      <h3 className="m-0 mt-[6px] p-0 text-[14px] leading-[20px] font-medium text-legacy-ink">{suggestion.title}</h3>
+      <h3 className="m-0 mt-[8px] p-0 text-[14px] leading-[20px] font-medium text-legacy-ink">{suggestion.title}</h3>
 
       {!isIdle ? (
-        <div className="mt-[12px] flex items-center justify-between">
-          <SourcesLink count={suggestion.sourceCount} onClick={onOpenSources ? () => onOpenSources(suggestion.id) : undefined} />
-          <div className="flex items-center gap-[8px]">
-            {reject ? <DecisionButton decision="dismiss" suggestionTitle={suggestion.title} onClick={reject} /> : null}
-            {accept ? <DecisionButton decision="accept" suggestionTitle={suggestion.title} onClick={accept} /> : null}
+        <>
+          <p className="m-0 mt-[4px] p-0 text-[13px] leading-[20px] font-normal text-legacy-meta">
+            {suggestion.description}
+          </p>
+          <div className="mt-[16px] flex items-center justify-between">
+            {/* -10px: the arrow glyph sits 10px inside its 32px button; this
+                puts the glyph on the card's text column. */}
+            <div className="-my-[6px] -ml-[10px]">
+              <NavArrows onPrev={onPrev} onNext={onNext} prevDisabled={!canGoPrev} nextDisabled={!canGoNext} />
+            </div>
+            <div className="flex items-center gap-[8px]">
+              <SourcesLink
+                count={suggestion.sourceCount}
+                onClick={onOpenSources ? () => onOpenSources(suggestion.id) : undefined}
+              />
+              {reject ? <DecisionButton decision="dismiss" suggestionTitle={suggestion.title} onClick={reject} /> : null}
+              {accept ? <DecisionButton decision="accept" suggestionTitle={suggestion.title} onClick={accept} /> : null}
+            </div>
           </div>
-        </div>
+        </>
       ) : null}
     </div>
   );
