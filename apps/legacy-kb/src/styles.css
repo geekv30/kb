@@ -1,0 +1,237 @@
+/* Legacy Help Center admin (app.hiverkb.com) replica.
+ *
+ * The live app is styled-components on top of the browser's default
+ * stylesheet — no CSS reset. Tailwind's preflight would change UA
+ * defaults (margins, box-sizing, list styles, form-control fonts) that
+ * the live geometry depends on, so only the theme + utilities layers
+ * are imported here. Every value below was read from the live app's
+ * computed styles / shipped CSS.
+ */
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@theme {
+  /* Drop Tailwind's default palette so only legacy tokens resolve. */
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-transparent: transparent;
+
+  /* Text */
+  --color-legacy-ink: #09274a;
+  --color-legacy-body: #28476a;
+  --color-legacy-meta: #4e6382;
+  --color-legacy-editor: #313c4b;
+  --color-legacy-heading: #222222;
+  --color-legacy-picker: #0f172a;
+  --color-legacy-subtle: #8f97b2;
+
+  /* Primary */
+  --color-legacy-blue: #1473e6;
+  --color-legacy-blue-hover: #4092f5;
+  --color-legacy-disabled: #d6e0eb;
+
+  /* Washes + borders */
+  --color-legacy-wash: #f2f6ff;
+  --color-legacy-icon-hover: #e4edfa;
+  --color-legacy-input-border: #d1e0f1;
+  --color-legacy-table-border: #cedeec;
+  --color-legacy-divider: #d6e0eb;
+
+  /* Neutrals */
+  --color-legacy-sidebar: #f8f8f8;
+  --color-legacy-nav-active: #eaedf4;
+  --color-legacy-picker-border: #d5d5d5;
+  --color-legacy-picker-border-hover: #94a3b8;
+  --color-legacy-picker-menu-border: #e2e8f0;
+  --color-legacy-picker-menu-hover: #f1f5f9;
+  --color-legacy-modal-header: #f3f6f9;
+  --color-legacy-row-hover: #f5f5f5;
+  --color-legacy-search-hover: #f2f2f2;
+  --color-legacy-toolbar-hover: #e8e8e8;
+  --color-legacy-drag-over: #6b7f9a;
+
+  /* Accent + status */
+  --color-legacy-accent: #f2b30f;
+  --color-legacy-success: #05a570;
+  --color-legacy-success-bg: #e8ffe8;
+  --color-legacy-draft: #6f7c90;
+  --color-legacy-draft-bg: #f6f8fc;
+  --color-legacy-search-published: #27ae60;
+  --color-legacy-search-draft: #ef9542;
+  --color-legacy-danger: #cd3746;
+  --color-legacy-danger-hover: #d99ca2;
+
+  /* Tooltip */
+  --color-legacy-tooltip: #2a323e;
+  --color-legacy-tooltip-text: #eceff6;
+
+  /* Category glyph brand color (help center brandColor) */
+  --color-legacy-brand: #878eff;
+
+  /* Avatars */
+  --color-legacy-avatar-v: #603f35;
+  --color-legacy-avatar-a: #445865;
+
+  --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  --font-ck: Helvetica, Arial, Tahoma, Verdana, sans-serif;
+
+  --shadow-legacy-modal: 0px 2px 4px 0px rgba(0, 0, 0, 0.2);
+  --shadow-legacy-toolbar: 0 2px 10px 0 rgba(0, 0, 0, 0.15);
+  --shadow-legacy-menu: rgb(0 0 0 / 25%) 0 0 10px 0px;
+  --shadow-legacy-picker-menu: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --shadow-legacy-avatar-menu: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-legacy-search: 0px 0px 4px 0px #00000040;
+  --shadow-legacy-search-results: 4px 4px 4px -4px rgba(0, 0, 0, 0.25),
+    4px 4px 4px -4px rgba(0, 0, 0, 0.25), -4px 4px 4px -4px rgba(0, 0, 0, 0.25);
+}
+
+/* Live `main.css` body rule. Tailwind v4 dropped the v3 preflight
+ * font-smoothing defaults, so they are restated on html as well. */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: var(--font-inter);
+  height: 100vh;
+  margin: 0;
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+@media only screen and (max-width: 1366px) {
+  body {
+    overflow-x: auto;
+  }
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+.material-icons-outlined {
+  font-family: 'Material Icons Outlined';
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * Article content typography — the live app's CKEditor 5 content
+ * overrides (`864.chunk.css`), scoped to `.ck-content`.
+ * ───────────────────────────────────────────────────────────── */
+.ck-content h1 {
+  color: #09274a;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.138889px;
+  line-height: 32px;
+}
+.ck-content h2 {
+  color: #222;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.138889px;
+  line-height: 28px;
+}
+.ck-content h3 {
+  color: #222;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.138889px;
+  line-height: 28px;
+}
+.ck-content h4 {
+  color: #222;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.138889px;
+  line-height: 28px;
+}
+.ck-content h5 {
+  font-size: 14px;
+}
+.ck-content h5,
+.ck-content h6 {
+  color: #09274a;
+  font-weight: 600;
+  line-height: 28px;
+}
+.ck-content h6 {
+  font-size: 12px;
+}
+.ck-content p {
+  color: #313c4b;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+}
+.ck-content ul {
+  padding-inline-start: 16px;
+}
+.ck-content ol {
+  padding-inline-start: 26px;
+}
+.ck-content ol li,
+.ck-content ul li {
+  color: #313c4b;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  padding: 5px 0;
+}
+.ck-content blockquote {
+  border-left: 5px solid #ccc;
+  font-style: italic;
+  margin-left: 0;
+  margin-right: 0;
+  overflow: hidden;
+  padding-left: 1.5em;
+  padding-right: 1.5em;
+}
+.ck-content code {
+  background-color: #c7c7c74d;
+  border-radius: 2px;
+  padding: 0.15em;
+}
+.ck-content hr {
+  background: #dedede;
+  border: 0;
+  height: 4px;
+  margin: 15px 0;
+}
+.ck-content a {
+  color: #1473e6;
+}
+/* `.ck.ck-editor__editable_inline > :first-child` in the live build. */
+.ck-content > :first-child {
+  margin: 27px 0 33px;
+}
+.ck-content:focus {
+  outline: none;
+}
+/* CKEditor placeholder (`.ck-placeholder:before`, color override #4e6382). */
+.ck-content .ck-placeholder {
+  position: relative;
+}
+.ck-content .ck-placeholder::before {
+  position: absolute;
+  left: 0;
+  right: 0;
+  content: attr(data-placeholder);
+  color: #4e6382;
+  cursor: text;
+  pointer-events: none;
+}

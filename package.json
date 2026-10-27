@@ -10,6 +10,8 @@
     "demo:dev": "npm run dev --workspace=apps/demo",
     "demo:build": "npm run build --workspace=apps/demo",
     "demo:preview": "npm run preview --workspace=apps/demo",
+    "legacy:dev": "npm run dev --workspace=apps/legacy-kb",
+    "legacy:build": "npm run build --workspace=apps/legacy-kb",
     "kb-ui:storybook": "npm run storybook --workspace=packages/kb-ui",
     "kb-ui:build": "npm run build --workspace=packages/kb-ui",
     "typecheck": "npm run typecheck --workspaces --if-present",
