@@ -88,6 +88,12 @@
   /* AI suggestions review — removal / replaced-text wash. */
   --color-legacy-danger-bg: #fdecee;
 
+  /* AI suggestions entry points — table pill hover + impact pills.
+   * High reuses danger / danger-bg, Low reuses meta / nav-active. */
+  --color-legacy-ai-pill-hover: #d6e4f7;
+  --color-legacy-impact-medium: #b26a00;
+  --color-legacy-impact-medium-bg: #fff4e0;
+
   /* ── Motion (AI suggestions review) ──────────────────────────
    * Easing + durations mirror the new UI (kb-ui tokens.css) so both
    * apps move the same way. Every animation has an opacity-only

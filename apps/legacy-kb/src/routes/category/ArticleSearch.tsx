@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { searchIcon } from '../../assets/legacy';
 import { StatusPill } from '../../components/ui/Pill';
-import { CloseGlyph } from '../../components/ui/Modal';
+import { SearchField } from '../../components/ui/SearchField';
 import { cn } from '../../lib/cn';
 import { useStore } from '../../store/StoreContext';
 import { searchArticles } from '../../store/selectors';
@@ -23,7 +22,6 @@ export function ArticleSearch() {
   const navigate = useNavigate();
   const rootRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState('');
-  const [focused, setFocused] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
   const open = query.length >= MIN_QUERY_LENGTH && !dismissed;
@@ -60,45 +58,22 @@ export function ArticleSearch() {
         open && 'shadow-legacy-search',
       )}
     >
-      <div className="box-border flex w-full px-[15px]">
-        <div className="box-border flex w-full items-center border-0 border-b border-solid border-legacy-divider focus-within:border-legacy-blue">
-          <input
-            type="text"
-            role="combobox"
-            aria-expanded={open}
-            aria-controls="article-search-results"
-            aria-label="Search articles"
-            placeholder="Search articles"
-            value={query}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setDismissed(false);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') setDismissed(true);
-            }}
-            className="w-full border-0 bg-no-repeat pt-[10px] pr-[10px] pb-[10px] pl-[26px] text-[14px] leading-[28px] font-normal outline-none placeholder:text-legacy-meta"
-            style={{
-              backgroundImage: `url(${searchIcon})`,
-              backgroundPosition: '0 16px',
-              backgroundSize: '16px 16px',
-            }}
-          />
-          {(focused || open) && query.length > 0 ? (
-            <button
-              type="button"
-              aria-label="Clear search"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => setQuery('')}
-              className="m-0 flex cursor-pointer border-0 bg-transparent p-0"
-            >
-              <CloseGlyph size={16} />
-            </button>
-          ) : null}
-        </div>
-      </div>
+      <SearchField
+        role="combobox"
+        aria-expanded={open}
+        aria-controls="article-search-results"
+        aria-label="Search articles"
+        placeholder="Search articles"
+        value={query}
+        keepClearVisible={open}
+        onValueChange={(next) => {
+          setQuery(next);
+          setDismissed(false);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') setDismissed(true);
+        }}
+      />
       {open ? (
         <div
           id="article-search-results"

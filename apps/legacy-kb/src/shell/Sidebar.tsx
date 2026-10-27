@@ -1,13 +1,16 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { lockIcon, plusIcon, sidebarLogo } from '../assets/legacy';
 import { Button } from '../components/ui/Button';
 import { TooltipIconButton } from '../components/ui/Tooltip';
+import { cn } from '../lib/cn';
 import { useStore } from '../store/StoreContext';
-import { selectActiveHelpCenter, selectCategories } from '../store/selectors';
+import { SUGGESTIONS_HUB_PATH } from '../lib/paths';
+import { selectActiveHelpCenter, selectCategories, selectSuggestionArticles } from '../store/selectors';
 import { CategoryNavItem } from './CategoryNavItem';
 import { HelpCenterPicker } from './HelpCenterPicker';
 import { NewCategoryModal, type NewCategoryValues } from './NewCategoryModal';
+import { SuggestionsNavItem } from './SuggestionsNavItem';
 
 /*
  * Live sidebar (chunk 616 `_`/`H`/`R`, chunk 270 `b`/`A`/`j`):
@@ -16,14 +19,21 @@ import { NewCategoryModal, type NewCategoryValues } from './NewCategoryModal';
  * scroll area margin-right 14px with a sticky "Categories" label
  * (14/28 #4e6382, padding 8px 16px). "New Category" pinned at the bottom.
  */
+/** Group label (live "Categories"): 14/28 400 #4e6382, padding 8px 16px. */
+const SECTION_LABEL =
+  'm-0 box-border block w-full px-[16px] py-[8px] text-left text-[14px] leading-[28px] font-normal tracking-[0px] text-legacy-meta';
+
 export function Sidebar() {
   const { state, dispatch } = useStore();
   const navigate = useNavigate();
   const { categorySlug } = useParams();
+  const { pathname } = useLocation();
+  const inAISection = pathname === SUGGESTIONS_HUB_PATH || pathname.startsWith(`${SUGGESTIONS_HUB_PATH}/`);
   const [newCategoryOpen, setNewCategoryOpen] = useState(false);
 
   const helpCenter = selectActiveHelpCenter(state);
   const categories = selectCategories(state);
+  const pendingArticleCount = selectSuggestionArticles(state, 'TO_REVIEW').length;
 
   const handleCreate = (values: NewCategoryValues) => {
     const id = `cat-${values.slug}-${Date.now().toString(36)}`;
@@ -57,8 +67,16 @@ export function Sidebar() {
           onSelect={() => undefined}
         />
         <div className="box-border flex h-full flex-col justify-between overflow-hidden pt-0 pr-0 pb-[24px] pl-[14px]">
+          {/* AI section: its own group above the categories cluster. */}
+          <div className="mr-[14px] shrink-0">
+            <h2 className={SECTION_LABEL}>AI</h2>
+            <ul className="relative m-0 list-none p-0">
+              <SuggestionsNavItem to={SUGGESTIONS_HUB_PATH} selected={inAISection} pendingCount={pendingArticleCount} />
+            </ul>
+            <div aria-hidden className="mx-[16px] my-[8px] h-px bg-legacy-divider" />
+          </div>
           <div className="relative mr-[14px] grow overflow-y-auto">
-            <h2 className="sticky top-0 z-[2] m-0 box-border block w-full bg-legacy-sidebar px-[16px] py-[8px] text-left text-[14px] leading-[28px] font-normal tracking-[0px] text-legacy-meta">
+            <h2 className={cn(SECTION_LABEL, 'sticky top-0 z-[2] bg-legacy-sidebar')}>
               Categories
             </h2>
             <ul className="relative m-0 list-none p-0">
@@ -66,7 +84,7 @@ export function Sidebar() {
                 <CategoryNavItem
                   key={category.id}
                   category={category}
-                  selected={category.slug === categorySlug}
+                  selected={!inAISection && category.slug === categorySlug}
                   to={`/${helpCenter.slug}/category/${category.slug}`}
                 />
               ))}

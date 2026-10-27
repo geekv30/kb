@@ -86,3 +86,85 @@ export function selectConversationSources(state: StoreState, articleId: string):
     .filter((c) => c.articleId === articleId)
     .sort((a, b) => b.timestamp.localeCompare(a.timestamp));
 }
+
+// ── AI suggestions entry points (sidebar, hub, table pill, editor banner) ──
+//
+// "Pending" = not yet published. An article whose suggestions are all
+// decided but not yet published is still "to review": the work isn't
+// live until Publish changes runs.
+
+export type SuggestionImpact = 'high' | 'medium' | 'low';
+
+export type SuggestionHubTab = 'TO_REVIEW' | 'PUBLISHED';
+
+export type ArticleSuggestionSummary = {
+  article: Article;
+  category: Category | undefined;
+  stage: SuggestionHubTab;
+  /** Suggestions in this batch: pending ones (to review) or published ones. */
+  total: number;
+  /** How many of `total` already carry an Accept / Dismiss decision. */
+  reviewed: number;
+  /** Sum of `sourceCount` across the batch. */
+  conversations: number;
+  impact: SuggestionImpact;
+};
+
+/**
+ * Ported from `apps/demo/src/routes/ai-optimise/HubPage.tsx` `deriveImpact`
+ * so both apps rank the same articles the same way: the password-reset
+ * article is the canonical "high"; otherwise by conversation volume.
+ */
+function deriveImpact(articleId: string, suggestions: AISuggestion[]): SuggestionImpact {
+  if (articleId === 'art-how-to-reset-your-password') return 'high';
+  const totalSources = suggestions.reduce((acc, s) => acc + s.sourceCount, 0);
+  if (totalSources >= 16) return 'high';
+  if (totalSources >= 8) return 'medium';
+  return 'low';
+}
+
+const IMPACT_RANK: Record<SuggestionImpact, number> = { high: 0, medium: 1, low: 2 };
+
+export function selectArticleSuggestionSummary(
+  state: StoreState,
+  articleId: string,
+): ArticleSuggestionSummary | undefined {
+  const article = state.articles[articleId];
+  if (!article) return undefined;
+  const own = Object.values(state.suggestions).filter((s) => s.articleId === articleId);
+  if (own.length === 0) return undefined;
+  const pending = own.filter((s) => s.status !== 'published');
+  const stage: SuggestionHubTab = pending.length > 0 ? 'TO_REVIEW' : 'PUBLISHED';
+  const batch = stage === 'TO_REVIEW' ? pending : own;
+  const decisions = state.aiReviewByArticle[articleId]?.decisions ?? {};
+  const reviewed =
+    stage === 'TO_REVIEW'
+      ? batch.filter((s) => decisions[s.id] !== undefined || s.status === 'accepted' || s.status === 'dismissed').length
+      : batch.length;
+  return {
+    article,
+    category: state.categories[article.categoryId],
+    stage,
+    total: batch.length,
+    reviewed,
+    conversations: batch.reduce((acc, s) => acc + s.sourceCount, 0),
+    impact: deriveImpact(articleId, batch),
+  };
+}
+
+/** Summary only when the article still has suggestions waiting to go live. */
+export function selectPendingSuggestionSummary(
+  state: StoreState,
+  articleId: string,
+): ArticleSuggestionSummary | undefined {
+  const summary = selectArticleSuggestionSummary(state, articleId);
+  return summary?.stage === 'TO_REVIEW' ? summary : undefined;
+}
+
+/** Hub rows for one tab: highest impact first, then table order. */
+export function selectSuggestionArticles(state: StoreState, tab: SuggestionHubTab): ArticleSuggestionSummary[] {
+  return state.articleOrder
+    .map((id) => selectArticleSuggestionSummary(state, id))
+    .filter((s): s is ArticleSuggestionSummary => s !== undefined && s.stage === tab)
+    .sort((a, b) => IMPACT_RANK[a.impact] - IMPACT_RANK[b.impact]);
+}

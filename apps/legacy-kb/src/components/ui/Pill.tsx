@@ -1,8 +1,16 @@
 import type { ReactNode } from 'react';
 import { cn } from '../../lib/cn';
+import type { SuggestionImpact } from '../../store/selectors';
 import type { ArticleStatus } from '../../store/types';
 
-export type PillTone = 'success' | 'draft' | 'search-published' | 'search-draft';
+export type PillTone =
+  | 'success'
+  | 'draft'
+  | 'search-published'
+  | 'search-draft'
+  | 'impact-high'
+  | 'impact-medium'
+  | 'impact-low';
 
 export interface PillProps {
   tone: PillTone;
@@ -19,6 +27,9 @@ const TONE_CLASSES: Record<PillTone, string> = {
   draft: 'bg-legacy-draft-bg text-legacy-draft',
   'search-published': 'bg-legacy-search-published text-white',
   'search-draft': 'bg-legacy-search-draft text-white',
+  'impact-high': 'bg-legacy-danger-bg text-legacy-danger',
+  'impact-medium': 'bg-legacy-impact-medium-bg text-legacy-impact-medium',
+  'impact-low': 'bg-legacy-nav-active text-legacy-meta',
 };
 
 export function Pill({ tone, children, className }: PillProps) {
@@ -52,4 +63,11 @@ export function StatusPill({ status, context = 'table' }: StatusPillProps) {
         ? 'success'
         : 'draft';
   return <Pill tone={tone}>{published ? 'Published' : 'Draft'}</Pill>;
+}
+
+const IMPACT_LABEL: Record<SuggestionImpact, string> = { high: 'High', medium: 'Medium', low: 'Low' };
+
+/** AI suggestions hub IMPACT column: the status-pill geometry, three tones. */
+export function ImpactPill({ impact }: { impact: SuggestionImpact }) {
+  return <Pill tone={`impact-${impact}`}>{IMPACT_LABEL[impact]}</Pill>;
 }

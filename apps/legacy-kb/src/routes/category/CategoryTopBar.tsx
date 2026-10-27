@@ -1,4 +1,5 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import type { ReactNode } from 'react';
 import {
   dashboardExternalLink,
   dashboardExternalLinkHover,
@@ -15,6 +16,8 @@ import { ArticleSearch } from './ArticleSearch';
 export interface CategoryTopBarProps {
   currentUser: User | undefined;
   onNewArticle: () => void;
+  /** Left half. Defaults to the global article search. */
+  search?: ReactNode;
 }
 
 /*
@@ -22,10 +25,10 @@ export interface CategoryTopBarProps {
  * halves (search | actions). Action wrappers carry the live paddings:
  * New Article 0 6px, Preview 0 4px, Settings 0 6px, avatar 0 6px.
  */
-export function CategoryTopBar({ currentUser, onNewArticle }: CategoryTopBarProps) {
+export function CategoryTopBar({ currentUser, onNewArticle, search }: CategoryTopBarProps) {
   return (
     <div className="box-border flex w-full flex-row items-start justify-between px-[40px] pt-[34px] pb-[10px]">
-      <ArticleSearch />
+      {search ?? <ArticleSearch />}
       <div className="box-border flex w-full flex-row items-center justify-end p-0">
         <div className="box-border flex px-[6px]">
           <Button variant="primary" iconSrc={plusIcon} onClick={onNewArticle}>

@@ -13,14 +13,26 @@ import { ArticleEditor, type ArticleEditorChange } from '../components/editor/Ar
 import { Button } from '../components/ui/Button';
 import { ConfirmModal } from '../components/ui/Modal';
 import { TooltipIconButton } from '../components/ui/Tooltip';
+import { SuggestionsBanner } from '../improvements/SuggestionsBanner';
 import { slugify } from '../lib/format';
+import { suggestionsReviewPath } from '../lib/paths';
+import { useElementHeight } from '../lib/useElementHeight';
 import { useStore } from '../store/StoreContext';
-import { selectArticleBySlug, selectCategories, selectCategoryBySlug, selectUsers } from '../store/selectors';
+import {
+  selectArticleBySlug,
+  selectCategories,
+  selectCategoryBySlug,
+  selectPendingSuggestionSummary,
+  selectUsers,
+} from '../store/selectors';
 import type { Article, ArticleStatus, Category } from '../store/types';
 import { ArticleMetaPanel } from './edit/ArticleMetaPanel';
 import { NotFound } from './NotFound';
 
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/** Space between the AI suggestions banner and the editor toolbar. */
+const BANNER_GAP = 16;
 
 type PendingConfirm = 'unpublish' | 'delete' | null;
 
@@ -43,6 +55,8 @@ function EditSession({ category, article }: EditSessionProps) {
   const [slug, setSlug] = useState(article?.slug ?? '');
   const [authorId, setAuthorId] = useState<string | null>(article ? article.authorId : state.currentUserId);
   const [pending, setPending] = useState<PendingConfirm>(null);
+  const [bannerRef, bannerHeight] = useElementHeight<HTMLElement>();
+  const suggestions = article ? selectPendingSuggestionSummary(state, article.id) : undefined;
 
   const status: ArticleStatus = article?.status ?? 'DRAFT';
   const categoryBase = `/product/category/${category.slug}`;
@@ -165,7 +179,22 @@ function EditSession({ category, article }: EditSessionProps) {
 
       <div className="mt-[40px] mr-[24px] mb-[40px] ml-[40px] box-border flex min-h-0 flex-row gap-[40px]">
         <div className="box-border min-w-0 flex-1 text-legacy-body">
-          <ArticleEditor title={title} bodyHTML={bodyHTML} onChange={handleEditorChange} />
+          {article && suggestions ? (
+            <div style={{ marginBottom: BANNER_GAP }}>
+              <SuggestionsBanner
+                ref={bannerRef}
+                improvements={suggestions.total}
+                conversations={suggestions.conversations}
+                onReview={() => navigate(suggestionsReviewPath(article.slug))}
+              />
+            </div>
+          ) : null}
+          <ArticleEditor
+            title={title}
+            bodyHTML={bodyHTML}
+            onChange={handleEditorChange}
+            heightOffset={bannerHeight > 0 ? bannerHeight + BANNER_GAP : 0}
+          />
         </div>
         <ArticleMetaPanel
           users={selectUsers(state)}

@@ -38,6 +38,12 @@ export interface SuggestionRailProps {
   width: number;
   minGap?: number;
   connectorTolerance?: number;
+  /**
+   * When set, the summary sticks this many px below the top of the
+   * scroll container, above the cards, with a white band filling the
+   * gap above it so cards scrolling past never show through.
+   */
+  stickySummaryTop?: number;
   className?: string;
 }
 
@@ -70,6 +76,7 @@ export function SuggestionRail({
   width,
   minGap = 12,
   connectorTolerance = 24,
+  stickySummaryTop,
   className,
 }: SuggestionRailProps) {
   const railRef = useRef<HTMLElement>(null);
@@ -206,7 +213,21 @@ export function SuggestionRail({
       className={cn('relative shrink-0', className)}
       style={{ width, minHeight: minHeight || undefined }}
     >
-      <div ref={summaryRef}>{summary}</div>
+      <div
+        ref={summaryRef}
+        data-part="rail-summary"
+        className={cn(stickySummaryTop !== undefined && 'sticky z-[5] bg-white')}
+        style={stickySummaryTop !== undefined ? { top: stickySummaryTop } : undefined}
+      >
+        {stickySummaryTop !== undefined ? (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute right-0 -left-[16px] bg-white"
+            style={{ top: -stickySummaryTop, height: stickySummaryTop }}
+          />
+        ) : null}
+        {summary}
+      </div>
       {items.map((item) => {
         const layout = layouts.find((l) => l.id === item.id);
         if (!layout) return null;

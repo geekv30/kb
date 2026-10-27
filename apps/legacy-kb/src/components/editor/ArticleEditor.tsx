@@ -12,6 +12,12 @@ export interface ArticleEditorProps {
   /** Initial body HTML (everything after the title). */
   bodyHTML: string;
   onChange: (change: ArticleEditorChange) => void;
+  /**
+   * Px taken above the editor inside its column (e.g. the AI suggestions
+   * banner + gap), subtracted from the live content height so the page
+   * still fits the viewport.
+   */
+  heightOffset?: number;
 }
 
 const TITLE_PLACEHOLDER = 'Title';
@@ -59,7 +65,7 @@ function serialize(root: HTMLElement): ArticleEditorChange {
  * typography in styles.css (`.ck-content`). The DOM is seeded once per
  * mount (key the component by article) so typing never fights React.
  */
-export function ArticleEditor({ title, bodyHTML, onChange }: ArticleEditorProps) {
+export function ArticleEditor({ title, bodyHTML, onChange, heightOffset = 0 }: ArticleEditorProps) {
   const editableRef = useRef<HTMLDivElement>(null);
   const seed = useRef({ title, bodyHTML });
 
@@ -84,7 +90,7 @@ export function ArticleEditor({ title, bodyHTML, onChange }: ArticleEditorProps)
   return (
     <div className="relative">
       <EditorToolbar />
-      <div className="box-border overflow-y-auto px-[20px]" style={{ height: 'calc(100vh - 200px)' }}>
+      <div className="box-border overflow-y-auto px-[20px]" style={{ height: `calc(100vh - ${200 + heightOffset}px)` }}>
         <div
           ref={editableRef}
           role="textbox"

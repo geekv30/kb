@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { backIcon } from '../assets/legacy';
 import { Button } from '../components/ui/Button';
+import { cn } from '../lib/cn';
 import { buildReviewDocument } from '../improvements/reviewDocument';
 import { ReviewArticleBody, type BodySuggestionState } from '../improvements/ReviewArticleBody';
 import { hasUndecidedNeighbour, isPublishEnabled, type ReviewDecision } from '../improvements/reviewState';
@@ -11,6 +12,7 @@ import { SuggestionCard } from '../improvements/SuggestionCard';
 import { SuggestionRail, type SuggestionRailItem } from '../improvements/SuggestionRail';
 import { SuggestionsSummaryCard } from '../improvements/SuggestionsSummaryCard';
 import { useArticleReview } from '../improvements/useArticleReview';
+import { SUGGESTIONS_HUB_PATH } from '../lib/paths';
 import { useStore } from '../store/StoreContext';
 import { selectArticleBySlug, selectConversationSources, selectReviewSuggestions } from '../store/selectors';
 import type { AISuggestion } from '../store/types';
@@ -21,6 +23,8 @@ const RAIL_WIDTH = 340;
 /** The active highlight's center lands at this fraction of the viewport. */
 const SCROLL_FOCUS = 0.4;
 const SCROLL_DURATION_MS = 400;
+/** Gap between the top bar's divider and the stuck compact summary. */
+const STICKY_SUMMARY_TOP = 16;
 
 const FALLBACK_SUMMARY =
   'Hiver’s AI found ways to improve this article based on recent customer conversations. Review each suggestion below.';
@@ -78,6 +82,8 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const articleRef = useRef<HTMLElement>(null);
+  /** Drives the top bar's divider: shown only once content is under it. */
+  const [scrolled, setScrolled] = useState(false);
 
   /* Scroll: active highlight to 40% of the viewport; top otherwise. */
   useEffect(() => {
@@ -200,14 +206,12 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
   );
 
   if (!article) return null;
-  const category = state.categories[article.categoryId];
-  const editPath = `/product/category/${category?.slug ?? 'getting-started'}/article/edit/${article.slug}`;
   const summary = article.aiSummary ?? FALLBACK_SUMMARY;
 
   return (
     <>
-      <div className="box-border flex w-full shrink-0 flex-row items-center justify-between pt-[25px] pr-[40px] pb-[10px] pl-[20px]">
-        <Button variant="ghost" iconSrc={backIcon} onClick={() => navigate(editPath)}>
+      <div className="relative box-border flex w-full shrink-0 flex-row items-center justify-between pt-[25px] pr-[40px] pb-[10px] pl-[20px]">
+        <Button variant="ghost" iconSrc={backIcon} onClick={() => navigate(SUGGESTIONS_HUB_PATH)}>
           Back
         </Button>
         <div className="box-border flex pl-[15px]">
@@ -222,9 +226,25 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
             Publish changes
           </Button>
         </div>
+        {/* 1px table-border rule that fades in once the page scrolls, so
+            content passing under the bar reads as scrolled, not clipped.
+            Opacity-only already; reduced motion just shortens it. */}
+        <span
+          aria-hidden
+          data-part="review-topbar-divider"
+          className={cn(
+            'pointer-events-none absolute right-0 bottom-0 left-0 h-px bg-legacy-table-border',
+            'transition-opacity duration-150 ease-out motion-reduce:duration-100',
+            scrolled ? 'opacity-100' : 'opacity-0',
+          )}
+        />
       </div>
 
-      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
+      <div
+        ref={scrollRef}
+        onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 0)}
+        className="min-h-0 flex-1 overflow-y-auto"
+      >
         <div className="box-border flex flex-row items-start gap-[40px] pt-[40px] pr-[40px] pb-[80px] pl-[65px]">
           <ReviewArticleBody
             ref={articleRef}
@@ -239,6 +259,9 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
             items={railItems}
             activeId={mode === 'reviewing' ? activeSuggestion?.id : undefined}
             className="mt-[27px]"
+            // While reviewing, the compact header sticks 16px below the
+            // bar so the remaining count never scrolls half under it.
+            stickySummaryTop={mode === 'reviewing' ? STICKY_SUMMARY_TOP : undefined}
             summary={
               <SuggestionsSummaryCard
                 mode={mode}
@@ -268,8 +291,8 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
 }
 
 /**
- * `/product/category/:categorySlug/article/review/:articleSlug` — AI
- * suggestions review for one article, inside the old app shell.
+ * `/product/ai/suggestions/:articleSlug` — AI suggestions review for one
+ * article, inside the old app shell. Back returns to the hub.
  */
 export function ArticleReviewPage() {
   const { articleSlug } = useParams();
