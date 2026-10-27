@@ -3,7 +3,8 @@ import { categories } from './fixtures/categories';
 import { articles } from './fixtures/articles';
 import { suggestions } from './fixtures/suggestions';
 import { conversationSources } from './fixtures/conversations';
-import type { StoreState } from './types';
+import { buildReviewDocument } from '../improvements/reviewDocument';
+import type { AISuggestion, StoreState } from './types';
 
 function keyById<T extends { id: string }>(list: T[]): Record<string, T> {
   const out: Record<string, T> = {};
@@ -48,6 +49,18 @@ function runIntegrityAsserts(state: StoreState): void {
     }
   }
 
+  const byArticle = new Map<string, AISuggestion[]>();
+  for (const s of Object.values(state.suggestions)) {
+    byArticle.set(s.articleId, [...(byArticle.get(s.articleId) ?? []), s]);
+  }
+  for (const [articleId, list] of byArticle) {
+    const article = state.articles[articleId];
+    if (!article) continue;
+    for (const id of buildReviewDocument(article.bodyHTML, list).unplacedIds) {
+      errors.push(`suggestion ${id} → could not be placed in ${articleId}'s body`);
+    }
+  }
+
   for (const cs of Object.values(state.conversationSources)) {
     if (!state.articles[cs.articleId]) errors.push(`source ${cs.id} → unknown article ${cs.articleId}`);
   }
@@ -69,6 +82,7 @@ export function seed(): StoreState {
     articleOrder: articles.map((a) => a.id),
     suggestions: keyById(suggestions),
     conversationSources: keyById(conversationSources),
+    aiReviewByArticle: {},
   };
 
   if (import.meta.env.DEV) runIntegrityAsserts(state);

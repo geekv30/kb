@@ -1,7 +1,7 @@
-// ConversationSource fixtures — copied verbatim from
+// ConversationSource fixtures — copied from
 // `apps/demo/src/store/fixtures/conversations.ts` (4 customer emails per
-// AI-targeted article). They feed the sources sheet of the improvements
-// review module wired in a later chunk.
+// AI-targeted article), with spelling Americanized. They feed the
+// Sources sheet of the AI suggestions review view.
 
 import type { ConversationSource } from '../types';
 
@@ -100,7 +100,7 @@ export const conversationSources: ConversationSource[] = [
     timestamp: daysAgo(10, 15, 10),
     subject: '"Recent" trigger fires for ancient threads',
     snippet:
-      "I picked the Recent trigger for our after-hours auto-reply. It's now sending acknowledgements on conversations from three months ago every time the customer replies. Is this expected?",
+      "I picked the Recent trigger for our after-hours auto-reply. It's now sending acknowledgments on conversations from three months ago every time the customer replies. Is this expected?",
   },
   {
     id: 'cs-autoreply-4',
@@ -112,7 +112,7 @@ export const conversationSources: ConversationSource[] = [
     timestamp: daysAgo(15, 9, 33),
     subject: 'Domain-only filter no longer in UI',
     snippet:
-      "The 'match by sender domain only' toggle the docs reference is missing from the rule editor in our workspace. Did it move? We need to filter by domain alone for an enterprise customer carve-out.",
+      "The 'match by sender domain only' toggle the docs reference is missing from the rule editor in our account. Did it move? We need to filter by domain alone for an enterprise customer carve-out.",
   },
 
   /* ───────── art-customizing-the-chat-widget (4) ───────── */
@@ -138,7 +138,7 @@ export const conversationSources: ConversationSource[] = [
     timestamp: daysAgo(7, 10, 47),
     subject: 'Need WCAG AA contrast on launcher',
     snippet:
-      "Our compliance team flagged the chat launcher contrast as below 4.5:1 against our header. We need to hit WCAG 2.1 AA. Is there a way to validate the colour choice inside the widget editor?",
+      "Our compliance team flagged the chat launcher contrast as below 4.5:1 against our header. We need to hit WCAG 2.1 AA. Is there a way to validate the color choice inside the widget editor?",
   },
   {
     id: 'cs-chatwidget-3',
@@ -150,7 +150,7 @@ export const conversationSources: ConversationSource[] = [
     timestamp: daysAgo(11, 16, 5),
     subject: "Color picker doesn't preview correctly",
     snippet:
-      "When I pick a colour in the widget editor the preview pane shows one shade and the live site shows a darker one. Cleared cache, confirmed in two browsers. Is there a delay before the change propagates?",
+      "When I pick a color in the widget editor the preview pane shows one shade and the live site shows a darker one. Cleared cache, confirmed in two browsers. Is there a delay before the change propagates?",
   },
   {
     id: 'cs-chatwidget-4',

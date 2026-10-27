@@ -84,6 +84,87 @@
   --shadow-legacy-search: 0px 0px 4px 0px #00000040;
   --shadow-legacy-search-results: 4px 4px 4px -4px rgba(0, 0, 0, 0.25),
     4px 4px 4px -4px rgba(0, 0, 0, 0.25), -4px 4px 4px -4px rgba(0, 0, 0, 0.25);
+
+  /* AI suggestions review — removal / replaced-text wash. */
+  --color-legacy-danger-bg: #fdecee;
+
+  /* ── Motion (AI suggestions review) ──────────────────────────
+   * Easing + durations mirror the new UI (kb-ui tokens.css) so both
+   * apps move the same way. Every animation has an opacity-only
+   * `*-reduced` sibling for `motion-reduce:` — reduced motion drops the
+   * movement, never the fade, so nothing hard-pops. */
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
+
+  /* Inline highlight appearing when a suggestion becomes active. */
+  --animate-lk-suggestion-mount: lk-suggestion-mount 220ms var(--ease-out-strong);
+  /* Decision chip settling in after Accept / Dismiss. */
+  --animate-lk-chip-enter: lk-chip-enter 200ms var(--ease-out-strong);
+  /* Sources sheet: slide + fade in from the right edge, faster out. */
+  --animate-lk-sheet-in: lk-sheet-in 240ms var(--ease-out-strong);
+  --animate-lk-sheet-out: lk-sheet-out 180ms var(--ease-out-strong);
+  --animate-lk-backdrop-in: lk-fade-in 200ms var(--ease-out-strong);
+  --animate-lk-backdrop-out: lk-fade-out 140ms var(--ease-out-strong);
+  /* Reduced-motion siblings: opacity only. */
+  --animate-lk-fade-in-reduced: lk-fade-in 100ms ease-out;
+  --animate-lk-fade-out-reduced: lk-fade-out 80ms ease-out;
+
+  @keyframes lk-suggestion-mount {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes lk-chip-enter {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes lk-sheet-in {
+    from {
+      opacity: 0;
+      transform: translateX(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  @keyframes lk-sheet-out {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(100%);
+    }
+  }
+  @keyframes lk-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes lk-fade-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
 }
 
 /* Live `main.css` body rule. Tailwind v4 dropped the v3 preflight
@@ -234,4 +315,61 @@ code {
   color: #4e6382;
   cursor: text;
   pointer-events: none;
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * AI suggestions review — inline highlights.
+ *
+ * Two layers per highlighted region:
+ *   - `.lk-region` draws ONE continuous 3px bar in the left gutter,
+ *     spanning the whole region (heading, paragraphs, list).
+ *   - `.lk-hl` washes the text of each block it touches (headings,
+ *     paragraphs, list-item text). `box-decoration-break: clone` keeps
+ *     the wash tight to each wrapped line instead of one slab. The
+ *     horizontal margin cancels the padding, so text never shifts;
+ *     inline vertical padding paints without moving line boxes.
+ * List-item washes don't bleed left, so numerals and bullets stay
+ * outside the highlight.
+ * ───────────────────────────────────────────────────────────── */
+.lk-region {
+  position: relative;
+}
+.lk-region::before {
+  content: '';
+  position: absolute;
+  left: -11px;
+  top: -4px;
+  bottom: -4px;
+  width: 3px;
+  border-radius: 2px;
+}
+/* List items carry 5px bottom padding; end the bar at the last wash. */
+.lk-region[data-ends-in-list]::before {
+  bottom: 3px;
+}
+.lk-region[data-variant='add']::before {
+  background-color: var(--color-legacy-success);
+}
+.lk-region[data-variant='remove']::before {
+  background-color: var(--color-legacy-danger);
+}
+.lk-hl {
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin: 0 -8px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.ck-content li > .lk-hl {
+  padding-left: 2px;
+  margin-left: -2px;
+}
+.lk-hl[data-variant='add'] {
+  background-color: var(--color-legacy-success-bg);
+}
+.lk-hl[data-variant='remove'] {
+  background-color: var(--color-legacy-danger-bg);
+  text-decoration-line: line-through;
+  text-decoration-color: var(--color-legacy-danger);
+  text-decoration-thickness: 1px;
 }

@@ -31,7 +31,7 @@ export const RESET_PW_CTA_HTML =
   '<p data-block-id="reset-pw-cta">Navigate to the admin panel at <strong>admin.hiver.com/legacy/users</strong> and select the user whose password needs to be reset.</p>';
 
 export const RESET_PW_TROUBLESHOOTING_HTML =
-  '<section data-block-id="reset-pw-sms"><h2>Troubleshooting</h2><h3>Resetting via Chrome Extension</h3><p>If you’re using the Hiver Chrome Extension and experiencing issues resetting your password, try clearing your browser cache, restarting Chrome, and attempting the reset flow again. If issues persist, contact support.</p></section>';
+  '<section data-block-id="reset-pw-chrome"><h2>Troubleshooting</h2><h3>Resetting via Chrome Extension</h3><p>If you’re using the Hiver Chrome Extension and experiencing issues resetting your password, try clearing your browser cache, restarting Chrome, and attempting the reset flow again. If issues persist, contact support.</p></section>';
 
 const RESET_PW_BODY = [
   RESET_PW_INTRO_HTML,
@@ -71,7 +71,7 @@ export const CHAT_WIDGET_THEMES_HTML =
   '<p data-block-id="chat-widget-themes">Open <strong>Widget → Appearance</strong> to access the theme settings. Hiver ships with three preset themes (Default, Dark, High contrast) you can use as starting points, or build a custom theme from scratch.</p>';
 
 export const CHAT_WIDGET_COLOR_HTML =
-  '<p data-block-id="chat-widget-color">Use the <strong>Color picker</strong> to set the launcher and header background. The text colour auto-adjusts for contrast — the widget stays legible whether you pick a deep navy or a pale cream as the base.</p>';
+  '<p data-block-id="chat-widget-color">Use the <strong>Color picker</strong> to set the launcher and header background. The text color auto-adjusts for contrast — the widget stays legible whether you pick a deep navy or a pale cream as the base.</p>';
 
 export const CHAT_WIDGET_IFRAME_HTML =
   '<section data-block-id="chat-widget-iframe"><h2>Embedding via iframe</h2><p>For pages where you can’t drop a script tag (legacy CMS, sandboxed environments) you can embed the widget as an iframe. Get the iframe URL from Widget → Install → iframe. Note that iframe embed disables some features — agent typing indicators, file drag-drop, and screen-share invitations all rely on the parent-page script.</p></section>';
@@ -81,10 +81,10 @@ const CHAT_WIDGET_BODY = [
   '<h2>Choosing Colors and Themes</h2>',
   CHAT_WIDGET_THEMES_HTML,
   '<h2>Setting the Brand Color</h2>',
-  '<p>Customizing the colour is usually the first step when matching the widget to your brand. The widget propagates the brand colour to the launcher, the header bar, and outgoing message bubbles.</p>',
+  '<p>Customizing the color is usually the first step when matching the widget to your brand. The widget propagates the brand color to the launcher, the header bar, and outgoing message bubbles.</p>',
   CHAT_WIDGET_COLOR_HTML,
   '<h2>Installing the Widget</h2>',
-  '<p>Once your theme is finalised, install the widget on your site. The recommended method is a <code>&lt;script&gt;</code> tag in your page’s <code>&lt;head&gt;</code> — it loads asynchronously, supports realtime features, and updates automatically when you change widget settings.</p>',
+  '<p>Once your theme is finalized, install the widget on your site. The recommended method is a <code>&lt;script&gt;</code> tag in your page’s <code>&lt;head&gt;</code> — it loads asynchronously, supports realtime features, and updates automatically when you change widget settings.</p>',
   CHAT_WIDGET_IFRAME_HTML,
   '<h2>Testing on Staging</h2>',
   '<p>Before promoting widget changes to production, test in a staging environment. Hiver lets you toggle the staging variant from <strong>Widget → Environments</strong> — staging traffic stays isolated from production analytics and customer histories.</p>',
@@ -130,6 +130,8 @@ export const articles: Article[] = [
     lastActivity: 'published',
     modifiedAt: daysAgo(61),
     bodyHTML: RESET_PW_BODY,
+    aiSummary:
+      'Adds mobile app reset steps, updates the admin panel link, and removes the outdated Chrome extension steps.',
   },
 
   /* Automation */
@@ -144,6 +146,8 @@ export const articles: Article[] = [
     lastActivity: 'published',
     modifiedAt: daysAgo(21),
     bodyHTML: AUTO_REPLY_BODY,
+    aiSummary:
+      'Adds timezone guidance for rule schedules, clarifies the “Recent” trigger, and removes the retired sender domain toggle.',
   },
   {
     id: 'art-routing-conversations-with-assignment-rules',
@@ -184,6 +188,8 @@ export const articles: Article[] = [
     lastActivity: 'published',
     modifiedAt: daysAgo(34),
     bodyHTML: CHAT_WIDGET_BODY,
+    aiSummary:
+      'Adds accessibility guidance, renames the color picker to theme selector, and removes the legacy iframe embed steps.',
   },
   {
     id: 'art-setting-chat-availability-hours',

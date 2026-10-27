@@ -1,4 +1,14 @@
-import type { Article, ArticleStatus, Category, HelpCenter, StoreState, User } from './types';
+import { buildReviewDocument } from '../improvements/reviewDocument';
+import type {
+  AISuggestion,
+  Article,
+  ArticleStatus,
+  Category,
+  ConversationSource,
+  HelpCenter,
+  StoreState,
+  User,
+} from './types';
 
 export type ArticleFilter = 'ALL' | ArticleStatus;
 
@@ -51,4 +61,28 @@ export function searchArticles(state: StoreState, query: string): Article[] {
     .map((id) => state.articles[id])
     .filter((a): a is Article => Boolean(a))
     .filter((a) => a.title.toLowerCase().includes(q));
+}
+
+/**
+ * An article's AI suggestions in review order: document order of their
+ * anchors, then any whose anchor is missing (id order). The review
+ * state machine and the rail both walk this list.
+ */
+export function selectReviewSuggestions(state: StoreState, articleId: string): AISuggestion[] {
+  const article = state.articles[articleId];
+  if (!article) return [];
+  const own = Object.values(state.suggestions)
+    .filter((s) => s.articleId === articleId)
+    .sort((a, b) => a.id.localeCompare(b.id));
+  const { orderedIds, unplacedIds } = buildReviewDocument(article.bodyHTML, own);
+  const byId = new Map(own.map((s) => [s.id, s]));
+  return [...orderedIds, ...unplacedIds]
+    .map((id) => byId.get(id))
+    .filter((s): s is AISuggestion => Boolean(s));
+}
+
+export function selectConversationSources(state: StoreState, articleId: string): ConversationSource[] {
+  return Object.values(state.conversationSources)
+    .filter((c) => c.articleId === articleId)
+    .sort((a, b) => b.timestamp.localeCompare(a.timestamp));
 }

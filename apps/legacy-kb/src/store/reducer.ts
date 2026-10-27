@@ -1,6 +1,8 @@
 // Pure root reducer. Callers supply timestamps so the reducer stays
 // deterministic.
 
+import { reviewReducer, initialReviewState, type ReviewAction } from '../improvements/reviewState';
+import { selectReviewSuggestions } from './selectors';
 import type { Article, Category, StoreState } from './types';
 
 export type StoreAction =
@@ -13,7 +15,9 @@ export type StoreAction =
   | { type: 'article/publish'; articleId: string; modifierId: string; now: string }
   | { type: 'article/unpublish'; articleId: string; modifierId: string; now: string }
   | { type: 'article/delete'; articleId: string }
-  | { type: 'category/create'; category: Category };
+  | { type: 'category/create'; category: Category }
+  /** Forwards one review action to the article's review state machine. */
+  | { type: 'aiReview/dispatch'; articleId: string; action: ReviewAction };
 
 function patchArticle(
   state: StoreState,
@@ -76,6 +80,14 @@ export function rootReducer(state: StoreState, action: StoreAction): StoreState 
         categories: { ...state.categories, [action.category.id]: action.category },
         categoryOrder: [...state.categoryOrder, action.category.id],
       };
+    case 'aiReview/dispatch': {
+      const items = selectReviewSuggestions(state, action.articleId);
+      if (items.length === 0) return state;
+      const current = state.aiReviewByArticle[action.articleId] ?? initialReviewState;
+      const next = reviewReducer(current, action.action, items);
+      if (next === current) return state;
+      return { ...state, aiReviewByArticle: { ...state.aiReviewByArticle, [action.articleId]: next } };
+    }
     default: {
       const exhaustive: never = action;
       return exhaustive;

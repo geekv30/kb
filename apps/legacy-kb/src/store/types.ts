@@ -9,6 +9,8 @@
 // `apps/demo/src/store/fixtures` so later chunks can wire the
 // improvements review module without touching fixtures again.
 
+import type { ReviewState } from '../improvements/reviewState';
+
 export type User = {
   id: string;
   /** Full display name, e.g. "Ashuthosh Rao". */
@@ -66,6 +68,12 @@ export type Article = {
    * anchors that the suggestion fixtures reference.
    */
   bodyHTML: string;
+  /**
+   * One-line overview of what the article's AI suggestions change, shown
+   * in the review view's summary card. Only set on articles that carry
+   * suggestions.
+   */
+  aiSummary?: string;
 };
 
 export type AISuggestionType = 'addition' | 'replace' | 'removal';
@@ -120,4 +128,10 @@ export type StoreState = {
   articleOrder: string[];
   suggestions: Record<string, AISuggestion>;
   conversationSources: Record<string, ConversationSource>;
+  /**
+   * AI suggestions review progress per article id. Lives in the store so
+   * leaving the review view and coming back resumes where you left off.
+   * Missing key → the article hasn't been reviewed yet.
+   */
+  aiReviewByArticle: Record<string, ReviewState>;
 };
