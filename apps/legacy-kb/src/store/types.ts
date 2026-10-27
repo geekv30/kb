@@ -78,7 +78,14 @@ export type Article = {
 
 export type AISuggestionType = 'addition' | 'replace' | 'removal';
 
-export type AISuggestionStatus = 'pending' | 'accepted' | 'dismissed' | 'published';
+/**
+ * `pending` — waiting for review (it may carry an Accept / Dismiss
+ * decision in `aiReviewByArticle`, but nothing is final yet).
+ * `published` — accepted and published into the article body.
+ * `dismissed-final` — dismissed in a review that was published or
+ * marked as reviewed. Both final statuses keep the decision for history.
+ */
+export type AISuggestionStatus = 'pending' | 'published' | 'dismissed-final';
 
 export type AISuggestionPayload = {
   /** Replacement / insertion HTML. */
@@ -100,6 +107,7 @@ export type AISuggestion = {
    */
   anchorBlockId: string;
   payload: AISuggestionPayload;
+  /** Equals the number of `ConversationSource`s linked to this suggestion. */
   sourceCount: number;
   status: AISuggestionStatus;
 };
@@ -107,11 +115,28 @@ export type AISuggestion = {
 export type ConversationSource = {
   id: string;
   articleId: string;
+  /** The suggestion this conversation is evidence for. */
+  suggestionId: string;
   sender: { name: string; email: string };
   /** ISO timestamp. */
   timestamp: string;
   subject: string;
   snippet: string;
+};
+
+export type AIReviewHistory = {
+  /**
+   * Article body before the first AI review was published or marked as
+   * reviewed. Final suggestions anchor to this body, so the read-only
+   * review can be rebuilt after the live body has changed.
+   */
+  baseBodyHTML: string;
+  /** ISO timestamp of the latest publish / mark as reviewed. */
+  reviewedAt: string;
+  /** Who ran it. */
+  reviewedById: string;
+  /** `true` when the latest run published changes, `false` for Mark as reviewed. */
+  published: boolean;
 };
 
 export type StoreState = {
@@ -134,4 +159,6 @@ export type StoreState = {
    * Missing key → the article hasn't been reviewed yet.
    */
   aiReviewByArticle: Record<string, ReviewState>;
+  /** Published / marked-as-reviewed AI reviews, keyed by article id. */
+  aiReviewHistoryByArticle: Record<string, AIReviewHistory>;
 };

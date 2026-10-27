@@ -11,12 +11,14 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { MaterialIcon } from '../components/ui/MaterialIcon';
 import { CloseGlyph } from '../components/ui/Modal';
+import { pluralize } from '../lib/format';
 import type { ConversationSource } from '../store/types';
 import { CountPill } from './ReviewAtoms';
 
 export interface SourcesSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** The conversations behind the suggestion whose Sources link was opened. */
   sources: ConversationSource[];
 }
 
@@ -52,7 +54,7 @@ export function SourcesSheet({ open, onOpenChange, sources }: SourcesSheetProps)
         >
           <div className="box-border flex h-[60px] shrink-0 items-center gap-[8px] bg-legacy-modal-header p-[20px]">
             <Dialog.Title className="m-0 p-0 text-[16px] leading-[20px] font-medium text-legacy-ink">Sources</Dialog.Title>
-            <CountPill count={sources.length} label={`${sources.length} conversations`} />
+            <CountPill count={sources.length} label={pluralize(sources.length, 'conversation')} />
             <Dialog.Close
               aria-label="Close"
               className="ml-auto flex cursor-pointer rounded-[4px] border-0 bg-transparent p-0 outline-none focus-visible:shadow-[0_0_0_2px_#1473e6]"

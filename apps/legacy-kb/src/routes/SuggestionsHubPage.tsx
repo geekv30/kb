@@ -19,7 +19,7 @@ import { PageHeader } from './category/CategoryHeader';
 
 const TABS: ReadonlyArray<TabOption<SuggestionHubTab>> = [
   { value: 'TO_REVIEW', label: 'To review' },
-  { value: 'PUBLISHED', label: 'Published' },
+  { value: 'REVIEWED', label: 'Reviewed' },
 ];
 
 /*
@@ -41,15 +41,23 @@ const EMPTY: Record<SuggestionHubTab, { title: string; info: string }> = {
     title: 'No suggestions to review',
     info: 'Hiver AI will suggest improvements as new customer conversations come in.',
   },
-  PUBLISHED: {
-    title: 'No published suggestions yet',
-    info: 'Articles you update with AI suggestions will show here.',
+  REVIEWED: {
+    title: 'No reviewed articles yet',
+    info: 'Articles you publish changes to or mark as reviewed will show here.',
   },
 };
 
-/** "3 suggestions" until a decision lands, then "2 of 3 reviewed". */
+/**
+ * To review: "3 suggestions" until a decision lands, then "2 of 3 reviewed".
+ * Reviewed: what happened to them, e.g. "2 published · 1 dismissed".
+ */
 function suggestionsLabel(row: ArticleSuggestionSummary): string {
-  if (row.stage === 'PUBLISHED') return `${row.total} published`;
+  if (row.stage === 'REVIEWED') {
+    const parts: string[] = [];
+    if (row.published > 0) parts.push(`${row.published} published`);
+    if (row.dismissed > 0) parts.push(`${row.dismissed} dismissed`);
+    return parts.join(' · ');
+  }
   if (row.reviewed === 0) return pluralize(row.total, 'suggestion');
   return `${row.reviewed} of ${row.total} reviewed`;
 }

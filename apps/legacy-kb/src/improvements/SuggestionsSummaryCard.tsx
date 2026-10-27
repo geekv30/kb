@@ -4,7 +4,8 @@
 //                full-width "Review suggestions (N)" button.
 //   reviewing  → compact one-row header with the REMAINING count.
 //   terminal   → "Suggestions" + total count, the summary, and a
-//                disabled "Reviewed all" button.
+//                disabled "Reviewed all" button — or, once the review
+//                is final, a read-only note saying who closed it and when.
 
 import { Button } from '../components/ui/Button';
 import { MaterialIcon } from '../components/ui/MaterialIcon';
@@ -19,12 +20,22 @@ export interface SuggestionsSummaryCardProps {
   onReview?: () => void;
   onPrev?: () => void;
   onNext?: () => void;
+  /** terminal: replaces the "Reviewed all" button with a read-only status line. */
+  historyNote?: string;
 }
 
 const CARD = 'box-border rounded-[5px] border border-solid border-legacy-input-border bg-white font-inter';
 const TITLE = 'm-0 p-0 text-[14px] leading-[17px] font-medium text-legacy-ink';
 
-export function SuggestionsSummaryCard({ mode, count, summary, onReview, onPrev, onNext }: SuggestionsSummaryCardProps) {
+export function SuggestionsSummaryCard({
+  mode,
+  count,
+  summary,
+  onReview,
+  onPrev,
+  onNext,
+  historyNote,
+}: SuggestionsSummaryCardProps) {
   if (mode === 'reviewing') {
     return (
       <section aria-label="AI suggestions" className={`${CARD} flex items-center gap-[8px] px-[16px] py-[10px]`}>
@@ -52,7 +63,12 @@ export function SuggestionsSummaryCard({ mode, count, summary, onReview, onPrev,
         </div>
       </div>
       <p className="m-0 mt-0 p-0 text-[13px] leading-[20px] font-normal text-legacy-body">{summary}</p>
-      {isTerminal ? (
+      {isTerminal && historyNote ? (
+        <p className="m-0 mt-[12px] flex items-center gap-[6px] border-0 border-t border-solid border-legacy-input-border p-0 pt-[12px] text-[13px] leading-[20px] font-medium text-legacy-meta">
+          <MaterialIcon name="check_circle" size={16} className="shrink-0 text-legacy-success" />
+          {historyNote}
+        </p>
+      ) : isTerminal ? (
         <Button variant="primary" disabled className="mt-[16px] w-full">
           <MaterialIcon name="check" size={18} className="mr-[8px] text-white" />
           Reviewed all

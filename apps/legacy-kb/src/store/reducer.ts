@@ -1,9 +1,10 @@
 // Pure root reducer. Callers supply timestamps so the reducer stays
 // deterministic.
 
+import { applyDecisions } from '../improvements/reviewDocument';
 import { reviewReducer, initialReviewState, type ReviewAction } from '../improvements/reviewState';
 import { selectReviewSuggestions } from './selectors';
-import type { Article, Category, StoreState } from './types';
+import type { AISuggestion, Article, Category, StoreState } from './types';
 
 export type StoreAction =
   | { type: 'article/create'; article: Article }
@@ -17,7 +18,15 @@ export type StoreAction =
   | { type: 'article/delete'; articleId: string }
   | { type: 'category/create'; category: Category }
   /** Forwards one review action to the article's review state machine. */
-  | { type: 'aiReview/dispatch'; articleId: string; action: ReviewAction };
+  | { type: 'aiReview/dispatch'; articleId: string; action: ReviewAction }
+  /**
+   * Makes the review's decisions final. With at least one accepted
+   * suggestion this is "Publish changes": the accepted changes are
+   * written into the body and the article is published by `modifierId`.
+   * With only dismissals it is "Mark as reviewed": the body and activity
+   * stay as they are. Undecided suggestions stay pending either way.
+   */
+  | { type: 'aiReview/publish'; articleId: string; modifierId: string; now: string };
 
 function patchArticle(
   state: StoreState,
@@ -87,6 +96,50 @@ export function rootReducer(state: StoreState, action: StoreAction): StoreState 
       const next = reviewReducer(current, action.action, items);
       if (next === current) return state;
       return { ...state, aiReviewByArticle: { ...state.aiReviewByArticle, [action.articleId]: next } };
+    }
+    case 'aiReview/publish': {
+      const article = state.articles[action.articleId];
+      if (!article) return state;
+      const items = selectReviewSuggestions(state, action.articleId);
+      const decisions = state.aiReviewByArticle[action.articleId]?.decisions ?? {};
+      const decided = items.filter((s) => decisions[s.id] !== undefined);
+      if (decided.length === 0) return state;
+      const publishes = decided.some((s) => decisions[s.id] === 'accepted');
+
+      const suggestions = { ...state.suggestions };
+      for (const s of decided) {
+        const status: AISuggestion['status'] = decisions[s.id] === 'accepted' ? 'published' : 'dismissed-final';
+        suggestions[s.id] = { ...s, status };
+      }
+      const nextArticle: Article = publishes
+        ? {
+            ...article,
+            bodyHTML: applyDecisions(article.bodyHTML, items, decisions),
+            status: 'PUBLISHED',
+            lastActivity: 'published',
+            modifierId: action.modifierId,
+            modifiedAt: action.now,
+          }
+        : article;
+      // Any undecided suggestions start a fresh review next time.
+      const { [action.articleId]: _done, ...aiReviewByArticle } = state.aiReviewByArticle;
+      void _done;
+      const previous = state.aiReviewHistoryByArticle[action.articleId];
+      return {
+        ...state,
+        articles: { ...state.articles, [article.id]: nextArticle },
+        suggestions,
+        aiReviewByArticle,
+        aiReviewHistoryByArticle: {
+          ...state.aiReviewHistoryByArticle,
+          [article.id]: {
+            baseBodyHTML: previous?.baseBodyHTML ?? article.bodyHTML,
+            reviewedAt: action.now,
+            reviewedById: action.modifierId,
+            published: publishes,
+          },
+        },
+      };
     }
     default: {
       const exhaustive: never = action;

@@ -61,8 +61,18 @@ function runIntegrityAsserts(state: StoreState): void {
     }
   }
 
+  const sourcesPerSuggestion = new Map<string, number>();
   for (const cs of Object.values(state.conversationSources)) {
     if (!state.articles[cs.articleId]) errors.push(`source ${cs.id} → unknown article ${cs.articleId}`);
+    const owner = state.suggestions[cs.suggestionId];
+    if (!owner) errors.push(`source ${cs.id} → unknown suggestion ${cs.suggestionId}`);
+    else if (owner.articleId !== cs.articleId) errors.push(`source ${cs.id} → suggestion ${owner.id} is on another article`);
+    sourcesPerSuggestion.set(cs.suggestionId, (sourcesPerSuggestion.get(cs.suggestionId) ?? 0) + 1);
+  }
+  // The Sources sheet lists exactly `sourceCount` conversations.
+  for (const s of Object.values(state.suggestions)) {
+    const listed = sourcesPerSuggestion.get(s.id) ?? 0;
+    if (listed !== s.sourceCount) errors.push(`suggestion ${s.id} → sourceCount ${s.sourceCount}, ${listed} sources listed`);
   }
 
   if (errors.length > 0) {
@@ -70,6 +80,10 @@ function runIntegrityAsserts(state: StoreState): void {
   }
 }
 
+/**
+ * Fresh demo state. The store is in-memory only, so a reload always
+ * starts the demo over from these fixtures.
+ */
 export function seed(): StoreState {
   const state: StoreState = {
     helpCenters: keyById(helpCenters),
@@ -83,6 +97,7 @@ export function seed(): StoreState {
     suggestions: keyById(suggestions),
     conversationSources: keyById(conversationSources),
     aiReviewByArticle: {},
+    aiReviewHistoryByArticle: {},
   };
 
   if (import.meta.env.DEV) runIntegrityAsserts(state);

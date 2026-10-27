@@ -1,8 +1,9 @@
 // Article fixtures.
 //
-// The three AI-targeted articles (password reset, auto-reply rules, chat
-// widget) carry their CURRENT content — the original side of every
-// suggestion — derived from `apps/demo/src/routes/ai-optimise/*Regions.tsx`:
+// The AI-targeted articles carry their CURRENT content — the original
+// side of every suggestion. Password reset, auto-reply rules, and chat
+// widget derive from `apps/demo/src/routes/ai-optimise/*Regions.tsx`;
+// chat routing (one replace suggestion) is local to this app:
 //   - addition (s1) content is NOT in the body yet
 //   - replace (s2) carries the `before` text
 //   - removal (s3) content IS in the body
@@ -88,6 +89,17 @@ const CHAT_WIDGET_BODY = [
   CHAT_WIDGET_IFRAME_HTML,
   '<h2>Testing on Staging</h2>',
   '<p>Before promoting widget changes to production, test in a staging environment. Hiver lets you toggle the staging variant from <strong>Widget → Environments</strong> — staging traffic stays isolated from production analytics and customer histories.</p>',
+].join('');
+
+export const CHAT_ROUTING_DEFAULT_HTML =
+  '<p data-block-id="chat-routing-default">By default, each new chat rings every online agent at once and goes to whoever accepts it first. This works well for small teams, but busy agents can end up with most of the chats.</p>';
+
+const CHAT_ROUTING_BODY = [
+  '<p>Chat routing decides which agent gets each new chat from your website. Set it up once per chat team, and Hiver applies it to every chat that comes in while the team is online.</p>',
+  '<h2>How chats are assigned</h2>',
+  CHAT_ROUTING_DEFAULT_HTML,
+  '<h2>Limiting chats per agent</h2>',
+  '<p>Set a <strong>maximum number of active chats</strong> per agent in <strong>Chat → Routing → Capacity</strong>. When everyone is at capacity, new chats wait in the queue and visitors see their place in line.</p>',
 ].join('');
 
 /* ───────── Fixtures (table order) ───────── */
@@ -203,5 +215,18 @@ export const articles: Article[] = [
     modifiedAt: daysAgo(9),
     bodyHTML:
       '<p>Availability hours control when the chat widget shows agents as online. Outside those hours, visitors can still leave a message and your team picks it up the next working day.</p>',
+  },
+  {
+    id: 'art-setting-up-chat-routing',
+    categoryId: 'cat-live-chat',
+    slug: 'setting-up-chat-routing',
+    title: 'Setting up chat routing',
+    status: 'PUBLISHED',
+    authorId: 'user-ashuthosh',
+    modifierId: 'user-ashuthosh',
+    lastActivity: 'published',
+    modifiedAt: daysAgo(47),
+    bodyHTML: CHAT_ROUTING_BODY,
+    aiSummary: 'Updates the default routing method to match the current chat settings.',
   },
 ];

@@ -39,10 +39,25 @@ export function displayName(state: StoreState, userId: string | null): string {
   return state.users[userId]?.name ?? 'Unassigned';
 }
 
-/** Live row text: `${Capitalized activity} by ${first name} ${relative} ago`. */
-export function activityText(state: StoreState, article: Article): string {
-  const firstName = displayName(state, article.modifierId).split(' ')[0] ?? '';
-  return `${capitalize(article.lastActivity)} by ${firstName} ${relativeTime(article.modifiedAt)} ago`;
+/** Under a minute old: activity reads "just now" instead of a relative time. */
+const JUST_NOW_MS = 60_000;
+
+/**
+ * Live row text: `${Capitalized activity} by ${first name} ${relative} ago`,
+ * or `... just now` for activity under a minute old (e.g. right after
+ * publishing AI suggestions).
+ */
+export function activityText(state: StoreState, article: Article, now: number = Date.now()): string {
+  return `${capitalize(article.lastActivity)} by ${firstName(state, article.modifierId)} ${whenText(article.modifiedAt, now)}`;
+}
+
+export function firstName(state: StoreState, userId: string | null): string {
+  return displayName(state, userId).split(' ')[0] ?? '';
+}
+
+/** "just now" under a minute, otherwise "2 months ago". */
+export function whenText(iso: string, now: number = Date.now()): string {
+  return now - new Date(iso).getTime() < JUST_NOW_MS ? 'just now' : `${relativeTime(iso, now)} ago`;
 }
 
 /** Lower-case, hyphen-separated slug (live `SL`). */

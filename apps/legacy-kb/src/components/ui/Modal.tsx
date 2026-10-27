@@ -1,18 +1,25 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import type { ReactNode } from 'react';
+import { loaderGif } from '../../assets/legacy';
 import { cn } from '../../lib/cn';
 import { Button } from './Button';
 
+export interface CloseGlyphProps {
+  size?: number;
+  /** Bar color class; live default #28476A, the toast passes #ECEFF6. */
+  barClassName?: string;
+}
+
 /**
- * Live close control (main bundle module with the ±45° bars): a 20px
- * box with two 14x1.5px #28476A bars crossed at its center.
+ * Live close control (main bundle module 6261, the ±45° bars): a 20px
+ * box with two 14x1.5px bars crossed at its center.
  */
-export function CloseGlyph({ size = 20 }: { size?: number }) {
+export function CloseGlyph({ size = 20, barClassName = 'bg-legacy-body' }: CloseGlyphProps) {
   return (
     <span aria-hidden className="relative block" style={{ width: size, height: size }}>
       <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-        <span className="absolute -mt-[7px] h-[14px] w-[1.5px] rotate-45 bg-legacy-body" />
-        <span className="absolute -mt-[7px] h-[14px] w-[1.5px] -rotate-45 bg-legacy-body" />
+        <span className={cn('absolute -mt-[7px] h-[14px] w-[1.5px] rotate-45', barClassName)} />
+        <span className={cn('absolute -mt-[7px] h-[14px] w-[1.5px] -rotate-45', barClassName)} />
       </span>
     </span>
   );
@@ -90,8 +97,18 @@ export interface ConfirmModalProps {
   message: string;
   confirmLabel: string;
   cancelLabel?: string;
+  /** Cancel style: live confirm dialogs use the white button; `secondary` is the blue outline. */
+  cancelVariant?: 'ghost' | 'secondary';
   /** Live `primaryButtonColor`: "green" → primary, anything else → red. */
   tone?: 'danger' | 'primary';
+  /**
+   * Live `showLoader`: the confirm button is disabled and shows the
+   * loader GIF. Cancel / close stay usable (as in the live dialog); the
+   * caller decides what closing mid-work means, e.g. aborting it.
+   */
+  loading?: boolean;
+  /** Screen-reader text while `loading`, e.g. "Publishing…". */
+  loadingLabel?: string;
   onConfirm: () => void;
 }
 
@@ -100,6 +117,8 @@ export interface ConfirmModalProps {
  * 25px, radius 8px, shadow 0 5px 5px rgba(0,0,0,.2). Title 14/17 500
  * (12px bottom padding), message 13/20 #09274a, close glyph pulled up
  * with margin -40px -5px 0 0. Footer: white "Cancel" + red action.
+ * 192px is a minimum here: longer messages grow the box instead of
+ * pushing the footer out of it.
  */
 export function ConfirmModal({
   open,
@@ -108,14 +127,20 @@ export function ConfirmModal({
   message,
   confirmLabel,
   cancelLabel = 'Cancel',
+  cancelVariant = 'ghost',
   tone = 'danger',
+  loading = false,
+  loadingLabel = 'Working…',
   onConfirm,
 }: ConfirmModalProps) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[1000000] bg-[rgba(0,0,0,0.4)]" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 z-[1000001] box-border flex h-[192px] w-[397px] -translate-x-1/2 -translate-y-1/2 flex-col content-between justify-between rounded-[8px] bg-white pt-[25px] pr-[16px] pb-[18px] pl-[25px] font-inter shadow-[0px_5px_5px_0px_rgba(0,0,0,0.2)] outline-none">
+        <Dialog.Content
+          aria-busy={loading || undefined}
+          className="fixed top-1/2 left-1/2 z-[1000001] box-border flex min-h-[192px] w-[397px] -translate-x-1/2 -translate-y-1/2 flex-col content-between justify-between rounded-[8px] bg-white pt-[25px] pr-[16px] pb-[18px] pl-[25px] font-inter shadow-[0px_5px_5px_0px_rgba(0,0,0,0.2)] outline-none"
+        >
           <div className="box-border flex w-full flex-col items-start">
             <div className="box-border flex w-full items-center justify-between">
               <Dialog.Title className="m-0 w-full p-0 pb-[12px] text-[14px] leading-[17px] font-medium text-black">
@@ -133,11 +158,41 @@ export function ConfirmModal({
             </Dialog.Description>
           </div>
           <div className="box-border flex w-full flex-row justify-end">
-            <Button variant="ghost" className="mr-[12px]" onClick={() => onOpenChange(false)}>
+            <Button variant={cancelVariant} className="mr-[12px]" onClick={() => onOpenChange(false)}>
               {cancelLabel}
             </Button>
-            <Button variant={tone} onClick={onConfirm}>
-              {confirmLabel}
+            <Button
+              variant={tone}
+              disabled={loading}
+              onClick={onConfirm}
+              // The loader GIF is white, so the button keeps its fill while
+              // loading; the disabled fill would wash it out.
+              className={cn(
+                loading && 'disabled:cursor-progress',
+                loading && tone === 'primary' && 'disabled:bg-legacy-blue',
+                loading && tone === 'danger' && 'disabled:bg-legacy-danger',
+              )}
+            >
+              {loading ? (
+                <>
+                  {/* The label keeps the button's width; the live 49x28
+                      loader sits centered on top of it. */}
+                  <span aria-hidden className="invisible">
+                    {confirmLabel}
+                  </span>
+                  <img
+                    src={loaderGif}
+                    alt=""
+                    aria-hidden
+                    width={49}
+                    height={28}
+                    className="absolute inset-0 m-auto h-[28px] w-[49px]"
+                  />
+                  <span className="sr-only">{loadingLabel}</span>
+                </>
+              ) : (
+                confirmLabel
+              )}
             </Button>
           </div>
         </Dialog.Content>

@@ -22,7 +22,9 @@ export type TooltipPlacement =
   | 'bottom-right'
   | 'top-left'
   | 'top-center'
-  | 'top-right';
+  | 'top-right'
+  /** Not in the live set: below the trigger, right edges aligned, for controls at the viewport's right edge. */
+  | 'bottom-end';
 
 const BUBBLE_POSITION: Record<TooltipPlacement, CSSProperties> = {
   'bottom-center': { left: '50%', top: '125%', transform: 'translateX(-50%)' },
@@ -31,6 +33,7 @@ const BUBBLE_POSITION: Record<TooltipPlacement, CSSProperties> = {
   'top-left': { top: 0, transform: 'translateX(-13px) translateY(-110%)' },
   'top-center': { left: '50%', transform: 'translateX(-50%) translateY(-110%)' },
   'top-right': { top: 0, transform: 'translateX(-91%) translateY(-110%)' },
+  'bottom-end': { right: 0, top: 'calc(100% + 8px)' },
 };
 
 const ARROW_X: Record<TooltipPlacement, CSSProperties> = {
@@ -40,6 +43,7 @@ const ARROW_X: Record<TooltipPlacement, CSSProperties> = {
   'top-left': { left: 20 },
   'top-center': { left: '50%' },
   'top-right': { right: 10 },
+  'bottom-end': { right: 20 },
 };
 
 function arrowStyle(placement: TooltipPlacement): CSSProperties {

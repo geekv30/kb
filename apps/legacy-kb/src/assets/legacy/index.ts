@@ -26,3 +26,7 @@ export { default as optionIcon } from './optionIcon.svg';
 export { default as plusIcon } from './plusIcon.svg';
 export { default as searchIcon } from './searchIcon.svg';
 export { default as sidebarLogo } from './sidebarLogo.svg';
+/** Confirm-modal primary button loader (live renders it at 49x28). */
+export { default as loaderGif } from './loaderGif.gif';
+/** Toast leading icon (live renders it at 20x23). */
+export { default as toastIcon } from './tooltipIcon.svg';

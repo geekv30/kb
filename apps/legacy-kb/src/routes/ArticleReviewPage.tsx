@@ -1,11 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { startTransition, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { backIcon } from '../assets/legacy';
 import { Button } from '../components/ui/Button';
+import { ConfirmModal } from '../components/ui/Modal';
+import { useToast } from '../components/ui/Toast';
+import { Tooltip } from '../components/ui/Tooltip';
 import { cn } from '../lib/cn';
+import { firstName, pluralize, whenText } from '../lib/format';
 import { buildReviewDocument } from '../improvements/reviewDocument';
 import { ReviewArticleBody, type BodySuggestionState } from '../improvements/ReviewArticleBody';
-import { hasUndecidedNeighbour, isPublishEnabled, type ReviewDecision } from '../improvements/reviewState';
+import { hasUndecidedNeighbour, type ReviewDecision } from '../improvements/reviewState';
 import { smoothScrollTo } from '../improvements/smoothScrollTo';
 import { SourcesSheet } from '../improvements/SourcesSheet';
 import { SuggestionCard } from '../improvements/SuggestionCard';
@@ -14,7 +18,7 @@ import { SuggestionsSummaryCard } from '../improvements/SuggestionsSummaryCard';
 import { useArticleReview } from '../improvements/useArticleReview';
 import { SUGGESTIONS_HUB_PATH } from '../lib/paths';
 import { useStore } from '../store/StoreContext';
-import { selectArticleBySlug, selectConversationSources, selectReviewSuggestions } from '../store/selectors';
+import { selectArticleBySlug, selectConversationSources, selectReviewSession } from '../store/selectors';
 import type { AISuggestion } from '../store/types';
 import { NotFound } from './NotFound';
 
@@ -28,16 +32,78 @@ const STICKY_SUMMARY_TOP = 16;
 
 const FALLBACK_SUMMARY =
   'Hiver’s AI found ways to improve this article based on recent customer conversations. Review each suggestion below.';
+/** Shown once part of the review is already live, so the batch summary no longer fits. */
+const REMAINING_SUMMARY = 'The other changes from this review are already live. Decide on the rest below.';
 
-/** Once published from review, every suggestion reads as decided (accepted). */
-function historicalDecisions(suggestions: AISuggestion[]): Record<string, ReviewDecision> {
-  const out: Record<string, ReviewDecision> = {};
-  for (const s of suggestions) {
-    if (s.status === 'accepted' || s.status === 'dismissed') out[s.id] = s.status;
-    else if (s.status === 'published') out[s.id] = 'accepted';
-  }
-  return out;
+/** How long the confirm button shows the loader before the work lands. */
+const SUBMIT_DELAY_MS = 900;
+
+type PrimaryAction = 'publish' | 'markReviewed';
+
+interface DecisionCounts {
+  accepted: number;
+  dismissed: number;
+  undecided: number;
 }
+
+function countDecisions(suggestions: AISuggestion[], decisions: Record<string, ReviewDecision>): DecisionCounts {
+  let accepted = 0;
+  let dismissed = 0;
+  for (const s of suggestions) {
+    if (decisions[s.id] === 'accepted') accepted += 1;
+    else if (decisions[s.id] === 'dismissed') dismissed += 1;
+  }
+  return { accepted, dismissed, undecided: suggestions.length - accepted - dismissed };
+}
+
+/**
+ * Top-bar action: Publish changes once anything is accepted; Mark as
+ * reviewed when every suggestion is dismissed (otherwise the article
+ * would sit in "To review" forever); a disabled Publish changes until then.
+ */
+function primaryActionFor(counts: DecisionCounts): { action: PrimaryAction; enabled: boolean } {
+  if (counts.accepted > 0) return { action: 'publish', enabled: true };
+  if (counts.undecided === 0) return { action: 'markReviewed', enabled: true };
+  return { action: 'publish', enabled: false };
+}
+
+function publishMessage(counts: DecisionCounts, title: string): string {
+  const parts = [`${pluralize(counts.accepted, 'accepted suggestion')} will go live on “${title}”.`];
+  if (counts.dismissed === 1) parts.push('The dismissed suggestion won’t change the article.');
+  else if (counts.dismissed > 1) parts.push('Dismissed suggestions won’t change the article.');
+  if (counts.undecided > 0) {
+    parts.push(
+      `${counts.undecided} ${counts.undecided === 1 ? 'suggestion is' : 'suggestions are'} still undecided and will stay in your review list.`,
+    );
+  }
+  return parts.join(' ');
+}
+
+const CONFIRM_COPY: Record<
+  PrimaryAction,
+  {
+    title: string;
+    message: (counts: DecisionCounts, title: string) => string;
+    confirmLabel: string;
+    loadingLabel: string;
+    toast: (title: string) => string;
+  }
+> = {
+  publish: {
+    title: 'Publish changes?',
+    message: publishMessage,
+    confirmLabel: 'Publish',
+    loadingLabel: 'Publishing…',
+    toast: (title) => `Changes published to “${title}”.`,
+  },
+  markReviewed: {
+    title: 'Mark as reviewed?',
+    message: (_counts, title) => `No changes will be made to “${title}”.`,
+    confirmLabel: 'Mark as reviewed',
+    loadingLabel: 'Marking as reviewed…',
+    toast: (title) => `Marked “${title}” as reviewed.`,
+  },
+};
 
 /** Keys that belong to a focused control rather than to the review shortcuts. */
 function isOwnedByFocusedControl(e: KeyboardEvent): boolean {
@@ -53,32 +119,62 @@ interface ReviewSessionProps {
 
 function ReviewSession({ articleId }: ReviewSessionProps) {
   const navigate = useNavigate();
-  const { state } = useStore();
+  const { state, dispatch } = useStore();
+  const { showToast } = useToast();
   const article = state.articles[articleId];
   const [review, send] = useArticleReview(articleId);
 
-  // Keyed on the slices that shape the list (not the whole store), so
+  // Keyed on the slices that shape the session (not the whole store), so
   // unrelated dispatches don't hand the scroll effect a new identity.
-  const suggestions = useMemo(
-    () => selectReviewSuggestions(state, articleId),
-    [state.suggestions, article?.bodyHTML, articleId],
+  const session = useMemo(
+    () => selectReviewSession(state, articleId),
+    [state.suggestions, state.aiReviewHistoryByArticle, article?.bodyHTML, articleId],
   );
+  const isHistory = session?.kind === 'history';
+  const suggestions = useMemo(() => session?.suggestions ?? [], [session]);
   const reviewDocument = useMemo(
-    () => buildReviewDocument(article?.bodyHTML ?? '', suggestions),
-    [article?.bodyHTML, suggestions],
+    () => buildReviewDocument(session?.bodyHTML ?? '', suggestions),
+    [session, suggestions],
   );
   const sources = useMemo(
-    () => selectConversationSources(state, articleId),
-    [state.conversationSources, articleId],
+    () => (review.sourcesFor ? selectConversationSources(state, review.sourcesFor) : []),
+    [state.conversationSources, review.sourcesFor],
   );
 
-  const alreadyPublished = suggestions.length > 0 && suggestions.every((s) => s.status === 'published');
-  const mode = alreadyPublished ? 'terminal' : review.mode;
-  const decisions = alreadyPublished ? historicalDecisions(suggestions) : review.decisions;
+  // History: every suggestion is final; the review replays read-only.
+  const mode = isHistory ? 'terminal' : review.mode;
+  const decisions = session?.kind === 'history' ? session.decisions : review.decisions;
   const activeSuggestion = review.activeIndex >= 0 ? suggestions[review.activeIndex] : undefined;
   const remaining = suggestions.length - Object.keys(decisions).length;
   const canGoPrev = hasUndecidedNeighbour(suggestions, decisions, review.activeIndex, 'prev');
   const canGoNext = hasUndecidedNeighbour(suggestions, decisions, review.activeIndex, 'next');
+
+  const counts = countDecisions(suggestions, decisions);
+  const primary = primaryActionFor(counts);
+  const [confirm, setConfirm] = useState<PrimaryAction | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const submitTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(submitTimer.current), []);
+
+  const submit = (action: PrimaryAction) => {
+    if (!article || submitting) return;
+    setSubmitting(true);
+    const title = article.title;
+    submitTimer.current = window.setTimeout(() => {
+      // One transition so the store update and the route change commit
+      // together — the review never flashes its post-publish state.
+      startTransition(() => {
+        dispatch({
+          type: 'aiReview/publish',
+          articleId,
+          modifierId: state.currentUserId,
+          now: new Date().toISOString(),
+        });
+        navigate(SUGGESTIONS_HUB_PATH);
+      });
+      showToast(CONFIRM_COPY[action].toast(title));
+    }, SUBMIT_DELAY_MS);
+  };
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const articleRef = useRef<HTMLElement>(null);
@@ -105,7 +201,8 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
 
   /* Keyboard: J/↓ next, K/↑ previous, Y/Enter accept, N dismiss. */
   useEffect(() => {
-    if (mode !== 'reviewing') return;
+    // The confirm dialog owns the keyboard while it is open.
+    if (mode !== 'reviewing' || confirm !== null) return;
     if (review.sourcesFor !== null) {
       const onEscape = (e: KeyboardEvent) => {
         if (e.key === 'Escape') send({ type: 'closeSources' });
@@ -144,7 +241,7 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [mode, review.sourcesFor, activeSuggestion, send]);
+  }, [mode, confirm, review.sourcesFor, activeSuggestion, send]);
 
   const bodyStates = useMemo(() => {
     const out: Record<string, BodySuggestionState> = {};
@@ -165,7 +262,7 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
               <SuggestionCard
                 suggestion={s}
                 state={decision}
-                onUndo={alreadyPublished ? undefined : (id) => send({ type: 'undo', id })}
+                onUndo={isHistory ? undefined : (id) => send({ type: 'undo', id })}
               />
             ),
           };
@@ -195,18 +292,25 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
             <SuggestionCard
               suggestion={s}
               state="idle"
-              onActivate={alreadyPublished ? undefined : (id) => send({ type: 'activateSuggestion', id })}
-              onAccept={alreadyPublished ? undefined : (id) => send({ type: 'accept', id })}
-              onReject={alreadyPublished ? undefined : (id) => send({ type: 'reject', id })}
+              onActivate={isHistory ? undefined : (id) => send({ type: 'activateSuggestion', id })}
+              onAccept={isHistory ? undefined : (id) => send({ type: 'accept', id })}
+              onReject={isHistory ? undefined : (id) => send({ type: 'reject', id })}
             />
           ),
         };
       }),
-    [suggestions, decisions, mode, activeSuggestion, alreadyPublished, send, canGoPrev, canGoNext],
+    [suggestions, decisions, mode, activeSuggestion, isHistory, send, canGoPrev, canGoNext],
   );
 
-  if (!article) return null;
-  const summary = article.aiSummary ?? FALLBACK_SUMMARY;
+  if (!article || !session) return null;
+  const partlyLive = !isHistory && state.aiReviewHistoryByArticle[articleId] !== undefined;
+  const summary = partlyLive ? REMAINING_SUMMARY : (article.aiSummary ?? FALLBACK_SUMMARY);
+  const confirmCopy = confirm ? CONFIRM_COPY[confirm] : undefined;
+  const history = state.aiReviewHistoryByArticle[articleId];
+  const historyNote =
+    isHistory && history
+      ? `${history.published ? 'Published' : 'Marked as reviewed'} by ${firstName(state, history.reviewedById)} ${whenText(history.reviewedAt)}`
+      : undefined;
 
   return (
     <>
@@ -214,18 +318,25 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
         <Button variant="ghost" iconSrc={backIcon} onClick={() => navigate(SUGGESTIONS_HUB_PATH)}>
           Back
         </Button>
-        <div className="box-border flex pl-[15px]">
-          <Button
-            variant="primary"
-            disabled={!isPublishEnabled(decisions) || alreadyPublished}
-            onClick={() => {
-              // TODO(chunk 4): publish — write applyDecisions(article.bodyHTML,
-              // suggestions, decisions) to the article and mark suggestions published.
-            }}
-          >
-            Publish changes
-          </Button>
-        </div>
+        {isHistory ? null : (
+          <div className="box-border flex pl-[15px]">
+            <Tooltip
+              content={primary.enabled ? undefined : 'Accept at least one suggestion to publish'}
+              placement="bottom-end"
+              className="cursor-default"
+            >
+              <Button
+                variant="primary"
+                aria-disabled={primary.enabled ? undefined : true}
+                onClick={() => {
+                  if (primary.enabled) setConfirm(primary.action);
+                }}
+              >
+                {primary.action === 'markReviewed' ? 'Mark as reviewed' : 'Publish changes'}
+              </Button>
+            </Tooltip>
+          </div>
+        )}
         {/* 1px table-border rule that fades in once the page scrolls, so
             content passing under the bar reads as scrolled, not clipped.
             Opacity-only already; reduced motion just shortens it. */}
@@ -273,6 +384,7 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
                 }}
                 onPrev={() => send({ type: 'prev' })}
                 onNext={() => send({ type: 'next' })}
+                historyNote={historyNote}
               />
             }
           />
@@ -285,6 +397,27 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
           if (!open) send({ type: 'closeSources' });
         }}
         sources={sources}
+      />
+
+      <ConfirmModal
+        open={confirmCopy !== undefined}
+        onOpenChange={(open) => {
+          if (open) return;
+          // Closing mid-publish cancels it: nothing has been written yet.
+          window.clearTimeout(submitTimer.current);
+          setSubmitting(false);
+          setConfirm(null);
+        }}
+        title={confirmCopy?.title ?? ''}
+        message={confirmCopy?.message(counts, article.title) ?? ''}
+        confirmLabel={confirmCopy?.confirmLabel ?? ''}
+        loadingLabel={confirmCopy?.loadingLabel}
+        cancelVariant="secondary"
+        tone="primary"
+        loading={submitting}
+        onConfirm={() => {
+          if (confirm) submit(confirm);
+        }}
       />
     </>
   );
@@ -302,7 +435,7 @@ export function ArticleReviewPage() {
   if (!article) {
     return <NotFound title="This article doesn’t exist" message="It may have been moved or deleted." />;
   }
-  if (selectReviewSuggestions(state, article.id).length === 0) {
+  if (!selectReviewSession(state, article.id)) {
     return (
       <NotFound title="No suggestions to review" message="Hiver’s AI hasn’t suggested any changes to this article." />
     );
