@@ -23,7 +23,7 @@ interface SuggestionTypeMeta {
 
 export const SUGGESTION_TYPE_META: Record<AISuggestionType, SuggestionTypeMeta> = {
   addition: { label: 'Addition', icon: 'add', textClass: 'text-legacy-success' },
-  replace: { label: 'Replace', icon: 'sync', textClass: 'text-legacy-blue' },
+  replace: { label: 'Replace', icon: 'sync', textClass: 'text-legacy-replace' },
   removal: { label: 'Removal', icon: 'close', textClass: 'text-legacy-danger' },
 };
 
@@ -57,7 +57,7 @@ export function CountPill({ count, label }: { count: number; label: string }) {
   return (
     <span
       aria-label={label}
-      className="inline-block rounded-[15px] bg-legacy-blue px-[8px] py-[1px] text-[12px] leading-[20px] font-medium text-white tabular-nums"
+      className="inline-block rounded-[15px] bg-legacy-nav-active px-[8px] py-[1px] text-[12px] leading-[20px] font-medium text-legacy-body tabular-nums"
     >
       {count}
     </span>
@@ -131,7 +131,8 @@ const DECISION_COPY = {
 } as const;
 
 /**
- * 32px circle with a tooltip naming the keyboard shortcut. Press
+ * 32px circle with a tooltip naming the keyboard shortcut. Accept is
+ * the card's one filled-blue action; Dismiss stays neutral until hover. Press
  * feedback is a 0.94 scale (motion-safe only); reduced motion keeps
  * the color change.
  */
@@ -150,10 +151,18 @@ export function DecisionButton({ decision, suggestionTitle, onClick }: DecisionB
           'focus-visible:shadow-[0_0_0_2px_#ffffff,0_0_0_4px_#1473e6]',
           decision === 'accept'
             ? 'border-legacy-blue bg-legacy-blue text-white hover:border-legacy-blue-hover hover:bg-legacy-blue-hover'
-            : 'border-legacy-danger bg-white text-legacy-danger hover:bg-legacy-danger-bg',
+            : 'group border-legacy-input-border bg-white hover:border-legacy-danger hover:bg-legacy-danger-bg',
         )}
       >
-        <MaterialIcon name={copy.icon} size={18} className={decision === 'accept' ? 'text-white' : 'text-legacy-danger'} />
+        <MaterialIcon
+          name={copy.icon}
+          size={18}
+          className={
+            decision === 'accept'
+              ? 'text-white'
+              : 'text-legacy-meta transition-colors duration-[160ms] group-hover:text-legacy-danger'
+          }
+        />
       </button>
     </Tooltip>
   );

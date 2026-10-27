@@ -2,12 +2,15 @@
 //
 //   pre-review → "AI suggestions", the summary, prev/next, and the
 //                full-width "Review suggestions (N)" button.
-//   reviewing  → compact one-row header with the REMAINING count.
+//   reviewing  → compact one-row header with the REMAINING count; it
+//                is a disclosure that reopens the summary.
 //   terminal   → "Suggestions" + total count, the summary, and a
 //                disabled "Reviewed all" button — or, once the review
 //                is final, a read-only note saying who closed it and when.
 
+import { useId, useState } from 'react';
 import { Button } from '../components/ui/Button';
+import { cn } from '../lib/cn';
 import { MaterialIcon } from '../components/ui/MaterialIcon';
 import { AIMark, CountPill, NavArrows } from './ReviewAtoms';
 import type { ReviewMode } from './reviewState';
@@ -37,13 +40,7 @@ export function SuggestionsSummaryCard({
   historyNote,
 }: SuggestionsSummaryCardProps) {
   if (mode === 'reviewing') {
-    return (
-      <section aria-label="AI suggestions" className={`${CARD} flex items-center gap-[8px] px-[16px] py-[10px]`}>
-        <AIMark size={20} />
-        <h2 className={TITLE}>AI suggestions</h2>
-        <CountPill count={count} label={`${count} left to review`} />
-      </section>
-    );
+    return <ReviewingHeader count={count} summary={summary} />;
   }
 
   const isTerminal = mode === 'terminal';
@@ -78,6 +75,52 @@ export function SuggestionsSummaryCard({
           Review suggestions ({count})
         </Button>
       )}
+    </section>
+  );
+}
+
+/** Reviewing: one row, click to show / hide the summary underneath. */
+function ReviewingHeader({ count, summary }: { count: number; summary: string }) {
+  const [open, setOpen] = useState(false);
+  const panelId = useId();
+  return (
+    <section aria-label="AI suggestions" className={CARD}>
+      <h2 className="m-0 p-0">
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls={panelId}
+          // A mouse click shouldn't park focus here: Y / N / J / K keep
+          // driving the review, and no focus ring lingers on the header.
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => setOpen((o) => !o)}
+          className={cn(
+            'm-0 box-border flex w-full cursor-pointer items-center gap-[8px] rounded-[5px] border-0 bg-transparent px-[16px] py-[10px] text-left font-inter outline-none',
+            'transition-colors duration-[160ms] ease-out-strong hover:bg-legacy-wash',
+            'focus-visible:shadow-[inset_0_0_0_2px_#1473e6]',
+          )}
+        >
+          <AIMark size={20} />
+          <span className={TITLE}>AI suggestions</span>
+          <CountPill count={count} label={`${count} left to review`} />
+          <MaterialIcon
+            name="expand_more"
+            size={20}
+            className={cn(
+              'ml-auto text-legacy-meta transition-transform duration-[200ms] ease-out-strong',
+              open && 'rotate-180',
+            )}
+          />
+        </button>
+      </h2>
+      {open ? (
+        <p
+          id={panelId}
+          className="m-0 px-[16px] pt-0 pb-[12px] text-[13px] leading-[20px] font-normal text-legacy-body motion-safe:animate-lk-fade-in-reduced"
+        >
+          {summary}
+        </p>
+      ) : null}
     </section>
   );
 }

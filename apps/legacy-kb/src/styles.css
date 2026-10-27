@@ -94,6 +94,12 @@
   --color-legacy-impact-medium: #b26a00;
   --color-legacy-impact-medium-bg: #fff4e0;
 
+  /* AI suggestions review — blue is kept for the one primary action
+   * (Accept / Review / Publish). Replace reads as a diff "modified"
+   * amber; the active card is marked by a neutral border + shadow. */
+  --color-legacy-replace: #b26a00;
+  --color-legacy-card-active: #94a3b8;
+
   /* ── Motion (AI suggestions review) ──────────────────────────
    * Easing + durations mirror the new UI (kb-ui tokens.css) so both
    * apps move the same way. Every animation has an opacity-only

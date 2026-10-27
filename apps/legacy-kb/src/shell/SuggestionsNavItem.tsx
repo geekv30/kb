@@ -37,7 +37,7 @@ export function SuggestionsNavItem({ to, selected, pendingCount }: SuggestionsNa
           {pendingCount > 0 ? (
             <span
               aria-hidden
-              className="box-border flex h-[20px] min-w-[20px] shrink-0 items-center justify-center rounded-[15px] bg-legacy-blue px-[7px] text-[12px] leading-[20px] font-medium text-white tabular-nums"
+              className="box-border flex h-[20px] min-w-[20px] shrink-0 items-center justify-center rounded-[15px] bg-legacy-disabled px-[7px] text-[12px] leading-[20px] font-medium text-legacy-body tabular-nums"
             >
               {pendingCount}
             </span>

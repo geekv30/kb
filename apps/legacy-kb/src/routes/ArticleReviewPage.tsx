@@ -293,8 +293,6 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
               suggestion={s}
               state="idle"
               onActivate={isHistory ? undefined : (id) => send({ type: 'activateSuggestion', id })}
-              onAccept={isHistory ? undefined : (id) => send({ type: 'accept', id })}
-              onReject={isHistory ? undefined : (id) => send({ type: 'reject', id })}
             />
           ),
         };
