@@ -96,8 +96,7 @@ function ReviewingHeader({ count, summary }: { count: number; summary: string })
           onClick={() => setOpen((o) => !o)}
           className={cn(
             'm-0 box-border flex w-full cursor-pointer items-center gap-[8px] rounded-[5px] border-0 bg-transparent px-[16px] py-[10px] text-left font-inter outline-none',
-            'transition-colors duration-[160ms] ease-out-strong hover:bg-legacy-wash',
-            'focus-visible:shadow-[inset_0_0_0_2px_#1473e6]',
+            'group focus-visible:shadow-[inset_0_0_0_2px_#1473e6]',
           )}
         >
           <AIMark size={20} />
@@ -107,7 +106,7 @@ function ReviewingHeader({ count, summary }: { count: number; summary: string })
             name="expand_more"
             size={20}
             className={cn(
-              'ml-auto text-legacy-meta transition-transform duration-[200ms] ease-out-strong',
+              'ml-auto text-legacy-meta transition-[color,transform] duration-[200ms] ease-out-strong group-hover:text-legacy-ink',
               open && 'rotate-180',
             )}
           />

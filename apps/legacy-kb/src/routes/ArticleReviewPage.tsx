@@ -28,7 +28,6 @@ const RAIL_WIDTH = 340;
 const SCROLL_FOCUS = 0.4;
 const SCROLL_DURATION_MS = 400;
 /** Gap between the top bar's divider and the stuck compact summary. */
-const STICKY_SUMMARY_TOP = 16;
 
 const FALLBACK_SUMMARY =
   'Hiver’s AI found ways to improve this article based on recent customer conversations. Review each suggestion below.';
@@ -368,9 +367,6 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
             items={railItems}
             activeId={mode === 'reviewing' ? activeSuggestion?.id : undefined}
             className="mt-[27px]"
-            // While reviewing, the compact header sticks 16px below the
-            // bar so the remaining count never scrolls half under it.
-            stickySummaryTop={mode === 'reviewing' ? STICKY_SUMMARY_TOP : undefined}
             summary={
               <SuggestionsSummaryCard
                 mode={mode}

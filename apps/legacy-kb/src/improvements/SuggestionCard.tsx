@@ -6,14 +6,16 @@
 //               Enter / Space.
 //   active    → type + "N / M", title, a one-line why, then prev/next
 //               and Sources, Dismiss, Accept (kb-ui card layout).
-//   accepted  → one-row chip with the decision and an Undo button.
+//   accepted  → one-row grey chip that recedes into the page, with the
+//               decision and an Undo icon.
 //   dismissed → same chip, "Dismissed".
 
 import type { KeyboardEvent } from 'react';
 import { MaterialIcon } from '../components/ui/MaterialIcon';
+import { Tooltip } from '../components/ui/Tooltip';
 import { cn } from '../lib/cn';
 import type { AISuggestion } from '../store/types';
-import { DecisionButton, NavArrows, SuggestionTypeLabel } from './ReviewAtoms';
+import { DecisionButton, IconButton, NavArrows, SuggestionTypeLabel } from './ReviewAtoms';
 import type { ReviewDecision } from './reviewState';
 
 export type SuggestionCardState = 'idle' | 'active' | ReviewDecision;
@@ -58,28 +60,50 @@ function DecisionChip({
       data-card-state={decision}
       className={cn(
         CARD_BASE,
-        'flex h-[42px] items-center border-legacy-input-border py-0 pr-[4px] pl-[16px]',
+        // Decided suggestions recede: grey fill, no visible border.
+        'flex h-[42px] items-center border-legacy-row-hover bg-legacy-row-hover py-0 pr-[4px] pl-[16px]',
         'motion-safe:animate-lk-chip-enter motion-reduce:animate-lk-fade-in-reduced',
       )}
     >
       <SuggestionTypeLabel type={suggestion.type} />
-      <span aria-hidden className="mx-[8px] h-[16px] w-px shrink-0 bg-legacy-input-border" />
-      <span className="text-[12px] leading-[20px] font-medium text-legacy-meta">{statusLabel}</span>
+      <span aria-hidden className="mx-[8px] h-[16px] w-px shrink-0 bg-legacy-picker-border" />
+      <span className="text-[11px] leading-[20px] font-semibold tracking-[0.04em] text-legacy-meta uppercase">
+        {statusLabel}
+      </span>
       {onUndo ? (
-        <button
-          type="button"
-          aria-label={`Undo ${statusLabel.toLowerCase()}: ${suggestion.title}`}
-          onClick={() => onUndo(suggestion.id)}
-          className={cn(
-            'm-0 ml-auto h-[32px] cursor-pointer rounded-[4px] border-0 bg-transparent px-[12px] py-0 font-inter text-[13px] leading-[20px] font-medium text-legacy-body outline-none',
-            'transition-[background-color,transform] duration-[160ms] ease-out-strong hover:bg-legacy-icon-hover motion-safe:active:scale-[0.96]',
-            'focus-visible:shadow-[0_0_0_2px_#1473e6]',
-          )}
-        >
-          Undo
-        </button>
+        <span className="ml-auto">
+          <Tooltip content="Undo">
+            <IconButton
+              label={`Undo ${statusLabel.toLowerCase()}: ${suggestion.title}`}
+              onClick={() => onUndo(suggestion.id)}
+              className="hover:bg-legacy-toolbar-hover"
+            >
+              <UndoGlyph />
+            </IconButton>
+          </Tooltip>
+        </span>
       ) : null}
     </div>
+  );
+}
+
+/** Untitled UI `ReverseLeft` path — the new UI's undo glyph. */
+function UndoGlyph() {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 24 24"
+      width={18}
+      height={18}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="text-legacy-body"
+    >
+      <path d="M4 7h10a6 6 0 0 1 0 12H4M4 7l4-4M4 7l4 4" />
+    </svg>
   );
 }
 
@@ -126,7 +150,7 @@ function ReviewCard({
         CARD_BASE,
         'outline-none',
         'transition-[background-color,border-color,box-shadow] duration-[200ms] ease-out-strong',
-        isIdle ? 'border-legacy-input-border px-[16px] py-[12px]' : 'border-legacy-card-active p-[16px] shadow-legacy-modal',
+        isIdle ? 'border-legacy-input-border px-[16px] py-[12px]' : 'border-legacy-input-border p-[16px] shadow-legacy-modal',
         activate && 'cursor-pointer hover:bg-legacy-wash focus-visible:shadow-[0_0_0_2px_#ffffff,0_0_0_4px_#1473e6]',
       )}
     >
