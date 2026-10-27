@@ -186,10 +186,11 @@ function SourcesLink({ count, onClick }: SourcesLinkProps) {
       type="button"
       onClick={onClick}
       aria-haspopup="dialog"
-      className="group m-0 inline-flex cursor-pointer items-center gap-[4px] rounded-[4px] border-0 bg-transparent p-0 font-inter text-[13px] leading-[20px] font-medium text-legacy-meta outline-none hover:text-legacy-ink hover:underline focus-visible:shadow-[0_0_0_2px_#1473e6]"
+      className="group m-0 inline-flex cursor-pointer items-center gap-[4px] rounded-[4px] border-0 bg-transparent p-0 font-inter text-[13px] leading-[20px] font-medium text-legacy-meta no-underline outline-none hover:text-legacy-ink focus-visible:shadow-[0_0_0_2px_#1473e6]"
     >
       <MaterialIcon name="description" size={16} className="text-legacy-meta group-hover:text-legacy-ink" />
-      {label}
+      {/* Underline the words only — on the button it ran under the icon too. */}
+      <span className="group-hover:underline">{label}</span>
     </button>
   );
 }

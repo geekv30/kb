@@ -131,8 +131,9 @@ const DECISION_COPY = {
 } as const;
 
 /**
- * 32px circle with a tooltip naming the keyboard shortcut. Accept is
- * the card's one filled-blue action; Dismiss stays neutral until hover. Press
+ * 32px outlined circle with a tooltip naming the keyboard shortcut.
+ * Accept carries a green check, Dismiss a grey cross; each fills with
+ * its own wash on hover. No blue — the page's Publish is the primary. Press
  * feedback is a 0.94 scale (motion-safe only); reduced motion keeps
  * the color change.
  */
@@ -149,19 +150,19 @@ export function DecisionButton({ decision, suggestionTitle, onClick }: DecisionB
           'm-0 flex size-[32px] cursor-pointer items-center justify-center rounded-full border border-solid p-0 outline-none',
           'transition-[background-color,border-color,transform] duration-[160ms] ease-out-strong motion-safe:active:scale-[0.94]',
           'focus-visible:shadow-[0_0_0_2px_#ffffff,0_0_0_4px_#1473e6]',
+          'group border-legacy-input-border bg-white',
           decision === 'accept'
-            ? 'border-legacy-blue bg-legacy-blue text-white hover:border-legacy-blue-hover hover:bg-legacy-blue-hover'
-            : 'group border-legacy-input-border bg-white hover:border-legacy-danger hover:bg-legacy-danger-bg',
+            ? 'hover:border-legacy-success hover:bg-legacy-success-bg'
+            : 'hover:border-legacy-danger hover:bg-legacy-danger-bg',
         )}
       >
         <MaterialIcon
           name={copy.icon}
           size={18}
-          className={
-            decision === 'accept'
-              ? 'text-white'
-              : 'text-legacy-meta transition-colors duration-[160ms] group-hover:text-legacy-danger'
-          }
+          className={cn(
+            'transition-colors duration-[160ms]',
+            decision === 'accept' ? 'text-legacy-success' : 'text-legacy-meta group-hover:text-legacy-danger',
+          )}
         />
       </button>
     </Tooltip>
