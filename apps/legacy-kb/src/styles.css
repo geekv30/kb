@@ -73,6 +73,41 @@
   --color-legacy-avatar-v: #603f35;
   --color-legacy-avatar-a: #445865;
 
+  /* ── Hiver Admin Panel replica (v2.hiverhq.com) ─────────────
+   * Read from the live Admin Panel's computed styles (Help Center and
+   * Knowledge Hub pages, 2026-10-28). */
+  --color-admin-sidebar: #f6f8fc;
+  --color-admin-nav: #404040;
+  --color-admin-nav-label: #737373;
+  --color-admin-nav-active: #d9e1f2;
+  --color-admin-logo: #fdb022;
+  --color-admin-footer: #343c45;
+  --color-admin-footer-chevron: #2a323e;
+  --color-admin-title: #2a323e;
+  --color-admin-card-border: #eceff6;
+  --color-admin-meta: #6c7b94;
+  --color-admin-tag-border: #efeded;
+  --color-admin-tag-text: #343c45;
+  --color-admin-action-hover: #eceff5;
+  --color-admin-tooltip: #343c45;
+  --color-admin-primary: #506dff;
+  --color-admin-primary-hover: #4763f0;
+  --color-admin-kh-title: #0f172a;
+  --color-admin-kh-sub: #64758b;
+  --color-admin-kh-heading: #101828;
+  --color-admin-tile-border: #e2e8f0;
+  --color-admin-tile-icon: #3e4c5a;
+  --color-admin-count: #6f7c90;
+  --color-admin-pill-border: #d6dde8;
+  --color-admin-pill-active-bg: #f0f3ff;
+  --color-admin-pill-active-text: #344fd8;
+  --color-admin-row-text: #334155;
+  --color-admin-failed: #cd3746;
+  --color-admin-assign-border: rgb(151 163 183 / 0.51);
+  --color-admin-assign-text: #4d596c;
+
+  --font-open-sans: 'Open Sans', sans-serif;
+
   --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   --font-ck: Helvetica, Arial, Tahoma, Verdana, sans-serif;
 

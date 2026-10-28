@@ -1,5 +1,9 @@
 import { createBrowserRouter, Navigate, useParams } from 'react-router-dom';
-import { SUGGESTIONS_HUB_PATH, suggestionsReviewPath } from './lib/paths';
+import { AdminHelpCenterPage } from './admin/AdminHelpCenterPage';
+import { AdminKnowledgeHubPage } from './admin/AdminKnowledgeHubPage';
+import { AdminPlaceholderPage } from './admin/AdminPlaceholderPage';
+import { AdminShell } from './admin/AdminShell';
+import { ADMIN_HELP_CENTER_PATH, ADMIN_PATH, SUGGESTIONS_HUB_PATH, suggestionsReviewPath } from './lib/paths';
 import { AppShell } from './shell/AppShell';
 import { CategoryPage } from './routes/CategoryPage';
 import { ArticleEditPage } from './routes/ArticleEditPage';
@@ -14,6 +18,9 @@ import { NotFound } from './routes/NotFound';
 // The AI section lives beside the categories: `/product/ai/suggestions`
 // (hub) and `/product/ai/suggestions/<article slug>` (review). The
 // original per-category review URL redirects there.
+//
+// `/hiver/admin/*` is a replica of Hiver's Admin Panel (Help Center and
+// Knowledge Hub pages), where the entry points into that AI section sit.
 
 /** `/product/category/:cat/article/review/:slug` → the AI section's review URL. */
 function LegacyReviewRedirect() {
@@ -36,6 +43,16 @@ export const router = createBrowserRouter([
       { path: 'ai/suggestions', element: <SuggestionsHubPage /> },
       { path: 'ai/suggestions/:articleSlug', element: <ArticleReviewPage /> },
       { path: '*', element: <NotFound /> },
+    ],
+  },
+  {
+    path: ADMIN_PATH,
+    element: <AdminShell />,
+    children: [
+      { index: true, element: <Navigate to={ADMIN_HELP_CENTER_PATH} replace /> },
+      { path: 'help-center', element: <AdminHelpCenterPage /> },
+      { path: 'knowledge-hub', element: <AdminKnowledgeHubPage /> },
+      { path: '*', element: <AdminPlaceholderPage /> },
     ],
   },
   { path: '*', element: <Navigate to="/product/category/getting-started" replace /> },
