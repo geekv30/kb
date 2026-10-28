@@ -3,19 +3,20 @@
 // filters, and the sources table (a row lights #f6f8fc on hover and
 // fades its delete icon in).
 //
-// Entry points: a one-line note above "Your sources" saying Hiver AI has
-// suggestions for articles it answers from, and the same chip as the Help
-// Center page beside the help center source those articles live in. Both
-// link to the help center's AI › Suggestions list and hide at 0.
+// Entry points (design-system components): an information Banner under
+// the page header saying Hiver AI has suggestions for articles it answers
+// from, and the same Badge as the Help Center page beside the help center
+// source. Both link to AI › Suggestions and hide at 0.
 
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useToast } from '../components/ui/Toast';
 import { cn } from '../lib/cn';
 import { pluralize } from '../lib/format';
 import { SUGGESTIONS_HUB_PATH } from '../lib/paths';
 import { AdminIcon, type AdminIconName } from './AdminIcon';
 import { AiSuggestionsChip } from './AiSuggestionsChip';
+import { DsBanner, dsBannerActionClass } from './ds/DsBanner';
+import { useAdminToast } from './ds/DsToast';
 import { KNOWLEDGE_SOURCES, REPLICA_HELP_CENTER_ID, type KnowledgeSource, type KnowledgeSourceType } from './adminFixtures';
 import { useAiSuggestionCounts } from './useAiSuggestionCounts';
 
@@ -61,22 +62,23 @@ const COL = { source: 'w-[400px]', pages: 'w-[100px]', synced: 'w-[200px]', mapp
 const HEAD_TEXT = 'm-0 font-inter text-[11px] leading-[18px] font-normal text-admin-count uppercase';
 const CELL_TEXT = 'm-0 font-inter text-[13px] leading-[18px] font-medium';
 
-function AiSourcesNote({ articles, suggestions }: { articles: number; suggestions: number }) {
+/**
+ * The design system's information Banner, under the page header like the
+ * Help Center page's live banner.
+ */
+function AiSourcesBanner({ articles, suggestions }: { articles: number; suggestions: number }) {
   if (articles <= 0) return null;
   return (
-    <div className="mt-[28px] box-border flex items-center gap-[8px] rounded-[8px] bg-admin-pill-active-bg px-[16px] py-[10px]">
-      <AdminIcon name="navHiverAi" size={16} className="text-admin-pill-active-text" />
-      <p className="m-0 min-w-0 flex-1 font-inter text-[14px] leading-[20px] font-normal text-admin-row-text">
-        Hiver AI found {pluralize(suggestions, 'suggestion')} for {pluralize(articles, 'article')} in{' '}
-        <span className="font-medium">product help center</span>. Better articles mean better AI answers.
-      </p>
-      <Link
-        to={SUGGESTIONS_HUB_PATH}
-        className="shrink-0 rounded-[4px] font-inter text-[14px] leading-[20px] font-medium whitespace-nowrap text-admin-pill-active-text no-underline outline-none hover:underline focus-visible:shadow-[0_0_0_2px_#506dff]"
-      >
-        Review suggestions
-      </Link>
-    </div>
+    <DsBanner
+      className="mt-[28px]"
+      title={`Hiver AI found ${pluralize(suggestions, 'suggestion')} for ${pluralize(articles, 'article')} in product help center`}
+      description="Better articles mean better AI answers."
+      action={
+        <Link to={SUGGESTIONS_HUB_PATH} className={dsBannerActionClass}>
+          Review suggestions
+        </Link>
+      }
+    />
   );
 }
 
@@ -94,7 +96,7 @@ function SyncedCell({ synced }: { synced: KnowledgeSource['lastSynced'] }) {
 }
 
 function SourceRow({ source, articlesToImprove }: { source: KnowledgeSource; articlesToImprove: number }) {
-  const { showToast } = useToast();
+  const showToast = useAdminToast();
   return (
     <div className="group box-border flex items-center border-0 border-x border-b border-solid border-admin-card-border bg-white py-[14px] pr-[26px] pl-[24px] hover:bg-admin-sidebar">
       <div className={cn(COL.source, 'flex min-w-0 items-center gap-[8px]')}>
@@ -148,7 +150,7 @@ function SourceRow({ source, articlesToImprove }: { source: KnowledgeSource; art
 }
 
 export function AdminKnowledgeHubPage() {
-  const { showToast } = useToast();
+  const showToast = useAdminToast();
   const { articles, suggestions } = useAiSuggestionCounts();
   const [filter, setFilter] = useState<Filter>('all');
   const rows = useMemo(
@@ -163,6 +165,8 @@ export function AdminKnowledgeHubPage() {
         <p className="m-0 mt-[4px] font-inter text-[14px] leading-[20px] font-normal text-admin-kh-sub">
           Add knowledge sources Hiver AI can use to answer questions and draft replies
         </p>
+
+        <AiSourcesBanner articles={articles} suggestions={suggestions} />
 
         <h2 className="m-0 mt-[28px] font-inter text-[14px] leading-[20px] font-medium text-admin-kh-heading">Add new</h2>
         <div className="mt-[14px] flex flex-wrap gap-[12px]">
@@ -180,8 +184,6 @@ export function AdminKnowledgeHubPage() {
             </button>
           ))}
         </div>
-
-        <AiSourcesNote articles={articles} suggestions={suggestions} />
 
         <div className="mt-[28px] flex items-center gap-[4px]">
           <span className="font-inter text-[14px] leading-[20px] font-medium text-admin-kh-heading">Your sources</span>

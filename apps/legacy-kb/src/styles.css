@@ -108,6 +108,51 @@
 
   --font-open-sans: 'Open Sans', sans-serif;
 
+  /* ── Hiver design system (v2 tokens), light theme ─────────────
+   * Resolved from the Admin Panel bundle's semantic tokens (background
+   * / border / text / foreground / effect) over its primitive palette.
+   * Used for every surface the prototype adds to the Admin Panel. */
+  --color-ds-text-strong: #171717; /* text.neutral.strong */
+  --color-ds-text-default: #404040; /* text.neutral.default */
+  --color-ds-fg-soft: #404040; /* foreground.neutral-bold.soft */
+  --color-ds-border-soft: #e0e0e0; /* border.neutral.soft */
+  --color-ds-info-subtle: #eff6ff; /* background.info.subtle */
+  --color-ds-info-soft: #dbeafe; /* background.info.soft */
+  --color-ds-info-border: #bfdbfe; /* border.info.soft */
+  --color-ds-info-text: #1d4ed8; /* text.info.default / foreground.info.default */
+  --color-ds-blue-intense: #1e40af; /* text.accents.blue.intense */
+  --color-ds-brand: #ffcf54; /* background.brand.default */
+  --color-ds-brand-strong: #f0b82e; /* background.brand.strong / border.brand.strong */
+  --color-ds-brand-intense: #c8941a; /* background.brand.intense */
+  --color-ds-on-brand: #0a0a0a; /* text.on.brand */
+  --color-ds-focus-royal: rgb(36 111 234 / 0.3); /* effect.focus.royal */
+  --color-ds-icon-hover: rgb(15 19 22 / 0.04); /* gray.gray7 — IconButton hover */
+
+  /* MUI Snackbar's Grow: 225ms in, 195ms out (standard easing). */
+  --animate-ds-toast-in: ds-grow-in 225ms cubic-bezier(0.4, 0, 0.2, 1);
+  --animate-ds-toast-out: ds-grow-out 195ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+
+  @keyframes ds-grow-in {
+    from {
+      opacity: 0;
+      transform: scale(0.75, 0.5625);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes ds-grow-out {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.75, 0.5625);
+    }
+  }
+
   --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   --font-ck: Helvetica, Arial, Tahoma, Verdana, sans-serif;
 

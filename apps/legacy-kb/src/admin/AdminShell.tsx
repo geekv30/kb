@@ -6,10 +6,10 @@
 
 import { NavLink, Outlet } from 'react-router-dom';
 import gmailLogo from '../assets/hiver-admin/gmailLogo.png';
-import { ToastProvider } from '../components/ui/Toast';
 import { cn } from '../lib/cn';
 import { ADMIN_HELP_CENTER_PATH, ADMIN_KNOWLEDGE_HUB_PATH, ADMIN_PATH } from '../lib/paths';
 import { AdminIcon, type AdminIconName } from './AdminIcon';
+import { AdminToastProvider } from './ds/DsToast';
 
 interface NavItem {
   label: string;
@@ -148,13 +148,13 @@ function AdminSidebar() {
 
 export function AdminShell() {
   return (
-    <ToastProvider>
+    <AdminToastProvider>
       <div className="flex h-screen w-full overflow-hidden bg-white">
         <AdminSidebar />
         <main className="min-w-0 flex-1 overflow-y-auto bg-white">
           <Outlet />
         </main>
       </div>
-    </ToastProvider>
+    </AdminToastProvider>
   );
 }

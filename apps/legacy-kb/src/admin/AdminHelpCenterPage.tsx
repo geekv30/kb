@@ -8,12 +8,12 @@
 // to the help center's AI › Suggestions list.
 
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '../components/ui/Toast';
 import { cn } from '../lib/cn';
 import { SUGGESTIONS_HUB_PATH } from '../lib/paths';
 import { AdminIcon, type AdminIconName } from './AdminIcon';
 import { AdminTooltip } from './AdminTooltip';
 import { AiSuggestionsChip } from './AiSuggestionsChip';
+import { useAdminToast } from './ds/DsToast';
 import { ADMIN_HELP_CENTERS, REPLICA_HELP_CENTER_ID, type AdminHelpCenter } from './adminFixtures';
 import { useAiSuggestionCounts } from './useAiSuggestionCounts';
 
@@ -58,7 +58,7 @@ function CardAction({ label, icon, onClick }: ActionProps) {
 
 function HelpCenterCard({ helpCenter, articlesToImprove }: { helpCenter: AdminHelpCenter; articlesToImprove: number }) {
   const navigate = useNavigate();
-  const { showToast } = useToast();
+  const showToast = useAdminToast();
   const isReplica = helpCenter.id === REPLICA_HELP_CENTER_ID;
   const openReplica = (path: string) => (isReplica ? navigate(path) : showToast(OUT_OF_SCOPE));
 
@@ -91,7 +91,7 @@ function HelpCenterCard({ helpCenter, articlesToImprove }: { helpCenter: AdminHe
 }
 
 export function AdminHelpCenterPage() {
-  const { showToast } = useToast();
+  const showToast = useAdminToast();
   const { articles } = useAiSuggestionCounts();
 
   return (
