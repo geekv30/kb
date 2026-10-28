@@ -13,8 +13,13 @@
 //
 // Every suggestion keeps a `data-suggestion-id` anchor in the DOM, even
 // when its content is hidden, so its rail card stays paired.
+//
+// With `onEdit`, the text between suggestions is editable in place (like
+// the old editor); suggestion regions stay locked so an edit can never
+// overlap an AI change. Each editable run is seeded once per mount, so
+// typing never fights React, and the whole body is handed back on blur.
 
-import { forwardRef, useMemo } from 'react';
+import { forwardRef, useLayoutEffect, useMemo, useRef } from 'react';
 import { cn } from '../lib/cn';
 import { resolveSegment, type ReviewDocument, type SuggestionSegment } from './reviewDocument';
 import type { ReviewDecision } from './reviewState';
@@ -25,6 +30,10 @@ export interface ReviewArticleBodyProps {
   title: string;
   document: ReviewDocument;
   states: Record<string, BodySuggestionState>;
+  /** Makes the text between suggestions editable; called on blur with the full body. */
+  onEdit?: (bodyHTML: string) => void;
+  /** Called on the first keystroke, before any blur. */
+  onDirty?: () => void;
   className?: string;
 }
 
@@ -57,6 +66,56 @@ const MOUNT_MOTION = 'motion-safe:animate-lk-suggestion-mount motion-reduce:anim
 
 function Html({ html }: { html: string }) {
   return <div className="contents" dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
+interface EditableHtmlProps {
+  html: string;
+  register: (el: HTMLDivElement | null) => void;
+  onInput: () => void;
+  onBlur: () => void;
+}
+
+/** A static run as an uncontrolled editable block: seeded on mount only. */
+function EditableHtml({ html, register, onInput, onBlur }: EditableHtmlProps) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const seed = useRef(html);
+  useLayoutEffect(() => {
+    if (ref.current) ref.current.innerHTML = seed.current;
+  }, []);
+  return (
+    <div
+      ref={(el) => {
+        ref.current = el;
+        register(el);
+      }}
+      role="textbox"
+      aria-multiline="true"
+      aria-label="Article content"
+      contentEditable
+      suppressContentEditableWarning
+      spellCheck
+      onInput={onInput}
+      onBlur={onBlur}
+      className="cursor-text outline-none"
+    />
+  );
+}
+
+/**
+ * Splitting a block in a contenteditable clones its attributes, so a
+ * `data-block-id` can appear twice. The first one (the original) stays
+ * the anchor; the copies lose the id.
+ */
+function dedupeBlockIds(html: string): string {
+  const template = document.createElement('template');
+  template.innerHTML = html;
+  const seen = new Set<string>();
+  template.content.querySelectorAll<HTMLElement>('[data-block-id]').forEach((el) => {
+    const id = el.dataset.blockId ?? '';
+    if (seen.has(id)) el.removeAttribute('data-block-id');
+    else seen.add(id);
+  });
+  return template.innerHTML;
 }
 
 interface SuggestionRegionProps {
@@ -104,9 +163,21 @@ function SuggestionRegion({ segment, state }: SuggestionRegionProps) {
 }
 
 export const ReviewArticleBody = forwardRef<HTMLElement, ReviewArticleBodyProps>(function ReviewArticleBody(
-  { title, document: reviewDocument, states, className },
+  { title, document: reviewDocument, states, onEdit, onDirty, className },
   ref,
 ) {
+  const editables = useRef(new Map<number, HTMLDivElement>());
+
+  // The body as it stands with every suggestion still undecided: edited
+  // static runs from the DOM, suggestion regions as they are today.
+  const commit = () => {
+    if (!onEdit) return;
+    const body = reviewDocument.segments
+      .map((seg, i) => (seg.kind === 'static' ? (editables.current.get(i)?.innerHTML ?? seg.html) : resolveSegment(seg, undefined)))
+      .join('');
+    onEdit(dedupeBlockIds(body));
+  };
+
   return (
     <article
       ref={ref}
@@ -116,7 +187,20 @@ export const ReviewArticleBody = forwardRef<HTMLElement, ReviewArticleBodyProps>
       <h1>{title}</h1>
       {reviewDocument.segments.map((segment, i) =>
         segment.kind === 'static' ? (
-          <Html key={`static-${i}`} html={segment.html} />
+          onEdit ? (
+            <EditableHtml
+              key={`static-${i}`}
+              html={segment.html}
+              register={(el) => {
+                if (el) editables.current.set(i, el);
+                else editables.current.delete(i);
+              }}
+              onInput={() => onDirty?.()}
+              onBlur={commit}
+            />
+          ) : (
+            <Html key={`static-${i}`} html={segment.html} />
+          )
         ) : (
           <SuggestionRegion
             key={`${segment.suggestionId}-${states[segment.suggestionId] ?? 'inactive'}`}

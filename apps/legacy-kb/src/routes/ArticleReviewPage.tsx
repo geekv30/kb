@@ -27,8 +27,6 @@ const RAIL_WIDTH = 340;
 /** The active highlight's center lands at this fraction of the viewport. */
 const SCROLL_FOCUS = 0.4;
 const SCROLL_DURATION_MS = 400;
-/** Gap between the top bar's divider and the stuck compact summary. */
-
 const FALLBACK_SUMMARY =
   'Hiver’s AI found ways to improve this article based on recent customer conversations. Review each suggestion below.';
 /** Shown once part of the review is already live, so the batch summary no longer fits. */
@@ -56,18 +54,24 @@ function countDecisions(suggestions: AISuggestion[], decisions: Record<string, R
 }
 
 /**
- * Top-bar action: Publish changes once anything is accepted; Mark as
- * reviewed when every suggestion is dismissed (otherwise the article
- * would sit in "To review" forever); a disabled Publish changes until then.
+ * Top-bar action: Publish changes once anything is accepted or the text
+ * was edited; Mark as reviewed when every suggestion is dismissed
+ * (otherwise the article would sit in "To review" forever); a disabled
+ * Publish changes until then.
  */
-function primaryActionFor(counts: DecisionCounts): { action: PrimaryAction; enabled: boolean } {
-  if (counts.accepted > 0) return { action: 'publish', enabled: true };
+function primaryActionFor(counts: DecisionCounts, edited: boolean): { action: PrimaryAction; enabled: boolean } {
+  if (counts.accepted > 0 || edited) return { action: 'publish', enabled: true };
   if (counts.undecided === 0) return { action: 'markReviewed', enabled: true };
   return { action: 'publish', enabled: false };
 }
 
-function publishMessage(counts: DecisionCounts, title: string): string {
-  const parts = [`${pluralize(counts.accepted, 'accepted suggestion')} will go live on “${title}”.`];
+function publishMessage(counts: DecisionCounts, title: string, edited: boolean): string {
+  const parts =
+    counts.accepted === 0
+      ? [`Your edits will go live on “${title}”.`]
+      : [
+          `${pluralize(counts.accepted, 'accepted suggestion')}${edited ? ' and your edits' : ''} will go live on “${title}”.`,
+        ];
   if (counts.dismissed === 1) parts.push('The dismissed suggestion won’t change the article.');
   else if (counts.dismissed > 1) parts.push('Dismissed suggestions won’t change the article.');
   if (counts.undecided > 0) {
@@ -82,7 +86,7 @@ const CONFIRM_COPY: Record<
   PrimaryAction,
   {
     title: string;
-    message: (counts: DecisionCounts, title: string) => string;
+    message: (counts: DecisionCounts, title: string, edited: boolean) => string;
     confirmLabel: string;
     loadingLabel: string;
     toast: (title: string) => string;
@@ -149,7 +153,9 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
   const canGoNext = hasUndecidedNeighbour(suggestions, decisions, review.activeIndex, 'next');
 
   const counts = countDecisions(suggestions, decisions);
-  const primary = primaryActionFor(counts);
+  /** The reviewer changed the article text here (saved on blur). */
+  const [edited, setEdited] = useState(false);
+  const primary = primaryActionFor(counts, edited);
   const [confirm, setConfirm] = useState<PrimaryAction | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const submitTimer = useRef<number | undefined>(undefined);
@@ -168,6 +174,7 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
           articleId,
           modifierId: state.currentUserId,
           now: new Date().toISOString(),
+          edited,
         });
         navigate(SUGGESTIONS_HUB_PATH);
       });
@@ -318,7 +325,7 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
         {isHistory ? null : (
           <div className="box-border flex pl-[15px]">
             <Tooltip
-              content={primary.enabled ? undefined : 'Accept at least one suggestion to publish'}
+              content={primary.enabled ? undefined : 'Accept a suggestion or edit the article to publish'}
               placement="bottom-end"
               className="cursor-default"
             >
@@ -359,6 +366,14 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
             title={article.title}
             document={reviewDocument}
             states={bodyStates}
+            onDirty={isHistory ? undefined : () => setEdited(true)}
+            onEdit={
+              isHistory
+                ? undefined
+                : (bodyHTML) => {
+                    if (bodyHTML !== article.bodyHTML) dispatch({ type: 'article/updateBody', articleId, bodyHTML });
+                  }
+            }
             className="w-full max-w-[720px] flex-1"
           />
           <SuggestionRail
@@ -403,7 +418,7 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
           setConfirm(null);
         }}
         title={confirmCopy?.title ?? ''}
-        message={confirmCopy?.message(counts, article.title) ?? ''}
+        message={confirmCopy?.message(counts, article.title, edited) ?? ''}
         confirmLabel={confirmCopy?.confirmLabel ?? ''}
         loadingLabel={confirmCopy?.loadingLabel}
         cancelVariant="secondary"

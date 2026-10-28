@@ -25,8 +25,10 @@ export type StoreAction =
    * written into the body and the article is published by `modifierId`.
    * With only dismissals it is "Mark as reviewed": the body and activity
    * stay as they are. Undecided suggestions stay pending either way.
+   * `edited`: the reviewer changed the article text in the review, so it
+   * publishes even with nothing accepted (or nothing decided at all).
    */
-  | { type: 'aiReview/publish'; articleId: string; modifierId: string; now: string };
+  | { type: 'aiReview/publish'; articleId: string; modifierId: string; now: string; edited?: boolean };
 
 function patchArticle(
   state: StoreState,
@@ -103,8 +105,18 @@ export function rootReducer(state: StoreState, action: StoreAction): StoreState 
       const items = selectReviewSuggestions(state, action.articleId);
       const decisions = state.aiReviewByArticle[action.articleId]?.decisions ?? {};
       const decided = items.filter((s) => decisions[s.id] !== undefined);
-      if (decided.length === 0) return state;
-      const publishes = decided.some((s) => decisions[s.id] === 'accepted');
+      if (decided.length === 0) {
+        // Edits only: publish the article; the review stays open as it was.
+        return action.edited
+          ? patchArticle(state, action.articleId, {
+              status: 'PUBLISHED',
+              lastActivity: 'published',
+              modifierId: action.modifierId,
+              modifiedAt: action.now,
+            })
+          : state;
+      }
+      const publishes = action.edited === true || decided.some((s) => decisions[s.id] === 'accepted');
 
       const suggestions = { ...state.suggestions };
       for (const s of decided) {
