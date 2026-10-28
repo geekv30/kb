@@ -1,4 +1,4 @@
-import { startTransition, useEffect, useMemo, useRef, useState } from 'react';
+import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { backIcon } from '../assets/legacy';
 import { Button } from '../components/ui/Button';
@@ -7,6 +7,7 @@ import { useToast } from '../components/ui/Toast';
 import { Tooltip } from '../components/ui/Tooltip';
 import { cn } from '../lib/cn';
 import { firstName, pluralize, whenText } from '../lib/format';
+import { BackToSuggestion, type CardPlacement } from '../improvements/BackToSuggestion';
 import { buildReviewDocument } from '../improvements/reviewDocument';
 import { ReviewArticleBody, type BodySuggestionState } from '../improvements/ReviewArticleBody';
 import { hasUndecidedNeighbour, type ReviewDecision } from '../improvements/reviewState';
@@ -187,7 +188,32 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
   /** Drives the top bar's divider: shown only once content is under it. */
   const [scrolled, setScrolled] = useState(false);
 
-  /* Scroll: active highlight to 40% of the viewport; top otherwise. */
+  const activeId = mode === 'reviewing' ? activeSuggestion?.id : undefined;
+
+  /** False while the page scrolls itself, so the pill never flashes mid-glide. */
+  const [settled, setSettled] = useState(true);
+  const settleTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(settleTimer.current), []);
+
+  /** Brings the active highlight to 40% of the viewport. */
+  const scrollToActive = useCallback(() => {
+    const scroller = scrollRef.current;
+    const el = activeId
+      ? articleRef.current?.querySelector<HTMLElement>(`[data-suggestion-id="${CSS.escape(activeId)}"]`)
+      : null;
+    if (!scroller || !el) return;
+    const scrollerRect = scroller.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    const centerFromTop = elRect.top - scrollerRect.top + elRect.height / 2;
+    const target = Math.max(0, scroller.scrollTop + centerFromTop - scrollerRect.height * SCROLL_FOCUS);
+    setSettled(false);
+    window.clearTimeout(settleTimer.current);
+    settleTimer.current = window.setTimeout(() => setSettled(true), SCROLL_DURATION_MS + 60);
+    smoothScrollTo({ target, duration: SCROLL_DURATION_MS, scrollElement: scroller });
+  }, [activeId]);
+
+  /* Scroll when the active suggestion or the mode changes — keyed on the
+     id, not the suggestion list, so saving an edit never yanks the page. */
   useEffect(() => {
     const scroller = scrollRef.current;
     if (!scroller) return;
@@ -195,15 +221,50 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
       smoothScrollTo({ target: 0, duration: SCROLL_DURATION_MS, scrollElement: scroller });
       return;
     }
-    const id = suggestions[review.activeIndex]?.id;
-    const el = id ? articleRef.current?.querySelector<HTMLElement>(`[data-suggestion-id="${CSS.escape(id)}"]`) : null;
-    if (!el) return;
-    const scrollerRect = scroller.getBoundingClientRect();
-    const elRect = el.getBoundingClientRect();
-    const centerFromTop = elRect.top - scrollerRect.top + elRect.height / 2;
-    const target = Math.max(0, scroller.scrollTop + centerFromTop - scrollerRect.height * SCROLL_FOCUS);
-    smoothScrollTo({ target, duration: SCROLL_DURATION_MS, scrollElement: scroller });
-  }, [mode, review.activeIndex, suggestions]);
+    scrollToActive();
+  }, [mode, scrollToActive]);
+
+  /* Where the active card is relative to the viewport. Under half of it
+     on screen counts as gone: the pill offers the way back, and Y / N
+     bring it back instead of deciding on something out of sight. */
+  const [placement, setPlacement] = useState<CardPlacement>('visible');
+  const placementRef = useRef<CardPlacement>('visible');
+  placementRef.current = placement;
+  useEffect(() => {
+    setPlacement('visible');
+    const scroller = scrollRef.current;
+    const card = activeId
+      ? scroller?.querySelector<HTMLElement>(`[data-rail-card-id="${CSS.escape(activeId)}"]`)
+      : null;
+    if (!scroller || !card) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry) return;
+        if (entry.intersectionRatio >= 0.5) setPlacement('visible');
+        else setPlacement(entry.boundingClientRect.top < (entry.rootBounds?.top ?? 0) ? 'above' : 'below');
+      },
+      { root: scroller, threshold: [0, 0.5, 1] },
+    );
+    io.observe(card);
+    return () => io.disconnect();
+  }, [activeId]);
+
+  /* Rail column, in the scroll area's coordinates, for the pill. */
+  const [railBox, setRailBox] = useState({ left: 0, width: RAIL_WIDTH });
+  useEffect(() => {
+    const scroller = scrollRef.current;
+    if (!scroller) return;
+    const measure = () => {
+      const rail = scroller.querySelector<HTMLElement>('aside[aria-label="AI suggestions"]');
+      if (!rail) return;
+      const left = rail.getBoundingClientRect().left - scroller.getBoundingClientRect().left;
+      setRailBox((prev) => (prev.left === left ? prev : { left, width: rail.offsetWidth }));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(scroller);
+    return () => ro.disconnect();
+  }, []);
 
   /* Keyboard: J/↓ next, K/↑ previous, Y/Enter accept, N dismiss. */
   useEffect(() => {
@@ -218,7 +279,6 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
     }
     const onKey = (e: KeyboardEvent) => {
       if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || isOwnedByFocusedControl(e)) return;
-      const activeId = activeSuggestion?.id;
       switch (e.key) {
         case 'j':
         case 'ArrowDown':
@@ -232,14 +292,11 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
           break;
         case 'y':
         case 'Enter':
-          if (!activeId) return;
-          e.preventDefault();
-          send({ type: 'accept', id: activeId });
-          break;
         case 'n':
           if (!activeId) return;
           e.preventDefault();
-          send({ type: 'reject', id: activeId });
+          if (placementRef.current !== 'visible') scrollToActive();
+          else send({ type: e.key === 'n' ? 'reject' : 'accept', id: activeId });
           break;
         default:
           break;
@@ -247,7 +304,7 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [mode, confirm, review.sourcesFor, activeSuggestion, send]);
+  }, [mode, confirm, review.sourcesFor, activeId, scrollToActive, send]);
 
   const bodyStates = useMemo(() => {
     const out: Record<string, BodySuggestionState> = {};
@@ -355,49 +412,61 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
         />
       </div>
 
-      <div
-        ref={scrollRef}
-        onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 0)}
-        className="min-h-0 flex-1 overflow-y-auto"
-      >
-        <div className="box-border flex flex-row items-start gap-[40px] pt-[40px] pr-[40px] pb-[80px] pl-[65px]">
-          <ReviewArticleBody
-            ref={articleRef}
-            title={article.title}
-            document={reviewDocument}
-            states={bodyStates}
-            onDirty={isHistory ? undefined : () => setEdited(true)}
-            onEdit={
-              isHistory
-                ? undefined
-                : (bodyHTML) => {
-                    if (bodyHTML !== article.bodyHTML) dispatch({ type: 'article/updateBody', articleId, bodyHTML });
-                  }
-            }
-            className="w-full max-w-[720px] flex-1"
-          />
-          <SuggestionRail
-            articleRef={articleRef}
-            width={RAIL_WIDTH}
-            items={railItems}
-            activeId={mode === 'reviewing' ? activeSuggestion?.id : undefined}
-            className="mt-[27px]"
-            summary={
-              <SuggestionsSummaryCard
-                mode={mode}
-                count={mode === 'reviewing' ? remaining : suggestions.length}
-                summary={summary}
-                onReview={() => {
-                  const firstId = suggestions[0]?.id;
-                  if (firstId) send({ type: 'activateSuggestion', id: firstId });
-                }}
-                onPrev={() => send({ type: 'prev' })}
-                onNext={() => send({ type: 'next' })}
-                historyNote={historyNote}
-              />
-            }
-          />
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <div
+          ref={scrollRef}
+          onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 0)}
+          className="min-h-0 flex-1 overflow-y-auto"
+        >
+          <div className="box-border flex flex-row items-start gap-[40px] pt-[40px] pr-[40px] pb-[80px] pl-[65px]">
+            <ReviewArticleBody
+              ref={articleRef}
+              title={article.title}
+              document={reviewDocument}
+              states={bodyStates}
+              onDirty={isHistory ? undefined : () => setEdited(true)}
+              onActivateSuggestion={isHistory ? undefined : (id) => send({ type: 'activateSuggestion', id })}
+              onEdit={
+                isHistory
+                  ? undefined
+                  : (bodyHTML) => {
+                      if (bodyHTML !== article.bodyHTML) dispatch({ type: 'article/updateBody', articleId, bodyHTML });
+                    }
+              }
+              className="w-full max-w-[720px] flex-1"
+            />
+            <SuggestionRail
+              articleRef={articleRef}
+              width={RAIL_WIDTH}
+              items={railItems}
+              activeId={activeId}
+              className="mt-[27px]"
+              summary={
+                <SuggestionsSummaryCard
+                  mode={mode}
+                  count={mode === 'reviewing' ? remaining : suggestions.length}
+                  summary={summary}
+                  onReview={() => {
+                    const firstId = suggestions[0]?.id;
+                    if (firstId) send({ type: 'activateSuggestion', id: firstId });
+                  }}
+                  onPrev={() => send({ type: 'prev' })}
+                  onNext={() => send({ type: 'next' })}
+                  historyNote={historyNote}
+                />
+              }
+            />
+          </div>
         </div>
+        {placement !== 'visible' && settled && activeId ? (
+          <BackToSuggestion
+            placement={placement}
+            position={{ index: review.activeIndex + 1, total: suggestions.length }}
+            left={railBox.left}
+            width={railBox.width}
+            onClick={scrollToActive}
+          />
+        ) : null}
       </div>
 
       <SourcesSheet

@@ -345,39 +345,13 @@ code {
 /* ─────────────────────────────────────────────────────────────
  * AI suggestions review — inline highlights.
  *
- * Two layers per highlighted region:
- *   - `.lk-region` draws ONE continuous 3px bar in the left gutter,
- *     spanning the whole region (heading, paragraphs, list).
- *   - `.lk-hl` washes the text of each block it touches (headings,
- *     paragraphs, list-item text). `box-decoration-break: clone` keeps
- *     the wash tight to each wrapped line instead of one slab. The
- *     horizontal margin cancels the padding, so text never shifts;
- *     inline vertical padding paints without moving line boxes.
- * List-item washes don't bleed left, so numerals and bullets stay
- * outside the highlight.
+ * `.lk-hl` washes the text of each block it touches (headings,
+ * paragraphs, list-item text). `box-decoration-break: clone` keeps the
+ * wash tight to each wrapped line instead of one slab. The horizontal
+ * margin cancels the padding, so text never shifts; inline vertical
+ * padding paints without moving line boxes. List-item washes don't
+ * bleed left, so numerals and bullets stay outside the highlight.
  * ───────────────────────────────────────────────────────────── */
-.lk-region {
-  position: relative;
-}
-.lk-region::before {
-  content: '';
-  position: absolute;
-  left: -11px;
-  top: -4px;
-  bottom: -4px;
-  width: 3px;
-  border-radius: 2px;
-}
-/* List items carry 5px bottom padding; end the bar at the last wash. */
-.lk-region[data-ends-in-list]::before {
-  bottom: 3px;
-}
-.lk-region[data-variant='add']::before {
-  background-color: var(--color-legacy-success);
-}
-.lk-region[data-variant='remove']::before {
-  background-color: var(--color-legacy-danger);
-}
 .lk-hl {
   border-radius: 4px;
   padding: 4px 8px;

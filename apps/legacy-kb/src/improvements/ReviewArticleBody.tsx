@@ -18,8 +18,10 @@
 // the old editor); suggestion regions stay locked so an edit can never
 // overlap an AI change. Each editable run is seeded once per mount, so
 // typing never fights React, and the whole body is handed back on blur.
+// Pastes land as plain text. Clicking an undecided suggestion's (locked)
+// text opens that suggestion.
 
-import { forwardRef, useLayoutEffect, useMemo, useRef } from 'react';
+import { forwardRef, useLayoutEffect, useMemo, useRef, type ClipboardEvent } from 'react';
 import { cn } from '../lib/cn';
 import { resolveSegment, type ReviewDocument, type SuggestionSegment } from './reviewDocument';
 import type { ReviewDecision } from './reviewState';
@@ -34,6 +36,8 @@ export interface ReviewArticleBodyProps {
   onEdit?: (bodyHTML: string) => void;
   /** Called on the first keystroke, before any blur. */
   onDirty?: () => void;
+  /** Clicking an undecided suggestion's text opens it in the rail. */
+  onActivateSuggestion?: (id: string) => void;
   className?: string;
 }
 
@@ -43,8 +47,7 @@ type HighlightVariant = 'add' | 'remove';
 
 /**
  * Wraps the text of every innermost text block in a `.lk-hl` span (the
- * span sits inside the block, so list markers stay outside the wash) and
- * the whole fragment in a `.lk-region` that draws the gutter bar.
+ * span sits inside the block, so list markers stay outside the wash).
  */
 function highlightHTML(html: string, variant: HighlightVariant): string {
   const template = document.createElement('template');
@@ -57,9 +60,7 @@ function highlightHTML(html: string, variant: HighlightVariant): string {
     while (el.firstChild) span.appendChild(el.firstChild);
     el.appendChild(span);
   });
-  const blocks = template.content.querySelectorAll(TEXT_BLOCKS);
-  const endsInList = blocks[blocks.length - 1]?.tagName === 'LI';
-  return `<div class="lk-region" data-variant="${variant}"${endsInList ? ' data-ends-in-list' : ''}>${template.innerHTML}</div>`;
+  return template.innerHTML;
 }
 
 const MOUNT_MOTION = 'motion-safe:animate-lk-suggestion-mount motion-reduce:animate-lk-fade-in-reduced';
@@ -73,6 +74,12 @@ interface EditableHtmlProps {
   register: (el: HTMLDivElement | null) => void;
   onInput: () => void;
   onBlur: () => void;
+}
+
+/** Pastes as plain text, so styles copied from elsewhere never land in the article. */
+function pastePlainText(e: ClipboardEvent<HTMLDivElement>) {
+  e.preventDefault();
+  document.execCommand('insertText', false, e.clipboardData.getData('text/plain'));
 }
 
 /** A static run as an uncontrolled editable block: seeded on mount only. */
@@ -96,6 +103,7 @@ function EditableHtml({ html, register, onInput, onBlur }: EditableHtmlProps) {
       spellCheck
       onInput={onInput}
       onBlur={onBlur}
+      onPaste={pastePlainText}
       className="cursor-text outline-none"
     />
   );
@@ -121,9 +129,10 @@ function dedupeBlockIds(html: string): string {
 interface SuggestionRegionProps {
   segment: SuggestionSegment;
   state: BodySuggestionState;
+  onActivate?: (id: string) => void;
 }
 
-function SuggestionRegion({ segment, state }: SuggestionRegionProps) {
+function SuggestionRegion({ segment, state, onActivate }: SuggestionRegionProps) {
   const id = segment.suggestionId;
   const active = state === 'active';
 
@@ -152,18 +161,22 @@ function SuggestionRegion({ segment, state }: SuggestionRegionProps) {
     // Hidden content: a zero-height anchor keeps the rail pairing.
     return <span aria-hidden data-suggestion-id={id} className="block h-0" />;
   }
+  // Suggestion text is locked; clicking an undecided one explains why
+  // by opening it (highlight + card) instead of silently ignoring the click.
+  const activate = state === 'inactive' && onActivate ? () => onActivate(id) : undefined;
   return (
     <div
       data-suggestion-id={id}
       data-suggestion-state={state}
-      className={cn(active && MOUNT_MOTION)}
+      onClick={activate}
+      className={cn(active && MOUNT_MOTION, activate && 'cursor-pointer')}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
 }
 
 export const ReviewArticleBody = forwardRef<HTMLElement, ReviewArticleBodyProps>(function ReviewArticleBody(
-  { title, document: reviewDocument, states, onEdit, onDirty, className },
+  { title, document: reviewDocument, states, onEdit, onDirty, onActivateSuggestion, className },
   ref,
 ) {
   const editables = useRef(new Map<number, HTMLDivElement>());
@@ -173,7 +186,9 @@ export const ReviewArticleBody = forwardRef<HTMLElement, ReviewArticleBodyProps>
   const commit = () => {
     if (!onEdit) return;
     const body = reviewDocument.segments
-      .map((seg, i) => (seg.kind === 'static' ? (editables.current.get(i)?.innerHTML ?? seg.html) : resolveSegment(seg, undefined)))
+      .map((seg, i) =>
+        seg.kind === 'static' ? (editables.current.get(i)?.innerHTML ?? seg.html) : resolveSegment(seg, undefined),
+      )
       .join('');
     onEdit(dedupeBlockIds(body));
   };
@@ -206,6 +221,7 @@ export const ReviewArticleBody = forwardRef<HTMLElement, ReviewArticleBodyProps>
             key={`${segment.suggestionId}-${states[segment.suggestionId] ?? 'inactive'}`}
             segment={segment}
             state={states[segment.suggestionId] ?? 'inactive'}
+            onActivate={onActivateSuggestion}
           />
         ),
       )}
