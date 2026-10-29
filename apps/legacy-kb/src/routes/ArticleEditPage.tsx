@@ -197,16 +197,21 @@ function EditSession({ category, article }: EditSessionProps) {
               </SuggestionsBanner>
             </div>
           ) : null}
-          {/* Reseeds (keeping the scroll position) when Hiver AI's changes are applied or taken back. */}
-          <ArticleEditor
-            contentRevision={auto.editorKey}
-            title={title}
-            bodyHTML={auto.editorBody ?? article?.bodyHTML ?? bodyHTML}
-            onChange={handleEditorChange}
-            heightOffset={bannerHeight > 0 ? bannerHeight + BANNER_GAP : 0}
-            readOnly={auto.readOnly}
-            overlay={auto.overlay}
-          />
+          {/* Layout B, "Show changes": the red / green view takes the editor's place. */}
+          {auto.replaceEditor ? (
+            auto.replaceEditor(bannerHeight > 0 ? bannerHeight + BANNER_GAP : 0)
+          ) : (
+            // Reseeds (keeping the scroll position) when Hiver AI's changes are applied or taken back.
+            <ArticleEditor
+              contentRevision={auto.editorKey}
+              title={title}
+              bodyHTML={auto.editorBody ?? article?.bodyHTML ?? bodyHTML}
+              onChange={handleEditorChange}
+              heightOffset={bannerHeight > 0 ? bannerHeight + BANNER_GAP : 0}
+              readOnly={auto.readOnly}
+              overlay={auto.overlay}
+            />
+          )}
         </div>
         <ArticleMetaPanel
           users={selectUsers(state)}

@@ -4,7 +4,7 @@ import { MaterialIcon } from '../../components/ui/MaterialIcon';
 import { ConfirmModal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
 import { AiChangeMarkers } from '../../improvements/AiChangeMarkers';
-import { AppliedHighlights } from '../../improvements/AppliedHighlights';
+import { AutoChangesView } from '../../improvements/AutoChangesView';
 import { AutoAppliedPanel } from '../../improvements/AutoAppliedPanel';
 import { SourcesSheet } from '../../improvements/SourcesSheet';
 import { BannerCount, SuggestionsBanner } from '../../improvements/SuggestionsBanner';
@@ -19,6 +19,8 @@ type DraftConfirm = 'publish' | 'discard';
 export interface AutoModeEditor {
   /** Above the editor: layout A's banner, layout B's list, or the draft banner. */
   top: ReactNode;
+  /** Layout B with changes shown: rendered in the editor's place (given the banner's height). */
+  replaceEditor?: (heightOffset: number) => ReactNode;
   /** Draft option: the draft update's body, shown instead of the live one. */
   editorBody: string | undefined;
   readOnly: boolean;
@@ -47,6 +49,7 @@ export function useAutoModeEditor(article: Article | undefined): AutoModeEditor 
   const articleId = article?.id ?? '';
   const applied = useAutoApplied(articleId);
   const [focusedId, setFocusedId] = useState<string | null>(null);
+  const [showChanges, setShowChanges] = useState(false);
   const [confirm, setConfirm] = useState<DraftConfirm | null>(null);
   const [draftSources, setDraftSources] = useState<string | null>(null);
 
@@ -98,15 +101,31 @@ export function useAutoModeEditor(article: Article | undefined): AutoModeEditor 
         <AutoAppliedPanel
           items={applied.items}
           needsReview={applied.needsReview}
+          open={showChanges}
+          onOpenChange={setShowChanges}
           onToggle={applied.toggle}
-          onMarkReviewed={applied.markReviewed}
+          onMarkReviewed={() => {
+            applied.markReviewed();
+            setShowChanges(false);
+          }}
           onFocus={setFocusedId}
         />
       ),
+      replaceEditor: showChanges
+        ? (heightOffset) => (
+            <AutoChangesView
+              title={article.title}
+              baseBodyHTML={state.aiReviewHistoryByArticle[articleId]?.baseBodyHTML ?? article.bodyHTML}
+              items={applied.items}
+              focusedId={focusedId}
+              heightOffset={heightOffset}
+            />
+          )
+        : undefined,
       editorBody: undefined,
       readOnly: false,
       editorKey,
-      overlay: <AppliedHighlights items={applied.items} focusedId={focusedId} />,
+      overlay: null,
       dialogs: sourcesSheet(applied.sourcesFor, () => applied.setSourcesFor(null)),
     };
   }

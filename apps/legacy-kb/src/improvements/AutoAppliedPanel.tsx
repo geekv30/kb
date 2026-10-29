@@ -1,10 +1,11 @@
 // Layout B: the edit page's AI banner (same box, type and button as the
 // manual "Hiver AI suggested 3 improvements" banner), saying auto mode
-// applied N suggestions. "Show" opens compact rows in the same box, in
-// the review rail's language: type + title, a quiet "Auto-applied", and
-// the round Revert. Hovering a row marks its paragraph in the editor.
+// applied N suggestions. "Show changes" swaps the editor for the
+// red / green view of every change (AutoChangesView) and opens compact
+// rows here, in the review rail's language: type + title, a quiet
+// "Auto-applied", and the round Revert. Hovering a row brings its change
+// into view.
 
-import { useEffect, useState } from 'react';
 import { Button } from '../components/ui/Button';
 import { MaterialIcon } from '../components/ui/MaterialIcon';
 import { Tooltip } from '../components/ui/Tooltip';
@@ -17,17 +18,16 @@ import { UndoGlyph } from './SuggestionCard';
 export interface AutoAppliedPanelProps {
   items: AppliedItem[];
   needsReview: boolean;
+  /** Changes shown (rows open, editor swapped for the red / green view). */
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onToggle: (id: string) => void;
   onMarkReviewed: () => void;
-  /** Row hovered: the editor marks that paragraph. */
+  /** Row hovered: its change is brought into view. */
   onFocus: (id: string | null) => void;
 }
 
-export function AutoAppliedPanel({ items, needsReview, onToggle, onMarkReviewed, onFocus }: AutoAppliedPanelProps) {
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    if (!needsReview) setOpen(false);
-  }, [needsReview]);
+export function AutoAppliedPanel({ items, needsReview, open, onOpenChange, onToggle, onMarkReviewed, onFocus }: AutoAppliedPanelProps) {
   const live = items.filter((i) => i.live).length;
 
   return (
@@ -45,10 +45,10 @@ export function AutoAppliedPanel({ items, needsReview, onToggle, onMarkReviewed,
         <button
           type="button"
           aria-expanded={open}
-          onClick={() => setOpen((o) => !o)}
+          onClick={() => onOpenChange(!open)}
           className="m-0 inline-flex shrink-0 cursor-pointer items-center gap-[2px] rounded-[4px] border-0 bg-transparent py-[4px] pr-[4px] pl-[8px] font-inter text-[13px] leading-[20px] font-medium text-legacy-body outline-none hover:bg-legacy-icon-hover focus-visible:shadow-[0_0_0_2px_#1473e6]"
         >
-          {open ? 'Hide' : 'Show'}
+          {open ? 'Hide changes' : 'Show changes'}
           <MaterialIcon name="expand_more" size={18} className={cn('text-legacy-meta transition-transform duration-200', open && 'rotate-180')} />
         </button>
         {needsReview ? (
