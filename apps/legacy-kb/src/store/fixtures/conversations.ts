@@ -342,6 +342,24 @@ export const conversationSources: ConversationSource[] = [
     },
   ]),
 
+  /* sug-assign-3 · retired classic view (2) */
+  ...forSuggestion(ASSIGN, 'sug-assign-3', [
+    {
+      id: 'cs-assign-6',
+      sender: { name: 'Grace Liu', email: 'grace.liu@northpeak.io' },
+      timestamp: daysAgo(1, 15, 26),
+      subject: 'Can’t find Settings → Classic view',
+      snippet: 'Your assignment rules article says we can switch to the classic view, but that option isn’t in Settings anymore.',
+    },
+    {
+      id: 'cs-assign-7',
+      sender: { name: 'Omar Haddad', email: 'omar@sandline.ae' },
+      timestamp: daysAgo(2, 10, 48),
+      subject: 'Classic assignment screen gone?',
+      snippet: 'We used to switch back to the classic screen. Was it removed? The help article still mentions it.',
+    },
+  ]),
+
   /* sug-chathours-1 · time zone (2) */
   ...forSuggestion(CHAT_HOURS, 'sug-chathours-1', [
     {

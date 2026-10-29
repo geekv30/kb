@@ -109,10 +109,14 @@ const CHAT_ROUTING_BODY = [
 export const ASSIGN_INTRO_HTML =
   '<p data-block-id="assign-intro">Assignment rules route each new conversation to the right teammate automatically. Rules run top to bottom, and the first rule that matches wins.</p>';
 
+export const ASSIGN_CLASSIC_HTML =
+  '<p data-block-id="assign-classic">Prefer the old layout? Switch back to the classic assignment screen from <strong>Settings → Classic view</strong>.</p>';
+
 const ASSIGN_BODY = [
   ASSIGN_INTRO_HTML,
   '<h2>Round-robin assignment</h2>',
   '<p data-block-id="assign-round-robin">Round-robin spreads conversations evenly across everyone in a team. Teammates who are marked away are skipped until they come back.</p>',
+  ASSIGN_CLASSIC_HTML,
 ].join('');
 
 export const CHAT_HOURS_HOLIDAYS_HTML =
@@ -194,7 +198,8 @@ export const articles: Article[] = [
     lastActivity: 'published',
     modifiedAt: daysAgo(118),
     bodyHTML: ASSIGN_BODY,
-    aiSummary: 'Explains where unmatched conversations go and adds load-balanced assignment.',
+    aiSummary:
+      'Explains where unmatched conversations go, adds load-balanced assignment, and removes the retired classic view.',
   },
   {
     id: 'art-pausing-rules-during-holidays',

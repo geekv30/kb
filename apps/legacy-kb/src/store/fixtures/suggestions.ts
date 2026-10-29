@@ -19,6 +19,7 @@
 
 import type { AISuggestion } from '../types';
 import {
+  ASSIGN_CLASSIC_HTML,
   ASSIGN_INTRO_HTML,
   CHAT_HOURS_HOLIDAYS_HTML,
   AUTO_REPLY_DOMAIN_HTML,
@@ -183,7 +184,7 @@ export const suggestions: AISuggestion[] = [
   /* ───────── Incoming batch: arrives when the prototype simulates new
      conversations (to review in manual mode, applied in auto mode) ───────── */
 
-  /* art-routing-conversations-with-assignment-rules (2) */
+  /* art-routing-conversations-with-assignment-rules (3: one of each type) */
   {
     id: 'sug-assign-1',
     articleId: 'art-routing-conversations-with-assignment-rules',
@@ -211,6 +212,19 @@ export const suggestions: AISuggestion[] = [
         '<section data-block-id="assign-load-balanced"><h2>Load-balanced assignment</h2><p>Load-balanced assignment gives each new conversation to the teammate with the fewest open conversations. Turn it on in <strong>Settings → Assignment rules → Method</strong>. It works best when some conversations take much longer than others.</p></section>',
     },
     sourceCount: 3,
+    status: 'incoming',
+  },
+  {
+    id: 'sug-assign-3',
+    articleId: 'art-routing-conversations-with-assignment-rules',
+    type: 'removal',
+    title: 'Remove the classic view steps',
+    description: 'The classic assignment screen was retired.',
+    anchorBlockId: 'assign-classic',
+    payload: {
+      oldHTML: ASSIGN_CLASSIC_HTML,
+    },
+    sourceCount: 2,
     status: 'incoming',
   },
 
