@@ -102,6 +102,28 @@ const CHAT_ROUTING_BODY = [
   '<p>Set a <strong>maximum number of active chats</strong> per agent in <strong>Chat → Routing → Capacity</strong>. When everyone is at capacity, new chats wait in the queue and visitors see their place in line.</p>',
 ].join('');
 
+/* ───────── Incoming batch (auto mode) ─────────
+ * Suggestions on these two arrive only when the prototype simulates new
+ * conversations: to review in manual mode, applied in auto mode. */
+
+export const ASSIGN_INTRO_HTML =
+  '<p data-block-id="assign-intro">Assignment rules route each new conversation to the right teammate automatically. Rules run top to bottom, and the first rule that matches wins.</p>';
+
+const ASSIGN_BODY = [
+  ASSIGN_INTRO_HTML,
+  '<h2>Round-robin assignment</h2>',
+  '<p data-block-id="assign-round-robin">Round-robin spreads conversations evenly across everyone in a team. Teammates who are marked away are skipped until they come back.</p>',
+].join('');
+
+export const CHAT_HOURS_HOLIDAYS_HTML =
+  '<p data-block-id="chat-hours-holidays">To close chat on a public holiday, turn off availability for that day by hand and turn it back on the next morning.</p>';
+
+const CHAT_HOURS_BODY = [
+  '<p data-block-id="chat-hours-intro">Availability hours control when the chat widget shows agents as online. Outside those hours, visitors can still leave a message and your team picks it up the next working day.</p>',
+  '<h2>Holidays</h2>',
+  CHAT_HOURS_HOLIDAYS_HTML,
+].join('');
+
 /* ───────── Fixtures (table order) ───────── */
 
 export const articles: Article[] = [
@@ -171,8 +193,8 @@ export const articles: Article[] = [
     modifierId: null,
     lastActivity: 'published',
     modifiedAt: daysAgo(118),
-    bodyHTML:
-      '<p>Assignment rules route each new conversation to the right teammate automatically. Rules run top to bottom, and the first rule that matches wins.</p><h2>Round-robin assignment</h2><p>Round-robin spreads conversations evenly across everyone in a team. Teammates who are marked away are skipped until they come back.</p>',
+    bodyHTML: ASSIGN_BODY,
+    aiSummary: 'Explains where unmatched conversations go and adds load-balanced assignment.',
   },
   {
     id: 'art-pausing-rules-during-holidays',
@@ -213,8 +235,8 @@ export const articles: Article[] = [
     modifierId: 'user-ashuthosh',
     lastActivity: 'updated',
     modifiedAt: daysAgo(9),
-    bodyHTML:
-      '<p>Availability hours control when the chat widget shows agents as online. Outside those hours, visitors can still leave a message and your team picks it up the next working day.</p>',
+    bodyHTML: CHAT_HOURS_BODY,
+    aiSummary: 'Clarifies which time zone the hours follow and points holidays to the holiday calendar.',
   },
   {
     id: 'art-setting-up-chat-routing',

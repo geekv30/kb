@@ -4,13 +4,13 @@
 // published or marked as reviewed, which hides the nudges.
 
 import { useMemo } from 'react';
-import { selectSuggestionArticles } from '../store/selectors';
+import { selectArticlesNeedingAction } from '../store/selectors';
 import { useStore } from '../store/StoreContext';
 
 export function useAiSuggestionCounts(): { articles: number; suggestions: number } {
   const { state } = useStore();
   return useMemo(() => {
-    const rows = selectSuggestionArticles(state, 'TO_REVIEW');
+    const rows = selectArticlesNeedingAction(state);
     return { articles: rows.length, suggestions: rows.reduce((sum, r) => sum + r.total, 0) };
   }, [state]);
 }

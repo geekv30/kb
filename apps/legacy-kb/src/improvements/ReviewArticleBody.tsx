@@ -26,7 +26,12 @@ import { cn } from '../lib/cn';
 import { resolveSegment, type ReviewDocument, type SuggestionSegment } from './reviewDocument';
 import type { ReviewDecision } from './reviewState';
 
-export type BodySuggestionState = 'inactive' | 'active' | ReviewDecision;
+/**
+ * `diff` (auto mode): the change stays marked up — removed text struck
+ * through, added text highlighted — without the active card's motion,
+ * so every change Hiver AI made is visible at once.
+ */
+export type BodySuggestionState = 'inactive' | 'active' | 'diff' | ReviewDecision;
 
 export interface ReviewArticleBodyProps {
   title: string;
@@ -135,9 +140,10 @@ interface SuggestionRegionProps {
 function SuggestionRegion({ segment, state, onActivate }: SuggestionRegionProps) {
   const id = segment.suggestionId;
   const active = state === 'active';
+  const marked = active || state === 'diff';
 
   const html = useMemo(() => {
-    if (active) {
+    if (marked) {
       switch (segment.kind) {
         case 'addition':
           return highlightHTML(segment.newHTML, 'add');
@@ -155,7 +161,7 @@ function SuggestionRegion({ segment, state, onActivate }: SuggestionRegionProps)
     // does); everything else is exactly what publishing would write.
     if (state === 'inactive' && segment.kind === 'addition') return segment.newHTML;
     return resolveSegment(segment, state === 'inactive' ? undefined : state);
-  }, [segment, state, active]);
+  }, [segment, state, marked]);
 
   if (!html) {
     // Hidden content: a zero-height anchor keeps the rail pairing.

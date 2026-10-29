@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { ToastProvider } from '../components/ui/Toast';
+import { PrototypeBar } from './PrototypeBar';
 import { Sidebar } from './Sidebar';
 
 /** Live root `section`: min-width 1024px, flex row, overflow hidden. */
@@ -12,6 +13,7 @@ export function AppShell() {
           <Outlet />
         </main>
       </section>
+      <PrototypeBar />
     </ToastProvider>
   );
 }

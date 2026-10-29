@@ -4,7 +4,7 @@ import { articles } from './fixtures/articles';
 import { suggestions } from './fixtures/suggestions';
 import { conversationSources } from './fixtures/conversations';
 import { buildReviewDocument } from '../improvements/reviewDocument';
-import type { AISuggestion, StoreState } from './types';
+import type { AISuggestion, AutoModeOption, StoreState } from './types';
 
 function keyById<T extends { id: string }>(list: T[]): Record<string, T> {
   const out: Record<string, T> = {};
@@ -84,7 +84,13 @@ function runIntegrityAsserts(state: StoreState): void {
  * Fresh demo state. The store is in-memory only, so a reload always
  * starts the demo over from these fixtures.
  */
-export function seed(): StoreState {
+/** `?option=2` opens the prototype on the merge design; anything else is option 1. */
+function optionFromUrl(): AutoModeOption {
+  return new URLSearchParams(window.location.search).get('option') === '2' ? 'merge' : 'publish';
+}
+
+/** `overrides` carry the prototype's settings across a restart. */
+export function seed(overrides?: Partial<Pick<StoreState, 'aiAutoApply' | 'autoModeOption'>>): StoreState {
   const state: StoreState = {
     helpCenters: keyById(helpCenters),
     activeHelpCenterId: 'hc-product',
@@ -98,7 +104,8 @@ export function seed(): StoreState {
     conversationSources: keyById(conversationSources),
     aiReviewByArticle: {},
     aiReviewHistoryByArticle: {},
-    aiAutoApply: false,
+    aiAutoApply: overrides?.aiAutoApply ?? false,
+    autoModeOption: overrides?.autoModeOption ?? optionFromUrl(),
   };
 
   if (import.meta.env.DEV) runIntegrityAsserts(state);

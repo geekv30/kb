@@ -21,6 +21,7 @@ import { SUGGESTIONS_HUB_PATH } from '../lib/paths';
 import { useStore } from '../store/StoreContext';
 import { selectArticleBySlug, selectConversationSources, selectReviewSession } from '../store/selectors';
 import type { AISuggestion } from '../store/types';
+import { AutoReviewSession } from './AutoReviewSession';
 import { NotFound } from './NotFound';
 
 /** Rail width; fits a 1470px viewport next to the 720px body. */
@@ -370,7 +371,15 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
   const history = state.aiReviewHistoryByArticle[articleId];
   const historyNote =
     isHistory && history
-      ? `${history.published ? 'Published' : 'Marked as reviewed'} by ${firstName(state, history.reviewedById)} ${whenText(history.reviewedAt)}`
+      ? `${
+          session?.auto
+            ? history.published
+              ? 'Merged into live'
+              : 'Version discarded'
+            : history.published
+              ? 'Published'
+              : 'Marked as reviewed'
+        } by ${firstName(state, history.reviewedById)} ${whenText(history.reviewedAt)}`
       : undefined;
 
   return (
@@ -513,10 +522,16 @@ export function ArticleReviewPage() {
   if (!article) {
     return <NotFound title="This article doesn’t exist" message="It may have been moved or deleted." />;
   }
-  if (!selectReviewSession(state, article.id)) {
+  const session = selectReviewSession(state, article.id);
+  if (!session) {
     return (
       <NotFound title="No suggestions to review" message="Hiver’s AI hasn’t suggested any changes to this article." />
     );
+  }
+  // Auto mode: applied changes (publish) or an improved version (merge).
+  // A merged version reads as an ordinary review history.
+  if (session.auto && (session.kind === 'live' || state.autoModeOption === 'publish')) {
+    return <AutoReviewSession key={article.id} articleId={article.id} />;
   }
   return <ReviewSession key={article.id} articleId={article.id} />;
 }

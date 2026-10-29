@@ -6,7 +6,7 @@ import { TooltipIconButton } from '../components/ui/Tooltip';
 import { cn } from '../lib/cn';
 import { useStore } from '../store/StoreContext';
 import { SUGGESTIONS_HUB_PATH } from '../lib/paths';
-import { selectActiveHelpCenter, selectCategories, selectSuggestionArticles } from '../store/selectors';
+import { selectActiveHelpCenter, selectArticlesNeedingAction, selectCategories } from '../store/selectors';
 import { CategoryNavItem } from './CategoryNavItem';
 import { HelpCenterPicker } from './HelpCenterPicker';
 import { NewCategoryModal, type NewCategoryValues } from './NewCategoryModal';
@@ -33,7 +33,7 @@ export function Sidebar() {
 
   const helpCenter = selectActiveHelpCenter(state);
   const categories = selectCategories(state);
-  const pendingArticleCount = selectSuggestionArticles(state, 'TO_REVIEW').length;
+  const pendingArticleCount = selectArticlesNeedingAction(state).length;
 
   const handleCreate = (values: NewCategoryValues) => {
     const id = `cat-${values.slug}-${Date.now().toString(36)}`;

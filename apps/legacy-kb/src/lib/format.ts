@@ -1,6 +1,7 @@
 // Ports of the live app's string helpers (main bundle `Oj`, `_D`, `Zr`),
 // so truncation and relative-time labels match character for character.
 
+import { HIVER_AI_USER_ID } from '../store/fixtures/users';
 import type { Article, StoreState } from '../store/types';
 
 /** Live `Oj`: trims, then cuts to `max` chars and appends "...". */
@@ -52,6 +53,8 @@ export function activityText(state: StoreState, article: Article, now: number = 
 }
 
 export function firstName(state: StoreState, userId: string | null): string {
+  // "Hiver AI" is a product, not a person: never shorten it to "Hiver".
+  if (userId === HIVER_AI_USER_ID) return displayName(state, userId);
   return displayName(state, userId).split(' ')[0] ?? '';
 }
 

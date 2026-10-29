@@ -13,7 +13,8 @@ import { ArticleEditor, type ArticleEditorChange } from '../components/editor/Ar
 import { Button } from '../components/ui/Button';
 import { ConfirmModal } from '../components/ui/Modal';
 import { TooltipIconButton } from '../components/ui/Tooltip';
-import { SuggestionsBanner } from '../improvements/SuggestionsBanner';
+import { AUTO_MODE_COPY } from '../improvements/autoModeCopy';
+import { BannerCount, SuggestionsBanner } from '../improvements/SuggestionsBanner';
 import { slugify } from '../lib/format';
 import { suggestionsReviewPath } from '../lib/paths';
 import { useElementHeight } from '../lib/useElementHeight';
@@ -22,7 +23,7 @@ import {
   selectArticleBySlug,
   selectCategories,
   selectCategoryBySlug,
-  selectPendingSuggestionSummary,
+  selectOpenSuggestionSummary,
   selectUsers,
 } from '../store/selectors';
 import type { Article, ArticleStatus, Category } from '../store/types';
@@ -56,7 +57,7 @@ function EditSession({ category, article }: EditSessionProps) {
   const [authorId, setAuthorId] = useState<string | null>(article ? article.authorId : state.currentUserId);
   const [pending, setPending] = useState<PendingConfirm>(null);
   const [bannerRef, bannerHeight] = useElementHeight<HTMLElement>();
-  const suggestions = article ? selectPendingSuggestionSummary(state, article.id) : undefined;
+  const suggestions = article ? selectOpenSuggestionSummary(state, article.id) : undefined;
 
   const status: ArticleStatus = article?.status ?? 'DRAFT';
   const categoryBase = `/product/category/${category.slug}`;
@@ -183,10 +184,23 @@ function EditSession({ category, article }: EditSessionProps) {
             <div style={{ marginBottom: BANNER_GAP }}>
               <SuggestionsBanner
                 ref={bannerRef}
-                improvements={suggestions.total}
-                conversations={suggestions.conversations}
-                onReview={() => navigate(suggestionsReviewPath(article.slug))}
-              />
+                actionLabel={
+                  suggestions.stage === 'AUTO' ? AUTO_MODE_COPY[state.autoModeOption].banner.action : 'Review suggestions'
+                }
+                onAction={() => navigate(suggestionsReviewPath(article.slug))}
+              >
+                {suggestions.stage === 'AUTO' ? (
+                  <>
+                    {AUTO_MODE_COPY[state.autoModeOption].banner.lead} based on{' '}
+                    <BannerCount count={suggestions.conversations} noun="recent customer conversation" />.
+                  </>
+                ) : (
+                  <>
+                    Hiver AI suggested <BannerCount count={suggestions.total} noun="improvement" /> to this article
+                    based on <BannerCount count={suggestions.conversations} noun="recent customer conversation" />.
+                  </>
+                )}
+              </SuggestionsBanner>
             </div>
           ) : null}
           <ArticleEditor

@@ -74,8 +74,9 @@ function inReviewOrder(bodyHTML: string, list: AISuggestion[]): AISuggestion[] {
     .filter((s): s is AISuggestion => Boolean(s));
 }
 
+/** Suggestions that have arrived (`incoming` ones haven't yet). */
 function ownSuggestions(state: StoreState, articleId: string): AISuggestion[] {
-  return Object.values(state.suggestions).filter((s) => s.articleId === articleId);
+  return Object.values(state.suggestions).filter((s) => s.articleId === articleId && s.status !== 'incoming');
 }
 
 /**
@@ -106,16 +107,24 @@ export function finalDecision(s: AISuggestion): ReviewDecision | undefined {
  *             before the first publish, with the historical decisions.
  */
 export type ReviewSessionData =
-  | { kind: 'live'; bodyHTML: string; suggestions: AISuggestion[] }
-  | { kind: 'history'; bodyHTML: string; suggestions: AISuggestion[]; decisions: Record<string, ReviewDecision> };
+  | { kind: 'live'; bodyHTML: string; suggestions: AISuggestion[]; auto: boolean }
+  | {
+      kind: 'history';
+      bodyHTML: string;
+      suggestions: AISuggestion[];
+      decisions: Record<string, ReviewDecision>;
+      auto: boolean;
+    };
 
 export function selectReviewSession(state: StoreState, articleId: string): ReviewSessionData | undefined {
   const article = state.articles[articleId];
   if (!article) return undefined;
   const own = ownSuggestions(state, articleId);
   if (own.length === 0) return undefined;
+  // Auto: arrived while auto mode was on — applied (publish) or pre-accepted (merge).
+  const auto = own.some((s) => s.autoApplied);
   if (own.some((s) => s.status === 'pending')) {
-    return { kind: 'live', bodyHTML: article.bodyHTML, suggestions: selectReviewSuggestions(state, articleId) };
+    return { kind: 'live', bodyHTML: article.bodyHTML, suggestions: selectReviewSuggestions(state, articleId), auto };
   }
   const bodyHTML = state.aiReviewHistoryByArticle[articleId]?.baseBodyHTML ?? article.bodyHTML;
   const decisions: Record<string, ReviewDecision> = {};
@@ -123,7 +132,7 @@ export function selectReviewSession(state: StoreState, articleId: string): Revie
     const d = finalDecision(s);
     if (d) decisions[s.id] = d;
   }
-  return { kind: 'history', bodyHTML, suggestions: inReviewOrder(bodyHTML, own), decisions };
+  return { kind: 'history', bodyHTML, suggestions: inReviewOrder(bodyHTML, own), decisions, auto };
 }
 
 /** The conversations behind one suggestion, newest first. */
@@ -142,7 +151,13 @@ export function selectConversationSources(state: StoreState, suggestionId: strin
 
 export type SuggestionImpact = 'high' | 'medium' | 'low';
 
-export type SuggestionHubTab = 'TO_REVIEW' | 'REVIEWED';
+/**
+ * `AUTO`: arrived while auto mode was on. Option `publish` — applied to
+ * the live article ("Applied by AI"). Option `merge` — an improved
+ * version waiting to be merged ("Ready to merge"); once merged it moves
+ * to Reviewed like any other review.
+ */
+export type SuggestionHubTab = 'TO_REVIEW' | 'AUTO' | 'REVIEWED';
 
 export type ArticleSuggestionSummary = {
   article: Article;
@@ -161,6 +176,8 @@ export type ArticleSuggestionSummary = {
   impact: SuggestionImpact;
   /** Latest publish / mark as reviewed, if any. */
   reviewedAt: string | undefined;
+  /** AUTO: when the batch arrived and was applied (or set aside to merge). */
+  autoAppliedAt: string | undefined;
 };
 
 /** By conversation volume: 12+ high, 6+ medium, otherwise low. */
@@ -181,8 +198,8 @@ export function selectArticleSuggestionSummary(
   const own = ownSuggestions(state, articleId);
   if (own.length === 0) return undefined;
   const pending = own.filter((s) => s.status === 'pending');
-  const stage: SuggestionHubTab = pending.length > 0 ? 'TO_REVIEW' : 'REVIEWED';
-  const batch = stage === 'TO_REVIEW' ? pending : own;
+  const stage = stageOf(state, own, pending);
+  const batch = pending.length > 0 ? pending : own;
   const decisions = state.aiReviewByArticle[articleId]?.decisions ?? {};
   const conversations = batch.reduce((acc, s) => acc + s.sourceCount, 0);
   return {
@@ -196,16 +213,34 @@ export function selectArticleSuggestionSummary(
     conversations,
     impact: deriveImpact(conversations),
     reviewedAt: state.aiReviewHistoryByArticle[articleId]?.reviewedAt,
+    autoAppliedAt: own.find((s) => s.autoApplied)?.autoAppliedAt,
   };
 }
 
-/** Summary only when the article still has suggestions waiting to go live. */
-export function selectPendingSuggestionSummary(
+function stageOf(state: StoreState, own: AISuggestion[], pending: AISuggestion[]): SuggestionHubTab {
+  if (pending.some((s) => !s.autoApplied)) return 'TO_REVIEW';
+  if (pending.length > 0) return 'AUTO';
+  if (state.autoModeOption === 'publish' && own.some((s) => s.autoApplied)) return 'AUTO';
+  return 'REVIEWED';
+}
+
+/** Summary while the article still needs a look: to review, or applied / ready to merge in auto mode. */
+export function selectOpenSuggestionSummary(
   state: StoreState,
   articleId: string,
 ): ArticleSuggestionSummary | undefined {
   const summary = selectArticleSuggestionSummary(state, articleId);
-  return summary?.stage === 'TO_REVIEW' ? summary : undefined;
+  return summary && summary.stage !== 'REVIEWED' ? summary : undefined;
+}
+
+/**
+ * Articles that need someone: suggestions to review, plus (merge option)
+ * improved versions waiting to be merged. Applied changes (publish
+ * option) are already live, so they don't count.
+ */
+export function selectArticlesNeedingAction(state: StoreState): ArticleSuggestionSummary[] {
+  const toReview = selectSuggestionArticles(state, 'TO_REVIEW');
+  return state.autoModeOption === 'merge' ? [...toReview, ...selectSuggestionArticles(state, 'AUTO')] : toReview;
 }
 
 /**
@@ -218,6 +253,9 @@ export function selectSuggestionArticles(state: StoreState, tab: SuggestionHubTa
     .filter((s): s is ArticleSuggestionSummary => s !== undefined && s.stage === tab);
   if (tab === 'REVIEWED') {
     return rows.sort((a, b) => (b.reviewedAt ?? '').localeCompare(a.reviewedAt ?? ''));
+  }
+  if (tab === 'AUTO') {
+    return rows.sort((a, b) => (b.autoAppliedAt ?? '').localeCompare(a.autoAppliedAt ?? ''));
   }
   return rows.sort((a, b) => IMPACT_RANK[a.impact] - IMPACT_RANK[b.impact] || b.conversations - a.conversations);
 }

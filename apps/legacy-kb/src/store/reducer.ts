@@ -2,9 +2,11 @@
 // deterministic.
 
 import { applyDecisions } from '../improvements/reviewDocument';
-import { reviewReducer, initialReviewState, type ReviewAction } from '../improvements/reviewState';
+import { reviewReducer, initialReviewState, type ReviewAction, type ReviewDecision } from '../improvements/reviewState';
+import { HIVER_AI_USER_ID } from './fixtures/users';
+import { seed } from './seed';
 import { selectReviewSuggestions } from './selectors';
-import type { AISuggestion, Article, Category, StoreState } from './types';
+import type { AISuggestion, Article, AutoModeOption, Category, StoreState } from './types';
 
 export type StoreAction =
   | { type: 'article/create'; article: Article }
@@ -29,7 +31,13 @@ export type StoreAction =
    * publishes even with nothing accepted (or nothing decided at all).
    */
   | { type: 'aiReview/publish'; articleId: string; modifierId: string; now: string; edited?: boolean }
-  | { type: 'settings/setAiAutoApply'; enabled: boolean };
+  | { type: 'settings/setAiAutoApply'; enabled: boolean }
+  /** New conversations produced the incoming batch. Where it lands depends on the mode. */
+  | { type: 'ai/receiveSuggestions'; now: string }
+  /** Option `publish`: undo an applied change on the live article, or reapply an undone one. */
+  | { type: 'ai/toggleAutoChange'; suggestionId: string; modifierId: string; now: string }
+  /** Prototype: start over on one auto-mode design, keeping the auto setting. */
+  | { type: 'proto/restart'; option: AutoModeOption };
 
 function patchArticle(
   state: StoreState,
@@ -42,6 +50,80 @@ function patchArticle(
     ...state,
     articles: { ...state.articles, [articleId]: { ...existing, ...patch } },
   };
+}
+
+/**
+ * Manual mode: the batch waits in To review. Auto mode, per article:
+ *   publish → applied to the live body by Hiver AI; the pre-change body
+ *             is kept as the history base so each change can be undone.
+ *   merge   → left off the live body, every suggestion pre-accepted in
+ *             the article's review: an improved version waiting to merge.
+ */
+function receiveSuggestions(state: StoreState, now: string): StoreState {
+  const incoming = Object.values(state.suggestions).filter((s) => s.status === 'incoming');
+  if (incoming.length === 0) return state;
+  const suggestions = { ...state.suggestions };
+  if (!state.aiAutoApply) {
+    for (const s of incoming) suggestions[s.id] = { ...s, status: 'pending' };
+    return { ...state, suggestions };
+  }
+
+  const articles = { ...state.articles };
+  const aiReviewByArticle = { ...state.aiReviewByArticle };
+  const aiReviewHistoryByArticle = { ...state.aiReviewHistoryByArticle };
+  const byArticle = new Map<string, AISuggestion[]>();
+  for (const s of incoming) byArticle.set(s.articleId, [...(byArticle.get(s.articleId) ?? []), s]);
+
+  for (const [articleId, batch] of byArticle) {
+    const article = articles[articleId];
+    if (!article) continue;
+    const accepted: Record<string, ReviewDecision> = Object.fromEntries(batch.map((s) => [s.id, 'accepted']));
+    if (state.autoModeOption === 'publish') {
+      for (const s of batch) suggestions[s.id] = { ...s, status: 'published', autoApplied: true, autoAppliedAt: now };
+      articles[articleId] = {
+        ...article,
+        bodyHTML: applyDecisions(article.bodyHTML, batch, accepted),
+        status: 'PUBLISHED',
+        lastActivity: 'published',
+        modifierId: HIVER_AI_USER_ID,
+        modifiedAt: now,
+      };
+      aiReviewHistoryByArticle[articleId] = {
+        baseBodyHTML: article.bodyHTML,
+        reviewedAt: now,
+        reviewedById: HIVER_AI_USER_ID,
+        published: true,
+      };
+    } else {
+      for (const s of batch) suggestions[s.id] = { ...s, status: 'pending', autoApplied: true, autoAppliedAt: now };
+      aiReviewByArticle[articleId] = { ...initialReviewState, mode: 'terminal', activeIndex: -1, decisions: accepted };
+    }
+  }
+  return { ...state, suggestions, articles, aiReviewByArticle, aiReviewHistoryByArticle };
+}
+
+/** Flips one auto-applied change and rebuilds the live body from the pre-change base. */
+function toggleAutoChange(state: StoreState, suggestionId: string, modifierId: string, now: string): StoreState {
+  const target = state.suggestions[suggestionId];
+  const history = target ? state.aiReviewHistoryByArticle[target.articleId] : undefined;
+  if (!target?.autoApplied || !history || (target.status !== 'published' && target.status !== 'dismissed-final')) {
+    return state;
+  }
+  const suggestions = {
+    ...state.suggestions,
+    [suggestionId]: { ...target, status: target.status === 'published' ? 'dismissed-final' : 'published' } as AISuggestion,
+  };
+  const own = Object.values(suggestions).filter((s) => s.articleId === target.articleId && s.status !== 'incoming');
+  const decisions: Record<string, ReviewDecision> = {};
+  for (const s of own) decisions[s.id] = s.status === 'published' ? 'accepted' : 'dismissed';
+  const next = patchArticle({ ...state, suggestions }, target.articleId, {
+    bodyHTML: applyDecisions(history.baseBodyHTML, own, decisions),
+    status: 'PUBLISHED',
+    lastActivity: 'published',
+    modifierId,
+    modifiedAt: now,
+  });
+  return next;
 }
 
 export function rootReducer(state: StoreState, action: StoreAction): StoreState {
@@ -156,6 +238,12 @@ export function rootReducer(state: StoreState, action: StoreAction): StoreState 
     }
     case 'settings/setAiAutoApply':
       return { ...state, aiAutoApply: action.enabled };
+    case 'ai/receiveSuggestions':
+      return receiveSuggestions(state, action.now);
+    case 'ai/toggleAutoChange':
+      return toggleAutoChange(state, action.suggestionId, action.modifierId, action.now);
+    case 'proto/restart':
+      return seed({ aiAutoApply: state.aiAutoApply, autoModeOption: action.option });
     default: {
       const exhaustive: never = action;
       return exhaustive;

@@ -88,7 +88,7 @@ function DecisionChip({
 }
 
 /** Untitled UI `ReverseLeft` path — the new UI's undo glyph. */
-function UndoGlyph() {
+export function UndoGlyph() {
   return (
     <svg
       aria-hidden
@@ -201,7 +201,7 @@ interface SourcesLinkProps {
   onClick?: () => void;
 }
 
-function SourcesLink({ count, onClick }: SourcesLinkProps) {
+export function SourcesLink({ count, onClick }: SourcesLinkProps) {
   const label = `${count} ${count === 1 ? 'source' : 'sources'}`;
   if (!onClick) {
     return (

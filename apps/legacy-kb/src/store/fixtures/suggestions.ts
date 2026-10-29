@@ -19,6 +19,8 @@
 
 import type { AISuggestion } from '../types';
 import {
+  ASSIGN_INTRO_HTML,
+  CHAT_HOURS_HOLIDAYS_HTML,
   AUTO_REPLY_DOMAIN_HTML,
   AUTO_REPLY_RECENT_HTML,
   CHAT_ROUTING_DEFAULT_HTML,
@@ -176,5 +178,70 @@ export const suggestions: AISuggestion[] = [
     },
     sourceCount: 1,
     status: 'pending',
+  },
+
+  /* ───────── Incoming batch: arrives when the prototype simulates new
+     conversations (to review in manual mode, applied in auto mode) ───────── */
+
+  /* art-routing-conversations-with-assignment-rules (2) */
+  {
+    id: 'sug-assign-1',
+    articleId: 'art-routing-conversations-with-assignment-rules',
+    type: 'replace',
+    title: 'Explain unmatched conversations',
+    description: 'Customers ask where unmatched conversations go.',
+    anchorBlockId: 'assign-intro',
+    payload: {
+      oldHTML: ASSIGN_INTRO_HTML,
+      newHTML:
+        '<p data-block-id="assign-intro">Assignment rules route each new conversation to the right teammate automatically. Rules run top to bottom, and the first rule that matches wins. Conversations that match no rule stay unassigned in the shared inbox until someone picks them up.</p>',
+    },
+    sourceCount: 2,
+    status: 'incoming',
+  },
+  {
+    id: 'sug-assign-2',
+    articleId: 'art-routing-conversations-with-assignment-rules',
+    type: 'addition',
+    title: 'Add load-balanced assignment',
+    description: 'Customers ask how to even out workload.',
+    anchorBlockId: 'assign-round-robin',
+    payload: {
+      newHTML:
+        '<section data-block-id="assign-load-balanced"><h2>Load-balanced assignment</h2><p>Load-balanced assignment gives each new conversation to the teammate with the fewest open conversations. Turn it on in <strong>Settings → Assignment rules → Method</strong>. It works best when some conversations take much longer than others.</p></section>',
+    },
+    sourceCount: 3,
+    status: 'incoming',
+  },
+
+  /* art-setting-chat-availability-hours (2) */
+  {
+    id: 'sug-chathours-1',
+    articleId: 'art-setting-chat-availability-hours',
+    type: 'addition',
+    title: 'Clarify the time zone',
+    description: 'Visitors abroad see hours in the wrong time zone.',
+    anchorBlockId: 'chat-hours-intro',
+    payload: {
+      newHTML:
+        '<p data-block-id="chat-hours-timezone">Hours follow the time zone set in <strong>Chat → Availability → Time zone</strong>, not each visitor’s local time.</p>',
+    },
+    sourceCount: 2,
+    status: 'incoming',
+  },
+  {
+    id: 'sug-chathours-2',
+    articleId: 'art-setting-chat-availability-hours',
+    type: 'replace',
+    title: 'Use the holiday calendar',
+    description: 'Holidays no longer need a manual switch.',
+    anchorBlockId: 'chat-hours-holidays',
+    payload: {
+      oldHTML: CHAT_HOURS_HOLIDAYS_HTML,
+      newHTML:
+        '<p data-block-id="chat-hours-holidays">Add public holidays under <strong>Chat → Availability → Holidays</strong>. On those days the widget shows your team as offline and visitors can leave a message, with no need to change your hours.</p>',
+    },
+    sourceCount: 4,
+    status: 'incoming',
   },
 ];

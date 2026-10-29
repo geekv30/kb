@@ -1,5 +1,7 @@
 import type { HelpCenter, User } from '../types';
 
+export const HIVER_AI_USER_ID = 'user-hiver-ai';
+
 export const helpCenters: HelpCenter[] = [
   {
     id: 'hc-product',
@@ -22,5 +24,12 @@ export const users: User[] = [
     name: 'Ashuthosh Rao',
     initial: 'A',
     avatarColor: 'var(--color-legacy-avatar-a)',
+  },
+  {
+    // Author of changes applied in auto mode. Activity reads "by Hiver AI".
+    id: HIVER_AI_USER_ID,
+    name: 'Hiver AI',
+    initial: 'H',
+    avatarColor: 'var(--color-legacy-blue)',
   },
 ];

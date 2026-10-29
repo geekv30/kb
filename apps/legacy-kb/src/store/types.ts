@@ -84,8 +84,10 @@ export type AISuggestionType = 'addition' | 'replace' | 'removal';
  * `published` — accepted and published into the article body.
  * `dismissed-final` — dismissed in a review that was published or
  * marked as reviewed. Both final statuses keep the decision for history.
+ * `incoming` — not arrived yet; the prototype delivers it on demand
+ * (`ai/receiveSuggestions`). Every selector ignores it until then.
  */
-export type AISuggestionStatus = 'pending' | 'published' | 'dismissed-final';
+export type AISuggestionStatus = 'pending' | 'published' | 'dismissed-final' | 'incoming';
 
 export type AISuggestionPayload = {
   /** Replacement / insertion HTML. */
@@ -110,7 +112,22 @@ export type AISuggestion = {
   /** Equals the number of `ConversationSource`s linked to this suggestion. */
   sourceCount: number;
   status: AISuggestionStatus;
+  /**
+   * Arrived while auto mode was on, so nobody reviewed it first. With the
+   * `publish` option it went live (and can be undone); with `merge` it
+   * waits, pre-accepted, in an improved version of the article.
+   */
+  autoApplied?: boolean;
+  /** ISO timestamp of that arrival. */
+  autoAppliedAt?: string;
 };
+
+/**
+ * The two auto-mode designs under comparison (prototype switch):
+ * `publish` — applied straight to the live article, each change undoable.
+ * `merge` — kept as an improved version; someone merges it into live.
+ */
+export type AutoModeOption = 'publish' | 'merge';
 
 export type ConversationSource = {
   id: string;
@@ -167,4 +184,6 @@ export type StoreState = {
    * Suggestions already waiting when it's switched on stay in To review.
    */
   aiAutoApply: boolean;
+  /** Prototype only: which auto-mode design is on show. */
+  autoModeOption: AutoModeOption;
 };

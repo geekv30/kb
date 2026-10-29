@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { copyIcon, defaultFavicon, domainPreview, infoIconSmall, toggleOff, toggleOn } from '../assets/legacy';
 import { Button } from '../components/ui/Button';
+import { AUTO_MODE_COPY, MANUAL_SETTINGS_COPY } from '../improvements/autoModeCopy';
 import { useToast } from '../components/ui/Toast';
 import { Tooltip } from '../components/ui/Tooltip';
 import { pluralize } from '../lib/format';
@@ -247,9 +248,7 @@ export function SiteSettingsPage() {
                   control={<Toggle label="Apply suggestions automatically" checked={autoApply} onChange={setAutoApply} />}
                 />
                 <p className={`mt-[8px] mb-0 ${FIELD_HELP}`}>
-                  {autoApply
-                    ? 'Hiver AI applies new suggestions as they come in. Everything it changes is listed in AI › Suggestions.'
-                    : 'Suggestions wait in AI › Suggestions until someone on your team reviews them.'}
+                  {autoApply ? AUTO_MODE_COPY[state.autoModeOption].settingsOn : MANUAL_SETTINGS_COPY}
                 </p>
                 {keepsBacklog ? (
                   <p className={`mt-[8px] mb-0 ${FIELD_HELP}`}>

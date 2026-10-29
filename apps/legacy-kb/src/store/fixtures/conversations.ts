@@ -29,6 +29,8 @@ const RESET_PW = 'art-how-to-reset-your-password';
 const AUTO_REPLY = 'art-setting-up-auto-reply-rules';
 const CHAT_WIDGET = 'art-customizing-the-chat-widget';
 const CHAT_ROUTING = 'art-setting-up-chat-routing';
+const ASSIGN = 'art-routing-conversations-with-assignment-rules';
+const CHAT_HOURS = 'art-setting-chat-availability-hours';
 
 export const conversationSources: ConversationSource[] = [
   /* ───────── sug-resetpw-1 · mobile app reset steps (7) ───────── */
@@ -292,6 +294,101 @@ export const conversationSources: ConversationSource[] = [
       subject: 'Chats aren’t going to the first agent who answers',
       snippet:
         'Your article says new chats go to whoever accepts first, but ours rotate between agents. Did the default change? Our team expected the old behavior.',
+    },
+  ]),
+
+  /* ───────── Incoming batch (see suggestions.ts) ───────── */
+
+  /* sug-assign-1 · unmatched conversations (2) */
+  ...forSuggestion(ASSIGN, 'sug-assign-1', [
+    {
+      id: 'cs-assign-1',
+      sender: { name: 'Priya Natarajan', email: 'priya@bluefinch.co' },
+      timestamp: daysAgo(1, 8, 20),
+      subject: 'Where do conversations go if no rule matches?',
+      snippet: 'We set up three assignment rules, but a few emails never got assigned to anyone. Are they lost, or is there somewhere we should look?',
+    },
+    {
+      id: 'cs-assign-2',
+      sender: { name: 'Tom Becker', email: 'tom.becker@harborline.com' },
+      timestamp: daysAgo(1, 13, 5),
+      subject: 'Unassigned emails piling up',
+      snippet: 'Some conversations sit unassigned in the shared inbox. Is that expected when none of our rules match them?',
+    },
+  ]),
+
+  /* sug-assign-2 · load-balanced assignment (3) */
+  ...forSuggestion(ASSIGN, 'sug-assign-2', [
+    {
+      id: 'cs-assign-3',
+      sender: { name: 'Hannah Ortiz', email: 'hannah@oakandpine.io' },
+      timestamp: daysAgo(1, 10, 2),
+      subject: 'Round-robin isn’t fair for our team',
+      snippet: 'Round-robin gives everyone the same number of emails, but some take an hour and some take a minute. Can we assign by workload instead?',
+    },
+    {
+      id: 'cs-assign-4',
+      sender: { name: 'Leo Fischer', email: 'leo.fischer@kranich.de' },
+      timestamp: daysAgo(1, 9, 41),
+      subject: 'Assign to whoever has the fewest open conversations?',
+      snippet: 'Is there a way to send new conversations to the person with the lightest load right now?',
+    },
+    {
+      id: 'cs-assign-5',
+      sender: { name: 'Ama Owusu', email: 'ama.owusu@greenleaf.org' },
+      timestamp: daysAgo(2, 16, 30),
+      subject: 'Balancing workload across agents',
+      snippet: 'Two of our agents always end up with the long threads. Does Hiver have a load-balanced option?',
+    },
+  ]),
+
+  /* sug-chathours-1 · time zone (2) */
+  ...forSuggestion(CHAT_HOURS, 'sug-chathours-1', [
+    {
+      id: 'cs-chathours-1',
+      sender: { name: 'Sofia Marquez', email: 'sofia@lumacycles.com' },
+      timestamp: daysAgo(1, 7, 55),
+      subject: 'Chat says we’re offline during business hours',
+      snippet: 'Customers in Madrid see our chat as offline at 10am. Are the hours based on their time zone or ours?',
+    },
+    {
+      id: 'cs-chathours-2',
+      sender: { name: 'Raj Mehta', email: 'raj.mehta@tidewater.in' },
+      timestamp: daysAgo(1, 11, 18),
+      subject: 'Which time zone do availability hours use?',
+      snippet: 'We set 9 to 6 but the widget turns off at 3:30. I think it’s using a different time zone.',
+    },
+  ]),
+
+  /* sug-chathours-2 · holiday calendar (4) */
+  ...forSuggestion(CHAT_HOURS, 'sug-chathours-2', [
+    {
+      id: 'cs-chathours-3',
+      sender: { name: 'Emily Clarke', email: 'emily.clarke@brightdesk.co.uk' },
+      timestamp: daysAgo(1, 9, 12),
+      subject: 'Do we really have to turn chat off by hand on holidays?',
+      snippet: 'Your article says to switch availability off for each holiday. Is there no holiday calendar?',
+    },
+    {
+      id: 'cs-chathours-4',
+      sender: { name: 'Daniel Kim', email: 'daniel.kim@ridgepoint.com' },
+      timestamp: daysAgo(1, 14, 47),
+      subject: 'Chat stayed off after the holiday',
+      snippet: 'Someone forgot to turn chat back on after the long weekend. Is there a way to schedule holidays?',
+    },
+    {
+      id: 'cs-chathours-5',
+      sender: { name: 'Nora Lindqvist', email: 'nora@fjordlabs.se' },
+      timestamp: daysAgo(2, 8, 3),
+      subject: 'Holiday schedule for chat',
+      snippet: 'I found a Holidays tab under Availability. Is that the right way to close chat on public holidays?',
+    },
+    {
+      id: 'cs-chathours-6',
+      sender: { name: 'Marco Bianchi', email: 'marco@vialtech.it' },
+      timestamp: daysAgo(3, 17, 20),
+      subject: 'Setting up public holidays',
+      snippet: 'We want chat closed on national holidays without changing our weekly hours every time.',
     },
   ]),
 ];

@@ -10,7 +10,9 @@ import { SuggestionsTablePill } from '../../improvements/SuggestionsTablePill';
 import { activityText, displayName } from '../../lib/format';
 import { suggestionsReviewPath } from '../../lib/paths';
 import { useStore } from '../../store/StoreContext';
-import { selectPendingSuggestionSummary, type ArticleFilter } from '../../store/selectors';
+import { AUTO_MODE_COPY } from '../../improvements/autoModeCopy';
+import { pluralize } from '../../lib/format';
+import { selectOpenSuggestionSummary, type ArticleFilter } from '../../store/selectors';
 import type { Article, Category } from '../../store/types';
 
 /** Live empty-state copy keyed by tab (chunk 854 `He`/`Me`). */
@@ -62,7 +64,13 @@ function ArticleRow({ article, categorySlug, publicUrl }: ArticleRowProps) {
   const navigate = useNavigate();
   const author = article.authorId ? state.users[article.authorId] : undefined;
   const editHref = `/product/category/${categorySlug}/article/edit/${article.slug}`;
-  const pending = selectPendingSuggestionSummary(state, article.id);
+  const ai = selectOpenSuggestionSummary(state, article.id);
+  const pill =
+    ai?.stage === 'AUTO'
+      ? AUTO_MODE_COPY[state.autoModeOption].pill
+      : ai
+        ? { label: pluralize(ai.total, 'suggestion'), tooltip: 'Review AI suggestions' }
+        : undefined;
 
   return (
     <TableRow onOpen={() => navigate(editHref)}>
@@ -71,9 +79,10 @@ function ArticleRow({ article, categorySlug, publicUrl }: ArticleRowProps) {
         href={editHref}
         width={COLUMNS[0].width}
         trailing={
-          pending ? (
+          pill ? (
             <SuggestionsTablePill
-              count={pending.total}
+              label={pill.label}
+              tooltip={pill.tooltip}
               onOpen={() => navigate(suggestionsReviewPath(article.slug))}
             />
           ) : undefined

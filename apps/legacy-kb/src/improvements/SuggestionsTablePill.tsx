@@ -1,10 +1,11 @@
 import { MaterialIcon } from '../components/ui/MaterialIcon';
 import { Tooltip } from '../components/ui/Tooltip';
-import { pluralize } from '../lib/format';
 
 export interface SuggestionsTablePillProps {
-  /** Pending (not yet published) suggestions on the article. */
-  count: number;
+  /** e.g. "3 suggestions" (to review) or "Updated by AI" (auto mode). */
+  label: string;
+  /** Says where the pill goes, e.g. "Review AI suggestions". */
+  tooltip: string;
   onOpen: () => void;
 }
 
@@ -14,13 +15,12 @@ export interface SuggestionsTablePillProps {
  * hover; padding 1px 8px with a 12px `auto_awesome` and a 4px gap.
  * Opens the review view without triggering the row's editor click.
  */
-export function SuggestionsTablePill({ count, onOpen }: SuggestionsTablePillProps) {
-  const label = pluralize(count, 'suggestion');
+export function SuggestionsTablePill({ label, tooltip, onOpen }: SuggestionsTablePillProps) {
   return (
-    <Tooltip content="Review AI suggestions">
+    <Tooltip content={tooltip}>
       <button
         type="button"
-        aria-label={`${label}. Review AI suggestions`}
+        aria-label={`${label}. ${tooltip}`}
         onClick={(e) => {
           e.stopPropagation();
           onOpen();

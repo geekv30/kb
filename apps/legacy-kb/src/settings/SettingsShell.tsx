@@ -17,6 +17,7 @@ import { TooltipIconButton } from '../components/ui/Tooltip';
 import { cn } from '../lib/cn';
 import { ACCESS_SETTINGS_PATH, BRANDING_SETTINGS_PATH, SITE_SETTINGS_PATH } from '../lib/paths';
 import { HelpCenterPicker } from '../shell/HelpCenterPicker';
+import { PrototypeBar } from '../shell/PrototypeBar';
 import { selectActiveHelpCenter } from '../store/selectors';
 import { useStore } from '../store/StoreContext';
 
@@ -117,6 +118,7 @@ export function SettingsShell() {
           <Outlet />
         </main>
       </section>
+      <PrototypeBar bottom={86} />
     </ToastProvider>
   );
 }
