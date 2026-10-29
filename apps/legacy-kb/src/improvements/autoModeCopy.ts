@@ -31,19 +31,19 @@ export interface AutoModeCopy {
 export const AUTO_MODE_COPY: Record<AutoModeOption, AutoModeCopy> = {
   publish: {
     optionLabel: 'Publish automatically',
-    tab: 'Applied by AI',
+    tab: 'Auto-applied',
     whenColumn: 'APPLIED',
     empty: {
       title: 'Nothing applied yet',
-      info: 'When Hiver AI updates an article, it shows here and the changes are marked in the article.',
+      info: 'When auto mode applies a Hiver AI suggestion to an article, the article shows here.',
     },
     settingsOn:
-      'Hiver AI publishes its improvements as they come in and marks every change in the article, so you can keep it or restore the original.',
+      'Hiver AI applies its suggestions to your articles as they come in, without waiting for a review. You can see each one on the article and revert it.',
     hubDescription:
-      'Hiver AI applies improvements from recent customer conversations as they come in. Each change is marked in the article so you can check it.',
-    notice: (articles) => `Hiver AI updated ${articles}. Check what changed.`,
-    noticeAction: 'Check changes',
-    tag: { label: 'Updated by AI', tooltip: 'Hiver AI changed this article. Open it to check the changes.' },
+      'Auto mode is on: Hiver AI applies its suggestions from recent customer conversations as they come in. Check what it applied and revert anything you don’t want.',
+    notice: (articles) => `Auto mode applied Hiver AI suggestions to ${articles}. Check what was applied.`,
+    noticeAction: 'View suggestions',
+    tag: { label: 'Auto-applied', tooltip: 'Auto mode applied Hiver AI suggestions to this article. Open to check them.' },
   },
   merge: {
     optionLabel: 'Save as a draft',

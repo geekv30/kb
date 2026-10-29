@@ -134,6 +134,17 @@ export type AISuggestion = {
  */
 export type AutoModeOption = 'publish' | 'merge';
 
+/**
+ * The two ways under comparison to show an article's auto-applied
+ * suggestions (prototype switch):
+ * `rail` (A) — the article with the suggestion rail, like manual review.
+ * `list` (B) — a numbered list above the editor on the edit page.
+ */
+export type AutoLayout = 'rail' | 'list';
+
+/** Someone marked an article's auto-applied suggestions as reviewed. */
+export type AutoReview = { reviewedById: string; reviewedAt: string };
+
 export type ConversationSource = {
   id: string;
   articleId: string;
@@ -191,4 +202,8 @@ export type StoreState = {
   aiAutoApply: boolean;
   /** Prototype only: which auto-mode design is on show. */
   autoModeOption: AutoModeOption;
+  /** Prototype only: how an article's auto-applied suggestions are shown. */
+  autoLayout: AutoLayout;
+  /** Latest "Mark as reviewed" on an article's auto-applied suggestions. */
+  autoReviewByArticle: Record<string, AutoReview>;
 };

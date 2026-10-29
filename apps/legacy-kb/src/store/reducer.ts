@@ -6,7 +6,7 @@ import { reviewReducer, initialReviewState, type ReviewAction, type ReviewDecisi
 import { HIVER_AI_USER_ID } from './fixtures/users';
 import { seed } from './seed';
 import { selectReviewSuggestions } from './selectors';
-import type { AISuggestion, Article, AutoModeOption, Category, StoreState } from './types';
+import type { AISuggestion, Article, AutoLayout, AutoModeOption, Category, StoreState } from './types';
 
 export type StoreAction =
   | { type: 'article/create'; article: Article }
@@ -36,8 +36,10 @@ export type StoreAction =
   | { type: 'ai/receiveSuggestions'; now: string }
   /** Option `publish`: undo an applied change on the live article, or reapply an undone one. */
   | { type: 'ai/toggleAutoChange'; suggestionId: string; modifierId: string; now: string }
-  /** Auto mode: someone kept a change Hiver AI made; it stops being marked. */
-  | { type: 'ai/keepAutoChange'; suggestionId: string }
+  /** Auto mode: someone checked an article's auto-applied suggestions. */
+  | { type: 'ai/markAutoReviewed'; articleId: string; userId: string; now: string }
+  /** Prototype: switch how auto-applied suggestions are shown (no restart). */
+  | { type: 'proto/setAutoLayout'; layout: AutoLayout }
   /** Merge option: drop the whole draft update; the live article stays as it is. */
   | { type: 'ai/discardDraft'; articleId: string; modifierId: string; now: string }
   /** Prototype: start over on one auto-mode design, keeping the auto setting. */
@@ -255,11 +257,22 @@ export function rootReducer(state: StoreState, action: StoreAction): StoreState 
       return receiveSuggestions(state, action.now);
     case 'ai/toggleAutoChange':
       return toggleAutoChange(state, action.suggestionId, action.modifierId, action.now);
-    case 'ai/keepAutoChange': {
-      const s = state.suggestions[action.suggestionId];
-      if (!s?.autoApplied || s.checked) return state;
-      return { ...state, suggestions: { ...state.suggestions, [s.id]: { ...s, checked: true } } };
+    case 'ai/markAutoReviewed': {
+      const suggestions = { ...state.suggestions };
+      for (const s of Object.values(state.suggestions)) {
+        if (s.articleId === action.articleId && s.autoApplied) suggestions[s.id] = { ...s, checked: true };
+      }
+      return {
+        ...state,
+        suggestions,
+        autoReviewByArticle: {
+          ...state.autoReviewByArticle,
+          [action.articleId]: { reviewedById: action.userId, reviewedAt: action.now },
+        },
+      };
     }
+    case 'proto/setAutoLayout':
+      return { ...state, autoLayout: action.layout };
     case 'ai/discardDraft': {
       const items = selectReviewSuggestions(state, action.articleId);
       if (items.length === 0) return state;
@@ -277,7 +290,7 @@ export function rootReducer(state: StoreState, action: StoreAction): StoreState 
       });
     }
     case 'proto/restart':
-      return seed({ aiAutoApply: state.aiAutoApply, autoModeOption: action.option });
+      return seed({ aiAutoApply: state.aiAutoApply, autoModeOption: action.option, autoLayout: state.autoLayout });
     default: {
       const exhaustive: never = action;
       return exhaustive;

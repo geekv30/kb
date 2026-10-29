@@ -452,3 +452,34 @@ code {
   text-decoration-color: var(--color-legacy-danger);
   text-decoration-thickness: 1px;
 }
+
+/*
+ * Auto mode: a suggestion Hiver AI applied, shown in the article (display
+ * only, never saved). Success wash grown 6px past the block with a
+ * box-shadow so the text doesn't move; its number sits in the margin
+ * (same 20px disc as on the suggestion).
+ */
+.ck-content [data-auto-applied] {
+  position: relative;
+  border-radius: 4px;
+  background-color: var(--color-legacy-success-bg);
+  box-shadow: 0 0 0 6px var(--color-legacy-success-bg);
+}
+.ck-content [data-auto-applied]::before {
+  content: attr(data-auto-applied);
+  position: absolute;
+  top: 2px;
+  left: -36px;
+  display: flex;
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: var(--color-legacy-success);
+  color: #ffffff;
+  font-family: var(--font-inter);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+}

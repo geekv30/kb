@@ -21,6 +21,7 @@ import { SUGGESTIONS_HUB_PATH } from '../lib/paths';
 import { useStore } from '../store/StoreContext';
 import { articleEditPath, selectArticleBySlug, selectConversationSources, selectReviewSession } from '../store/selectors';
 import type { AISuggestion } from '../store/types';
+import { AutoAppliedView } from './AutoAppliedView';
 import { NotFound } from './NotFound';
 
 /** Rail width; fits a 1470px viewport next to the 720px body. */
@@ -530,6 +531,9 @@ export function ArticleReviewPage() {
   // Auto mode: the changes are checked inside the article, in the editor.
   // A published draft update reads as an ordinary review history.
   if (session.auto && (session.kind === 'live' || state.autoModeOption === 'publish')) {
+    if (state.autoModeOption === 'publish' && state.autoLayout === 'rail') {
+      return <AutoAppliedView key={article.id} articleId={article.id} />;
+    }
     return <Navigate to={articleEditPath(state, article.id)} replace />;
   }
   return <ReviewSession key={article.id} articleId={article.id} />;

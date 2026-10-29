@@ -4,7 +4,7 @@ import { articles } from './fixtures/articles';
 import { suggestions } from './fixtures/suggestions';
 import { conversationSources } from './fixtures/conversations';
 import { buildReviewDocument } from '../improvements/reviewDocument';
-import type { AISuggestion, AutoModeOption, StoreState } from './types';
+import type { AISuggestion, AutoLayout, AutoModeOption, StoreState } from './types';
 
 function keyById<T extends { id: string }>(list: T[]): Record<string, T> {
   const out: Record<string, T> = {};
@@ -89,8 +89,15 @@ function optionFromUrl(): AutoModeOption {
   return new URLSearchParams(window.location.search).get('option') === '2' ? 'merge' : 'publish';
 }
 
+/** `?layout=b` opens on the list-above-editor layout; anything else is the rail (A). */
+function layoutFromUrl(): AutoLayout {
+  return new URLSearchParams(window.location.search).get('layout') === 'b' ? 'list' : 'rail';
+}
+
 /** `overrides` carry the prototype's settings across a restart. */
-export function seed(overrides?: Partial<Pick<StoreState, 'aiAutoApply' | 'autoModeOption'>>): StoreState {
+export function seed(
+  overrides?: Partial<Pick<StoreState, 'aiAutoApply' | 'autoModeOption' | 'autoLayout'>>,
+): StoreState {
   const state: StoreState = {
     helpCenters: keyById(helpCenters),
     activeHelpCenterId: 'hc-product',
@@ -106,6 +113,8 @@ export function seed(overrides?: Partial<Pick<StoreState, 'aiAutoApply' | 'autoM
     aiReviewHistoryByArticle: {},
     aiAutoApply: overrides?.aiAutoApply ?? false,
     autoModeOption: overrides?.autoModeOption ?? optionFromUrl(),
+    autoLayout: overrides?.autoLayout ?? layoutFromUrl(),
+    autoReviewByArticle: {},
   };
 
   if (import.meta.env.DEV) runIntegrityAsserts(state);

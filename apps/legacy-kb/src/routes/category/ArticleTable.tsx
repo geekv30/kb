@@ -12,7 +12,7 @@ import { suggestionsReviewPath } from '../../lib/paths';
 import { useStore } from '../../store/StoreContext';
 import { AUTO_MODE_COPY } from '../../improvements/autoModeCopy';
 import { pluralize } from '../../lib/format';
-import { selectAutoNeedsLook, selectOpenSuggestionSummary, type ArticleFilter } from '../../store/selectors';
+import { autoSuggestionsPath, selectAutoNeedsLook, selectOpenSuggestionSummary, type ArticleFilter } from '../../store/selectors';
 import type { Article, Category } from '../../store/types';
 
 /** Live empty-state copy keyed by tab (chunk 854 `He`/`Me`). */
@@ -86,7 +86,7 @@ function ArticleRow({ article, categorySlug, publicUrl }: ArticleRowProps) {
             <SuggestionsTablePill
               label={pill.label}
               tooltip={pill.tooltip}
-              onOpen={() => navigate(ai?.stage === 'AUTO' ? editHref : suggestionsReviewPath(article.slug))}
+              onOpen={() => navigate(ai?.stage === 'AUTO' ? autoSuggestionsPath(state, article.id) : suggestionsReviewPath(article.slug))}
             />
           ) : undefined
         }

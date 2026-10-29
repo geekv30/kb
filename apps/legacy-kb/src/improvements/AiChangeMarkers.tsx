@@ -21,7 +21,6 @@ export interface AiChangeMarkersProps {
   /** Changes to mark (the unchecked ones). */
   changes: AutoChange[];
   option: AutoModeOption;
-  onKeep: (id: string) => void;
   /** publish: restore the original on the live article. merge: take it out of the draft. */
   onUndo: (id: string) => void;
   onOpenSources: (id: string) => void;
@@ -48,7 +47,7 @@ function undoLabel(s: AISuggestion, option: AutoModeOption): string {
   return s.type === 'addition' ? 'Remove paragraph' : 'Restore original';
 }
 
-export function AiChangeMarkers({ changes, option, onKeep, onUndo, onOpenSources }: AiChangeMarkersProps) {
+export function AiChangeMarkers({ changes, option, onUndo, onOpenSources }: AiChangeMarkersProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [boxes, setBoxes] = useState<Record<string, Box>>({});
   const [openId, setOpenId] = useState<string | null>(null);
@@ -138,7 +137,6 @@ export function AiChangeMarkers({ changes, option, onKeep, onUndo, onOpenSources
                 suggestion={suggestion}
                 option={option}
                 style={{ top: box.top + box.height + 10, left: box.left, width: Math.min(480, box.width) }}
-                onKeep={() => onKeep(suggestion.id)}
                 onUndo={() => onUndo(suggestion.id)}
                 onOpenSources={() => onOpenSources(suggestion.id)}
               />
@@ -154,7 +152,6 @@ interface ChangeCardProps {
   suggestion: AISuggestion;
   option: AutoModeOption;
   style: React.CSSProperties;
-  onKeep: () => void;
   onUndo: () => void;
   onOpenSources: () => void;
 }
@@ -162,7 +159,7 @@ interface ChangeCardProps {
 const LABEL = 'm-0 p-0 text-[11px] leading-[16px] font-semibold tracking-[0.04em] text-legacy-meta uppercase';
 const TEXT = 'm-0 mt-[2px] line-clamp-4 p-0 text-[13px] leading-[20px]';
 
-function ChangeCard({ suggestion, option, style, onKeep, onUndo, onOpenSources }: ChangeCardProps) {
+function ChangeCard({ suggestion, option, style, onUndo, onOpenSources }: ChangeCardProps) {
   // Opening near the bottom of the editor would hide the actions; bring the card into view.
   const ref = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -219,9 +216,6 @@ function ChangeCard({ suggestion, option, style, onKeep, onUndo, onOpenSources }
       <div className="mt-[16px] flex items-center justify-end gap-[8px]">
         <Button variant="secondary" onClick={onUndo} className="h-[32px] px-[12px] py-0 text-[13px] leading-[20px]">
           {undoLabel(suggestion, option)}
-        </Button>
-        <Button variant="primary" onClick={onKeep} className="h-[32px] px-[16px] py-0 text-[13px] leading-[20px]">
-          Keep
         </Button>
       </div>
     </section>

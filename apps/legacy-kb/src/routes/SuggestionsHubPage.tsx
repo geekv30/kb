@@ -11,7 +11,7 @@ import { pluralize, whenText } from '../lib/format';
 import { suggestionsReviewPath } from '../lib/paths';
 import { useStore } from '../store/StoreContext';
 import {
-  articleEditPath,
+  autoSuggestionsPath,
   selectAutoChanges,
   selectAutoNeedsLook,
   selectCategories,
@@ -77,24 +77,21 @@ function suggestionsLabel(row: ArticleSuggestionSummary): string {
 }
 
 /**
- * publish: "2 to check" until someone keeps or restores them, then
- *          "2 applied" (+ "· 1 restored").
- * merge:   "2 in draft" (fewer once some are removed from the draft).
+ * publish: "2 suggestions applied", "1 applied · 1 reverted" after a revert.
+ * merge:   "2 changes in draft" (fewer once some are removed from the draft).
  */
 function autoChangesLabel(changes: AutoChange[], option: AutoModeOption): string {
   const count = (status: AutoChange['status']) => changes.filter((c) => c.status === status).length;
   if (option === 'merge') return `${pluralize(count('draft'), 'change')} in draft`;
-  const unchecked = changes.filter((c) => c.unchecked).length;
-  if (unchecked > 0) return `${unchecked} to check`;
-  const restored = count('restored');
-  return restored > 0 ? `${count('live')} applied · ${restored} restored` : `${count('live')} applied`;
+  const reverted = count('restored');
+  return reverted > 0 ? `${count('live')} applied · ${reverted} reverted` : `${pluralize(count('live'), 'suggestion')} applied`;
 }
 
 function AutoHubRow({ row, columns }: { row: ArticleSuggestionSummary; columns: ReadonlyArray<TableColumn> }) {
   const navigate = useNavigate();
   const { state } = useStore();
   // Auto changes are checked inside the article, so the row opens its editor.
-  const href = articleEditPath(state, row.article.id);
+  const href = autoSuggestionsPath(state, row.article.id);
   const changes = selectAutoChanges(state, row.article.id);
   return (
     <TableRow onOpen={() => navigate(href)}>
@@ -143,7 +140,7 @@ function AutoNotice({ rows }: { rows: ArticleSuggestionSummary[] }) {
                 {row.autoAppliedAt ? ` · ${whenText(row.autoAppliedAt)}` : ''}
               </span>
               <Link
-                to={articleEditPath(state, row.article.id)}
+                to={autoSuggestionsPath(state, row.article.id)}
                 className="ml-auto font-medium whitespace-nowrap text-legacy-blue no-underline hover:underline"
               >
                 {copy.noticeAction}

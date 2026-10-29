@@ -118,7 +118,7 @@ export function SettingsShell() {
           <Outlet />
         </main>
       </section>
-      <PrototypeBar bottom={86} />
+      <PrototypeBar bottom={24} />
     </ToastProvider>
   );
 }

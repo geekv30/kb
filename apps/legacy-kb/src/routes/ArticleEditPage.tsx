@@ -56,7 +56,7 @@ function EditSession({ category, article }: EditSessionProps) {
   const [slug, setSlug] = useState(article?.slug ?? '');
   const [authorId, setAuthorId] = useState<string | null>(article ? article.authorId : state.currentUserId);
   const [pending, setPending] = useState<PendingConfirm>(null);
-  const [bannerRef, bannerHeight] = useElementHeight<HTMLElement>();
+  const [bannerRef, bannerHeight] = useElementHeight<HTMLDivElement>();
   const suggestions = article ? selectOpenSuggestionSummary(state, article.id) : undefined;
   const auto = useAutoModeEditor(article);
 
@@ -181,9 +181,9 @@ function EditSession({ category, article }: EditSessionProps) {
 
       <div className="mt-[40px] mr-[24px] mb-[40px] ml-[40px] box-border flex min-h-0 flex-row gap-[40px]">
         <div className="box-border min-w-0 flex-1 text-legacy-body">
-          {article && auto.banner ? (
+          {article && auto.top ? (
             <div style={{ marginBottom: BANNER_GAP }}>
-              <SuggestionsBanner ref={bannerRef} {...auto.banner} />
+              <div ref={bannerRef}>{auto.top}</div>
             </div>
           ) : article && suggestions?.stage === 'TO_REVIEW' ? (
             <div style={{ marginBottom: BANNER_GAP }}>

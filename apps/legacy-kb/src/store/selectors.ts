@@ -289,11 +289,22 @@ export function selectAutoNeedsLook(state: StoreState, articleId: string): boole
     : selectAutoChanges(state, articleId).some((c) => c.unchecked);
 }
 
-/** Where an article's AI changes live: its editor. */
 export function articleEditPath(state: StoreState, articleId: string): string {
   const article = state.articles[articleId];
   const category = article ? state.categories[article.categoryId] : undefined;
   return `/product/category/${category?.slug ?? ''}/article/edit/${article?.slug ?? ''}`;
+}
+
+/**
+ * Where an article's auto-applied suggestions are shown: the article +
+ * suggestion rail (layout A), or the edit page's list (layout B). The
+ * draft-update option always uses the editor.
+ */
+export function autoSuggestionsPath(state: StoreState, articleId: string): string {
+  const article = state.articles[articleId];
+  return state.autoModeOption === 'publish' && state.autoLayout === 'rail'
+    ? `/product/ai/suggestions/${article?.slug ?? ''}`
+    : articleEditPath(state, articleId);
 }
 
 /**
