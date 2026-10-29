@@ -24,8 +24,8 @@ const RAIL_WIDTH = 340;
  *
  *   - summary card: "Auto-applied", how many are live, what they change,
  *     and "Applied automatically by Hiver AI · <when>";
- *   - each suggestion: the usual idle card (type + title) with a quiet
- *     "Auto-applied"; opening it shows the change in the article (red /
+ *   - each suggestion: the usual idle card (type + title); opening it
+ *     shows the change in the article (red /
  *     green, as in manual review) and the card's one-line why, sources
  *     and a single Revert;
  *   - a reverted one recedes to the grey chip ("Reverted", Re-apply);
@@ -98,7 +98,6 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
               <SuggestionCard
                 suggestion={s}
                 state="active"
-                meta="Auto-applied"
                 position={{ index: i + 1, total: suggestions.length }}
                 onPrev={() => step(-1)}
                 onNext={() => step(1)}
@@ -115,7 +114,7 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
         }
         return {
           id: s.id,
-          node: <SuggestionCard suggestion={s} state="idle" meta="Auto-applied" onActivate={setActiveId} />,
+          node: <SuggestionCard suggestion={s} state="idle" onActivate={setActiveId} />,
         };
       }),
     [suggestions, activeId, auto.items, auto.toggle, auto.setSourcesFor],
@@ -179,7 +178,7 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
                   countLabel={`${liveCount} live`}
                   summary={article.aiSummary ?? 'Hiver AI applied these suggestions from recent customer conversations.'}
                   historyNote={note}
-                  historyIcon="auto_awesome"
+                  historyIcon={null}
                   navEnabled={liveCount > 0}
                   onPrev={() => step(-1)}
                   onNext={() => step(1)}

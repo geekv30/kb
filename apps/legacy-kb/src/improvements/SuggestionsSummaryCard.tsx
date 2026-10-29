@@ -29,8 +29,8 @@ export interface SuggestionsSummaryCardProps {
   title?: string;
   /** terminal: count pill's accessible name. */
   countLabel?: string;
-  /** terminal: the status line's icon (auto mode: `auto_awesome`). */
-  historyIcon?: string;
+  /** terminal: the status line's icon; `null` for none (auto mode, where the header already has the AI mark). */
+  historyIcon?: string | null;
   /** terminal: keep prev / next live (auto mode steps through applied suggestions). */
   navEnabled?: boolean;
 }
@@ -79,11 +79,13 @@ export function SuggestionsSummaryCard({
       <p className="m-0 mt-0 p-0 text-[13px] leading-[20px] font-normal text-legacy-body">{summary}</p>
       {isTerminal && historyNote ? (
         <p className="m-0 mt-[12px] flex items-center gap-[6px] border-0 border-t border-solid border-legacy-input-border p-0 pt-[12px] text-[13px] leading-[20px] font-medium text-legacy-meta">
-          <MaterialIcon
-            name={historyIcon}
-            size={16}
-            className={cn('shrink-0', historyIcon === 'check_circle' ? 'text-legacy-success' : 'text-legacy-blue')}
-          />
+          {historyIcon ? (
+            <MaterialIcon
+              name={historyIcon}
+              size={16}
+              className={cn('shrink-0', historyIcon === 'check_circle' ? 'text-legacy-success' : 'text-legacy-blue')}
+            />
+          ) : null}
           {historyNote}
         </p>
       ) : isTerminal ? (
