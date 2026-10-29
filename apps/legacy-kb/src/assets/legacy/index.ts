@@ -26,6 +26,19 @@ export { default as optionIcon } from './optionIcon.svg';
 export { default as plusIcon } from './plusIcon.svg';
 export { default as searchIcon } from './searchIcon.svg';
 export { default as sidebarLogo } from './sidebarLogo.svg';
+// Settings view (live `/product/siteSettings`, `/branding`, `/users`).
+export { default as defaultFavicon } from './defaultFavicon.png';
+export { default as domainPreview } from './domainPreview.svg';
+export { default as infoIconSmall } from './iicon.svg';
+export { default as settingDashboardButton } from './settingDashboardButton.svg';
+export { default as settingsBranding } from './settingsBranding.svg';
+export { default as settingsBrandingNone } from './settingsBrandingNone.svg';
+export { default as siteSettingIcon } from './siteSettingIcon.svg';
+export { default as siteSettingIconSelected } from './siteSettingIconSelected.svg';
+export { default as toggleOff } from './toggleOff.svg';
+export { default as toggleOn } from './toggleOn.svg';
+export { default as userSiteSetting } from './userSiteSetting.svg';
+export { default as userSiteSettingSelected } from './userSiteSettingSelected.svg';
 /** Confirm-modal primary button loader (live renders it at 49x28). */
 export { default as loaderGif } from './loaderGif.gif';
 /** Toast leading icon (live renders it at 20x23). */

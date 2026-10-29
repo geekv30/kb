@@ -3,7 +3,18 @@ import { AdminHelpCenterPage } from './admin/AdminHelpCenterPage';
 import { AdminKnowledgeHubPage } from './admin/AdminKnowledgeHubPage';
 import { AdminPlaceholderPage } from './admin/AdminPlaceholderPage';
 import { AdminShell } from './admin/AdminShell';
-import { ADMIN_HELP_CENTER_PATH, ADMIN_PATH, SUGGESTIONS_HUB_PATH, suggestionsReviewPath } from './lib/paths';
+import {
+  ACCESS_SETTINGS_PATH,
+  ADMIN_HELP_CENTER_PATH,
+  ADMIN_PATH,
+  BRANDING_SETTINGS_PATH,
+  SITE_SETTINGS_PATH,
+  SUGGESTIONS_HUB_PATH,
+  suggestionsReviewPath,
+} from './lib/paths';
+import { SettingsPlaceholderPage } from './settings/SettingsPlaceholderPage';
+import { SettingsShell } from './settings/SettingsShell';
+import { SiteSettingsPage } from './settings/SiteSettingsPage';
 import { AppShell } from './shell/AppShell';
 import { CategoryPage } from './routes/CategoryPage';
 import { ArticleEditPage } from './routes/ArticleEditPage';
@@ -43,6 +54,15 @@ export const router = createBrowserRouter([
       { path: 'ai/suggestions', element: <SuggestionsHubPage /> },
       { path: 'ai/suggestions/:articleSlug', element: <ArticleReviewPage /> },
       { path: '*', element: <NotFound /> },
+    ],
+  },
+  {
+    // Settings view, outside the editor shell. Static paths outrank `/product/*`.
+    element: <SettingsShell />,
+    children: [
+      { path: SITE_SETTINGS_PATH, element: <SiteSettingsPage /> },
+      { path: BRANDING_SETTINGS_PATH, element: <SettingsPlaceholderPage /> },
+      { path: ACCESS_SETTINGS_PATH, element: <SettingsPlaceholderPage /> },
     ],
   },
   {

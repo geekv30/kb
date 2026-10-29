@@ -98,6 +98,7 @@ export function seed(): StoreState {
     conversationSources: keyById(conversationSources),
     aiReviewByArticle: {},
     aiReviewHistoryByArticle: {},
+    aiAutoApply: false,
   };
 
   if (import.meta.env.DEV) runIntegrityAsserts(state);

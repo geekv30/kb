@@ -1,5 +1,6 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import type { ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   dashboardExternalLink,
   dashboardExternalLinkHover,
@@ -10,6 +11,7 @@ import {
 import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
 import { TooltipIconButton } from '../../components/ui/Tooltip';
+import { SITE_SETTINGS_PATH } from '../../lib/paths';
 import type { User } from '../../store/types';
 import { ArticleSearch } from './ArticleSearch';
 
@@ -26,6 +28,7 @@ export interface CategoryTopBarProps {
  * New Article 0 6px, Preview 0 4px, Settings 0 6px, avatar 0 6px.
  */
 export function CategoryTopBar({ currentUser, onNewArticle, search }: CategoryTopBarProps) {
+  const navigate = useNavigate();
   return (
     <div className="box-border flex w-full flex-row items-start justify-between px-[40px] pt-[34px] pb-[10px]">
       {search ?? <ArticleSearch />}
@@ -45,7 +48,14 @@ export function CategoryTopBar({ currentUser, onNewArticle, search }: CategoryTo
           />
         </div>
         <div className="box-border flex px-[6px]">
-          <TooltipIconButton label="Settings" src={dashboardSettingLink} hoverSrc={dashboardSettingLinkHover} size={32} />
+          {/* Live lands on Branding; the replica opens Site settings, where the AI mode lives. */}
+          <TooltipIconButton
+            label="Settings"
+            src={dashboardSettingLink}
+            hoverSrc={dashboardSettingLinkHover}
+            size={32}
+            onClick={() => navigate(SITE_SETTINGS_PATH)}
+          />
         </div>
         <div className="box-border flex px-[6px]">
           <DropdownMenu.Root>

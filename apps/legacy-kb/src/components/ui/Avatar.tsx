@@ -5,7 +5,8 @@ import type { User } from '../../store/types';
 export interface AvatarProps {
   /** `undefined` renders the live "Unassigned" placeholder (Avatar.svg). */
   user: User | undefined;
-  size: 24 | 32;
+  /** 40 is the Settings header avatar. */
+  size: 24 | 32 | 40;
   className?: string;
 }
 
@@ -32,7 +33,7 @@ export function Avatar({ user, size, className }: AvatarProps) {
       aria-label={user.name}
       className={cn(
         'flex shrink-0 items-center justify-center rounded-full font-inter leading-none font-medium text-white select-none',
-        size === 32 ? 'text-[14px]' : 'text-[12px]',
+        size === 40 ? 'text-[16px]' : size === 32 ? 'text-[14px]' : 'text-[12px]',
         className,
       )}
       style={{ width: size, height: size, backgroundColor: user.avatarColor }}

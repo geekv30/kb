@@ -28,7 +28,8 @@ export type StoreAction =
    * `edited`: the reviewer changed the article text in the review, so it
    * publishes even with nothing accepted (or nothing decided at all).
    */
-  | { type: 'aiReview/publish'; articleId: string; modifierId: string; now: string; edited?: boolean };
+  | { type: 'aiReview/publish'; articleId: string; modifierId: string; now: string; edited?: boolean }
+  | { type: 'settings/setAiAutoApply'; enabled: boolean };
 
 function patchArticle(
   state: StoreState,
@@ -153,6 +154,8 @@ export function rootReducer(state: StoreState, action: StoreAction): StoreState 
         },
       };
     }
+    case 'settings/setAiAutoApply':
+      return { ...state, aiAutoApply: action.enabled };
     default: {
       const exhaustive: never = action;
       return exhaustive;

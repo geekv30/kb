@@ -161,4 +161,10 @@ export type StoreState = {
   aiReviewByArticle: Record<string, ReviewState>;
   /** Published / marked-as-reviewed AI reviews, keyed by article id. */
   aiReviewHistoryByArticle: Record<string, AIReviewHistory>;
+  /**
+   * Site settings › Hiver AI. `false` (manual): suggestions wait in To
+   * review. `true` (auto): new suggestions are applied without a review.
+   * Suggestions already waiting when it's switched on stay in To review.
+   */
+  aiAutoApply: boolean;
 };
