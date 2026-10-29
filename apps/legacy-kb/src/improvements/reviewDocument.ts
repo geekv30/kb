@@ -162,3 +162,35 @@ export function applyDecisions(
     .segments.map((seg) => (seg.kind === 'static' ? seg.html : resolveSegment(seg, decisions[seg.suggestionId])))
     .join('');
 }
+
+/** The block an applied suggestion leaves in the body: the added block, or the replaced one. */
+export function appliedBlockId(s: AISuggestion): string | undefined {
+  if (s.type === 'replace') return s.anchorBlockId;
+  if (s.type === 'addition') return /data-block-id="([^"]+)"/.exec(s.payload.newHTML ?? '')?.[1];
+  return undefined;
+}
+
+function splice(html: string, start: number, end: number, insert: string): string {
+  return html.slice(0, start) + insert + html.slice(end);
+}
+
+/**
+ * Takes one applied suggestion back out of the CURRENT body, touching
+ * only its own block, so edits made elsewhere since then survive.
+ * `null` when its block is gone (e.g. a removal: nothing left to find).
+ */
+export function revertSuggestion(bodyHTML: string, s: AISuggestion): string | null {
+  const blockId = appliedBlockId(s);
+  const range = blockId ? findBlockRange(bodyHTML, blockId) : null;
+  if (!range) return null;
+  return splice(bodyHTML, range.start, range.end, s.type === 'replace' ? (s.payload.oldHTML ?? '') : '');
+}
+
+/** Puts a reverted suggestion back into the current body, next to (or over) its anchor block. */
+export function reapplySuggestion(bodyHTML: string, s: AISuggestion): string | null {
+  const range = findBlockRange(bodyHTML, s.anchorBlockId);
+  if (!range) return null;
+  if (s.type === 'addition') return splice(bodyHTML, range.end, range.end, s.payload.newHTML ?? '');
+  if (s.type === 'replace') return splice(bodyHTML, range.start, range.end, s.payload.newHTML ?? '');
+  return splice(bodyHTML, range.start, range.end, '');
+}

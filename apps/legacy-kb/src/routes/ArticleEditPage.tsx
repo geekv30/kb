@@ -197,9 +197,9 @@ function EditSession({ category, article }: EditSessionProps) {
               </SuggestionsBanner>
             </div>
           ) : null}
-          {/* Keyed so the content reseeds when Hiver AI's changes are applied or taken back. */}
+          {/* Reseeds (keeping the scroll position) when Hiver AI's changes are applied or taken back. */}
           <ArticleEditor
-            key={auto.editorKey}
+            contentRevision={auto.editorKey}
             title={title}
             bodyHTML={auto.editorBody ?? article?.bodyHTML ?? bodyHTML}
             onChange={handleEditorChange}

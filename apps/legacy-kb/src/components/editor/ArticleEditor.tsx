@@ -22,6 +22,12 @@ export interface ArticleEditorProps {
   readOnly?: boolean;
   /** Layer positioned over the content (the scroll container is `relative`), e.g. AI change markers. */
   overlay?: ReactNode;
+  /**
+   * Changes when the body was changed from outside (e.g. an AI change
+   * restored). The content reseeds from `bodyHTML` and keeps its scroll
+   * position; typing never changes it.
+   */
+  contentRevision?: string;
 }
 
 const TITLE_PLACEHOLDER = 'Title';
@@ -69,9 +75,20 @@ function serialize(root: HTMLElement): ArticleEditorChange {
  * typography in styles.css (`.ck-content`). The DOM is seeded once per
  * mount (key the component by article) so typing never fights React.
  */
-export function ArticleEditor({ title, bodyHTML, onChange, heightOffset = 0, readOnly = false, overlay }: ArticleEditorProps) {
+export function ArticleEditor({
+  title,
+  bodyHTML,
+  onChange,
+  heightOffset = 0,
+  readOnly = false,
+  overlay,
+  contentRevision,
+}: ArticleEditorProps) {
   const editableRef = useRef<HTMLDivElement>(null);
   const seed = useRef({ title, bodyHTML });
+  const latest = useRef({ title, bodyHTML });
+  latest.current = { title, bodyHTML };
+  const seededRevision = useRef(contentRevision);
 
   useLayoutEffect(() => {
     const root = editableRef.current;
@@ -80,6 +97,15 @@ export function ArticleEditor({ title, bodyHTML, onChange, heightOffset = 0, rea
     root.innerHTML = `<h1>${t ? escapeHTML(t) : '<br>'}</h1>${b || '<p><br></p>'}`;
     syncPlaceholders(root);
   }, []);
+
+  useLayoutEffect(() => {
+    const root = editableRef.current;
+    if (!root || contentRevision === seededRevision.current) return;
+    seededRevision.current = contentRevision;
+    const { title: t, bodyHTML: b } = latest.current;
+    root.innerHTML = `<h1>${t ? escapeHTML(t) : '<br>'}</h1>${b || '<p><br></p>'}`;
+    syncPlaceholders(root);
+  }, [contentRevision]);
 
   const handleInput = () => {
     const root = editableRef.current;

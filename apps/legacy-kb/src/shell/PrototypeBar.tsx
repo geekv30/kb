@@ -3,6 +3,7 @@
 // demo) and delivers the incoming batch of suggestions, so you can watch
 // where they land with auto mode off, on (option 1), or on (option 2).
 
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AUTO_MODE_COPY } from '../improvements/autoModeCopy';
 import { cn } from '../lib/cn';
@@ -22,9 +23,28 @@ export interface PrototypeBarProps {
   bottom?: number;
 }
 
-/** Bottom-right, clear of the toasts (bottom-left). */
+/**
+ * Bottom-right, clear of the toasts (bottom-left). Collapsed to a small
+ * chip by default so it never sits on top of the page being judged;
+ * the open state survives navigation.
+ */
 export function PrototypeBar({ bottom = 16 }: PrototypeBarProps) {
   const { state, dispatch } = useStore();
+  const [open, setOpen] = useState(() => {
+    try {
+      return window.sessionStorage.getItem('proto-bar-open') === '1';
+    } catch {
+      return false;
+    }
+  });
+  const toggle = (next: boolean) => {
+    setOpen(next);
+    try {
+      window.sessionStorage.setItem('proto-bar-open', next ? '1' : '0');
+    } catch {
+      // Storage blocked: the bar just starts collapsed next time.
+    }
+  };
   const navigate = useNavigate();
   const incoming = Object.values(state.suggestions).filter((s) => s.status === 'incoming');
   const delivered = Object.values(state.suggestions).filter((s) => INCOMING_IDS.has(s.id));
@@ -43,6 +63,21 @@ export function PrototypeBar({ bottom = 16 }: PrototypeBarProps) {
     : state.autoModeOption === 'publish'
       ? `Hiver AI applied ${pluralize(delivered.length, 'change')} to ${pluralize(articles, 'article')}`
       : `Hiver AI saved ${pluralize(articles, 'draft update')}`;
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        aria-label="Open prototype controls"
+        onClick={() => toggle(true)}
+        style={{ bottom }}
+        className="fixed right-[16px] z-[2000] flex cursor-pointer items-center gap-[6px] rounded-full border-0 bg-[#0f172a] px-[12px] py-[6px] font-inter text-[11px] leading-[16px] font-semibold tracking-[0.04em] text-[#cbd5e1] uppercase shadow-[0_4px_16px_rgba(15,23,42,0.35)] outline-none hover:text-white focus-visible:shadow-[0_0_0_2px_#60a5fa]"
+      >
+        <span aria-hidden className="size-[6px] rounded-full bg-[#86efac]" />
+        Prototype · Option {state.autoModeOption === 'merge' ? 2 : 1}
+      </button>
+    );
+  }
 
   return (
     <div
@@ -95,6 +130,14 @@ export function PrototypeBar({ bottom = 16 }: PrototypeBarProps) {
         className={cn(PILL_BUTTON, 'bg-transparent text-[#94a3b8] hover:text-white')}
       >
         Restart
+      </button>
+      <button
+        type="button"
+        aria-label="Hide prototype controls"
+        onClick={() => toggle(false)}
+        className={cn(PILL_BUTTON, 'bg-transparent px-[8px] text-[#94a3b8] hover:text-white')}
+      >
+        ✕
       </button>
     </div>
   );

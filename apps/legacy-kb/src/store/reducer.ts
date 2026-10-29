@@ -1,7 +1,7 @@
 // Pure root reducer. Callers supply timestamps so the reducer stays
 // deterministic.
 
-import { applyDecisions } from '../improvements/reviewDocument';
+import { applyDecisions, reapplySuggestion, revertSuggestion } from '../improvements/reviewDocument';
 import { reviewReducer, initialReviewState, type ReviewAction, type ReviewDecision } from '../improvements/reviewState';
 import { HIVER_AI_USER_ID } from './fixtures/users';
 import { seed } from './seed';
@@ -122,11 +122,15 @@ function toggleAutoChange(state: StoreState, suggestionId: string, modifierId: s
       checked: target.status === 'published',
     } as AISuggestion,
   };
+  // Edit only this suggestion's own block, so the team's edits elsewhere survive.
+  // Fall back to rebuilding from the pre-AI body when the block can't be found.
+  const current = state.articles[target.articleId]?.bodyHTML ?? '';
+  const patched = target.status === 'published' ? revertSuggestion(current, target) : reapplySuggestion(current, target);
   const own = Object.values(suggestions).filter((s) => s.articleId === target.articleId && s.status !== 'incoming');
   const decisions: Record<string, ReviewDecision> = {};
   for (const s of own) decisions[s.id] = s.status === 'published' ? 'accepted' : 'dismissed';
   const next = patchArticle({ ...state, suggestions }, target.articleId, {
-    bodyHTML: applyDecisions(history.baseBodyHTML, own, decisions),
+    bodyHTML: patched ?? applyDecisions(history.baseBodyHTML, own, decisions),
     status: 'PUBLISHED',
     lastActivity: 'published',
     modifierId,
