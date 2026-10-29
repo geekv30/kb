@@ -120,6 +120,11 @@ export type AISuggestion = {
   autoApplied?: boolean;
   /** ISO timestamp of that arrival. */
   autoAppliedAt?: string;
+  /**
+   * Someone looked at this auto change and settled it (Keep, or Restore
+   * original). Until then it's marked in the editor and counted as needing a look.
+   */
+  checked?: boolean;
 };
 
 /**

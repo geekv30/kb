@@ -42,7 +42,7 @@ export function PrototypeBar({ bottom = 16 }: PrototypeBarProps) {
     ? `${pluralize(delivered.length, 'suggestion')} sent to To review`
     : state.autoModeOption === 'publish'
       ? `Hiver AI applied ${pluralize(delivered.length, 'change')} to ${pluralize(articles, 'article')}`
-      : `${pluralize(articles, 'improved version')} ready to merge`;
+      : `Hiver AI saved ${pluralize(articles, 'draft update')}`;
 
   return (
     <div

@@ -1,11 +1,11 @@
 // Every user-facing string that differs between the two auto-mode
-// designs, in one place so the hub, table pill, edit banner, review view
-// and Settings never drift apart.
+// designs, in one place so the hub, table tag, edit banner and Settings
+// never drift apart.
 //
-//   publish (option 1) — Hiver AI changes the live article; each change
-//                        can be undone afterwards.
-//   merge   (option 2) — Hiver AI keeps an improved version next to the
-//                        live article; someone merges it.
+//   publish (option 1) — Hiver AI changes the live article and marks each
+//                        change in the editor: keep it or restore the original.
+//   merge   (option 2) — Hiver AI saves a draft update of the article,
+//                        changes marked the same way; someone publishes it.
 
 import type { AutoModeOption } from '../store/types';
 
@@ -21,47 +21,45 @@ export interface AutoModeCopy {
   settingsOn: string;
   /** Hub header description while auto mode is on. */
   hubDescription: string;
-  pill: { label: string; tooltip: string };
-  banner: { lead: string; action: string };
-  /** Review view: summary card title and the note under the summary. */
-  reviewTitle: string;
-  reviewNote: (when: string) => string;
+  /** Hub notice: "Hiver AI updated 2 articles" / "…saved draft updates for 2 articles". */
+  notice: (articles: string) => string;
+  noticeAction: string;
+  /** Category table tag while the article needs a look. */
+  tag: { label: string; tooltip: string };
 }
 
 export const AUTO_MODE_COPY: Record<AutoModeOption, AutoModeCopy> = {
   publish: {
-    optionLabel: 'Publish live',
+    optionLabel: 'Publish automatically',
     tab: 'Applied by AI',
     whenColumn: 'APPLIED',
     empty: {
       title: 'Nothing applied yet',
-      info: 'When Hiver AI updates an article, the changes show here so you can check them.',
+      info: 'When Hiver AI updates an article, it shows here and the changes are marked in the article.',
     },
     settingsOn:
-      'Hiver AI publishes new suggestions to your articles as they come in. You can check and undo each change in AI › Suggestions.',
+      'Hiver AI publishes its improvements as they come in and marks every change in the article, so you can keep it or restore the original.',
     hubDescription:
-      'Hiver AI applies improvements from recent customer conversations as they come in. Check what it changed and undo anything you don’t want.',
-    pill: { label: 'Updated by AI', tooltip: 'See what Hiver AI changed' },
-    banner: { lead: 'Hiver AI updated this article', action: 'See changes' },
-    reviewTitle: 'Applied by Hiver AI',
-    reviewNote: (when) => `Went live ${when}. Undo a change to restore its original text.`,
+      'Hiver AI applies improvements from recent customer conversations as they come in. Each change is marked in the article so you can check it.',
+    notice: (articles) => `Hiver AI updated ${articles}. Check what changed.`,
+    noticeAction: 'Check changes',
+    tag: { label: 'Updated by AI', tooltip: 'Hiver AI changed this article. Open it to check the changes.' },
   },
   merge: {
-    optionLabel: 'Merge into live',
-    tab: 'Ready to merge',
-    whenColumn: 'PREPARED',
+    optionLabel: 'Save as a draft',
+    tab: 'Draft updates',
+    whenColumn: 'SAVED',
     empty: {
-      title: 'No improved versions yet',
-      info: 'When Hiver AI prepares an improved version of an article, it shows here.',
+      title: 'No draft updates',
+      info: 'When Hiver AI improves an article, it saves a draft update here for you to publish.',
     },
     settingsOn:
-      'Hiver AI prepares an improved version of each article as suggestions come in. Nothing changes on your help center until someone merges it.',
+      'Hiver AI saves its improvements as a draft update of each article. Nothing changes on your help center until someone publishes it.',
     hubDescription:
-      'Hiver AI prepares improved versions of your articles from recent customer conversations. Check a version, then merge it into the live article.',
-    pill: { label: 'Improved version', tooltip: 'Review and merge the improved version' },
-    banner: { lead: 'Hiver AI prepared an improved version of this article', action: 'Review version' },
-    reviewTitle: 'Improved version',
-    reviewNote: (when) => `Prepared by Hiver AI ${when}. Nothing is live until you merge.`,
+      'Hiver AI saves improvements from recent customer conversations as draft updates. Open an article to check the changes and publish it.',
+    notice: (articles) => `Hiver AI saved draft updates for ${articles}. They aren’t live yet.`,
+    noticeAction: 'Review draft',
+    tag: { label: 'Draft update', tooltip: 'Hiver AI saved a draft update. Open the article to publish it.' },
   },
 };
 

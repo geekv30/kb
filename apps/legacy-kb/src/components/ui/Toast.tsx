@@ -18,9 +18,12 @@ const TOAST_DURATION_MS = 10_000;
 /** Matches `--animate-lk-toast-out`, so the node unmounts after its fade. */
 const TOAST_EXIT_MS = 160;
 
-type ToastEntry = { id: number; message: string; leaving: boolean };
+/** Optional inline action, e.g. Undo. Not in the live toast; added for AI auto mode. */
+export type ToastAction = { label: string; onClick: () => void };
 
-type ToastContextValue = { showToast: (message: string) => void };
+type ToastEntry = { id: number; message: string; action?: ToastAction; leaving: boolean };
+
+type ToastContextValue = { showToast: (message: string, action?: ToastAction) => void };
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
@@ -36,9 +39,9 @@ export function ToastProvider({ children }: ToastProviderProps) {
   const [toast, setToast] = useState<ToastEntry | null>(null);
   const nextId = useRef(0);
 
-  const showToast = useCallback((message: string) => {
+  const showToast = useCallback((message: string, action?: ToastAction) => {
     nextId.current += 1;
-    setToast({ id: nextId.current, message, leaving: false });
+    setToast({ id: nextId.current, message, action, leaving: false });
   }, []);
 
   const dismiss = useCallback((id: number) => {
@@ -109,6 +112,18 @@ function Toast({ entry, onClose }: ToastProps) {
       <p className="m-0 flex content-center items-center justify-center px-[16px] py-0 text-left text-[14px] leading-[24px] font-normal tracking-[0.23px] text-white">
         {entry.message}
       </p>
+      {entry.action ? (
+        <button
+          type="button"
+          onClick={() => {
+            entry.action?.onClick();
+            onClose();
+          }}
+          className="m-0 cursor-pointer rounded-[4px] border-0 bg-transparent px-[8px] py-[2px] font-inter text-[14px] leading-[24px] font-semibold text-[#8fbcf5] outline-none hover:bg-white/10 focus-visible:shadow-[0_0_0_2px_#ffffff]"
+        >
+          {entry.action.label}
+        </button>
+      ) : null}
       <button
         type="button"
         aria-label="Close notification"

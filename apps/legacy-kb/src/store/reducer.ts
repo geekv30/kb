@@ -36,6 +36,10 @@ export type StoreAction =
   | { type: 'ai/receiveSuggestions'; now: string }
   /** Option `publish`: undo an applied change on the live article, or reapply an undone one. */
   | { type: 'ai/toggleAutoChange'; suggestionId: string; modifierId: string; now: string }
+  /** Auto mode: someone kept a change Hiver AI made; it stops being marked. */
+  | { type: 'ai/keepAutoChange'; suggestionId: string }
+  /** Merge option: drop the whole draft update; the live article stays as it is. */
+  | { type: 'ai/discardDraft'; articleId: string; modifierId: string; now: string }
   /** Prototype: start over on one auto-mode design, keeping the auto setting. */
   | { type: 'proto/restart'; option: AutoModeOption };
 
@@ -111,7 +115,12 @@ function toggleAutoChange(state: StoreState, suggestionId: string, modifierId: s
   }
   const suggestions = {
     ...state.suggestions,
-    [suggestionId]: { ...target, status: target.status === 'published' ? 'dismissed-final' : 'published' } as AISuggestion,
+    [suggestionId]: {
+      ...target,
+      status: target.status === 'published' ? 'dismissed-final' : 'published',
+      // Restoring settles the change; putting it back (Undo) marks it again.
+      checked: target.status === 'published',
+    } as AISuggestion,
   };
   const own = Object.values(suggestions).filter((s) => s.articleId === target.articleId && s.status !== 'incoming');
   const decisions: Record<string, ReviewDecision> = {};
@@ -242,6 +251,27 @@ export function rootReducer(state: StoreState, action: StoreAction): StoreState 
       return receiveSuggestions(state, action.now);
     case 'ai/toggleAutoChange':
       return toggleAutoChange(state, action.suggestionId, action.modifierId, action.now);
+    case 'ai/keepAutoChange': {
+      const s = state.suggestions[action.suggestionId];
+      if (!s?.autoApplied || s.checked) return state;
+      return { ...state, suggestions: { ...state.suggestions, [s.id]: { ...s, checked: true } } };
+    }
+    case 'ai/discardDraft': {
+      const items = selectReviewSuggestions(state, action.articleId);
+      if (items.length === 0) return state;
+      const current = state.aiReviewByArticle[action.articleId] ?? initialReviewState;
+      const decisions: Record<string, ReviewDecision> = Object.fromEntries(items.map((s) => [s.id, 'dismissed']));
+      const dismissedAll = {
+        ...state,
+        aiReviewByArticle: { ...state.aiReviewByArticle, [action.articleId]: { ...current, decisions } },
+      };
+      return rootReducer(dismissedAll, {
+        type: 'aiReview/publish',
+        articleId: action.articleId,
+        modifierId: action.modifierId,
+        now: action.now,
+      });
+    }
     case 'proto/restart':
       return seed({ aiAutoApply: state.aiAutoApply, autoModeOption: action.option });
     default: {

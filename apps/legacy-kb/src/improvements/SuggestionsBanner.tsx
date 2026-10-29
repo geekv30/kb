@@ -6,8 +6,13 @@ import { pluralize } from '../lib/format';
 export interface SuggestionsBannerProps {
   /** One sentence; counts go in `<BannerCount>` so they read in ink. */
   children: ReactNode;
-  actionLabel: string;
-  onAction: () => void;
+  /** Omit for a notice with no action. */
+  actionLabel?: string;
+  onAction?: () => void;
+  /** A second, outline action before the main one (e.g. Discard draft). */
+  secondaryAction?: { label: string; onClick: () => void };
+  /** The main action as a filled button (e.g. Publish update). */
+  primary?: boolean;
 }
 
 /** A count inside the banner sentence: 500 #09274a. */
@@ -24,7 +29,7 @@ export function BannerCount({ count, noun }: { count: number; noun: string }) {
  * No dismiss: it goes away once the suggestions are dealt with.
  */
 export const SuggestionsBanner = forwardRef<HTMLElement, SuggestionsBannerProps>(function SuggestionsBanner(
-  { children, actionLabel, onAction },
+  { children, actionLabel, onAction, secondaryAction, primary = false },
   ref,
 ) {
   return (
@@ -35,13 +40,24 @@ export const SuggestionsBanner = forwardRef<HTMLElement, SuggestionsBannerProps>
     >
       <MaterialIcon name="auto_awesome" size={20} className="shrink-0 text-legacy-blue" />
       <p className="m-0 min-w-0 flex-1 p-0 text-[14px] leading-[20px] font-normal text-legacy-body">{children}</p>
-      <Button
-        variant="secondary"
-        onClick={onAction}
-        className="h-[32px] shrink-0 px-[12px] py-0 text-[13px] leading-[20px] whitespace-nowrap"
-      >
-        {actionLabel}
-      </Button>
+      {secondaryAction ? (
+        <Button
+          variant="secondary"
+          onClick={secondaryAction.onClick}
+          className="h-[32px] shrink-0 px-[12px] py-0 text-[13px] leading-[20px] whitespace-nowrap"
+        >
+          {secondaryAction.label}
+        </Button>
+      ) : null}
+      {actionLabel ? (
+        <Button
+          variant={primary ? 'primary' : 'secondary'}
+          onClick={onAction}
+          className="h-[32px] shrink-0 px-[12px] py-0 text-[13px] leading-[20px] whitespace-nowrap"
+        >
+          {actionLabel}
+        </Button>
+      ) : null}
     </section>
   );
 });

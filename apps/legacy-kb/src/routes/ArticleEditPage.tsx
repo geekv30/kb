@@ -13,7 +13,6 @@ import { ArticleEditor, type ArticleEditorChange } from '../components/editor/Ar
 import { Button } from '../components/ui/Button';
 import { ConfirmModal } from '../components/ui/Modal';
 import { TooltipIconButton } from '../components/ui/Tooltip';
-import { AUTO_MODE_COPY } from '../improvements/autoModeCopy';
 import { BannerCount, SuggestionsBanner } from '../improvements/SuggestionsBanner';
 import { slugify } from '../lib/format';
 import { suggestionsReviewPath } from '../lib/paths';
@@ -29,6 +28,7 @@ import {
 import type { Article, ArticleStatus, Category } from '../store/types';
 import { ArticleMetaPanel } from './edit/ArticleMetaPanel';
 import { NotFound } from './NotFound';
+import { useAutoModeEditor } from './edit/useAutoModeEditor';
 
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -58,6 +58,7 @@ function EditSession({ category, article }: EditSessionProps) {
   const [pending, setPending] = useState<PendingConfirm>(null);
   const [bannerRef, bannerHeight] = useElementHeight<HTMLElement>();
   const suggestions = article ? selectOpenSuggestionSummary(state, article.id) : undefined;
+  const auto = useAutoModeEditor(article);
 
   const status: ArticleStatus = article?.status ?? 'DRAFT';
   const categoryBase = `/product/category/${category.slug}`;
@@ -180,34 +181,31 @@ function EditSession({ category, article }: EditSessionProps) {
 
       <div className="mt-[40px] mr-[24px] mb-[40px] ml-[40px] box-border flex min-h-0 flex-row gap-[40px]">
         <div className="box-border min-w-0 flex-1 text-legacy-body">
-          {article && suggestions ? (
+          {article && auto.banner ? (
+            <div style={{ marginBottom: BANNER_GAP }}>
+              <SuggestionsBanner ref={bannerRef} {...auto.banner} />
+            </div>
+          ) : article && suggestions?.stage === 'TO_REVIEW' ? (
             <div style={{ marginBottom: BANNER_GAP }}>
               <SuggestionsBanner
                 ref={bannerRef}
-                actionLabel={
-                  suggestions.stage === 'AUTO' ? AUTO_MODE_COPY[state.autoModeOption].banner.action : 'Review suggestions'
-                }
+                actionLabel="Review suggestions"
                 onAction={() => navigate(suggestionsReviewPath(article.slug))}
               >
-                {suggestions.stage === 'AUTO' ? (
-                  <>
-                    {AUTO_MODE_COPY[state.autoModeOption].banner.lead} based on{' '}
-                    <BannerCount count={suggestions.conversations} noun="recent customer conversation" />.
-                  </>
-                ) : (
-                  <>
-                    Hiver AI suggested <BannerCount count={suggestions.total} noun="improvement" /> to this article
-                    based on <BannerCount count={suggestions.conversations} noun="recent customer conversation" />.
-                  </>
-                )}
+                Hiver AI suggested <BannerCount count={suggestions.total} noun="improvement" /> to this article based on{' '}
+                <BannerCount count={suggestions.conversations} noun="recent customer conversation" />.
               </SuggestionsBanner>
             </div>
           ) : null}
+          {/* Keyed so the content reseeds when Hiver AI's changes are applied or taken back. */}
           <ArticleEditor
+            key={auto.editorKey}
             title={title}
-            bodyHTML={bodyHTML}
+            bodyHTML={auto.editorBody ?? article?.bodyHTML ?? bodyHTML}
             onChange={handleEditorChange}
             heightOffset={bannerHeight > 0 ? bannerHeight + BANNER_GAP : 0}
+            readOnly={auto.readOnly}
+            overlay={auto.overlay}
           />
         </div>
         <ArticleMetaPanel
@@ -235,6 +233,7 @@ function EditSession({ category, article }: EditSessionProps) {
         />
       </div>
 
+      {auto.dialogs}
       <ConfirmModal
         open={pending === 'unpublish'}
         onOpenChange={(open) => setPending(open ? 'unpublish' : null)}

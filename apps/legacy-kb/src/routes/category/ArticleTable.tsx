@@ -12,7 +12,7 @@ import { suggestionsReviewPath } from '../../lib/paths';
 import { useStore } from '../../store/StoreContext';
 import { AUTO_MODE_COPY } from '../../improvements/autoModeCopy';
 import { pluralize } from '../../lib/format';
-import { selectOpenSuggestionSummary, type ArticleFilter } from '../../store/selectors';
+import { selectAutoNeedsLook, selectOpenSuggestionSummary, type ArticleFilter } from '../../store/selectors';
 import type { Article, Category } from '../../store/types';
 
 /** Live empty-state copy keyed by tab (chunk 854 `He`/`Me`). */
@@ -65,9 +65,12 @@ function ArticleRow({ article, categorySlug, publicUrl }: ArticleRowProps) {
   const author = article.authorId ? state.users[article.authorId] : undefined;
   const editHref = `/product/category/${categorySlug}/article/edit/${article.slug}`;
   const ai = selectOpenSuggestionSummary(state, article.id);
+  // Auto mode: tagged until someone has checked the changes (or published / discarded the draft).
   const pill =
     ai?.stage === 'AUTO'
-      ? AUTO_MODE_COPY[state.autoModeOption].pill
+      ? selectAutoNeedsLook(state, article.id)
+        ? AUTO_MODE_COPY[state.autoModeOption].tag
+        : undefined
       : ai
         ? { label: pluralize(ai.total, 'suggestion'), tooltip: 'Review AI suggestions' }
         : undefined;
@@ -83,7 +86,7 @@ function ArticleRow({ article, categorySlug, publicUrl }: ArticleRowProps) {
             <SuggestionsTablePill
               label={pill.label}
               tooltip={pill.tooltip}
-              onOpen={() => navigate(suggestionsReviewPath(article.slug))}
+              onOpen={() => navigate(ai?.stage === 'AUTO' ? editHref : suggestionsReviewPath(article.slug))}
             />
           ) : undefined
         }

@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, type ReactNode } from 'react';
 import { EditorToolbar } from './EditorToolbar';
 
 export interface ArticleEditorChange {
@@ -18,6 +18,10 @@ export interface ArticleEditorProps {
    * still fits the viewport.
    */
   heightOffset?: number;
+  /** Shown but not editable (e.g. while Hiver AI's draft update is open). */
+  readOnly?: boolean;
+  /** Layer positioned over the content (the scroll container is `relative`), e.g. AI change markers. */
+  overlay?: ReactNode;
 }
 
 const TITLE_PLACEHOLDER = 'Title';
@@ -65,7 +69,7 @@ function serialize(root: HTMLElement): ArticleEditorChange {
  * typography in styles.css (`.ck-content`). The DOM is seeded once per
  * mount (key the component by article) so typing never fights React.
  */
-export function ArticleEditor({ title, bodyHTML, onChange, heightOffset = 0 }: ArticleEditorProps) {
+export function ArticleEditor({ title, bodyHTML, onChange, heightOffset = 0, readOnly = false, overlay }: ArticleEditorProps) {
   const editableRef = useRef<HTMLDivElement>(null);
   const seed = useRef({ title, bodyHTML });
 
@@ -90,18 +94,20 @@ export function ArticleEditor({ title, bodyHTML, onChange, heightOffset = 0 }: A
   return (
     <div className="relative">
       <EditorToolbar />
-      <div className="box-border overflow-y-auto px-[20px]" style={{ height: `calc(100vh - ${200 + heightOffset}px)` }}>
+      <div className="relative box-border overflow-y-auto px-[20px]" style={{ height: `calc(100vh - ${200 + heightOffset}px)` }}>
         <div
           ref={editableRef}
           role="textbox"
           aria-multiline="true"
           aria-label="Article content"
-          contentEditable
+          contentEditable={!readOnly}
+          aria-readonly={readOnly || undefined}
           suppressContentEditableWarning
           spellCheck
           onInput={handleInput}
           className="ck-content box-border overflow-auto rounded-b-[2px] border border-solid border-white bg-white px-[4px] py-0 break-words"
         />
+        {overlay}
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { backIcon } from '../assets/legacy';
 import { Button } from '../components/ui/Button';
 import { ConfirmModal } from '../components/ui/Modal';
@@ -19,9 +19,8 @@ import { SuggestionsSummaryCard } from '../improvements/SuggestionsSummaryCard';
 import { useArticleReview } from '../improvements/useArticleReview';
 import { SUGGESTIONS_HUB_PATH } from '../lib/paths';
 import { useStore } from '../store/StoreContext';
-import { selectArticleBySlug, selectConversationSources, selectReviewSession } from '../store/selectors';
+import { articleEditPath, selectArticleBySlug, selectConversationSources, selectReviewSession } from '../store/selectors';
 import type { AISuggestion } from '../store/types';
-import { AutoReviewSession } from './AutoReviewSession';
 import { NotFound } from './NotFound';
 
 /** Rail width; fits a 1470px viewport next to the 720px body. */
@@ -374,8 +373,8 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
       ? `${
           session?.auto
             ? history.published
-              ? 'Merged into live'
-              : 'Version discarded'
+              ? 'Draft update published'
+              : 'Draft update discarded'
             : history.published
               ? 'Published'
               : 'Marked as reviewed'
@@ -528,10 +527,10 @@ export function ArticleReviewPage() {
       <NotFound title="No suggestions to review" message="Hiver’s AI hasn’t suggested any changes to this article." />
     );
   }
-  // Auto mode: applied changes (publish) or an improved version (merge).
-  // A merged version reads as an ordinary review history.
+  // Auto mode: the changes are checked inside the article, in the editor.
+  // A published draft update reads as an ordinary review history.
   if (session.auto && (session.kind === 'live' || state.autoModeOption === 'publish')) {
-    return <AutoReviewSession key={article.id} articleId={article.id} />;
+    return <Navigate to={articleEditPath(state, article.id)} replace />;
   }
   return <ReviewSession key={article.id} articleId={article.id} />;
 }

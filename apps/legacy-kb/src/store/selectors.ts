@@ -1,4 +1,4 @@
-import { buildReviewDocument } from '../improvements/reviewDocument';
+import { applyDecisions, buildReviewDocument } from '../improvements/reviewDocument';
 import type { ReviewDecision } from '../improvements/reviewState';
 import type {
   AISuggestion,
@@ -233,14 +233,78 @@ export function selectOpenSuggestionSummary(
   return summary && summary.stage !== 'REVIEWED' ? summary : undefined;
 }
 
+// ── Auto mode, shown inside the article ──
+
 /**
- * Articles that need someone: suggestions to review, plus (merge option)
- * improved versions waiting to be merged. Applied changes (publish
- * option) are already live, so they don't count.
+ *   live      publish option, applied to the live article
+ *   restored  publish option, someone restored the original text
+ *   draft     merge option, in Hiver AI's draft update (not live)
+ *   removed   merge option, taken out of the draft update
+ */
+export type AutoChangeStatus = 'live' | 'restored' | 'draft' | 'removed';
+
+export type AutoChange = {
+  suggestion: AISuggestion;
+  status: AutoChangeStatus;
+  /** In the article and nobody has kept it yet: marked in the editor. */
+  unchecked: boolean;
+};
+
+/** The article's changes from auto mode, in body order. Empty for manual suggestions. */
+export function selectAutoChanges(state: StoreState, articleId: string): AutoChange[] {
+  const session = selectReviewSession(state, articleId);
+  if (!session?.auto) return [];
+  const decisions = state.aiReviewByArticle[articleId]?.decisions ?? {};
+  return session.suggestions
+    .filter((s) => s.autoApplied)
+    .map((s) => {
+      const status: AutoChangeStatus =
+        s.status === 'published'
+          ? 'live'
+          : s.status === 'dismissed-final'
+            ? 'restored'
+            : decisions[s.id] === 'dismissed'
+              ? 'removed'
+              : 'draft';
+      return { suggestion: s, status, unchecked: (status === 'live' || status === 'draft') && !s.checked };
+    });
+}
+
+/**
+ * Merge option: the article as Hiver AI's draft update would publish it
+ * (live body + every change still in the draft). `undefined` when there's
+ * no draft update waiting.
+ */
+export function selectAutoDraftBody(state: StoreState, articleId: string): string | undefined {
+  const article = state.articles[articleId];
+  const items = selectReviewSuggestions(state, articleId).filter((s) => s.autoApplied);
+  if (!article || items.length === 0) return undefined;
+  return applyDecisions(article.bodyHTML, items, state.aiReviewByArticle[articleId]?.decisions ?? {});
+}
+
+/** Auto mode: this article has a change to check (publish) or a draft update to publish (merge). */
+export function selectAutoNeedsLook(state: StoreState, articleId: string): boolean {
+  return state.autoModeOption === 'merge'
+    ? selectAutoDraftBody(state, articleId) !== undefined
+    : selectAutoChanges(state, articleId).some((c) => c.unchecked);
+}
+
+/** Where an article's AI changes live: its editor. */
+export function articleEditPath(state: StoreState, articleId: string): string {
+  const article = state.articles[articleId];
+  const category = article ? state.categories[article.categoryId] : undefined;
+  return `/product/category/${category?.slug ?? ''}/article/edit/${article?.slug ?? ''}`;
+}
+
+/**
+ * Articles that need someone: suggestions to review, plus auto-mode
+ * articles with a change nobody has checked yet (publish) or a draft
+ * update waiting to be published (merge).
  */
 export function selectArticlesNeedingAction(state: StoreState): ArticleSuggestionSummary[] {
   const toReview = selectSuggestionArticles(state, 'TO_REVIEW');
-  return state.autoModeOption === 'merge' ? [...toReview, ...selectSuggestionArticles(state, 'AUTO')] : toReview;
+  const auto = selectSuggestionArticles(state, 'AUTO').filter((row) => selectAutoNeedsLook(state, row.article.id));
+  return [...toReview, ...auto];
 }
 
 /**
