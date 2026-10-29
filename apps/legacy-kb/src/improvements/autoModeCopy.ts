@@ -40,7 +40,7 @@ export const AUTO_MODE_COPY: Record<AutoModeOption, AutoModeCopy> = {
     settingsOn:
       'Hiver AI applies its suggestions to your articles as they come in, without waiting for a review. You can see each one on the article and revert it.',
     hubDescription:
-      'Auto mode is on: Hiver AI applies its suggestions from recent customer conversations as they come in. Check what it applied and revert anything you don’t want.',
+      'Improvements Hiver AI drafted from recent customer conversations. Auto mode is on, so new ones are applied without a review.',
     notice: (articles) => `Auto mode applied Hiver AI suggestions to ${articles}. Check what was applied.`,
     noticeAction: 'View suggestions',
     tag: { label: 'Auto-applied', tooltip: 'Auto mode applied Hiver AI suggestions to this article. Open to check them.' },

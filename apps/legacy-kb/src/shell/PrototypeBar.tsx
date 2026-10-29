@@ -13,8 +13,8 @@ import { useStore } from '../store/StoreContext';
 import type { AutoLayout, AutoModeOption } from '../store/types';
 
 const LAYOUTS: Array<{ value: AutoLayout; label: string; param: string }> = [
-  { value: 'rail', label: 'Layout A · Suggestion rail', param: 'a' },
-  { value: 'list', label: 'Layout B · List above editor', param: 'b' },
+  { value: 'rail', label: 'A · On the review page', param: 'a' },
+  { value: 'list', label: 'B · On the edit page', param: 'b' },
 ];
 
 const PILL_BUTTON =
@@ -89,16 +89,27 @@ export function PrototypeBar({ bottom = 80 }: PrototypeBarProps) {
     );
   }
 
+  // A narrow card that fits the 243px sidebar, so it never covers the page.
   return (
     <div
       role="region"
       aria-label="Prototype controls"
       style={{ bottom }}
-      className="fixed left-[14px] z-[2000] flex items-center gap-[8px] rounded-full bg-[#0f172a] py-[4px] pr-[4px] pl-[14px] font-inter text-[12px] leading-[16px] text-[#cbd5e1] shadow-[0_4px_16px_rgba(15,23,42,0.35)]"
+      className="fixed left-[14px] z-[2000] box-border flex w-[215px] flex-col gap-[8px] rounded-[10px] bg-[#0f172a] p-[10px] font-inter text-[12px] leading-[16px] text-[#cbd5e1] shadow-[0_4px_16px_rgba(15,23,42,0.35)]"
     >
-      <span className="font-semibold tracking-[0.04em] text-[#94a3b8] uppercase">Prototype</span>
+      <div className="flex items-center justify-between pl-[4px]">
+        <span className="font-semibold tracking-[0.04em] text-[#94a3b8] uppercase">Prototype</span>
+        <button
+          type="button"
+          aria-label="Hide prototype controls"
+          onClick={() => toggle(false)}
+          className={cn(PILL_BUTTON, 'bg-transparent px-[8px] text-[#94a3b8] hover:text-white')}
+        >
+          ✕
+        </button>
+      </div>
       {/* The draft-update design (`?option=2`) is parked; only the layouts are on show. */}
-      <div className="flex items-center rounded-full bg-[#1e293b] p-[2px]" role="group" aria-label="How auto-applied suggestions are shown">
+      <div className="flex flex-col gap-[2px] rounded-[8px] bg-[#1e293b] p-[2px]" role="group" aria-label="How auto-applied suggestions are shown">
         {LAYOUTS.map((layout) => {
           const selected = state.autoLayout === layout.value;
           return (
@@ -107,19 +118,18 @@ export function PrototypeBar({ bottom = 80 }: PrototypeBarProps) {
               type="button"
               aria-pressed={selected}
               onClick={() => setLayout(layout)}
-              className={cn(PILL_BUTTON, selected ? 'bg-white text-[#0f172a]' : 'bg-transparent text-[#cbd5e1] hover:text-white')}
+              className={cn(PILL_BUTTON, 'rounded-[6px] text-left', selected ? 'bg-white text-[#0f172a]' : 'bg-transparent text-[#cbd5e1] hover:text-white')}
             >
               {layout.label}
             </button>
           );
         })}
       </div>
-      <span aria-hidden className="h-[16px] w-px bg-[#334155]" />
       {arrived ? (
         <button
           type="button"
           onClick={() => navigate(SUGGESTIONS_HUB_PATH, { state: { tab: state.aiAutoApply ? 'AUTO' : 'TO_REVIEW' } })}
-          className={cn(PILL_BUTTON, 'bg-transparent text-[#86efac] hover:text-white')}
+          className={cn(PILL_BUTTON, 'rounded-[6px] bg-transparent text-left whitespace-normal text-[#86efac] hover:text-white')}
         >
           {arrivedText} →
         </button>
@@ -127,7 +137,7 @@ export function PrototypeBar({ bottom = 80 }: PrototypeBarProps) {
         <button
           type="button"
           onClick={() => dispatch({ type: 'ai/receiveSuggestions', now: new Date().toISOString() })}
-          className={cn(PILL_BUTTON, 'bg-[#2563eb] text-white hover:bg-[#3b82f6]')}
+          className={cn(PILL_BUTTON, 'rounded-[6px] bg-[#2563eb] text-white hover:bg-[#3b82f6]')}
         >
           Simulate new conversations
         </button>
@@ -135,17 +145,9 @@ export function PrototypeBar({ bottom = 80 }: PrototypeBarProps) {
       <button
         type="button"
         onClick={() => restart(state.autoModeOption)}
-        className={cn(PILL_BUTTON, 'bg-transparent text-[#94a3b8] hover:text-white')}
+        className={cn(PILL_BUTTON, 'rounded-[6px] bg-transparent text-left text-[#94a3b8] hover:text-white')}
       >
-        Restart
-      </button>
-      <button
-        type="button"
-        aria-label="Hide prototype controls"
-        onClick={() => toggle(false)}
-        className={cn(PILL_BUTTON, 'bg-transparent px-[8px] text-[#94a3b8] hover:text-white')}
-      >
-        ✕
+        Restart prototype
       </button>
     </div>
   );

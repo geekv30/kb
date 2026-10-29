@@ -15,7 +15,7 @@ import { MaterialIcon } from '../components/ui/MaterialIcon';
 import { Tooltip } from '../components/ui/Tooltip';
 import { cn } from '../lib/cn';
 import type { AISuggestion } from '../store/types';
-import { DecisionButton, IconButton, NavArrows, SuggestionTypeLabel } from './ReviewAtoms';
+import { DecisionButton, IconButton, NavArrows, RevertButton, SuggestionTypeLabel } from './ReviewAtoms';
 import type { ReviewDecision } from './reviewState';
 
 export type SuggestionCardState = 'idle' | 'active' | ReviewDecision;
@@ -36,6 +36,13 @@ export interface SuggestionCardProps {
   canGoNext?: boolean;
   /** active: 1-based position in the full list. */
   position?: { index: number; total: number };
+  /** Auto mode: quiet status on the right of the header ("Auto-applied"), before the position. */
+  meta?: string;
+  /** Auto mode, active card: one Revert button instead of Dismiss / Accept. */
+  onRevert?: (id: string) => void;
+  /** Decided chip: status word and its button's name (auto mode: "Reverted" / "Re-apply"). */
+  chipLabel?: string;
+  chipActionLabel?: string;
 }
 
 const CARD_BASE = 'box-border rounded-[5px] border border-solid bg-white font-inter';
@@ -53,8 +60,10 @@ function DecisionChip({
   suggestion,
   decision,
   onUndo,
+  chipLabel,
+  chipActionLabel = 'Undo',
 }: SuggestionCardProps & { decision: ReviewDecision }) {
-  const statusLabel = decision === 'accepted' ? 'Accepted' : 'Dismissed';
+  const statusLabel = chipLabel ?? (decision === 'accepted' ? 'Accepted' : 'Dismissed');
   return (
     <div
       data-card-state={decision}
@@ -72,9 +81,9 @@ function DecisionChip({
       </span>
       {onUndo ? (
         <span className="ml-auto">
-          <Tooltip content="Undo">
+          <Tooltip content={chipActionLabel}>
             <IconButton
-              label={`Undo ${statusLabel.toLowerCase()}: ${suggestion.title}`}
+              label={`${chipActionLabel} ${statusLabel.toLowerCase()}: ${suggestion.title}`}
               onClick={() => onUndo(suggestion.id)}
               className="hover:bg-legacy-toolbar-hover"
             >
@@ -121,6 +130,8 @@ function ReviewCard({
   canGoPrev = true,
   canGoNext = true,
   position,
+  meta,
+  onRevert,
 }: SuggestionCardProps) {
   const isIdle = state === 'idle';
   const activate = isIdle && onActivate ? () => onActivate(suggestion.id) : undefined;
@@ -156,14 +167,15 @@ function ReviewCard({
     >
       <div className="flex h-[20px] items-center justify-between">
         <SuggestionTypeLabel type={suggestion.type} />
-        {!isIdle && position ? (
-          <span
-            aria-label={`Suggestion ${position.index} of ${position.total}`}
-            className="text-[12px] leading-[20px] font-medium text-legacy-meta tabular-nums"
-          >
-            {position.index} / {position.total}
-          </span>
-        ) : null}
+        <span className="text-[12px] leading-[20px] font-medium text-legacy-meta tabular-nums">
+          {meta}
+          {meta && !isIdle && position ? ' · ' : null}
+          {!isIdle && position ? (
+            <span aria-label={`Suggestion ${position.index} of ${position.total}`}>
+              {position.index} / {position.total}
+            </span>
+          ) : null}
+        </span>
       </div>
       <h3 className="m-0 mt-[8px] p-0 text-[14px] leading-[20px] font-medium text-legacy-ink">{suggestion.title}</h3>
 
@@ -183,6 +195,9 @@ function ReviewCard({
                 count={suggestion.sourceCount}
                 onClick={onOpenSources ? () => onOpenSources(suggestion.id) : undefined}
               />
+              {onRevert ? (
+                <RevertButton suggestionTitle={suggestion.title} onClick={() => onRevert(suggestion.id)} />
+              ) : null}
               {reject ? <DecisionButton decision="dismiss" suggestionTitle={suggestion.title} onClick={reject} /> : null}
               {accept ? <DecisionButton decision="accept" suggestionTitle={suggestion.title} onClick={accept} /> : null}
             </div>

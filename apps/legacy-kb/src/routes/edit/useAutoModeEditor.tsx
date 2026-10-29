@@ -83,8 +83,7 @@ export function useAutoModeEditor(article: Article | undefined): AutoModeEditor 
               actionLabel="View suggestions"
               onAction={() => navigate(autoSuggestionsPath(state, articleId))}
             >
-              <strong className="font-medium text-legacy-ink">Auto mode</strong> applied{' '}
-              <BannerCount count={live} noun="Hiver AI suggestion" /> to this article. {live === 1 ? 'It’s' : 'They’re'} live.
+              Auto mode applied <BannerCount count={live} noun="Hiver AI suggestion" /> to this article.
             </SuggestionsBanner>
           ) : null,
         editorBody: undefined,
@@ -97,13 +96,10 @@ export function useAutoModeEditor(article: Article | undefined): AutoModeEditor 
     return {
       top: (
         <AutoAppliedPanel
-          state={state}
-          articleId={articleId}
           items={applied.items}
           needsReview={applied.needsReview}
           onToggle={applied.toggle}
           onMarkReviewed={applied.markReviewed}
-          onOpenSources={applied.setSourcesFor}
           onFocus={setFocusedId}
         />
       ),

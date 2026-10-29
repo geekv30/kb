@@ -44,7 +44,7 @@ export function useAutoApplied(articleId: string): AutoAppliedState {
       if (!item) return;
       flip(id);
       showToast(
-        item.live ? `Suggestion ${item.index} reverted. The original text is live again.` : `Suggestion ${item.index} re-applied.`,
+        item.live ? 'Suggestion reverted. The original text is live again.' : 'Suggestion re-applied.',
         item.live ? { label: 'Undo', onClick: () => flip(id) } : undefined,
       );
     },

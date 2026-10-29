@@ -25,6 +25,14 @@ export interface SuggestionsSummaryCardProps {
   onNext?: () => void;
   /** terminal: replaces the "Reviewed all" button with a read-only status line. */
   historyNote?: string;
+  /** terminal: heading instead of "Suggestions" (auto mode: "Auto-applied"). */
+  title?: string;
+  /** terminal: count pill's accessible name. */
+  countLabel?: string;
+  /** terminal: the status line's icon (auto mode: `auto_awesome`). */
+  historyIcon?: string;
+  /** terminal: keep prev / next live (auto mode steps through applied suggestions). */
+  navEnabled?: boolean;
 }
 
 const CARD = 'box-border rounded-[5px] border border-solid border-legacy-input-border bg-white font-inter';
@@ -38,6 +46,10 @@ export function SuggestionsSummaryCard({
   onPrev,
   onNext,
   historyNote,
+  title,
+  countLabel,
+  historyIcon = 'check_circle',
+  navEnabled = false,
 }: SuggestionsSummaryCardProps) {
   if (mode === 'reviewing') {
     return <ReviewingHeader count={count} summary={summary} />;
@@ -50,19 +62,28 @@ export function SuggestionsSummaryCard({
     <section aria-label="AI suggestions" className={`${CARD} px-[16px] pt-[8px] pb-[16px]`}>
       <div className="flex h-[32px] items-center gap-[8px]">
         <AIMark size={20} />
-        <h2 className={TITLE}>{isTerminal ? 'Suggestions' : 'AI suggestions'}</h2>
-        {isTerminal ? <CountPill count={count} label={`${count} suggestions reviewed`} /> : null}
+        <h2 className={TITLE}>{isTerminal ? (title ?? 'Suggestions') : 'AI suggestions'}</h2>
+        {isTerminal ? <CountPill count={count} label={countLabel ?? `${count} suggestions reviewed`} /> : null}
         <div className="ml-auto -mr-[10px]">
           {/* In terminal mode every suggestion is decided, so prev/next
               have nowhere to go — shown disabled rather than as dead
               buttons that look live. */}
-          <NavArrows onPrev={onPrev} onNext={onNext} prevDisabled={isTerminal} nextDisabled={isTerminal} />
+          <NavArrows
+            onPrev={onPrev}
+            onNext={onNext}
+            prevDisabled={isTerminal && !navEnabled}
+            nextDisabled={isTerminal && !navEnabled}
+          />
         </div>
       </div>
       <p className="m-0 mt-0 p-0 text-[13px] leading-[20px] font-normal text-legacy-body">{summary}</p>
       {isTerminal && historyNote ? (
         <p className="m-0 mt-[12px] flex items-center gap-[6px] border-0 border-t border-solid border-legacy-input-border p-0 pt-[12px] text-[13px] leading-[20px] font-medium text-legacy-meta">
-          <MaterialIcon name="check_circle" size={16} className="shrink-0 text-legacy-success" />
+          <MaterialIcon
+            name={historyIcon}
+            size={16}
+            className={cn('shrink-0', historyIcon === 'check_circle' ? 'text-legacy-success' : 'text-legacy-blue')}
+          />
           {historyNote}
         </p>
       ) : isTerminal ? (

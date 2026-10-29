@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Cell, CellText, TableRow, TableShell, TitleCell, type TableColumn } from '../components/table/LegacyTable';
 import { EmptyState } from '../components/ui/EmptyState';
-import { MaterialIcon } from '../components/ui/MaterialIcon';
 import { ImpactPill } from '../components/ui/Pill';
 import { SearchField } from '../components/ui/SearchField';
 import { Tabs, type TabOption } from '../components/ui/Tabs';
@@ -13,7 +12,6 @@ import { useStore } from '../store/StoreContext';
 import {
   autoSuggestionsPath,
   selectAutoChanges,
-  selectAutoNeedsLook,
   selectCategories,
   selectSuggestionArticles,
   type ArticleSuggestionSummary,
@@ -44,7 +42,7 @@ function autoColumns(whenLabel: string): ReadonlyArray<TableColumn> {
   return [
     COLUMNS[0],
     COLUMNS[1],
-    { id: 'changes', label: 'CHANGES', width: 180 },
+    { id: 'changes', label: 'SUGGESTIONS', width: 180 },
     COLUMNS[3],
     { id: 'when', label: whenLabel },
   ];
@@ -84,7 +82,7 @@ function autoChangesLabel(changes: AutoChange[], option: AutoModeOption): string
   const count = (status: AutoChange['status']) => changes.filter((c) => c.status === status).length;
   if (option === 'merge') return `${pluralize(count('draft'), 'change')} in draft`;
   const reverted = count('restored');
-  return reverted > 0 ? `${count('live')} applied · ${reverted} reverted` : `${pluralize(count('live'), 'suggestion')} applied`;
+  return reverted > 0 ? `${count('live')} applied · ${reverted} reverted` : `${count('live')} applied`;
 }
 
 function AutoHubRow({ row, columns }: { row: ArticleSuggestionSummary; columns: ReadonlyArray<TableColumn> }) {
@@ -109,47 +107,6 @@ function AutoHubRow({ row, columns }: { row: ArticleSuggestionSummary; columns: 
         <CellText>{row.autoAppliedAt ? whenText(row.autoAppliedAt) : ''}</CellText>
       </Cell>
     </TableRow>
-  );
-}
-
-/*
- * Auto mode's "what changed" notice above the tabs, in the edit banner's
- * wash (#f2f6ff, 1px #d1e0f1, radius 4px): one line per article that
- * needs a look, each opening the article where its changes are marked.
- */
-function AutoNotice({ rows }: { rows: ArticleSuggestionSummary[] }) {
-  const { state } = useStore();
-  const copy = AUTO_MODE_COPY[state.autoModeOption];
-  return (
-    <section
-      aria-label="Changes by Hiver AI"
-      className="mx-[40px] mt-[4px] mb-[16px] box-border rounded-[4px] border border-solid border-legacy-input-border bg-legacy-wash px-[16px] py-[12px] font-inter"
-    >
-      <p className="m-0 flex items-center gap-[12px] p-0 text-[14px] leading-[20px] font-medium text-legacy-ink">
-        <MaterialIcon name="auto_awesome" size={20} className="shrink-0 text-legacy-blue" />
-        {copy.notice(pluralize(rows.length, 'article'))}
-      </p>
-      <ul className="m-0 mt-[8px] list-none p-0 pl-[32px]">
-        {rows.map((row) => {
-          const changes = selectAutoChanges(state, row.article.id);
-          return (
-            <li key={row.article.id} className="flex items-center gap-[8px] py-[4px] text-[13px] leading-[20px]">
-              <span className="font-medium text-legacy-ink">{row.article.title}</span>
-              <span className="text-legacy-meta">
-                · {autoChangesLabel(changes, state.autoModeOption)}
-                {row.autoAppliedAt ? ` · ${whenText(row.autoAppliedAt)}` : ''}
-              </span>
-              <Link
-                to={autoSuggestionsPath(state, row.article.id)}
-                className="ml-auto font-medium whitespace-nowrap text-legacy-blue no-underline hover:underline"
-              >
-                {copy.noticeAction}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
   );
 }
 
@@ -196,7 +153,6 @@ export function SuggestionsHubPage() {
 
   const copy = AUTO_MODE_COPY[state.autoModeOption];
   const autoRows = selectSuggestionArticles(state, 'AUTO');
-  const needsLook = autoRows.filter((r) => selectAutoNeedsLook(state, r.article.id));
   // The third tab appears once auto mode is on (or has left something behind).
   const showAuto = state.aiAutoApply || autoRows.length > 0;
   const tabs: ReadonlyArray<TabOption<SuggestionHubTab>> = [
@@ -254,7 +210,6 @@ export function SuggestionsHubPage() {
             : 'Improvements Hiver AI drafted from recent customer conversations. Review them before they go live.'
         }
       />
-      {needsLook.length > 0 ? <AutoNotice rows={needsLook} /> : null}
       <Tabs tabs={tabs} value={activeTab} onChange={setTab} label="Suggestion status" />
       <TableShell columns={columns} empty={empty}>
         {visible.map((row) =>

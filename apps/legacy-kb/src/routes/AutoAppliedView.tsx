@@ -1,27 +1,35 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { backIcon } from '../assets/legacy';
 import { Button } from '../components/ui/Button';
-import { MaterialIcon } from '../components/ui/MaterialIcon';
 import { cn } from '../lib/cn';
+import { firstName, whenText } from '../lib/format';
 import { SUGGESTIONS_HUB_PATH } from '../lib/paths';
-import { AutoAppliedCard } from '../improvements/AutoAppliedCard';
-import { AutoAppliedStory, decorateLiveBody } from '../improvements/autoApplied';
-import { CountPill } from '../improvements/ReviewAtoms';
+import { buildReviewDocument } from '../improvements/reviewDocument';
+import { ReviewArticleBody, type BodySuggestionState } from '../improvements/ReviewArticleBody';
 import { SourcesSheet } from '../improvements/SourcesSheet';
+import { SuggestionCard } from '../improvements/SuggestionCard';
 import { SuggestionRail, type SuggestionRailItem } from '../improvements/SuggestionRail';
+import { SuggestionsSummaryCard } from '../improvements/SuggestionsSummaryCard';
 import { useAutoApplied } from '../improvements/useAutoApplied';
+import { selectReviewSession } from '../store/selectors';
 import { useStore } from '../store/StoreContext';
 
-/** Same rail width as the manual review. */
+/** Same rail width and spacing as the manual review. */
 const RAIL_WIDTH = 340;
 
 /**
- * Layout A — `/product/ai/suggestions/:slug` for an article Hiver AI
- * changed in auto mode. The manual review's layout (article + rail), so
- * "suggestion" looks the same in both modes, but every card is already
- * applied: the article shows the live text with each suggestion numbered
- * and washed green, and each card offers Revert.
+ * Layout A — the manual review page in an "auto-applied" state, built
+ * from the same pieces so a suggestion looks the same in both modes:
+ *
+ *   - summary card: "Auto-applied", how many are live, what they change,
+ *     and "Applied automatically by Hiver AI · <when>";
+ *   - each suggestion: the usual idle card (type + title) with a quiet
+ *     "Auto-applied"; opening it shows the change in the article (red /
+ *     green, as in manual review) and the card's one-line why, sources
+ *     and a single Revert;
+ *   - a reverted one recedes to the grey chip ("Reverted", Re-apply);
+ *   - Mark as reviewed is the page's one primary button.
  */
 export function AutoAppliedView({ articleId }: { articleId: string }) {
   const navigate = useNavigate();
@@ -30,22 +38,99 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
   const auto = useAutoApplied(articleId);
   const articleRef = useRef<HTMLElement>(null);
   const [scrolled, setScrolled] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
-  const bodyHTML = useMemo(
-    () => (article ? decorateLiveBody(article.bodyHTML, auto.items) : ''),
-    [article?.bodyHTML, auto.items],
+  // The pre-AI body + each suggestion, so the open one can show its change.
+  const session = useMemo(
+    () => selectReviewSession(state, articleId),
+    [state.suggestions, state.aiReviewHistoryByArticle, article?.bodyHTML, articleId],
   );
+  const suggestions = useMemo(() => auto.items.map((i) => i.suggestion), [auto.items]);
+  const reviewDocument = useMemo(
+    () => buildReviewDocument(session?.bodyHTML ?? '', suggestions),
+    [session, suggestions],
+  );
+  const live = (id: string) => auto.items.find((i) => i.suggestion.id === id)?.live ?? false;
+
+  // Opening a suggestion brings its change into view.
+  useEffect(() => {
+    if (!activeId) return;
+    articleRef.current
+      ?.querySelector<HTMLElement>(`[data-suggestion-id="${CSS.escape(activeId)}"]`)
+      ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }, [activeId]);
+
+  const bodyStates = useMemo(() => {
+    const out: Record<string, BodySuggestionState> = {};
+    for (const s of suggestions) out[s.id] = s.id === activeId ? 'active' : live(s.id) ? 'accepted' : 'dismissed';
+    return out;
+  }, [suggestions, activeId, auto.items]);
+
+  /** Next / previous live suggestion; from nothing open, the first / last one. */
+  const step = (dir: 1 | -1) => {
+    const liveIds = suggestions.filter((s) => live(s.id)).map((s) => s.id);
+    const i = activeId ? liveIds.indexOf(activeId) : dir === 1 ? -1 : liveIds.length;
+    const next = liveIds[i + dir];
+    if (next) setActiveId(next);
+  };
+
   const railItems = useMemo<SuggestionRailItem[]>(
     () =>
-      auto.items.map((item) => ({
-        id: item.suggestion.id,
-        node: <AutoAppliedCard item={item} onToggle={auto.toggle} onOpenSources={auto.setSourcesFor} />,
-      })),
-    [auto.items, auto.toggle, auto.setSourcesFor],
+      suggestions.map((s, i) => {
+        if (!live(s.id)) {
+          return {
+            id: s.id,
+            node: (
+              <SuggestionCard
+                suggestion={s}
+                state="dismissed"
+                chipLabel="Reverted"
+                chipActionLabel="Re-apply"
+                onUndo={auto.toggle}
+              />
+            ),
+          };
+        }
+        if (s.id === activeId) {
+          return {
+            id: s.id,
+            node: (
+              <SuggestionCard
+                suggestion={s}
+                state="active"
+                meta="Auto-applied"
+                position={{ index: i + 1, total: suggestions.length }}
+                onPrev={() => step(-1)}
+                onNext={() => step(1)}
+                canGoPrev={i > 0}
+                canGoNext={i < suggestions.length - 1}
+                onOpenSources={auto.setSourcesFor}
+                onRevert={(id) => {
+                  auto.toggle(id);
+                  setActiveId(null);
+                }}
+              />
+            ),
+          };
+        }
+        return {
+          id: s.id,
+          node: <SuggestionCard suggestion={s} state="idle" meta="Auto-applied" onActivate={setActiveId} />,
+        };
+      }),
+    [suggestions, activeId, auto.items, auto.toggle, auto.setSourcesFor],
   );
 
-  if (!article) return null;
-  const live = auto.items.filter((i) => i.live).length;
+  if (!article || !session) return null;
+  const liveCount = auto.items.filter((i) => i.live).length;
+  const appliedAt = suggestions[0]?.autoAppliedAt;
+  const review = state.autoReviewByArticle[articleId];
+  const note = [
+    `Applied automatically by Hiver AI${appliedAt ? ` ${whenText(appliedAt)}` : ''}`,
+    review ? `reviewed by ${firstName(state, review.reviewedById)} ${whenText(review.reviewedAt)}` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <>
@@ -54,9 +139,11 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
           Back
         </Button>
         {auto.needsReview ? (
-          <Button variant="primary" onClick={auto.markReviewed}>
-            Mark as reviewed
-          </Button>
+          <div className="box-border flex pl-[15px]">
+            <Button variant="primary" onClick={auto.markReviewed}>
+              Mark as reviewed
+            </Button>
+          </div>
         ) : null}
         <span
           aria-hidden
@@ -68,37 +155,38 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
         />
       </div>
 
-      <div onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 0)} className="min-h-0 flex-1 overflow-y-auto">
-        {/* The story first: auto mode, what Hiver AI did to this article, what you can do. */}
-        <section
-          aria-label="Auto mode"
-          className="mt-[24px] mr-[40px] ml-[65px] box-border flex items-start gap-[12px] rounded-[4px] border border-solid border-legacy-input-border bg-legacy-wash px-[16px] py-[12px] font-inter"
-        >
-          <MaterialIcon name="auto_awesome" size={20} className="mt-[1px] shrink-0 text-legacy-blue" />
-          <AutoAppliedStory state={state} items={auto.items} articleId={articleId} />
-        </section>
-
-        <div className="box-border flex flex-row items-start gap-[40px] pt-[32px] pr-[40px] pb-[80px] pl-[65px]">
-          <article
-            ref={articleRef}
-            aria-label={article.title}
-            className="ck-content relative box-border w-full max-w-[720px] min-w-0 flex-1 break-words text-legacy-editor"
-          >
-            <h1>{article.title}</h1>
-            <div dangerouslySetInnerHTML={{ __html: bodyHTML }} />
-          </article>
-          <SuggestionRail
-            articleRef={articleRef}
-            width={RAIL_WIDTH}
-            items={railItems}
-            className="mt-[27px]"
-            summary={
-              <div className="flex h-[32px] items-center gap-[8px] font-inter">
-                <h2 className="m-0 p-0 text-[14px] leading-[17px] font-medium text-legacy-ink">Auto-applied suggestions</h2>
-                <CountPill count={live} label={`${live} live`} />
-              </div>
-            }
-          />
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <div onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 0)} className="min-h-0 flex-1 overflow-y-auto">
+          <div className="box-border flex flex-row items-start gap-[40px] pt-[40px] pr-[40px] pb-[80px] pl-[65px]">
+            <ReviewArticleBody
+              ref={articleRef}
+              title={article.title}
+              document={reviewDocument}
+              states={bodyStates}
+              className="w-full max-w-[720px] flex-1"
+            />
+            <SuggestionRail
+              articleRef={articleRef}
+              width={RAIL_WIDTH}
+              items={railItems}
+              activeId={activeId ?? undefined}
+              className="mt-[27px]"
+              summary={
+                <SuggestionsSummaryCard
+                  mode="terminal"
+                  title="Auto-applied"
+                  count={liveCount}
+                  countLabel={`${liveCount} live`}
+                  summary={article.aiSummary ?? 'Hiver AI applied these suggestions from recent customer conversations.'}
+                  historyNote={note}
+                  historyIcon="auto_awesome"
+                  navEnabled={liveCount > 0}
+                  onPrev={() => step(-1)}
+                  onNext={() => step(1)}
+                />
+              }
+            />
+          </div>
         </div>
       </div>
 

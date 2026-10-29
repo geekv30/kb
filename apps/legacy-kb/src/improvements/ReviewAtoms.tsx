@@ -163,3 +163,28 @@ export function DecisionButton({ decision, suggestionTitle, onClick }: DecisionB
     </Tooltip>
   );
 }
+
+/**
+ * Auto mode's one action on an applied suggestion: the DecisionButton's
+ * 24px neutral circle with an undo glyph. Same weight as Accept, so the
+ * card stays calm; the page's Mark as reviewed is the primary.
+ */
+export function RevertButton({ suggestionTitle, onClick }: { suggestionTitle: string; onClick: () => void }) {
+  return (
+    <Tooltip content="Revert to original">
+      <button
+        type="button"
+        aria-label={`Revert suggestion: ${suggestionTitle}`}
+        onClick={onClick}
+        className={cn(
+          'm-0 flex size-[24px] cursor-pointer items-center justify-center rounded-full border-0 p-0 outline-none',
+          'transition-[background-color,transform] duration-[160ms] ease-out-strong motion-safe:active:scale-[0.94]',
+          'focus-visible:shadow-[0_0_0_2px_#ffffff,0_0_0_4px_#1473e6]',
+          'bg-legacy-nav-active hover:bg-legacy-disabled',
+        )}
+      >
+        <MaterialIcon name="undo" size={16} className="text-legacy-ink" />
+      </button>
+    </Tooltip>
+  );
+}
