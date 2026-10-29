@@ -290,7 +290,12 @@ export function rootReducer(state: StoreState, action: StoreAction): StoreState 
       });
     }
     case 'proto/restart':
-      return seed({ aiAutoApply: state.aiAutoApply, autoModeOption: action.option, autoLayout: state.autoLayout });
+      return seed({
+        aiAutoApply: state.aiAutoApply,
+        autoModeOption: action.option,
+        autoLayout: state.autoLayout,
+        autoLayoutPinned: state.autoLayoutPinned,
+      });
     default: {
       const exhaustive: never = action;
       return exhaustive;

@@ -21,7 +21,7 @@
 // Pastes land as plain text. Clicking an undecided suggestion's (locked)
 // text opens that suggestion.
 
-import { forwardRef, useLayoutEffect, useMemo, useRef, type ClipboardEvent } from 'react';
+import { forwardRef, useLayoutEffect, useMemo, useRef, type ClipboardEvent, Fragment, type ReactNode } from 'react';
 import { cn } from '../lib/cn';
 import { resolveSegment, type ReviewDocument, type SuggestionSegment } from './reviewDocument';
 import type { ReviewDecision } from './reviewState';
@@ -43,6 +43,8 @@ export interface ReviewArticleBodyProps {
   onDirty?: () => void;
   /** Clicking an undecided suggestion's text opens it in the rail. */
   onActivateSuggestion?: (id: string) => void;
+  /** Rendered right after a suggestion's text (auto mode's per-change line). */
+  renderAfter?: (suggestionId: string) => ReactNode;
   className?: string;
 }
 
@@ -182,7 +184,7 @@ function SuggestionRegion({ segment, state, onActivate }: SuggestionRegionProps)
 }
 
 export const ReviewArticleBody = forwardRef<HTMLElement, ReviewArticleBodyProps>(function ReviewArticleBody(
-  { title, document: reviewDocument, states, onEdit, onDirty, onActivateSuggestion, className },
+  { title, document: reviewDocument, states, onEdit, onDirty, onActivateSuggestion, renderAfter, className },
   ref,
 ) {
   const editables = useRef(new Map<number, HTMLDivElement>());
@@ -223,12 +225,14 @@ export const ReviewArticleBody = forwardRef<HTMLElement, ReviewArticleBodyProps>
             <Html key={`static-${i}`} html={segment.html} />
           )
         ) : (
-          <SuggestionRegion
-            key={`${segment.suggestionId}-${states[segment.suggestionId] ?? 'inactive'}`}
-            segment={segment}
-            state={states[segment.suggestionId] ?? 'inactive'}
-            onActivate={onActivateSuggestion}
-          />
+          <Fragment key={`${segment.suggestionId}-${states[segment.suggestionId] ?? 'inactive'}`}>
+            <SuggestionRegion
+              segment={segment}
+              state={states[segment.suggestionId] ?? 'inactive'}
+              onActivate={onActivateSuggestion}
+            />
+            {renderAfter?.(segment.suggestionId)}
+          </Fragment>
         ),
       )}
     </article>

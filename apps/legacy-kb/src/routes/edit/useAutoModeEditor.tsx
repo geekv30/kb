@@ -17,7 +17,7 @@ import type { Article } from '../../store/types';
 type DraftConfirm = 'publish' | 'discard';
 
 export interface AutoModeEditor {
-  /** Above the editor: layout A's banner, layout B's list, or the draft banner. */
+  /** Above the editor: layout A's or B's banner, or the draft banner. */
   top: ReactNode;
   /** Layout B with changes shown: rendered in the editor's place (given the banner's height). */
   replaceEditor?: (heightOffset: number) => ReactNode;
@@ -36,8 +36,8 @@ export interface AutoModeEditor {
  *
  *   publish, layout A → a short banner: auto mode applied N suggestions,
  *                       "View suggestions" opens the article + rail view.
- *   publish, layout B → the numbered list above the editor, the same
- *                       numbers washed green on the paragraphs below.
+ *   publish, layout B → a one-line banner; "Show changes" swaps the editor
+ *                       for the red / green view, a Revert under each change.
  *   draft (parked)    → the draft update, read-only, with Publish update /
  *                       Discard draft.
  */
@@ -48,7 +48,6 @@ export function useAutoModeEditor(article: Article | undefined): AutoModeEditor 
   const option = state.autoModeOption;
   const articleId = article?.id ?? '';
   const applied = useAutoApplied(articleId);
-  const [focusedId, setFocusedId] = useState<string | null>(null);
   const [showChanges, setShowChanges] = useState(false);
   const [confirm, setConfirm] = useState<DraftConfirm | null>(null);
   const [draftSources, setDraftSources] = useState<string | null>(null);
@@ -103,12 +102,10 @@ export function useAutoModeEditor(article: Article | undefined): AutoModeEditor 
           needsReview={applied.needsReview}
           open={showChanges}
           onOpenChange={setShowChanges}
-          onToggle={applied.toggle}
           onMarkReviewed={() => {
             applied.markReviewed();
             setShowChanges(false);
           }}
-          onFocus={setFocusedId}
         />
       ),
       replaceEditor: showChanges
@@ -117,8 +114,9 @@ export function useAutoModeEditor(article: Article | undefined): AutoModeEditor 
               title={article.title}
               baseBodyHTML={state.aiReviewHistoryByArticle[articleId]?.baseBodyHTML ?? article.bodyHTML}
               items={applied.items}
-              focusedId={focusedId}
               heightOffset={heightOffset}
+              onToggle={applied.toggle}
+              onOpenSources={applied.setSourcesFor}
             />
           )
         : undefined,

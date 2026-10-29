@@ -204,6 +204,8 @@ export type StoreState = {
   autoModeOption: AutoModeOption;
   /** Prototype only: how an article's auto-applied suggestions are shown. */
   autoLayout: AutoLayout;
+  /** Prototype only: the link fixed the layout (`?layout=a|b`), so there's no switch. */
+  autoLayoutPinned: boolean;
   /** Latest "Mark as reviewed" on an article's auto-applied suggestions. */
   autoReviewByArticle: Record<string, AutoReview>;
 };

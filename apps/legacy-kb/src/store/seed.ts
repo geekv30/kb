@@ -89,14 +89,19 @@ function optionFromUrl(): AutoModeOption {
   return new URLSearchParams(window.location.search).get('option') === '2' ? 'merge' : 'publish';
 }
 
-/** `?layout=b` opens on the list-above-editor layout; anything else is the rail (A). */
+/** `?layout=b` opens on the edit-page layout; anything else is the review page (A). */
 function layoutFromUrl(): AutoLayout {
   return new URLSearchParams(window.location.search).get('layout') === 'b' ? 'list' : 'rail';
 }
 
+/** A link with `?layout=` shows that layout only. */
+function layoutPinnedByUrl(): boolean {
+  return new URLSearchParams(window.location.search).has('layout');
+}
+
 /** `overrides` carry the prototype's settings across a restart. */
 export function seed(
-  overrides?: Partial<Pick<StoreState, 'aiAutoApply' | 'autoModeOption' | 'autoLayout'>>,
+  overrides?: Partial<Pick<StoreState, 'aiAutoApply' | 'autoModeOption' | 'autoLayout' | 'autoLayoutPinned'>>,
 ): StoreState {
   const state: StoreState = {
     helpCenters: keyById(helpCenters),
@@ -114,6 +119,7 @@ export function seed(
     aiAutoApply: overrides?.aiAutoApply ?? false,
     autoModeOption: overrides?.autoModeOption ?? optionFromUrl(),
     autoLayout: overrides?.autoLayout ?? layoutFromUrl(),
+    autoLayoutPinned: overrides?.autoLayoutPinned ?? layoutPinnedByUrl(),
     autoReviewByArticle: {},
   };
 
