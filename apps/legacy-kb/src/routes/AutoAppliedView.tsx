@@ -15,7 +15,7 @@ import { SuggestionRail, type SuggestionRailItem } from '../improvements/Suggest
 import { SuggestionsSummaryCard } from '../improvements/SuggestionsSummaryCard';
 import { useAutoApplied } from '../improvements/useAutoApplied';
 import { articleEditPath, selectAutoReviewDocument, type AutoWhere } from '../store/selectors';
-import type { StoreState } from '../store/types';
+import type { AISuggestion, StoreState } from '../store/types';
 import { useStore } from '../store/StoreContext';
 
 /** Same rail width and spacing as the manual review. */
@@ -90,6 +90,8 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
   const suggestions = useMemo(() => auto.items.map((i) => i.suggestion), [auto.items]);
   const reviewDocument = useMemo(() => buildReviewDocument(source.bodyHTML, suggestions), [source, suggestions]);
   const applied = (id: string) => auto.items.find((i) => i.suggestion.id === id)?.applied ?? false;
+  /** Published earlier (an older batch): history, shown as a chip beside the new ones. */
+  const settled = (s: AISuggestion) => isHistory || !s.waitsForPublish;
 
   // Opening a suggestion brings its change into view.
   useEffect(() => {
@@ -105,9 +107,9 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
     return out;
   }, [suggestions, activeId, auto.items]);
 
-  /** Next / previous applied suggestion. */
+  /** Next / previous applied suggestion still waiting. */
   const step = (dir: 1 | -1) => {
-    const ids = suggestions.filter((s) => applied(s.id)).map((s) => s.id);
+    const ids = suggestions.filter((s) => applied(s.id) && !settled(s)).map((s) => s.id);
     const i = activeId ? ids.indexOf(activeId) : dir === 1 ? -1 : ids.length;
     const next = ids[i + dir];
     if (next) setActiveId(next);
@@ -116,7 +118,7 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
   const railItems = useMemo<SuggestionRailItem[]>(
     () =>
       suggestions.map((s, i) => {
-        if (isHistory || !applied(s.id)) {
+        if (settled(s) || !applied(s.id)) {
           const isApplied = applied(s.id);
           return {
             id: s.id,
@@ -124,9 +126,9 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
               <SuggestionCard
                 suggestion={s}
                 state={isApplied ? 'accepted' : 'dismissed'}
-                chipLabel={isApplied ? (isHistory ? 'Published' : 'Applied') : 'Reverted'}
+                chipLabel={isApplied ? 'Published' : 'Reverted'}
                 chipActionLabel="Re-apply"
-                onUndo={isHistory ? undefined : auto.toggle}
+                onUndo={settled(s) ? undefined : auto.toggle}
               />
             ),
           };
@@ -161,8 +163,8 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
   );
 
   if (!article || suggestions.length === 0) return null;
-  const appliedCount = auto.items.filter((i) => i.applied).length;
-  const revertedCount = auto.items.length - appliedCount;
+  const appliedCount = auto.items.filter((i) => i.applied && (isHistory || i.suggestion.waitsForPublish)).length;
+  const revertedCount = auto.items.filter((i) => !i.applied && i.suggestion.waitsForPublish).length;
   const canPublish = auto.where === 'edits' && article.edits !== undefined;
   const primary: { label: string; onClick: () => void } | null = !auto.needsReview
     ? null
