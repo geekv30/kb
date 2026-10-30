@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   backIcon,
+  editedBadge,
   deleteIcon,
   deleteIconHover,
   externalIcon,
@@ -12,7 +13,7 @@ import {
 import { ArticleEditor, type ArticleEditorChange } from '../components/editor/ArticleEditor';
 import { Button } from '../components/ui/Button';
 import { ConfirmModal } from '../components/ui/Modal';
-import { TooltipIconButton } from '../components/ui/Tooltip';
+import { Tooltip, TooltipIconButton } from '../components/ui/Tooltip';
 import { BannerCount, SuggestionsBanner } from '../improvements/SuggestionsBanner';
 import { slugify } from '../lib/format';
 import { suggestionsReviewPath } from '../lib/paths';
@@ -24,6 +25,7 @@ import {
   selectCategoryBySlug,
   selectOpenSuggestionSummary,
   selectUsers,
+  workingBody,
 } from '../store/selectors';
 import type { Article, ArticleStatus, Category } from '../store/types';
 import { ArticleMetaPanel } from './edit/ArticleMetaPanel';
@@ -35,7 +37,10 @@ const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 /** Space between the AI suggestions banner and the editor toolbar. */
 const BANNER_GAP = 16;
 
-type PendingConfirm = 'unpublish' | 'delete' | null;
+type PendingConfirm = 'unpublish' | 'delete' | 'leave' | null;
+
+/** Live tooltip on the "Edited" badge and the table's warning glyph. */
+export const UNPUBLISHED_EDITS_TOOLTIP = 'There are edits on this article that are not published yet';
 
 interface EditSessionProps {
   category: Category;
@@ -51,8 +56,10 @@ interface EditSessionProps {
 function EditSession({ category, article }: EditSessionProps) {
   const { state, dispatch } = useStore();
   const navigate = useNavigate();
-  const [title, setTitle] = useState(article?.title ?? '');
-  const [bodyHTML, setBodyHTML] = useState(article?.bodyHTML ?? '');
+  const [title, setTitle] = useState(article?.edits?.title ?? article?.title ?? '');
+  const [bodyHTML, setBodyHTML] = useState(article ? workingBody(article) : '');
+  /** Changed in this visit: Back asks before leaving unpublished edits (live "withoutPublishArticle"). */
+  const [dirty, setDirty] = useState(false);
   const [slug, setSlug] = useState(article?.slug ?? '');
   const [authorId, setAuthorId] = useState<string | null>(article ? article.authorId : state.currentUserId);
   const [pending, setPending] = useState<PendingConfirm>(null);
@@ -61,6 +68,8 @@ function EditSession({ category, article }: EditSessionProps) {
   const auto = useAutoModeEditor(article);
 
   const status: ArticleStatus = article?.status ?? 'DRAFT';
+  /** Live "PUBLISHED EDITED": published, with edits that aren't live yet. */
+  const hasEdits = Boolean(article?.edits);
   const categoryBase = `/product/category/${category.slug}`;
 
   const slugTaken = Object.values(state.articles).some((a) => a.slug === slug && a.id !== article?.id);
@@ -74,14 +83,29 @@ function EditSession({ category, article }: EditSessionProps) {
           : undefined;
   const canPublish = title.trim().length > 0 && !slugError;
 
+  // A draft changes in place; a published article collects unpublished edits.
   const handleEditorChange = ({ title: nextTitle, bodyHTML: nextBody }: ArticleEditorChange) => {
     if (nextTitle !== title) {
       setTitle(nextTitle);
       setSlug(slugify(nextTitle));
-      if (article) dispatch({ type: 'article/updateTitle', articleId: article.id, title: nextTitle });
     }
     setBodyHTML(nextBody);
-    if (article) dispatch({ type: 'article/updateBody', articleId: article.id, bodyHTML: nextBody });
+    setDirty(true);
+    if (article) {
+      dispatch({
+        type: 'article/edit',
+        articleId: article.id,
+        title: nextTitle,
+        bodyHTML: nextBody,
+        modifierId: state.currentUserId,
+        now: new Date().toISOString(),
+      });
+    }
+  };
+
+  const back = () => {
+    if (hasEdits && dirty) setPending('leave');
+    else navigate(categoryBase);
   };
 
   const commitSlug = (articleId: string) => {
@@ -134,13 +158,20 @@ function EditSession({ category, article }: EditSessionProps) {
     <>
       <div className="box-border flex w-full flex-row items-center justify-between pt-[25px] pr-[40px] pb-[10px] pl-[20px]">
         <div className="box-border flex w-full">
-          <Button variant="ghost" iconSrc={backIcon} onClick={() => navigate(categoryBase)}>
+          <Button variant="ghost" iconSrc={backIcon} onClick={back}>
             Back
           </Button>
         </div>
         <div className="box-border flex w-full flex-row items-center justify-end p-0">
+          {hasEdits ? (
+            <div className="box-border flex px-[15px]">
+              <Tooltip content={UNPUBLISHED_EDITS_TOOLTIP} placement="bottom-center" className="cursor-default">
+                <img src={editedBadge} alt="Edited" width={74} height={22} className="block" />
+              </Tooltip>
+            </div>
+          ) : null}
           <div className="box-border flex px-[15px]">
-            {status === 'PUBLISHED' ? (
+            {status === 'PUBLISHED' && !hasEdits ? (
               <TooltipIconButton
                 label="Go to article"
                 src={externalIcon}
@@ -166,9 +197,9 @@ function EditSession({ category, article }: EditSessionProps) {
             </div>
           ) : null}
           <div className="box-border flex pl-[15px]">
-            {status === 'DRAFT' ? (
+            {status === 'DRAFT' || hasEdits ? (
               <Button variant="primary" disabled={!canPublish} onClick={publish}>
-                Publish
+                {hasEdits ? 'Publish changes' : 'Publish'}
               </Button>
             ) : (
               <Button variant="secondary" onClick={() => setPending('unpublish')}>
@@ -205,7 +236,7 @@ function EditSession({ category, article }: EditSessionProps) {
             <ArticleEditor
               contentRevision={auto.editorKey}
               title={title}
-              bodyHTML={auto.editorBody ?? article?.bodyHTML ?? bodyHTML}
+              bodyHTML={auto.editorBody ?? (article ? workingBody(article) : bodyHTML)}
               onChange={handleEditorChange}
               heightOffset={bannerHeight > 0 ? bannerHeight + BANNER_GAP : 0}
               readOnly={auto.readOnly}
@@ -239,6 +270,24 @@ function EditSession({ category, article }: EditSessionProps) {
       </div>
 
       {auto.dialogs}
+      {/* Live "withoutPublishArticle": red Keep Edits, white Discard Edits. */}
+      <ConfirmModal
+        open={pending === 'leave'}
+        onOpenChange={(open) => setPending(open ? 'leave' : null)}
+        title="Leave without publishing changes?"
+        message="There are changes made to this article that aren’t published yet."
+        confirmLabel="Keep Edits"
+        cancelLabel="Discard Edits"
+        onConfirm={() => {
+          setPending(null);
+          navigate(categoryBase);
+        }}
+        onCancel={() => {
+          setPending(null);
+          navigate(categoryBase);
+          if (article) dispatch({ type: 'article/discardEdits', articleId: article.id });
+        }}
+      />
       <ConfirmModal
         open={pending === 'unpublish'}
         onOpenChange={(open) => setPending(open ? 'unpublish' : null)}

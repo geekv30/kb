@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { copyIcon } from '../../assets/legacy';
+import { copyIcon, publishedEditedIcon } from '../../assets/legacy';
+import { UNPUBLISHED_EDITS_TOOLTIP } from '../ArticleEditPage';
 import { Cell, CellText, TableRow, TableShell, TitleCell, type TableColumn } from '../../components/table/LegacyTable';
 import { Avatar } from '../../components/ui/Avatar';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -94,6 +95,14 @@ function ArticleRow({ article, categorySlug, publicUrl }: ArticleRowProps) {
       <Cell width={COLUMNS[1].width}>
         <div className="box-border flex w-full flex-row items-center justify-start gap-[8px]">
           <StatusPill status={article.status} />
+          {/* Live: published with unpublished edits gets the 16px warning glyph. */}
+          {article.edits ? (
+            <span className="relative z-[5] flex">
+              <Tooltip content={UNPUBLISHED_EDITS_TOOLTIP}>
+                <img src={publishedEditedIcon} alt="Edited" width={16} height={16} className="block" />
+              </Tooltip>
+            </span>
+          ) : null}
         </div>
       </Cell>
       <Cell width={COLUMNS[2].width}>

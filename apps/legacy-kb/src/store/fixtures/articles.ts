@@ -122,6 +122,15 @@ const ASSIGN_BODY = [
 export const CHAT_HOURS_HOLIDAYS_HTML =
   '<p data-block-id="chat-hours-holidays">To close chat on a public holiday, turn off availability for that day by hand and turn it back on the next morning.</p>';
 
+/* Ashuthosh's unpublished edits (live "PUBLISHED EDITED"): a weekends
+ * section added on top of the live body, not published yet. */
+const CHAT_HOURS_WEEKENDS_HTML =
+  '<h2>Weekends</h2><p data-block-id="chat-hours-weekends">Weekend hours can differ from weekdays. Set them under <strong>Chat → Availability → Weekends</strong>, or leave both days off.</p>';
+
+export const PAUSE_INTRO_HTML =
+  '<p data-block-id="pause-intro">Pause any rule from the rule list to stop it from firing without losing its configuration. Paused rules show a gray status dot until you resume them.</p>';
+const PAUSE_BODY = PAUSE_INTRO_HTML;
+
 const CHAT_HOURS_BODY = [
   '<p data-block-id="chat-hours-intro">Availability hours control when the chat widget shows agents as online. Outside those hours, visitors can still leave a message and your team picks it up the next working day.</p>',
   '<h2>Holidays</h2>',
@@ -211,8 +220,8 @@ export const articles: Article[] = [
     modifierId: 'user-varun',
     lastActivity: 'created',
     modifiedAt: daysAgo(5),
-    bodyHTML:
-      '<p>Pause any rule from the rule list to stop it from firing without losing its configuration. Paused rules show a gray status dot until you resume them.</p>',
+    bodyHTML: PAUSE_BODY,
+    aiSummary: 'Explains how to schedule a pause so rules resume on their own.',
   },
 
   /* Live chat */
@@ -241,6 +250,12 @@ export const articles: Article[] = [
     lastActivity: 'updated',
     modifiedAt: daysAgo(9),
     bodyHTML: CHAT_HOURS_BODY,
+    edits: {
+      title: 'Setting chat availability hours',
+      bodyHTML: CHAT_HOURS_BODY + CHAT_HOURS_WEEKENDS_HTML,
+      byId: 'user-ashuthosh',
+      liveActivity: { lastActivity: 'published', modifierId: 'user-ashuthosh', modifiedAt: daysAgo(30) },
+    },
     aiSummary: 'Clarifies which time zone the hours follow and points holidays to the holiday calendar.',
   },
   {

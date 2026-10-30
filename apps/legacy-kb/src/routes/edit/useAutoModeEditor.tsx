@@ -85,7 +85,21 @@ export function useAutoModeEditor(article: Article | undefined): AutoModeEditor 
               actionLabel="View suggestions"
               onAction={() => navigate(autoSuggestionsPath(state, articleId))}
             >
-              Auto mode applied <BannerCount count={live} noun="Hiver AI suggestion" /> to this article.
+              {applied.where === 'live' ? (
+                <>
+                  Auto mode applied <BannerCount count={live} noun="Hiver AI suggestion" /> to this article.
+                </>
+              ) : applied.where === 'edits' ? (
+                <>
+                  Auto mode added <BannerCount count={live} noun="Hiver AI suggestion" /> to these unpublished edits. They go
+                  live when the changes are published.
+                </>
+              ) : (
+                <>
+                  Auto mode added <BannerCount count={live} noun="Hiver AI suggestion" /> to this draft. They go live when
+                  it’s published.
+                </>
+              )}
             </SuggestionsBanner>
           ) : null,
         editorBody: undefined,

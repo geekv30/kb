@@ -1,7 +1,13 @@
 // Pure root reducer. Callers supply timestamps so the reducer stays
 // deterministic.
 
-import { applyDecisions, reapplySuggestion, revertSuggestion } from '../improvements/reviewDocument';
+import {
+  applyDecisions,
+  buildReviewDocument,
+  nextBlockId,
+  reapplySuggestion,
+  revertSuggestion,
+} from '../improvements/reviewDocument';
 import { reviewReducer, initialReviewState, type ReviewAction, type ReviewDecision } from '../improvements/reviewState';
 import { HIVER_AI_USER_ID } from './fixtures/users';
 import { seed } from './seed';
@@ -12,6 +18,13 @@ export type StoreAction =
   | { type: 'article/create'; article: Article }
   | { type: 'article/updateBody'; articleId: string; bodyHTML: string }
   | { type: 'article/updateTitle'; articleId: string; title: string }
+  /**
+   * The editor's write. A draft changes in place; a published article
+   * collects unpublished edits instead (live "PUBLISHED EDITED").
+   */
+  | { type: 'article/edit'; articleId: string; title?: string; bodyHTML?: string; modifierId: string; now: string }
+  /** Live "Discard Edits": drop the unpublished edits; the live article stays as it is. */
+  | { type: 'article/discardEdits'; articleId: string }
   | { type: 'article/updateSlug'; articleId: string; slug: string }
   | { type: 'article/setAuthor'; articleId: string; authorId: string | null }
   | { type: 'article/move'; articleId: string; categoryId: string }
@@ -59,9 +72,49 @@ function patchArticle(
 }
 
 /**
+ * Publish option: Hiver AI writes into the article's newest version and
+ * publishes only when that version is the live one.
+ *   published          → applied to the live body, published by Hiver AI.
+ *   published + edited → applied to the unpublished edits; live keeps its
+ *                        text until someone publishes the edits.
+ *   draft              → applied to the draft, which stays a draft.
+ * A suggestion whose block the newest version no longer has can't be
+ * applied, so it waits in To review instead.
+ */
+function applyAutoBatch(article: Article, batch: AISuggestion[], now: string) {
+  const working = article.edits?.bodyHTML ?? article.bodyHTML;
+  const { unplacedIds } = buildReviewDocument(working, batch);
+  const placed = batch.filter((s) => !unplacedIds.includes(s.id));
+  const accepted: Record<string, ReviewDecision> = Object.fromEntries(placed.map((s) => [s.id, 'accepted']));
+  const goesLive = article.status === 'PUBLISHED' && !article.edits;
+  const applied = applyDecisions(working, placed, accepted);
+
+  const suggestions: Record<string, AISuggestion> = {};
+  for (const s of batch) {
+    suggestions[s.id] = unplacedIds.includes(s.id)
+      ? { ...s, status: 'pending' }
+      : {
+          ...s,
+          status: 'published',
+          autoApplied: true,
+          autoAppliedAt: now,
+          waitsForPublish: !goesLive,
+          ...(s.type === 'removal' ? { removedBeforeBlockId: nextBlockId(working, s.anchorBlockId) } : {}),
+        };
+  }
+  const nextArticle: Article = {
+    ...article,
+    ...(article.edits ? { edits: { ...article.edits, bodyHTML: applied } } : { bodyHTML: applied }),
+    lastActivity: goesLive ? 'published' : 'updated',
+    modifierId: HIVER_AI_USER_ID,
+    modifiedAt: now,
+  };
+  return { suggestions, article: placed.length > 0 ? nextArticle : article };
+}
+
+/**
  * Manual mode: the batch waits in To review. Auto mode, per article:
- *   publish → applied to the live body by Hiver AI; the pre-change body
- *             is kept as the history base so each change can be undone.
+ *   publish → applied by Hiver AI (see `applyAutoBatch`).
  *   merge   → left off the live body, every suggestion pre-accepted in
  *             the article's review: an improved version waiting to merge.
  */
@@ -85,21 +138,9 @@ function receiveSuggestions(state: StoreState, now: string): StoreState {
     if (!article) continue;
     const accepted: Record<string, ReviewDecision> = Object.fromEntries(batch.map((s) => [s.id, 'accepted']));
     if (state.autoModeOption === 'publish') {
-      for (const s of batch) suggestions[s.id] = { ...s, status: 'published', autoApplied: true, autoAppliedAt: now };
-      articles[articleId] = {
-        ...article,
-        bodyHTML: applyDecisions(article.bodyHTML, batch, accepted),
-        status: 'PUBLISHED',
-        lastActivity: 'published',
-        modifierId: HIVER_AI_USER_ID,
-        modifiedAt: now,
-      };
-      aiReviewHistoryByArticle[articleId] = {
-        baseBodyHTML: article.bodyHTML,
-        reviewedAt: now,
-        reviewedById: HIVER_AI_USER_ID,
-        published: true,
-      };
+      const result = applyAutoBatch(article, batch, now);
+      Object.assign(suggestions, result.suggestions);
+      articles[articleId] = result.article;
     } else {
       for (const s of batch) suggestions[s.id] = { ...s, status: 'pending', autoApplied: true, autoAppliedAt: now };
       aiReviewByArticle[articleId] = { ...initialReviewState, mode: 'terminal', activeIndex: -1, decisions: accepted };
@@ -108,37 +149,76 @@ function receiveSuggestions(state: StoreState, now: string): StoreState {
   return { ...state, suggestions, articles, aiReviewByArticle, aiReviewHistoryByArticle };
 }
 
-/** Flips one auto-applied change and rebuilds the live body from the pre-change base. */
+/**
+ * Reverts one auto-applied change, or re-applies a reverted one, in every
+ * version that holds it: the live body and any unpublished edits — or
+ * only the draft / the edits while it waits for a publish. Only its own
+ * block is touched, so the team's edits elsewhere survive.
+ */
 function toggleAutoChange(state: StoreState, suggestionId: string, modifierId: string, now: string): StoreState {
   const target = state.suggestions[suggestionId];
-  const history = target ? state.aiReviewHistoryByArticle[target.articleId] : undefined;
-  if (!target?.autoApplied || !history || (target.status !== 'published' && target.status !== 'dismissed-final')) {
+  const article = target ? state.articles[target.articleId] : undefined;
+  if (!target?.autoApplied || !article || (target.status !== 'published' && target.status !== 'dismissed-final')) {
     return state;
   }
+  const reverting = target.status === 'published';
+  const flip = (html: string) => (reverting ? revertSuggestion(html, target) : reapplySuggestion(html, target));
+  const live = target.waitsForPublish && article.edits ? undefined : flip(article.bodyHTML);
+  const edits = article.edits ? flip(article.edits.bodyHTML) : undefined;
+  // Its block is gone from the version it lives in: nothing to flip. (A
+  // teammate's edits that dropped the block are left as they are.)
+  if (live === null || (live === undefined && !edits)) return state;
+
   const suggestions = {
     ...state.suggestions,
     [suggestionId]: {
       ...target,
-      status: target.status === 'published' ? 'dismissed-final' : 'published',
-      // Restoring settles the change; putting it back (Undo) marks it again.
-      checked: target.status === 'published',
+      status: reverting ? 'dismissed-final' : 'published',
+      // Reverting settles the change; re-applying it needs a look again.
+      checked: reverting,
     } as AISuggestion,
   };
-  // Edit only this suggestion's own block, so the team's edits elsewhere survive.
-  // Fall back to rebuilding from the pre-AI body when the block can't be found.
-  const current = state.articles[target.articleId]?.bodyHTML ?? '';
-  const patched = target.status === 'published' ? revertSuggestion(current, target) : reapplySuggestion(current, target);
-  const own = Object.values(suggestions).filter((s) => s.articleId === target.articleId && s.status !== 'incoming');
-  const decisions: Record<string, ReviewDecision> = {};
-  for (const s of own) decisions[s.id] = s.status === 'published' ? 'accepted' : 'dismissed';
-  const next = patchArticle({ ...state, suggestions }, target.articleId, {
-    bodyHTML: patched ?? applyDecisions(history.baseBodyHTML, own, decisions),
-    status: 'PUBLISHED',
-    lastActivity: 'published',
+  const reachesLive = live !== undefined && article.status === 'PUBLISHED';
+  return patchArticle({ ...state, suggestions }, article.id, {
+    ...(live !== undefined ? { bodyHTML: live } : {}),
+    ...(article.edits && edits ? { edits: { ...article.edits, bodyHTML: edits } } : {}),
+    lastActivity: reachesLive ? 'published' : 'updated',
     modifierId,
     modifiedAt: now,
   });
-  return next;
+}
+
+/** The editor's write: in place on a draft, into unpublished edits on a published article. */
+function editArticle(
+  state: StoreState,
+  { articleId, title, bodyHTML, modifierId, now }: Extract<StoreAction, { type: 'article/edit' }>,
+): StoreState {
+  const article = state.articles[articleId];
+  if (!article) return state;
+  if (article.status === 'DRAFT') {
+    return patchArticle(state, articleId, {
+      ...(title !== undefined ? { title } : {}),
+      ...(bodyHTML !== undefined ? { bodyHTML } : {}),
+    });
+  }
+  const base = article.edits ?? {
+    title: article.title,
+    bodyHTML: article.bodyHTML,
+    byId: modifierId,
+    liveActivity: { lastActivity: article.lastActivity, modifierId: article.modifierId, modifiedAt: article.modifiedAt },
+  };
+  const next = { ...base, title: title ?? base.title, bodyHTML: bodyHTML ?? base.bodyHTML };
+  if (next.title === base.title && next.bodyHTML === base.bodyHTML) return state;
+  return patchArticle(state, articleId, { edits: next, lastActivity: 'updated', modifierId, modifiedAt: now });
+}
+
+/** Suggestions that only exist in this article's unpublished edits / draft go live with it. */
+function goLive(suggestions: StoreState['suggestions'], articleId: string): StoreState['suggestions'] {
+  const out = { ...suggestions };
+  for (const s of Object.values(suggestions)) {
+    if (s.articleId === articleId && s.waitsForPublish) out[s.id] = { ...s, waitsForPublish: false };
+  }
+  return out;
 }
 
 export function rootReducer(state: StoreState, action: StoreAction): StoreState {
@@ -159,20 +239,52 @@ export function rootReducer(state: StoreState, action: StoreAction): StoreState 
       return patchArticle(state, action.articleId, { authorId: action.authorId });
     case 'article/move':
       return patchArticle(state, action.articleId, { categoryId: action.categoryId });
-    case 'article/publish':
-      return patchArticle(state, action.articleId, {
+    case 'article/edit':
+      return editArticle(state, action);
+    case 'article/discardEdits': {
+      const article = state.articles[action.articleId];
+      if (!article?.edits) return state;
+      // Hiver AI's changes that only lived in these edits go with them.
+      const suggestions = { ...state.suggestions };
+      for (const s of Object.values(state.suggestions)) {
+        if (s.articleId === article.id && s.waitsForPublish && s.status === 'published') {
+          suggestions[s.id] = { ...s, status: 'dismissed-final', waitsForPublish: false, checked: true };
+        }
+      }
+      // The activity goes back to the live version's, unless something went live since.
+      return patchArticle({ ...state, suggestions }, article.id, {
+        edits: undefined,
+        ...(article.lastActivity === 'published' ? {} : article.edits.liveActivity),
+      });
+    }
+    case 'article/publish': {
+      // Publishing changes on an edited article makes its edits the live version.
+      const article = state.articles[action.articleId];
+      return patchArticle({ ...state, suggestions: goLive(state.suggestions, action.articleId) }, action.articleId, {
+        ...(article?.edits ? { title: article.edits.title, bodyHTML: article.edits.bodyHTML, edits: undefined } : {}),
         status: 'PUBLISHED',
         lastActivity: 'published',
         modifierId: action.modifierId,
         modifiedAt: action.now,
       });
-    case 'article/unpublish':
-      return patchArticle(state, action.articleId, {
+    }
+    case 'article/unpublish': {
+      // The draft takes the newest version; Hiver AI's live changes now wait in it.
+      const article = state.articles[action.articleId];
+      const suggestions = { ...state.suggestions };
+      for (const s of Object.values(state.suggestions)) {
+        if (s.articleId === action.articleId && s.autoApplied && s.status === 'published') {
+          suggestions[s.id] = { ...s, waitsForPublish: true };
+        }
+      }
+      return patchArticle({ ...state, suggestions }, action.articleId, {
+        ...(article?.edits ? { title: article.edits.title, bodyHTML: article.edits.bodyHTML, edits: undefined } : {}),
         status: 'DRAFT',
         lastActivity: 'updated',
         modifierId: action.modifierId,
         modifiedAt: action.now,
       });
+    }
     case 'article/delete': {
       if (!state.articles[action.articleId]) return state;
       const { [action.articleId]: _removed, ...rest } = state.articles;

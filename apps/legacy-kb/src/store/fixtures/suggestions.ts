@@ -258,4 +258,20 @@ export const suggestions: AISuggestion[] = [
     sourceCount: 4,
     status: 'incoming',
   },
+
+  /* art-pausing-rules-during-holidays (1) — a draft: auto mode writes into it, never publishes it */
+  {
+    id: 'sug-pause-1',
+    articleId: 'art-pausing-rules-during-holidays',
+    type: 'addition',
+    title: 'Schedule a pause',
+    description: 'Customers ask how to resume rules on their own.',
+    anchorBlockId: 'pause-intro',
+    payload: {
+      newHTML:
+        '<p data-block-id="pause-schedule">To pause a rule for a set time, open the rule and choose <strong>Schedule pause</strong>. Pick a start and end date, and the rule resumes on its own when the pause ends.</p>',
+    },
+    sourceCount: 2,
+    status: 'incoming',
+  },
 ];

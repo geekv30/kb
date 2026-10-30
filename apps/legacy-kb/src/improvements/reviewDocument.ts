@@ -175,11 +175,33 @@ function splice(html: string, start: number, end: number, insert: string): strin
 }
 
 /**
+ * The first block after `blockId` that carries its own `data-block-id`:
+ * where a removed block goes back to on revert. `undefined` when it's the last.
+ */
+export function nextBlockId(bodyHTML: string, blockId: string): string | undefined {
+  const range = findBlockRange(bodyHTML, blockId);
+  if (!range) return undefined;
+  for (const m of bodyHTML.slice(range.end).matchAll(/data-block-id="([^"]+)"/g)) {
+    const id = m[1];
+    if (id && (findBlockRange(bodyHTML, id)?.start ?? -1) >= range.end) return id;
+  }
+  return undefined;
+}
+
+/**
  * Takes one applied suggestion back out of the CURRENT body, touching
- * only its own block, so edits made elsewhere since then survive.
- * `null` when its block is gone (e.g. a removal: nothing left to find).
+ * only its own block, so edits made elsewhere since then survive. A
+ * removal goes back in before the block that followed it (or at the end).
+ * `null` when the block to touch is gone.
  */
 export function revertSuggestion(bodyHTML: string, s: AISuggestion): string | null {
+  if (s.type === 'removal') {
+    if (bodyHTML.includes(`data-block-id="${s.anchorBlockId}"`)) return null;
+    const before = s.removedBeforeBlockId ? findBlockRange(bodyHTML, s.removedBeforeBlockId) : null;
+    if (s.removedBeforeBlockId && !before) return null;
+    const at = before ? before.start : bodyHTML.length;
+    return splice(bodyHTML, at, at, s.payload.oldHTML ?? '');
+  }
   const blockId = appliedBlockId(s);
   const range = blockId ? findBlockRange(bodyHTML, blockId) : null;
   if (!range) return null;

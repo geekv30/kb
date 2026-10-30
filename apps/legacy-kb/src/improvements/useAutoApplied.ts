@@ -1,11 +1,19 @@
 import { useMemo, useState } from 'react';
 import { useToast } from '../components/ui/Toast';
-import { selectAutoChanges, selectConversationSources } from '../store/selectors';
+import { selectAutoChanges, selectAutoWhere, selectConversationSources, type AutoWhere } from '../store/selectors';
 import { useStore } from '../store/StoreContext';
 import { appliedItems, type AppliedItem } from './autoApplied';
 
+const REVERTED_TOAST: Record<AutoWhere, string> = {
+  live: 'Suggestion reverted. The original text is live again.',
+  edits: 'Suggestion reverted in the unpublished edits.',
+  draft: 'Suggestion reverted in the draft.',
+};
+
 export interface AutoAppliedState {
   items: AppliedItem[];
+  /** Where the applied suggestions are: live, in unpublished edits, or in a draft. */
+  where: AutoWhere;
   /** A live suggestion nobody has reviewed yet: Mark as reviewed is offered. */
   needsReview: boolean;
   /** Revert a live suggestion (toast offers Undo) or re-apply a reverted one. */
@@ -23,9 +31,10 @@ export function useAutoApplied(articleId: string): AutoAppliedState {
   const article = state.articles[articleId];
   const changes = useMemo(
     () => selectAutoChanges(state, articleId),
-    [state.suggestions, state.aiReviewHistoryByArticle, article?.bodyHTML, articleId],
+    [state.suggestions, state.aiReviewHistoryByArticle, article?.bodyHTML, article?.edits, articleId],
   );
   const items = useMemo(() => appliedItems(changes), [changes]);
+  const where = selectAutoWhere(state, articleId);
   const [sourcesFor, setSourcesFor] = useState<string | null>(null);
 
   const flip = (id: string) =>
@@ -38,13 +47,14 @@ export function useAutoApplied(articleId: string): AutoAppliedState {
 
   return {
     items,
+    where,
     needsReview: changes.some((c) => c.unchecked),
     toggle: (id) => {
       const item = items.find((i) => i.suggestion.id === id);
       if (!item) return;
       flip(id);
       showToast(
-        item.live ? 'Suggestion reverted. The original text is live again.' : 'Suggestion re-applied.',
+        item.live ? REVERTED_TOAST[where] : 'Suggestion re-applied.',
         item.live ? { label: 'Undo', onClick: () => flip(id) } : undefined,
       );
     },

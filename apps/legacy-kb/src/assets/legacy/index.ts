@@ -12,6 +12,10 @@ export { default as dashboardSettingLinkHover } from './dashboardSettingLinkHove
 export { default as deleteIcon } from './deleteIcon.svg';
 export { default as deleteIconHover } from './deleteIconHover.svg';
 export { default as downArrow } from './downArrow.svg';
+/** "Edited" badge on an article with unpublished edits (live renders it at 74x22). */
+export { default as editedBadge } from './editedIcons.svg';
+/** Table status: the same warning glyph next to "Published" (live renders it at 16x16). */
+export { default as publishedEditedIcon } from './publishedEdited.svg';
 export { default as dragHandleIcon } from './dragableIcon.svg';
 export { default as externalIcon } from './externalIcon.svg';
 export { default as externalIconHover } from './externalIconHover.svg';

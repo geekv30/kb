@@ -1,4 +1,10 @@
-import { applyDecisions, buildReviewDocument } from '../improvements/reviewDocument';
+import {
+  appliedBlockId,
+  applyDecisions,
+  buildReviewDocument,
+  findBlockRange,
+  revertSuggestion,
+} from '../improvements/reviewDocument';
 import type { ReviewDecision } from '../improvements/reviewState';
 import type {
   AISuggestion,
@@ -178,6 +184,8 @@ export type ArticleSuggestionSummary = {
   reviewedAt: string | undefined;
   /** AUTO: when the batch arrived and was applied (or set aside to merge). */
   autoAppliedAt: string | undefined;
+  /** Hiver AI applied these in auto mode (Reviewed reads "applied · reverted"). */
+  auto: boolean;
 };
 
 /** By conversation volume: 12+ high, 6+ medium, otherwise low. */
@@ -212,15 +220,26 @@ export function selectArticleSuggestionSummary(
     dismissed: own.filter((s) => s.status === 'dismissed-final').length,
     conversations,
     impact: deriveImpact(conversations),
-    reviewedAt: state.aiReviewHistoryByArticle[articleId]?.reviewedAt,
+    reviewedAt:
+      state.autoReviewByArticle[articleId]?.reviewedAt ??
+      state.aiReviewHistoryByArticle[articleId]?.reviewedAt ??
+      own.find((s) => s.autoApplied)?.autoAppliedAt,
     autoAppliedAt: own.find((s) => s.autoApplied)?.autoAppliedAt,
+    auto: own.some((s) => s.autoApplied),
   };
 }
 
+/**
+ * Publish option: an article stays in Auto-applied while one of Hiver
+ * AI's changes is in it and nobody has checked it; Mark as reviewed (or
+ * reverting the last one) moves it to Reviewed.
+ */
 function stageOf(state: StoreState, own: AISuggestion[], pending: AISuggestion[]): SuggestionHubTab {
   if (pending.some((s) => !s.autoApplied)) return 'TO_REVIEW';
   if (pending.length > 0) return 'AUTO';
-  if (state.autoModeOption === 'publish' && own.some((s) => s.autoApplied)) return 'AUTO';
+  if (state.autoModeOption === 'publish' && own.some((s) => s.autoApplied && s.status === 'published' && !s.checked)) {
+    return 'AUTO';
+  }
   return 'REVIEWED';
 }
 
@@ -250,8 +269,61 @@ export type AutoChange = {
   unchecked: boolean;
 };
 
+/** The version the editor shows: the unpublished edits if there are any, otherwise the article. */
+export function workingBody(article: Article): string {
+  return article.edits?.bodyHTML ?? article.bodyHTML;
+}
+
+/**
+ * Where Hiver AI's applied changes on an article are:
+ *   live   on the help center
+ *   edits  in someone's unpublished edits, live once they're published
+ *   draft  in a draft, live once it's published
+ */
+export type AutoWhere = 'live' | 'edits' | 'draft';
+
+export function selectAutoWhere(state: StoreState, articleId: string): AutoWhere {
+  const article = state.articles[articleId];
+  const waiting = ownSuggestions(state, articleId).some((s) => s.autoApplied && s.waitsForPublish);
+  if (!article || (!waiting && article.status === 'PUBLISHED')) return 'live';
+  return article.status === 'DRAFT' ? 'draft' : 'edits';
+}
+
+/**
+ * Publish option: the review page's document for an article's
+ * auto-applied suggestions, built on its CURRENT text (the unpublished
+ * edits if any), so the team's later edits show too. Every applied
+ * change is taken back out of the text to get the "before", and each one
+ * shows its block as it reads now.
+ */
+export function selectAutoReviewDocument(
+  state: StoreState,
+  articleId: string,
+): { bodyHTML: string; suggestions: AISuggestion[] } {
+  const article = state.articles[articleId];
+  if (!article) return { bodyHTML: '', suggestions: [] };
+  const current = workingBody(article);
+  const own = ownSuggestions(state, articleId).filter(
+    (s) => s.autoApplied && (s.status === 'published' || s.status === 'dismissed-final'),
+  );
+  let before = current;
+  for (const s of own) if (s.status === 'published') before = revertSuggestion(before, s) ?? before;
+  const asTheyReadNow = own.map((s) => {
+    const blockId = s.status === 'published' ? appliedBlockId(s) : undefined;
+    const range = blockId ? findBlockRange(current, blockId) : null;
+    return range ? { ...s, payload: { ...s.payload, newHTML: current.slice(range.start, range.end) } } : s;
+  });
+  return { bodyHTML: before, suggestions: inReviewOrder(before, asTheyReadNow) };
+}
+
 /** The article's changes from auto mode, in body order. Empty for manual suggestions. */
 export function selectAutoChanges(state: StoreState, articleId: string): AutoChange[] {
+  if (state.autoModeOption === 'publish') {
+    return selectAutoReviewDocument(state, articleId).suggestions.map((s) => {
+      const status: AutoChangeStatus = s.status === 'published' ? 'live' : 'restored';
+      return { suggestion: s, status, unchecked: status === 'live' && !s.checked };
+    });
+  }
   const session = selectReviewSession(state, articleId);
   if (!session?.auto) return [];
   const decisions = state.aiReviewByArticle[articleId]?.decisions ?? {};

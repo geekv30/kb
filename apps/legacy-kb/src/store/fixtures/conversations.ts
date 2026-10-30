@@ -31,6 +31,7 @@ const CHAT_WIDGET = 'art-customizing-the-chat-widget';
 const CHAT_ROUTING = 'art-setting-up-chat-routing';
 const ASSIGN = 'art-routing-conversations-with-assignment-rules';
 const CHAT_HOURS = 'art-setting-chat-availability-hours';
+const PAUSE = 'art-pausing-rules-during-holidays';
 
 export const conversationSources: ConversationSource[] = [
   /* ───────── sug-resetpw-1 · mobile app reset steps (7) ───────── */
@@ -407,6 +408,24 @@ export const conversationSources: ConversationSource[] = [
       timestamp: daysAgo(3, 17, 20),
       subject: 'Setting up public holidays',
       snippet: 'We want chat closed on national holidays without changing our weekly hours every time.',
+    },
+  ]),
+
+  /* sug-pause-1 · scheduled pause (2) */
+  ...forSuggestion(PAUSE, 'sug-pause-1', [
+    {
+      id: 'cs-pause-1',
+      sender: { name: 'Hannah Weber', email: 'hannah.weber@nordlicht.de' },
+      timestamp: daysAgo(1, 8, 40),
+      subject: 'Can a rule switch itself back on?',
+      snippet: 'We paused our SLA rule for the holidays and forgot to turn it back on. Can a pause end on a date?',
+    },
+    {
+      id: 'cs-pause-2',
+      sender: { name: 'Marcus Lee', email: 'marcus@fernbrook.io' },
+      timestamp: daysAgo(1, 15, 5),
+      subject: 'Pausing rules for a week',
+      snippet: 'Is there a way to pause auto-replies from the 24th to the 2nd without remembering to resume them?',
     },
   ]),
 ];

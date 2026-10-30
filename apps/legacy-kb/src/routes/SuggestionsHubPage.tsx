@@ -12,10 +12,12 @@ import { useStore } from '../store/StoreContext';
 import {
   autoSuggestionsPath,
   selectAutoChanges,
+  selectAutoWhere,
   selectCategories,
   selectSuggestionArticles,
   type ArticleSuggestionSummary,
   type AutoChange,
+  type AutoWhere,
   type SuggestionHubTab,
 } from '../store/selectors';
 import type { AutoModeOption } from '../store/types';
@@ -66,23 +68,27 @@ const EMPTY: Record<Exclude<SuggestionHubTab, 'AUTO'>, { title: string; info: st
 function suggestionsLabel(row: ArticleSuggestionSummary): string {
   if (row.stage === 'REVIEWED') {
     const parts: string[] = [];
-    if (row.published > 0) parts.push(`${row.published} published`);
-    if (row.dismissed > 0) parts.push(`${row.dismissed} dismissed`);
+    if (row.published > 0) parts.push(`${row.published} ${row.auto ? 'applied' : 'published'}`);
+    if (row.dismissed > 0) parts.push(`${row.dismissed} ${row.auto ? 'reverted' : 'dismissed'}`);
     return parts.join(' · ');
   }
   if (row.reviewed === 0) return pluralize(row.total, 'suggestion');
   return `${row.reviewed} of ${row.total} reviewed`;
 }
 
+const WHERE_LABEL: Record<AutoWhere, string> = { live: 'live', edits: 'in unpublished edits', draft: 'in draft' };
+
 /**
- * publish: "2 suggestions applied", "1 applied · 1 reverted" after a revert.
+ * publish: "3 live", "2 in unpublished edits" or "1 in draft" (not live
+ *          until that version is published); "· 1 reverted" after a revert.
  * merge:   "2 changes in draft" (fewer once some are removed from the draft).
  */
-function autoChangesLabel(changes: AutoChange[], option: AutoModeOption): string {
+function autoChangesLabel(changes: AutoChange[], option: AutoModeOption, where: AutoWhere): string {
   const count = (status: AutoChange['status']) => changes.filter((c) => c.status === status).length;
   if (option === 'merge') return `${pluralize(count('draft'), 'change')} in draft`;
+  const applied = `${count('live')} ${WHERE_LABEL[where]}`;
   const reverted = count('restored');
-  return reverted > 0 ? `${count('live')} applied · ${reverted} reverted` : `${count('live')} applied`;
+  return reverted > 0 ? `${applied} · ${reverted} reverted` : applied;
 }
 
 function AutoHubRow({ row, columns }: { row: ArticleSuggestionSummary; columns: ReadonlyArray<TableColumn> }) {
@@ -98,7 +104,7 @@ function AutoHubRow({ row, columns }: { row: ArticleSuggestionSummary; columns: 
         <CellText>{row.category?.title ?? 'Uncategorized'}</CellText>
       </Cell>
       <Cell width={columns[2]?.width}>
-        <CellText>{autoChangesLabel(changes, state.autoModeOption)}</CellText>
+        <CellText>{autoChangesLabel(changes, state.autoModeOption, selectAutoWhere(state, row.article.id))}</CellText>
       </Cell>
       <Cell width={columns[3]?.width}>
         <CellText>{pluralize(row.conversations, 'conversation')}</CellText>

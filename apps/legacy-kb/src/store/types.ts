@@ -74,6 +74,22 @@ export type Article = {
    * suggestions.
    */
   aiSummary?: string;
+  /**
+   * Edits to a published article that aren't live yet (the live app's
+   * "PUBLISHED EDITED" status). Readers keep seeing `title` / `bodyHTML`;
+   * the editor shows these. Publish changes makes them live; Discard
+   * Edits drops them. Never set on a draft, whose edits are the draft.
+   */
+  edits?: ArticleEdits;
+};
+
+export type ArticleEdits = {
+  title: string;
+  bodyHTML: string;
+  /** Who started them (shown as "<name>'s unpublished edits"). */
+  byId: string;
+  /** The article's activity before the edits began; Discard Edits puts it back. */
+  liveActivity: Pick<Article, 'lastActivity' | 'modifierId' | 'modifiedAt'>;
 };
 
 export type AISuggestionType = 'addition' | 'replace' | 'removal';
@@ -125,6 +141,17 @@ export type AISuggestion = {
    * original). Until then it's marked in the editor and counted as needing a look.
    */
   checked?: boolean;
+  /**
+   * Auto mode wrote it into a version that isn't live: a draft, or a
+   * published article's unpublished edits. It goes live when someone
+   * publishes that version; Hiver AI never publishes someone else's work.
+   */
+  waitsForPublish?: boolean;
+  /**
+   * `removal` only: the block that came right after the removed one when
+   * it was applied, so a revert can put it back in the current text.
+   */
+  removedBeforeBlockId?: string;
 };
 
 /**

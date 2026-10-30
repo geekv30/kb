@@ -110,6 +110,8 @@ export interface ConfirmModalProps {
   /** Screen-reader text while `loading`, e.g. "Publishing…". */
   loadingLabel?: string;
   onConfirm: () => void;
+  /** Live `handleSecondaryButton`: the cancel button does something (e.g. "Discard Edits") instead of just closing. */
+  onCancel?: () => void;
 }
 
 /*
@@ -132,6 +134,7 @@ export function ConfirmModal({
   loading = false,
   loadingLabel = 'Working…',
   onConfirm,
+  onCancel,
 }: ConfirmModalProps) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -158,7 +161,7 @@ export function ConfirmModal({
             </Dialog.Description>
           </div>
           <div className="box-border flex w-full flex-row justify-end">
-            <Button variant={cancelVariant} className="mr-[12px]" onClick={() => onOpenChange(false)}>
+            <Button variant={cancelVariant} className="mr-[12px]" onClick={onCancel ?? (() => onOpenChange(false))}>
               {cancelLabel}
             </Button>
             <Button

@@ -12,11 +12,28 @@ import { SuggestionCard } from '../improvements/SuggestionCard';
 import { SuggestionRail, type SuggestionRailItem } from '../improvements/SuggestionRail';
 import { SuggestionsSummaryCard } from '../improvements/SuggestionsSummaryCard';
 import { useAutoApplied } from '../improvements/useAutoApplied';
-import { selectReviewSession } from '../store/selectors';
+import { articleEditPath, selectAutoReviewDocument, type AutoWhere } from '../store/selectors';
+import type { StoreState } from '../store/types';
 import { useStore } from '../store/StoreContext';
 
 /** Same rail width and spacing as the manual review. */
 const RAIL_WIDTH = 340;
+
+/**
+ * The summary card's status line: when Hiver AI applied the changes, who
+ * reviewed them, and — while they wait in unpublished edits or a draft —
+ * that they aren't live yet.
+ */
+function appliedNote(state: StoreState, articleId: string, where: AutoWhere, appliedAt: string | undefined): string {
+  const when = appliedAt ? ` ${whenText(appliedAt)}` : '';
+  const review = state.autoReviewByArticle[articleId];
+  const reviewed = review ? ` · reviewed by ${firstName(state, review.reviewedById)} ${whenText(review.reviewedAt)}` : '';
+  if (where === 'live') return `Applied automatically by Hiver AI${when}${reviewed}`;
+  if (where === 'draft') return `Added to this draft by Hiver AI${when}${reviewed}. Not live until the draft is published.`;
+  const byId = state.articles[articleId]?.edits?.byId;
+  const whose = byId === state.currentUserId ? 'your' : `${firstName(state, byId ?? null)}’s`;
+  return `Added to ${whose} unpublished edits by Hiver AI${when}${reviewed}. Not live until they’re published.`;
+}
 
 /**
  * Layout A — the manual review page in an "auto-applied" state, built
@@ -40,16 +57,14 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
   const [scrolled, setScrolled] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  // The pre-AI body + each suggestion, so the open one can show its change.
-  const session = useMemo(
-    () => selectReviewSession(state, articleId),
-    [state.suggestions, state.aiReviewHistoryByArticle, article?.bodyHTML, articleId],
+  // The current text with Hiver AI's changes taken out, plus each change
+  // as it reads now, so the open one shows its change on today's text.
+  const source = useMemo(
+    () => selectAutoReviewDocument(state, articleId),
+    [state.suggestions, article?.bodyHTML, article?.edits, articleId],
   );
   const suggestions = useMemo(() => auto.items.map((i) => i.suggestion), [auto.items]);
-  const reviewDocument = useMemo(
-    () => buildReviewDocument(session?.bodyHTML ?? '', suggestions),
-    [session, suggestions],
-  );
+  const reviewDocument = useMemo(() => buildReviewDocument(source.bodyHTML, suggestions), [source, suggestions]);
   const live = (id: string) => auto.items.find((i) => i.suggestion.id === id)?.live ?? false;
 
   // Opening a suggestion brings its change into view.
@@ -120,16 +135,10 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
     [suggestions, activeId, auto.items, auto.toggle, auto.setSourcesFor],
   );
 
-  if (!article || !session) return null;
+  if (!article || suggestions.length === 0) return null;
   const liveCount = auto.items.filter((i) => i.live).length;
   const appliedAt = suggestions[0]?.autoAppliedAt;
-  const review = state.autoReviewByArticle[articleId];
-  const note = [
-    `Applied automatically by Hiver AI${appliedAt ? ` ${whenText(appliedAt)}` : ''}`,
-    review ? `reviewed by ${firstName(state, review.reviewedById)} ${whenText(review.reviewedAt)}` : null,
-  ]
-    .filter(Boolean)
-    .join(' · ');
+  const note = appliedNote(state, articleId, auto.where, appliedAt);
 
   return (
     <>
@@ -137,13 +146,19 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
         <Button variant="ghost" iconSrc={backIcon} onClick={() => navigate(SUGGESTIONS_HUB_PATH)}>
           Back
         </Button>
-        {auto.needsReview ? (
-          <div className="box-border flex pl-[15px]">
+        <div className="box-border flex items-center gap-[15px] pl-[15px]">
+          {/* Not live yet: publishing happens in the editor, so the way there sits next to the check. */}
+          {auto.where !== 'live' ? (
+            <Button variant="ghost" onClick={() => navigate(articleEditPath(state, articleId))}>
+              Open in editor
+            </Button>
+          ) : null}
+          {auto.needsReview ? (
             <Button variant="primary" onClick={auto.markReviewed}>
               Mark as reviewed
             </Button>
-          </div>
-        ) : null}
+          ) : null}
+        </div>
         <span
           aria-hidden
           className={cn(
@@ -159,7 +174,7 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
           <div className="box-border flex flex-row items-start gap-[40px] pt-[40px] pr-[40px] pb-[80px] pl-[65px]">
             <ReviewArticleBody
               ref={articleRef}
-              title={article.title}
+              title={article.edits?.title ?? article.title}
               document={reviewDocument}
               states={bodyStates}
               className="w-full max-w-[720px] flex-1"
@@ -175,7 +190,7 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
                   mode="terminal"
                   title="Auto-applied"
                   count={liveCount}
-                  countLabel={`${liveCount} live`}
+                  countLabel={auto.where === 'live' ? `${liveCount} live` : `${liveCount} applied, not live yet`}
                   summary={article.aiSummary ?? 'Hiver AI applied these suggestions from recent customer conversations.'}
                   historyNote={note}
                   historyIcon={null}
