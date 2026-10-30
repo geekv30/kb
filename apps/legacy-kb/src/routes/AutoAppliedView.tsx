@@ -2,9 +2,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { backIcon } from '../assets/legacy';
 import { Button } from '../components/ui/Button';
+import { ConfirmModal } from '../components/ui/Modal';
 import { cn } from '../lib/cn';
-import { firstName, whenText } from '../lib/format';
+import { firstName, pluralize, whenText } from '../lib/format';
 import { SUGGESTIONS_HUB_PATH } from '../lib/paths';
+import { AUTO_MODE_COPY } from '../improvements/autoModeCopy';
 import { buildReviewDocument } from '../improvements/reviewDocument';
 import { ReviewArticleBody, type BodySuggestionState } from '../improvements/ReviewArticleBody';
 import { SourcesSheet } from '../improvements/SourcesSheet';
@@ -20,33 +22,52 @@ import { useStore } from '../store/StoreContext';
 const RAIL_WIDTH = 340;
 
 /**
- * The summary card's status line: when Hiver AI applied the changes, who
- * reviewed them, and — while they wait in unpublished edits or a draft —
- * that they aren't live yet.
+ * The summary card's status line: when Hiver AI applied the changes and
+ * where they stand — not published yet, or published by whom.
  */
-function appliedNote(state: StoreState, articleId: string, where: AutoWhere, appliedAt: string | undefined): string {
+function statusNote(
+  state: StoreState,
+  articleId: string,
+  where: AutoWhere,
+  appliedAt: string | undefined,
+  appliedCount: number,
+): string {
   const when = appliedAt ? ` ${whenText(appliedAt)}` : '';
+  const applied = `Applied by Hiver AI${when}`;
+  if (appliedCount === 0) return `${applied} · all reverted`;
   const review = state.autoReviewByArticle[articleId];
+  if (where === 'live') {
+    return review?.published
+      ? `Published by ${firstName(state, review.reviewedById)} ${whenText(review.reviewedAt)} · applied by Hiver AI${when}`
+      : applied;
+  }
   const reviewed = review ? ` · reviewed by ${firstName(state, review.reviewedById)} ${whenText(review.reviewedAt)}` : '';
-  if (where === 'live') return `Applied automatically by Hiver AI${when}${reviewed}`;
-  if (where === 'draft') return `Added to this draft by Hiver AI${when}${reviewed}. Not live until the draft is published.`;
-  const byId = state.articles[articleId]?.edits?.byId;
-  const whose = byId === state.currentUserId ? 'your' : `${firstName(state, byId ?? null)}’s`;
-  return `Added to ${whose} unpublished edits by Hiver AI${when}${reviewed}. Not live until they’re published.`;
+  return `${applied}${reviewed} · ${where === 'draft' ? 'in this draft, not published' : 'not published yet'}`;
+}
+
+/** The Publish changes confirm: what goes live, including teammates' own edits. */
+function publishMessage(state: StoreState, articleId: string, applied: number, reverted: number): string {
+  const article = state.articles[articleId];
+  const parts = [`${pluralize(applied, 'suggestion')} from Hiver AI will go live on “${article?.edits?.title ?? article?.title ?? ''}”.`];
+  const people = (article?.edits?.people ?? []).map((id) => firstName(state, id));
+  if (people.length > 0) parts.push(`${people.join(' and ')}’s unpublished edits will go live too.`);
+  if (reverted > 0) parts.push('Reverted suggestions won’t change the article.');
+  return parts.join(' ');
 }
 
 /**
- * Layout A — the manual review page in an "auto-applied" state, built
- * from the same pieces so a suggestion looks the same in both modes:
+ * The article's "Edited by AI" state — the manual review page, built from
+ * the same pieces so a suggestion looks the same in both modes:
  *
- *   - summary card: "Auto-applied", how many are live, what they change,
- *     and "Applied automatically by Hiver AI · <when>";
- *   - each suggestion: the usual idle card (type + title); opening it
- *     shows the change in the article (red /
- *     green, as in manual review) and the card's one-line why, sources
- *     and a single Revert;
- *   - a reverted one recedes to the grey chip ("Reverted", Re-apply);
- *   - Mark as reviewed is the page's one primary button.
+ *   - summary card: "Edited by AI", how many are applied, what they
+ *     change, and whether they're published;
+ *   - each suggestion: the usual idle card; opening it shows the change
+ *     on the article's current text (red / green), its why, sources and
+ *     Revert; a reverted one recedes to the grey chip (Re-apply);
+ *   - top bar: Open article (the editor) and the one primary action —
+ *     Publish changes, or Mark as reviewed for a draft / nothing applied.
+ *
+ * Once a teammate publishes, it's history: chips only, no Revert.
  */
 export function AutoAppliedView({ articleId }: { articleId: string }) {
   const navigate = useNavigate();
@@ -56,6 +77,9 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
   const articleRef = useRef<HTMLElement>(null);
   const [scrolled, setScrolled] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [confirmPublish, setConfirmPublish] = useState(false);
+  /** Published: the changes are history, read-only. */
+  const isHistory = auto.where === 'live';
 
   // The current text with Hiver AI's changes taken out, plus each change
   // as it reads now, so the open one shows its change on today's text.
@@ -65,7 +89,7 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
   );
   const suggestions = useMemo(() => auto.items.map((i) => i.suggestion), [auto.items]);
   const reviewDocument = useMemo(() => buildReviewDocument(source.bodyHTML, suggestions), [source, suggestions]);
-  const live = (id: string) => auto.items.find((i) => i.suggestion.id === id)?.live ?? false;
+  const applied = (id: string) => auto.items.find((i) => i.suggestion.id === id)?.applied ?? false;
 
   // Opening a suggestion brings its change into view.
   useEffect(() => {
@@ -77,31 +101,32 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
 
   const bodyStates = useMemo(() => {
     const out: Record<string, BodySuggestionState> = {};
-    for (const s of suggestions) out[s.id] = s.id === activeId ? 'active' : live(s.id) ? 'accepted' : 'dismissed';
+    for (const s of suggestions) out[s.id] = s.id === activeId ? 'active' : applied(s.id) ? 'accepted' : 'dismissed';
     return out;
   }, [suggestions, activeId, auto.items]);
 
-  /** Next / previous live suggestion; from nothing open, the first / last one. */
+  /** Next / previous applied suggestion. */
   const step = (dir: 1 | -1) => {
-    const liveIds = suggestions.filter((s) => live(s.id)).map((s) => s.id);
-    const i = activeId ? liveIds.indexOf(activeId) : dir === 1 ? -1 : liveIds.length;
-    const next = liveIds[i + dir];
+    const ids = suggestions.filter((s) => applied(s.id)).map((s) => s.id);
+    const i = activeId ? ids.indexOf(activeId) : dir === 1 ? -1 : ids.length;
+    const next = ids[i + dir];
     if (next) setActiveId(next);
   };
 
   const railItems = useMemo<SuggestionRailItem[]>(
     () =>
       suggestions.map((s, i) => {
-        if (!live(s.id)) {
+        if (isHistory || !applied(s.id)) {
+          const isApplied = applied(s.id);
           return {
             id: s.id,
             node: (
               <SuggestionCard
                 suggestion={s}
-                state="dismissed"
-                chipLabel="Reverted"
+                state={isApplied ? 'accepted' : 'dismissed'}
+                chipLabel={isApplied ? (isHistory ? 'Published' : 'Applied') : 'Reverted'}
                 chipActionLabel="Re-apply"
-                onUndo={auto.toggle}
+                onUndo={isHistory ? undefined : auto.toggle}
               />
             ),
           };
@@ -132,13 +157,18 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
           node: <SuggestionCard suggestion={s} state="idle" onActivate={setActiveId} />,
         };
       }),
-    [suggestions, activeId, auto.items, auto.toggle, auto.setSourcesFor],
+    [suggestions, activeId, auto.items, auto.toggle, auto.setSourcesFor, isHistory],
   );
 
   if (!article || suggestions.length === 0) return null;
-  const liveCount = auto.items.filter((i) => i.live).length;
-  const appliedAt = suggestions[0]?.autoAppliedAt;
-  const note = appliedNote(state, articleId, auto.where, appliedAt);
+  const appliedCount = auto.items.filter((i) => i.applied).length;
+  const revertedCount = auto.items.length - appliedCount;
+  const canPublish = auto.where === 'edits' && article.edits !== undefined;
+  const primary: { label: string; onClick: () => void } | null = !auto.needsReview
+    ? null
+    : canPublish
+      ? { label: 'Publish changes', onClick: () => setConfirmPublish(true) }
+      : { label: 'Mark as reviewed', onClick: auto.markReviewed };
 
   return (
     <>
@@ -147,15 +177,13 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
           Back
         </Button>
         <div className="box-border flex items-center gap-[15px] pl-[15px]">
-          {/* Not live yet: publishing happens in the editor, so the way there sits next to the check. */}
-          {auto.where !== 'live' ? (
-            <Button variant="ghost" onClick={() => navigate(articleEditPath(state, articleId))}>
-              Open in editor
-            </Button>
-          ) : null}
-          {auto.needsReview ? (
-            <Button variant="primary" onClick={auto.markReviewed}>
-              Mark as reviewed
+          {/* The way to the article itself; this page is its "Edited by AI" state. */}
+          <Button variant="ghost" onClick={() => navigate(articleEditPath(state, articleId))}>
+            Open article
+          </Button>
+          {primary ? (
+            <Button variant="primary" onClick={primary.onClick}>
+              {primary.label}
             </Button>
           ) : null}
         </div>
@@ -188,12 +216,12 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
               summary={
                 <SuggestionsSummaryCard
                   mode="terminal"
-                  title="Auto-applied"
-                  count={liveCount}
-                  countLabel={auto.where === 'live' ? `${liveCount} live` : `${liveCount} applied, not live yet`}
+                  title={isHistory ? 'Suggestions' : AUTO_MODE_COPY.tag}
+                  count={appliedCount}
+                  countLabel={`${appliedCount} applied`}
                   summary={article.aiSummary ?? 'Hiver AI applied these suggestions from recent customer conversations.'}
-                  historyNote={note}
-                  historyIcon={null}
+                  historyNote={statusNote(state, articleId, auto.where, suggestions[0]?.autoAppliedAt, appliedCount)}
+                  historyIcon={isHistory ? 'check_circle' : null}
                 />
               }
             />
@@ -207,6 +235,20 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
           if (!open) auto.setSourcesFor(null);
         }}
         sources={auto.sources}
+      />
+      <ConfirmModal
+        open={confirmPublish}
+        onOpenChange={setConfirmPublish}
+        title="Publish changes?"
+        message={publishMessage(state, articleId, appliedCount, revertedCount)}
+        confirmLabel="Publish"
+        cancelVariant="secondary"
+        tone="primary"
+        onConfirm={() => {
+          setConfirmPublish(false);
+          auto.publish();
+          navigate(SUGGESTIONS_HUB_PATH);
+        }}
       />
     </>
   );

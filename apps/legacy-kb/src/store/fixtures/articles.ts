@@ -253,8 +253,7 @@ export const articles: Article[] = [
     edits: {
       title: 'Setting chat availability hours',
       bodyHTML: CHAT_HOURS_BODY + CHAT_HOURS_WEEKENDS_HTML,
-      byId: 'user-ashuthosh',
-      liveActivity: { lastActivity: 'published', modifierId: 'user-ashuthosh', modifiedAt: daysAgo(30) },
+      people: ['user-ashuthosh'],
     },
     aiSummary: 'Clarifies which time zone the hours follow and points holidays to the holiday calendar.',
   },

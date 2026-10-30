@@ -77,8 +77,9 @@ export type Article = {
   /**
    * Edits to a published article that aren't live yet (the live app's
    * "PUBLISHED EDITED" status). Readers keep seeing `title` / `bodyHTML`;
-   * the editor shows these. Publish changes makes them live; Discard
-   * Edits drops them. Never set on a draft, whose edits are the draft.
+   * the editor shows these, and Publish changes makes them live. Auto
+   * mode's changes land here too. Never set on a draft, whose edits are
+   * the draft.
    */
   edits?: ArticleEdits;
 };
@@ -86,10 +87,11 @@ export type Article = {
 export type ArticleEdits = {
   title: string;
   bodyHTML: string;
-  /** Who started them (shown as "<name>'s unpublished edits"). */
-  byId: string;
-  /** The article's activity before the edits began; Discard Edits puts it back. */
-  liveActivity: Pick<Article, 'lastActivity' | 'modifierId' | 'modifiedAt'>;
+  /**
+   * Teammates who changed the text, in order. Empty when only Hiver AI
+   * did ("Edited by AI"); publishing then sends nobody else's work live.
+   */
+  people: string[];
 };
 
 export type AISuggestionType = 'addition' | 'replace' | 'removal';
@@ -129,22 +131,21 @@ export type AISuggestion = {
   sourceCount: number;
   status: AISuggestionStatus;
   /**
-   * Arrived while auto mode was on, so nobody reviewed it first. With the
-   * `publish` option it went live (and can be undone); with `merge` it
-   * waits, pre-accepted, in an improved version of the article.
+   * Arrived while auto mode was on: Hiver AI applied it to the article's
+   * unpublished edits (or its draft) without a review. Never published by
+   * Hiver AI; a teammate publishes the changes.
    */
   autoApplied?: boolean;
   /** ISO timestamp of that arrival. */
   autoAppliedAt?: string;
   /**
-   * Someone looked at this auto change and settled it (Keep, or Restore
-   * original). Until then it's marked in the editor and counted as needing a look.
+   * A teammate settled it: published the changes, marked them as
+   * reviewed, or reverted it. Until then the article reads "Edited by AI".
    */
   checked?: boolean;
   /**
-   * Auto mode wrote it into a version that isn't live: a draft, or a
-   * published article's unpublished edits. It goes live when someone
-   * publishes that version; Hiver AI never publishes someone else's work.
+   * In a version that isn't live yet (unpublished edits or a draft); it
+   * goes live when a teammate publishes that version.
    */
   waitsForPublish?: boolean;
   /**
@@ -155,22 +156,10 @@ export type AISuggestion = {
 };
 
 /**
- * The two auto-mode designs under comparison (prototype switch):
- * `publish` — applied straight to the live article, each change undoable.
- * `merge` — kept as an improved version; someone merges it into live.
+ * A teammate settled an article's auto-applied suggestions: published the
+ * changes, or marked them as reviewed (a draft, or every one reverted).
  */
-export type AutoModeOption = 'publish' | 'merge';
-
-/**
- * The two ways under comparison to show an article's auto-applied
- * suggestions (prototype switch):
- * `rail` (A) — the article with the suggestion rail, like manual review.
- * `list` (B) — a numbered list above the editor on the edit page.
- */
-export type AutoLayout = 'rail' | 'list';
-
-/** Someone marked an article's auto-applied suggestions as reviewed. */
-export type AutoReview = { reviewedById: string; reviewedAt: string };
+export type AutoReview = { reviewedById: string; reviewedAt: string; published: boolean };
 
 export type ConversationSource = {
   id: string;
@@ -223,16 +212,11 @@ export type StoreState = {
   aiReviewHistoryByArticle: Record<string, AIReviewHistory>;
   /**
    * Site settings › Hiver AI. `false` (manual): suggestions wait in To
-   * review. `true` (auto): new suggestions are applied without a review.
-   * Suggestions already waiting when it's switched on stay in To review.
+   * review. `true` (auto): new suggestions are applied to unpublished
+   * edits without a review. Suggestions already waiting when it's
+   * switched on stay in To review.
    */
   aiAutoApply: boolean;
-  /** Prototype only: which auto-mode design is on show. */
-  autoModeOption: AutoModeOption;
-  /** Prototype only: how an article's auto-applied suggestions are shown. */
-  autoLayout: AutoLayout;
-  /** Prototype only: the link fixed the layout (`?layout=a|b`), so there's no switch. */
-  autoLayoutPinned: boolean;
-  /** Latest "Mark as reviewed" on an article's auto-applied suggestions. */
+  /** Latest publish / mark as reviewed of an article's auto-applied suggestions. */
   autoReviewByArticle: Record<string, AutoReview>;
 };

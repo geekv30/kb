@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { copyIcon, publishedEditedIcon } from '../../assets/legacy';
-import { UNPUBLISHED_EDITS_TOOLTIP } from '../ArticleEditPage';
 import { Cell, CellText, TableRow, TableShell, TitleCell, type TableColumn } from '../../components/table/LegacyTable';
 import { Avatar } from '../../components/ui/Avatar';
+import { UNPUBLISHED_EDITS_TOOLTIP } from '../../components/ui/EditedBadge';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { StatusPill } from '../../components/ui/Pill';
 import { Tooltip, TooltipIconButton } from '../../components/ui/Tooltip';
@@ -13,7 +13,7 @@ import { suggestionsReviewPath } from '../../lib/paths';
 import { useStore } from '../../store/StoreContext';
 import { AUTO_MODE_COPY } from '../../improvements/autoModeCopy';
 import { pluralize } from '../../lib/format';
-import { autoSuggestionsPath, selectAutoNeedsLook, selectOpenSuggestionSummary, type ArticleFilter } from '../../store/selectors';
+import { selectOpenSuggestionSummary, type ArticleFilter } from '../../store/selectors';
 import type { Article, Category } from '../../store/types';
 
 /** Live empty-state copy keyed by tab (chunk 854 `He`/`Me`). */
@@ -66,12 +66,10 @@ function ArticleRow({ article, categorySlug, publicUrl }: ArticleRowProps) {
   const author = article.authorId ? state.users[article.authorId] : undefined;
   const editHref = `/product/category/${categorySlug}/article/edit/${article.slug}`;
   const ai = selectOpenSuggestionSummary(state, article.id);
-  // Auto mode: tagged until someone has checked the changes (or published / discarded the draft).
+  // Auto mode: "Edited by AI" until a teammate publishes or marks the changes as reviewed.
   const pill =
     ai?.stage === 'AUTO'
-      ? selectAutoNeedsLook(state, article.id)
-        ? AUTO_MODE_COPY[state.autoModeOption].tag
-        : undefined
+      ? { label: AUTO_MODE_COPY.tag, tooltip: AUTO_MODE_COPY.tagTooltip }
       : ai
         ? { label: pluralize(ai.total, 'suggestion'), tooltip: 'Review AI suggestions' }
         : undefined;
@@ -87,7 +85,7 @@ function ArticleRow({ article, categorySlug, publicUrl }: ArticleRowProps) {
             <SuggestionsTablePill
               label={pill.label}
               tooltip={pill.tooltip}
-              onOpen={() => navigate(ai?.stage === 'AUTO' ? autoSuggestionsPath(state, article.id) : suggestionsReviewPath(article.slug))}
+              onOpen={() => navigate(suggestionsReviewPath(article.slug))}
             />
           ) : undefined
         }

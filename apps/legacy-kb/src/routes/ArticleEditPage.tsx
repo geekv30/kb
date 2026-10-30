@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   backIcon,
-  editedBadge,
   deleteIcon,
   deleteIconHover,
   externalIcon,
@@ -13,7 +12,9 @@ import {
 import { ArticleEditor, type ArticleEditorChange } from '../components/editor/ArticleEditor';
 import { Button } from '../components/ui/Button';
 import { ConfirmModal } from '../components/ui/Modal';
-import { Tooltip, TooltipIconButton } from '../components/ui/Tooltip';
+import { TooltipIconButton } from '../components/ui/Tooltip';
+import { EditedBadge, UNPUBLISHED_EDITS_TOOLTIP } from '../components/ui/EditedBadge';
+import { AUTO_MODE_COPY } from '../improvements/autoModeCopy';
 import { BannerCount, SuggestionsBanner } from '../improvements/SuggestionsBanner';
 import { slugify } from '../lib/format';
 import { suggestionsReviewPath } from '../lib/paths';
@@ -23,6 +24,7 @@ import {
   selectArticleBySlug,
   selectCategories,
   selectCategoryBySlug,
+  selectEditedByAI,
   selectOpenSuggestionSummary,
   selectUsers,
   workingBody,
@@ -38,9 +40,6 @@ const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const BANNER_GAP = 16;
 
 type PendingConfirm = 'unpublish' | 'delete' | 'leave' | null;
-
-/** Live tooltip on the "Edited" badge and the table's warning glyph. */
-export const UNPUBLISHED_EDITS_TOOLTIP = 'There are edits on this article that are not published yet';
 
 interface EditSessionProps {
   category: Category;
@@ -58,8 +57,10 @@ function EditSession({ category, article }: EditSessionProps) {
   const navigate = useNavigate();
   const [title, setTitle] = useState(article?.edits?.title ?? article?.title ?? '');
   const [bodyHTML, setBodyHTML] = useState(article ? workingBody(article) : '');
-  /** Changed in this visit: Back asks before leaving unpublished edits (live "withoutPublishArticle"). */
+  /** Changed in this visit: Back asks to keep or discard the changes (live "withoutPublishArticle"). */
   const [dirty, setDirty] = useState(false);
+  /** The article as this visit found it: Discard Edits goes back to it; edits saved before stay. */
+  const [visitStart] = useState(article);
   const [slug, setSlug] = useState(article?.slug ?? '');
   const [authorId, setAuthorId] = useState<string | null>(article ? article.authorId : state.currentUserId);
   const [pending, setPending] = useState<PendingConfirm>(null);
@@ -70,6 +71,8 @@ function EditSession({ category, article }: EditSessionProps) {
   const status: ArticleStatus = article?.status ?? 'DRAFT';
   /** Live "PUBLISHED EDITED": published, with edits that aren't live yet. */
   const hasEdits = Boolean(article?.edits);
+  /** Hiver AI's changes wait in the edits (or the draft): the badge reads "Edited by AI". */
+  const editedByAI = article ? selectEditedByAI(state, article.id) : false;
   const categoryBase = `/product/category/${category.slug}`;
 
   const slugTaken = Object.values(state.articles).some((a) => a.slug === slug && a.id !== article?.id);
@@ -104,7 +107,7 @@ function EditSession({ category, article }: EditSessionProps) {
   };
 
   const back = () => {
-    if (hasEdits && dirty) setPending('leave');
+    if (article && dirty) setPending('leave');
     else navigate(categoryBase);
   };
 
@@ -163,11 +166,12 @@ function EditSession({ category, article }: EditSessionProps) {
           </Button>
         </div>
         <div className="box-border flex w-full flex-row items-center justify-end p-0">
-          {hasEdits ? (
+          {hasEdits || editedByAI ? (
             <div className="box-border flex px-[15px]">
-              <Tooltip content={UNPUBLISHED_EDITS_TOOLTIP} placement="bottom-center" className="cursor-default">
-                <img src={editedBadge} alt="Edited" width={74} height={22} className="block" />
-              </Tooltip>
+              <EditedBadge
+                byAI={editedByAI}
+                tooltip={editedByAI ? AUTO_MODE_COPY.tagTooltip : UNPUBLISHED_EDITS_TOOLTIP}
+              />
             </div>
           ) : null}
           <div className="box-border flex px-[15px]">
@@ -228,21 +232,14 @@ function EditSession({ category, article }: EditSessionProps) {
               </SuggestionsBanner>
             </div>
           ) : null}
-          {/* Layout B, "Show changes": the red / green view takes the editor's place. */}
-          {auto.replaceEditor ? (
-            auto.replaceEditor(bannerHeight > 0 ? bannerHeight + BANNER_GAP : 0)
-          ) : (
-            // Reseeds (keeping the scroll position) when Hiver AI's changes are applied or taken back.
-            <ArticleEditor
-              contentRevision={auto.editorKey}
-              title={title}
-              bodyHTML={auto.editorBody ?? (article ? workingBody(article) : bodyHTML)}
-              onChange={handleEditorChange}
-              heightOffset={bannerHeight > 0 ? bannerHeight + BANNER_GAP : 0}
-              readOnly={auto.readOnly}
-              overlay={auto.overlay}
-            />
-          )}
+          {/* Reseeds (keeping the scroll position) when Hiver AI's changes are applied or taken back. */}
+          <ArticleEditor
+            contentRevision={auto.editorKey}
+            title={title}
+            bodyHTML={article ? workingBody(article) : bodyHTML}
+            onChange={handleEditorChange}
+            heightOffset={bannerHeight > 0 ? bannerHeight + BANNER_GAP : 0}
+          />
         </div>
         <ArticleMetaPanel
           users={selectUsers(state)}
@@ -269,7 +266,6 @@ function EditSession({ category, article }: EditSessionProps) {
         />
       </div>
 
-      {auto.dialogs}
       {/* Live "withoutPublishArticle": red Keep Edits, white Discard Edits. */}
       <ConfirmModal
         open={pending === 'leave'}
@@ -285,7 +281,7 @@ function EditSession({ category, article }: EditSessionProps) {
         onCancel={() => {
           setPending(null);
           navigate(categoryBase);
-          if (article) dispatch({ type: 'article/discardEdits', articleId: article.id });
+          if (visitStart) dispatch({ type: 'article/restore', article: visitStart });
         }}
       />
       <ConfirmModal

@@ -248,7 +248,7 @@ export function SiteSettingsPage() {
                   control={<Toggle label="Apply suggestions automatically" checked={autoApply} onChange={setAutoApply} />}
                 />
                 <p className={`mt-[8px] mb-0 ${FIELD_HELP}`}>
-                  {autoApply ? AUTO_MODE_COPY[state.autoModeOption].settingsOn : MANUAL_SETTINGS_COPY}
+                  {autoApply ? AUTO_MODE_COPY.settingsOn : MANUAL_SETTINGS_COPY}
                 </p>
                 {keepsBacklog ? (
                   <p className={`mt-[8px] mb-0 ${FIELD_HELP}`}>

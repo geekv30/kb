@@ -1,7 +1,6 @@
 // Prototype controls, not product UI: a dark pill at the bottom of every
-// screen. It switches between the two auto-mode designs (restarting the
-// demo) and delivers the incoming batch of suggestions, so you can watch
-// where they land with auto mode off, on (option 1), or on (option 2).
+// screen. It delivers the incoming batch of suggestions, so you can watch
+// where they land with auto mode off or on, and restarts the demo.
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -10,12 +9,6 @@ import { pluralize } from '../lib/format';
 import { SUGGESTIONS_HUB_PATH } from '../lib/paths';
 import { suggestions as suggestionFixtures } from '../store/fixtures/suggestions';
 import { useStore } from '../store/StoreContext';
-import type { AutoLayout, AutoModeOption } from '../store/types';
-
-const LAYOUTS: Array<{ value: AutoLayout; label: string; param: string }> = [
-  { value: 'rail', label: 'A · On the review page', param: 'a' },
-  { value: 'list', label: 'B · On the edit page', param: 'b' },
-];
 
 const PILL_BUTTON =
   'm-0 cursor-pointer whitespace-nowrap rounded-full border-0 px-[10px] py-[4px] font-inter text-[12px] leading-[16px] font-medium outline-none focus-visible:shadow-[0_0_0_2px_#60a5fa]';
@@ -53,22 +46,9 @@ export function PrototypeBar({ bottom = 80 }: PrototypeBarProps) {
   const arrived = incoming.length === 0;
   const articles = new Set(delivered.map((s) => s.articleId)).size;
 
-  const restart = (option: AutoModeOption) => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('option', option === 'merge' ? '2' : '1');
-    window.history.replaceState(window.history.state, '', url);
-    dispatch({ type: 'proto/restart', option });
-  };
-
-  // Same data, different presentation: switching layouts needs no restart.
-  const setLayout = (layout: (typeof LAYOUTS)[number]) => dispatch({ type: 'proto/setAutoLayout', layout: layout.value });
-  const pinned = LAYOUTS.find((l) => l.value === state.autoLayout);
-
-  const arrivedText = !state.aiAutoApply
-    ? `${pluralize(delivered.length, 'suggestion')} sent to To review`
-    : state.autoModeOption === 'publish'
-      ? `Auto mode applied ${pluralize(delivered.length, 'suggestion')} to ${pluralize(articles, 'article')}`
-      : `Hiver AI saved ${pluralize(articles, 'draft update')}`;
+  const arrivedText = state.aiAutoApply
+    ? `Hiver AI edited ${pluralize(articles, 'article')}`
+    : `${pluralize(delivered.length, 'suggestion')} sent to To review`;
 
   if (!open) {
     return (
@@ -80,7 +60,7 @@ export function PrototypeBar({ bottom = 80 }: PrototypeBarProps) {
         className="fixed left-[14px] z-[2000] flex cursor-pointer items-center gap-[6px] rounded-full border-0 bg-[#0f172a] px-[12px] py-[6px] font-inter text-[11px] leading-[16px] font-semibold tracking-[0.04em] text-[#cbd5e1] uppercase shadow-[0_4px_16px_rgba(15,23,42,0.35)] outline-none hover:text-white focus-visible:shadow-[0_0_0_2px_#60a5fa]"
       >
         <span aria-hidden className="size-[6px] rounded-full bg-[#86efac]" />
-        Prototype · Layout {state.autoLayout === 'list' ? 'B' : 'A'}
+        Prototype
       </button>
     );
   }
@@ -104,30 +84,6 @@ export function PrototypeBar({ bottom = 80 }: PrototypeBarProps) {
           ✕
         </button>
       </div>
-      {/* The draft-update design (`?option=2`) is parked; only the layouts are on show.
-          A `?layout=` link shows one layout, named, with no switch. */}
-      {state.autoLayoutPinned ? (
-        <p className="m-0 rounded-[6px] bg-[#1e293b] px-[10px] py-[6px] text-[12px] leading-[16px] font-medium text-white">
-          Layout {pinned?.label}
-        </p>
-      ) : (
-        <div className="flex flex-col gap-[2px] rounded-[8px] bg-[#1e293b] p-[2px]" role="group" aria-label="How auto-applied suggestions are shown">
-          {LAYOUTS.map((layout) => {
-            const selected = state.autoLayout === layout.value;
-            return (
-              <button
-                key={layout.value}
-                type="button"
-                aria-pressed={selected}
-                onClick={() => setLayout(layout)}
-                className={cn(PILL_BUTTON, 'rounded-[6px] text-left', selected ? 'bg-white text-[#0f172a]' : 'bg-transparent text-[#cbd5e1] hover:text-white')}
-              >
-                {layout.label}
-              </button>
-            );
-          })}
-        </div>
-      )}
       {arrived ? (
         <button
           type="button"
@@ -147,7 +103,7 @@ export function PrototypeBar({ bottom = 80 }: PrototypeBarProps) {
       )}
       <button
         type="button"
-        onClick={() => restart(state.autoModeOption)}
+        onClick={() => dispatch({ type: 'proto/restart' })}
         className={cn(PILL_BUTTON, 'rounded-[6px] bg-transparent text-left text-[#94a3b8] hover:text-white')}
       >
         Restart prototype

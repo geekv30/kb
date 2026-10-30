@@ -1,5 +1,5 @@
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { backIcon } from '../assets/legacy';
 import { Button } from '../components/ui/Button';
 import { ConfirmModal } from '../components/ui/Modal';
@@ -19,7 +19,7 @@ import { SuggestionsSummaryCard } from '../improvements/SuggestionsSummaryCard';
 import { useArticleReview } from '../improvements/useArticleReview';
 import { SUGGESTIONS_HUB_PATH } from '../lib/paths';
 import { useStore } from '../store/StoreContext';
-import { articleEditPath, selectArticleBySlug, selectConversationSources, selectReviewSession } from '../store/selectors';
+import { selectArticleBySlug, selectConversationSources, selectReviewSession } from '../store/selectors';
 import type { AISuggestion } from '../store/types';
 import { AutoAppliedView } from './AutoAppliedView';
 import { NotFound } from './NotFound';
@@ -371,15 +371,7 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
   const history = state.aiReviewHistoryByArticle[articleId];
   const historyNote =
     isHistory && history
-      ? `${
-          session?.auto
-            ? history.published
-              ? 'Draft update published'
-              : 'Draft update discarded'
-            : history.published
-              ? 'Published'
-              : 'Marked as reviewed'
-        } by ${firstName(state, history.reviewedById)} ${whenText(history.reviewedAt)}`
+      ? `${history.published ? 'Published' : 'Marked as reviewed'} by ${firstName(state, history.reviewedById)} ${whenText(history.reviewedAt)}`
       : undefined;
 
   return (
@@ -526,13 +518,10 @@ export function ArticleReviewPage() {
       <NotFound title="No suggestions to review" message="Hiver’s AI hasn’t suggested any changes to this article." />
     );
   }
-  // Auto mode: the changes are checked inside the article, in the editor.
-  // A published draft update reads as an ordinary review history.
-  if (session.auto && (session.kind === 'live' || state.autoModeOption === 'publish')) {
-    if (state.autoModeOption === 'publish' && state.autoLayout === 'rail') {
-      return <AutoAppliedView key={article.id} articleId={article.id} />;
-    }
-    return <Navigate to={articleEditPath(state, article.id)} replace />;
+  // Auto mode: Hiver AI's applied changes, checked on the same page in their
+  // own state. Suggestions still to review (manual) take the review flow.
+  if (session.auto && session.kind === 'history') {
+    return <AutoAppliedView key={article.id} articleId={article.id} />;
   }
   return <ReviewSession key={article.id} articleId={article.id} />;
 }

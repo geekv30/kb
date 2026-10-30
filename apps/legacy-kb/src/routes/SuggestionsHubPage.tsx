@@ -10,7 +10,6 @@ import { pluralize, whenText } from '../lib/format';
 import { suggestionsReviewPath } from '../lib/paths';
 import { useStore } from '../store/StoreContext';
 import {
-  autoSuggestionsPath,
   selectAutoChanges,
   selectAutoWhere,
   selectCategories,
@@ -20,7 +19,6 @@ import {
   type AutoWhere,
   type SuggestionHubTab,
 } from '../store/selectors';
-import type { AutoModeOption } from '../store/types';
 import { CategoryTopBar } from './category/CategoryTopBar';
 import { PageHeader } from './category/CategoryHeader';
 
@@ -68,7 +66,7 @@ const EMPTY: Record<Exclude<SuggestionHubTab, 'AUTO'>, { title: string; info: st
 function suggestionsLabel(row: ArticleSuggestionSummary): string {
   if (row.stage === 'REVIEWED') {
     const parts: string[] = [];
-    if (row.published > 0) parts.push(`${row.published} ${row.auto ? 'applied' : 'published'}`);
+    if (row.published > 0) parts.push(`${row.published} ${row.auto && row.article.status === 'DRAFT' ? 'applied' : 'published'}`);
     if (row.dismissed > 0) parts.push(`${row.dismissed} ${row.auto ? 'reverted' : 'dismissed'}`);
     return parts.join(' · ');
   }
@@ -76,26 +74,23 @@ function suggestionsLabel(row: ArticleSuggestionSummary): string {
   return `${row.reviewed} of ${row.total} reviewed`;
 }
 
-const WHERE_LABEL: Record<AutoWhere, string> = { live: 'live', edits: 'in unpublished edits', draft: 'in draft' };
-
 /**
- * publish: "3 live", "2 in unpublished edits" or "1 in draft" (not live
- *          until that version is published); "· 1 reverted" after a revert.
- * merge:   "2 changes in draft" (fewer once some are removed from the draft).
+ * "3 suggestions", "2 suggestions · 1 reverted" after a revert, and
+ * "· in draft" when they wait in a draft rather than unpublished edits.
  */
-function autoChangesLabel(changes: AutoChange[], option: AutoModeOption, where: AutoWhere): string {
-  const count = (status: AutoChange['status']) => changes.filter((c) => c.status === status).length;
-  if (option === 'merge') return `${pluralize(count('draft'), 'change')} in draft`;
-  const applied = `${count('live')} ${WHERE_LABEL[where]}`;
-  const reverted = count('restored');
-  return reverted > 0 ? `${applied} · ${reverted} reverted` : applied;
+function autoChangesLabel(changes: AutoChange[], where: AutoWhere): string {
+  const applied = changes.filter((c) => c.status === 'applied').length;
+  const reverted = changes.length - applied;
+  const parts = [pluralize(applied, 'suggestion')];
+  if (reverted > 0) parts.push(`${reverted} reverted`);
+  if (where === 'draft') parts.push('in draft');
+  return parts.join(' · ');
 }
 
 function AutoHubRow({ row, columns }: { row: ArticleSuggestionSummary; columns: ReadonlyArray<TableColumn> }) {
   const navigate = useNavigate();
   const { state } = useStore();
-  // Auto changes are checked inside the article, so the row opens its editor.
-  const href = autoSuggestionsPath(state, row.article.id);
+  const href = suggestionsReviewPath(row.article.slug);
   const changes = selectAutoChanges(state, row.article.id);
   return (
     <TableRow onOpen={() => navigate(href)}>
@@ -104,7 +99,7 @@ function AutoHubRow({ row, columns }: { row: ArticleSuggestionSummary; columns: 
         <CellText>{row.category?.title ?? 'Uncategorized'}</CellText>
       </Cell>
       <Cell width={columns[2]?.width}>
-        <CellText>{autoChangesLabel(changes, state.autoModeOption, selectAutoWhere(state, row.article.id))}</CellText>
+        <CellText>{autoChangesLabel(changes, selectAutoWhere(state, row.article.id))}</CellText>
       </Cell>
       <Cell width={columns[3]?.width}>
         <CellText>{pluralize(row.conversations, 'conversation')}</CellText>
@@ -157,13 +152,13 @@ export function SuggestionsHubPage() {
   }, [location.key]);
   const [query, setQuery] = useState('');
 
-  const copy = AUTO_MODE_COPY[state.autoModeOption];
+  const copy = AUTO_MODE_COPY;
   const autoRows = selectSuggestionArticles(state, 'AUTO');
   // The third tab appears once auto mode is on (or has left something behind).
   const showAuto = state.aiAutoApply || autoRows.length > 0;
   const tabs: ReadonlyArray<TabOption<SuggestionHubTab>> = [
     { value: 'TO_REVIEW', label: 'To review' },
-    ...(showAuto ? [{ value: 'AUTO' as const, label: copy.tab }] : []),
+    ...(showAuto ? [{ value: 'AUTO' as const, label: copy.tag }] : []),
     { value: 'REVIEWED', label: 'Reviewed' },
   ];
   const activeTab = tab === 'AUTO' && !showAuto ? 'TO_REVIEW' : tab;
@@ -178,7 +173,7 @@ export function SuggestionsHubPage() {
     activeTab === 'AUTO'
       ? copy.empty
       : activeTab === 'TO_REVIEW' && state.aiAutoApply
-        ? { title: EMPTY.TO_REVIEW.title, info: `Auto mode is on, so new suggestions go to ${copy.tab}.` }
+        ? { title: EMPTY.TO_REVIEW.title, info: `Auto mode is on, so new suggestions go to ${copy.tag}.` }
         : EMPTY[activeTab];
 
   const empty =
