@@ -194,9 +194,6 @@ export function AutoAppliedView({ articleId }: { articleId: string }) {
                   summary={article.aiSummary ?? 'Hiver AI applied these suggestions from recent customer conversations.'}
                   historyNote={note}
                   historyIcon={null}
-                  navEnabled={liveCount > 0}
-                  onPrev={() => step(-1)}
-                  onNext={() => step(1)}
                 />
               }
             />

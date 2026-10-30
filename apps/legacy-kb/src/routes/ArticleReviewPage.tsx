@@ -453,14 +453,12 @@ function ReviewSession({ articleId }: ReviewSessionProps) {
               summary={
                 <SuggestionsSummaryCard
                   mode={mode}
-                  count={mode === 'reviewing' ? remaining : suggestions.length}
+                  count={mode === 'terminal' ? suggestions.length : remaining}
                   summary={summary}
                   onReview={() => {
                     const firstId = suggestions[0]?.id;
                     if (firstId) send({ type: 'activateSuggestion', id: firstId });
                   }}
-                  onPrev={() => send({ type: 'prev' })}
-                  onNext={() => send({ type: 'next' })}
                   historyNote={historyNote}
                 />
               }
