@@ -47,6 +47,9 @@ export interface SuggestionCardProps {
 
 const CARD_BASE = 'box-border rounded-[5px] border border-solid bg-white font-inter';
 
+/** Hiver AI already made this change (auto mode), so its type reads "Replaced", not "Replace". */
+const isApplied = (s: AISuggestion) => s.autoApplied === true && s.status === 'published';
+
 export function SuggestionCard(props: SuggestionCardProps) {
   if (props.state === 'accepted' || props.state === 'dismissed') {
     return <DecisionChip {...props} decision={props.state} />;
@@ -74,7 +77,7 @@ function DecisionChip({
         'motion-safe:animate-lk-chip-enter motion-reduce:animate-lk-fade-in-reduced',
       )}
     >
-      <SuggestionTypeLabel type={suggestion.type} />
+      <SuggestionTypeLabel type={suggestion.type} done={isApplied(suggestion)} />
       <span aria-hidden className="mx-[8px] h-[16px] w-px shrink-0 bg-legacy-picker-border" />
       <span className="text-[11px] leading-[20px] font-semibold tracking-[0.04em] text-legacy-meta uppercase">
         {statusLabel}
@@ -166,7 +169,7 @@ function ReviewCard({
       )}
     >
       <div className="flex h-[20px] items-center justify-between">
-        <SuggestionTypeLabel type={suggestion.type} />
+        <SuggestionTypeLabel type={suggestion.type} done={isApplied(suggestion)} />
         <span className="text-[12px] leading-[20px] font-medium text-legacy-meta tabular-nums">
           {meta}
           {meta && !isIdle && position ? ' · ' : null}

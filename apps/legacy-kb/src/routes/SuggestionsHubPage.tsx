@@ -143,7 +143,7 @@ function HubRow({ row }: { row: ArticleSuggestionSummary }) {
 export function SuggestionsHubPage() {
   const { state } = useStore();
   const navigate = useNavigate();
-  // The prototype bar links here with `{ tab }` to show where a batch landed.
+  // Links here can carry `{ tab }` to open a specific tab.
   const location = useLocation();
   const linkedTab = (location.state as { tab?: SuggestionHubTab } | null)?.tab;
   const [tab, setTab] = useState<SuggestionHubTab>(linkedTab ?? 'TO_REVIEW');

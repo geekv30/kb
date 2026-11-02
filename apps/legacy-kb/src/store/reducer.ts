@@ -10,7 +10,6 @@ import {
 } from '../improvements/reviewDocument';
 import { reviewReducer, initialReviewState, type ReviewAction, type ReviewDecision } from '../improvements/reviewState';
 import { HIVER_AI_USER_ID } from './fixtures/users';
-import { seed } from './seed';
 import { selectReviewSuggestions } from './selectors';
 import type { AISuggestion, Article, Category, StoreState } from './types';
 
@@ -53,9 +52,7 @@ export type StoreAction =
   /** Auto mode: revert an applied suggestion in the unpublished edits / draft, or re-apply a reverted one. */
   | { type: 'ai/toggleAutoChange'; suggestionId: string; modifierId: string; now: string }
   /** Auto mode: someone checked an article's suggestions without publishing (a draft, or all reverted). */
-  | { type: 'ai/markAutoReviewed'; articleId: string; userId: string; now: string }
-  /** Prototype: start the demo over, keeping the auto setting. */
-  | { type: 'proto/restart' };
+  | { type: 'ai/markAutoReviewed'; articleId: string; userId: string; now: string };
 
 function patchArticle(
   state: StoreState,
@@ -367,8 +364,6 @@ export function rootReducer(state: StoreState, action: StoreAction): StoreState 
         },
       };
     }
-    case 'proto/restart':
-      return seed({ aiAutoApply: state.aiAutoApply });
     default: {
       const exhaustive: never = action;
       return exhaustive;

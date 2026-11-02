@@ -16,23 +16,27 @@ import type { AISuggestionType } from '../store/types';
 
 interface SuggestionTypeMeta {
   label: string;
+  /** Once Hiver AI has made the change (auto mode): "Added", "Replaced", "Removed". */
+  doneLabel: string;
   /** Material Icons Outlined ligature. */
   icon: string;
   textClass: string;
 }
 
 export const SUGGESTION_TYPE_META: Record<AISuggestionType, SuggestionTypeMeta> = {
-  addition: { label: 'Addition', icon: 'add', textClass: 'text-legacy-success' },
-  replace: { label: 'Replace', icon: 'sync', textClass: 'text-legacy-replace' },
-  removal: { label: 'Removal', icon: 'close', textClass: 'text-legacy-danger' },
+  addition: { label: 'Addition', doneLabel: 'Added', icon: 'add', textClass: 'text-legacy-success' },
+  replace: { label: 'Replace', doneLabel: 'Replaced', icon: 'sync', textClass: 'text-legacy-replace' },
+  removal: { label: 'Removal', doneLabel: 'Removed', icon: 'close', textClass: 'text-legacy-danger' },
 };
 
 export interface SuggestionTypeLabelProps {
   type: AISuggestionType;
+  /** The change is already made, so the label reads in the past tense. */
+  done?: boolean;
 }
 
 /** Icon + label in the type's color; the label text carries the meaning, not just the color. */
-export function SuggestionTypeLabel({ type }: SuggestionTypeLabelProps) {
+export function SuggestionTypeLabel({ type, done = false }: SuggestionTypeLabelProps) {
   const meta = SUGGESTION_TYPE_META[type];
   return (
     <span
@@ -40,7 +44,7 @@ export function SuggestionTypeLabel({ type }: SuggestionTypeLabelProps) {
       className={cn('inline-flex items-center gap-[4px] text-[12px] leading-[20px] font-medium', meta.textClass)}
     >
       <MaterialIcon name={meta.icon} size={16} className={meta.textClass} />
-      {meta.label}
+      {done ? meta.doneLabel : meta.label}
     </span>
   );
 }

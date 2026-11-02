@@ -9,9 +9,6 @@
 //     card to max(anchor Y, previous bottom + minGap). The active card
 //     then reclaims its anchor Y by sliding earlier cards up, so the card
 //     under review always sits level with its highlight when it can.
-//   - A card whose anchor Y falls outside it by more than
-//     `connectorTolerance` px gets a 1px dotted connector on its left
-//     edge running back to the anchor.
 //   - Cards glide to new tops (260ms strong ease-in-out); reduced motion
 //     jumps instead.
 
@@ -37,7 +34,6 @@ export interface SuggestionRailProps {
   /** Rail width in px. */
   width: number;
   minGap?: number;
-  connectorTolerance?: number;
   className?: string;
 }
 
@@ -47,19 +43,6 @@ const FALLBACK_CARD_HEIGHT = 160;
 interface CardLayout {
   id: string;
   top: number;
-  /** Dotted connector, in card-local px, or null when the pairing is obvious. */
-  connector: { top: number; height: number } | null;
-}
-
-/**
- * A connector only when the anchor's Y falls outside the card by more
- * than `tolerance`: above it (card pushed down) or below its bottom
- * (card pulled up). If the card already spans its anchor, no line.
- */
-function connectorFor(delta: number, height: number, tolerance: number): CardLayout['connector'] {
-  if (delta > tolerance) return { top: -delta, height: delta };
-  if (-delta > height + tolerance) return { top: height, height: -delta - height };
-  return null;
 }
 
 export function SuggestionRail({
@@ -69,7 +52,6 @@ export function SuggestionRail({
   activeId,
   width,
   minGap = 12,
-  connectorTolerance = 24,
   className,
 }: SuggestionRailProps) {
   const railRef = useRef<HTMLElement>(null);
@@ -153,12 +135,10 @@ export function SuggestionRail({
 
     // Forward walk: each card at max(anchor Y, previous bottom + gap).
     const targets: number[] = [];
-    const hasAnchor: boolean[] = [];
     const tops: number[] = [];
     let prevBottom = seed;
     items.forEach((item, i) => {
       const anchor = anchors[item.id];
-      hasAnchor[i] = typeof anchor === 'number';
       targets[i] = typeof anchor === 'number' ? anchor + coordOffset : prevBottom;
       tops[i] = Math.max(targets[i]!, prevBottom);
       prevBottom = tops[i]! + heightOf(item.id) + minGap;
@@ -180,12 +160,8 @@ export function SuggestionRail({
       }
     }
 
-    return items.map((item, i) => ({
-      id: item.id,
-      top: tops[i]!,
-      connector: hasAnchor[i] ? connectorFor(tops[i]! - targets[i]!, heightOf(item.id), connectorTolerance) : null,
-    }));
-  }, [items, anchors, coordOffset, cardHeights, minGap, connectorTolerance, summaryHeight, activeId]);
+    return items.map((item, i) => ({ id: item.id, top: tops[i]! }));
+  }, [items, anchors, coordOffset, cardHeights, minGap, summaryHeight, activeId]);
 
   const minHeight = layouts.reduce(
     (bottom, l) => Math.max(bottom, l.top + (cardHeights[l.id] ?? FALLBACK_CARD_HEIGHT)),
@@ -220,7 +196,6 @@ export function SuggestionRail({
               else cardEls.current.delete(item.id);
             }}
             data-rail-card-id={item.id}
-            data-rail-connector={layout.connector ? 'true' : 'false'}
             className={cn(
               'absolute right-0 left-0',
               'motion-safe:transition-[top,opacity] motion-safe:duration-[260ms] motion-safe:ease-in-out-strong',
@@ -229,13 +204,6 @@ export function SuggestionRail({
             )}
             style={{ top: layout.top }}
           >
-            {layout.connector ? (
-              <span
-                aria-hidden
-                className="pointer-events-none absolute -left-[12px] border-0 border-l border-dotted border-legacy-input-border"
-                style={layout.connector}
-              />
-            ) : null}
             {item.node}
           </div>
         );

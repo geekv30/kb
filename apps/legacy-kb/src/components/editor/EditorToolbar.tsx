@@ -175,7 +175,9 @@ function Separator() {
 
 export function EditorToolbar() {
   return (
-    <div className="relative shadow-legacy-toolbar">
+    // Above the scrolling body, so its shadow runs the full width instead
+    // of showing only past the body's side padding.
+    <div className="relative z-[1] shadow-legacy-toolbar">
       <div
         role="toolbar"
         aria-label="Editor toolbar"

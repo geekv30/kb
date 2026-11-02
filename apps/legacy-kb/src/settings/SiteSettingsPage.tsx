@@ -109,7 +109,12 @@ export function SiteSettingsPage() {
     contactForm !== saved.contactForm;
 
   const save = () => {
-    if (autoApply !== state.aiAutoApply) dispatch({ type: 'settings/setAiAutoApply', enabled: autoApply });
+    if (autoApply !== state.aiAutoApply) {
+      dispatch({ type: 'settings/setAiAutoApply', enabled: autoApply });
+      // Prototype stand-in for new conversations arriving: turning auto mode
+      // on brings the next batch, which Hiver AI applies right away.
+      if (autoApply) dispatch({ type: 'ai/receiveSuggestions', now: new Date().toISOString() });
+    }
     setSaved({ siteName, description, subdomain, contactForm });
     showToast('Your changes have been saved');
   };
